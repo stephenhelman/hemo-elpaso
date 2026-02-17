@@ -1,6 +1,7 @@
 "use client";
 
 import { LanguageProvider } from "@/context/LanguageContext";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useLang } from "@/context/LanguageContext";
@@ -26,8 +27,10 @@ export default function SiteLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LanguageProvider>
-      <LayoutInner>{children}</LayoutInner>
-    </LanguageProvider>
+    <UserProvider>
+      <LanguageProvider>
+        <LayoutInner>{children}</LayoutInner>
+      </LanguageProvider>
+    </UserProvider>
   );
 }
