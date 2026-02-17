@@ -1,0 +1,124 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, X, Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { href: "/", labelEn: "Home", labelEs: "Inicio" },
+  { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
+  { href: "/events", labelEn: "Events", labelEs: "Eventos" },
+  { href: "/resources", labelEn: "Resources", labelEs: "Recursos" },
+  { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
+  { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
+];
+
+interface NavbarProps {
+  lang: "en" | "es";
+  onLanguageToggle: () => void;
+}
+
+export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">
+      <div className="container-max">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-white font-display font-bold text-sm">
+                HO
+              </span>
+            </div>
+            <div className="hidden sm:block">
+              <p className="font-display font-bold text-neutral-900 text-sm leading-tight">
+                Hemophilia Outreach
+              </p>
+              <p className="font-display font-bold text-primary text-sm leading-tight">
+                of El Paso
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-3 py-2 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors duration-200"
+              >
+                {lang === "en" ? link.labelEn : link.labelEs}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right side */}
+          <div className="flex items-center gap-2">
+            {/* Language Toggle */}
+            <button
+              onClick={onLanguageToggle}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-200 text-sm font-medium text-neutral-600 hover:border-primary hover:text-primary transition-colors duration-200"
+              aria-label="Toggle language"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>{lang === "en" ? "ES" : "EN"}</span>
+            </button>
+
+            {/* Get Involved CTA */}
+            <Link
+              href="/get-involved"
+              className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
+            >
+              {lang === "en" ? "Get Involved" : "Participa"}
+            </Link>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="lg:hidden p-2 rounded-md text-neutral-600 hover:text-primary hover:bg-neutral-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <div className="lg:hidden border-t border-neutral-200 bg-white">
+            <nav className="flex flex-col px-4 py-3 gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="px-3 py-2.5 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors"
+                >
+                  {lang === "en" ? link.labelEn : link.labelEs}
+                </Link>
+              ))}
+              <div className="pt-2 border-t border-neutral-100 mt-1">
+                <Link
+                  href="/get-involved"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
+                >
+                  {lang === "en" ? "Get Involved" : "Participa"}
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
