@@ -7,18 +7,22 @@ datasource db {
 }
 
 model Patient {
-  id                String    @id @default(uuid())
-  email             String    @unique
-  preferredLanguage String    @default("en")
-  consentDate       DateTime
-  consentToContact  Boolean   @default(true)
-  consentToPhotos   Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                 String            @id @default(uuid())
+  auth0Id            String            @unique 
+  email              String            @unique
+  role               String            @default("patient") // patient, coordinator, board
+  preferredLanguage  String            @default("en")
+  consentDate        DateTime?
+  consentToContact   Boolean           @default(false)
+  consentToPhotos    Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  
+  profile            PatientProfile?
+  rsvps              Rsvp[]
+  checkIns           CheckIn[]
 
-  profile           PatientProfile?
-  rsvps             Rsvp[]
-  checkIns          CheckIn[]
+  @@map("patients")
 }
 
 model PatientProfile {
@@ -28,13 +32,18 @@ model PatientProfile {
   firstName        String
   lastName         String
   dateOfBirth      DateTime
-  diagnosis        String
+  phone            String
+  primaryCondition        String
   severity         String
-  inhibitorStatus  Boolean  @default(false)
-  familyAdults     Int      @default(1)
-  familyChildren   Int      @default(0)
-  childrenAges     Int[]
-  supportInterests String[]
+  diagnosisDate    DateTime
+  treatingPhysician String
+  specialtyPharmacy String
+  emergencyContactName String
+  emergencyContactRelationship String
+  emergencyContactPhone String
+  hipaaConsent Boolean
+  photoConsent Boolean
+  communicationConsent Boolean
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
