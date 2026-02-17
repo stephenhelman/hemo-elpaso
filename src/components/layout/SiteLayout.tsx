@@ -16,10 +16,10 @@ export default function SiteLayout({
   };
 
   return (
-    <>
+    <div className="overflow-x-hidden">
       <Navbar lang={lang} onLanguageToggle={toggleLanguage} />
       <main>{children}</main>
       <Footer lang={lang} />
-    </>
+    </div>
   );
 }
