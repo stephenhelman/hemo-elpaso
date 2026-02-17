@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
 
 interface FooterProps {
@@ -62,11 +63,13 @@ export default function Footer({ lang }: FooterProps) {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-display font-bold text-sm">
-                  HO
-                </span>
-              </div>
+              <Image
+                src="/logo.png"
+                alt="Hemophilia Outreach of El Paso"
+                width={40}
+                height={40}
+                className="rounded-full object-contain"
+              />
               <div>
                 <p className="font-display font-bold text-white text-sm leading-tight">
                   Hemophilia Outreach

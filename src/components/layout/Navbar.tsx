@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
@@ -22,6 +23,7 @@ interface NavbarProps {
 
 export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">
@@ -52,7 +54,12 @@ export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3 py-2 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors duration-200"
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+                  pathname === link.href
+                    ? "text-primary bg-primary-50 font-semibold"
+                    : "text-neutral-600 hover:text-primary hover:bg-primary-50",
+                )}
               >
                 {lang === "en" ? link.labelEn : link.labelEs}
               </Link>
