@@ -1,17 +1,14 @@
+"use client";
+
 import ContactHero from "@/components/contact/ContactHero";
 import ContactForm from "@/components/contact/ContactForm";
 import ContactInfo from "@/components/contact/ContactInfo";
 import ContactMap from "@/components/contact/ContactMap";
+import { useLang } from "@/context/LanguageContext";
 import { Lang } from "@/types";
 
-export const metadata = {
-  title: "Contact Us",
-  description:
-    "Get in touch with Hemophilia Outreach of El Paso. We are here to help.",
-};
-
 export default function ContactPage() {
-  const lang = "en" as Lang;
+  const { lang } = useLang();
 
   return (
     <>

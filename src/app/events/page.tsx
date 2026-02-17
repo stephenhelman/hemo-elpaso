@@ -1,17 +1,14 @@
+"use client";
+
 import { Calendar } from "lucide-react";
 import EventCard from "@/components/events/EventCard";
 import Section from "@/components/layout/Section";
 import { upcomingEvents, pastEvents } from "@/lib/placeholder-events";
 import { Lang } from "@/types";
-
-export const metadata = {
-  title: "Events",
-  description:
-    "Upcoming and past events hosted by Hemophilia Outreach of El Paso.",
-};
+import { useLang } from "@/context/LanguageContext";
 
 export default function EventsPage() {
-  const lang = "en" as Lang;
+  const { lang } = useLang();
 
   return (
     <>

@@ -1,19 +1,15 @@
+"use client";
+
 import ResourcesHero from "@/components/resources/ResourcesHero";
 import ConditionCards from "@/components/resources/ConditionCards";
 import NationalOrgs from "@/components/resources/NationalOrgs";
 import LocalResources from "@/components/resources/LocalResources";
 import CampPrograms from "@/components/resources/CampPrograms";
 import InsuranceResources from "@/components/resources/InsuranceResources";
-import { Lang } from "@/types";
-
-export const metadata = {
-  title: "Resources",
-  description:
-    "Educational resources, national organizations, local care, and support for families affected by bleeding disorders in El Paso.",
-};
+import { useLang } from "@/context/LanguageContext";
 
 export default function ResourcesPage() {
-  const lang = "en" as Lang;
+  const { lang } = useLang();
 
   return (
     <>

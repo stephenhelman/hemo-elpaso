@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { LanguageProvider } from "@/context/LanguageContext";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { useLang } from "@/context/LanguageContext";
+
+function LayoutInner({ children }: { children: React.ReactNode }) {
+  const { lang, setLang } = useLang();
+
+  return (
+    <div className="overflow-x-hidden">
+      <Navbar
+        lang={lang}
+        onLanguageToggle={() => setLang(lang === "en" ? "es" : "en")}
+      />
+      {children}
+      <Footer lang={lang} />
+    </div>
+  );
+}
 
 export default function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [lang, setLang] = useState<"en" | "es">("en");
-
-  const toggleLanguage = () => {
-    setLang((prev) => (prev === "en" ? "es" : "en"));
-  };
-
   return (
-    <div className="overflow-x-hidden">
-      <Navbar lang={lang} onLanguageToggle={toggleLanguage} />
-      <main>{children}</main>
-      <Footer lang={lang} />
-    </div>
+    <LanguageProvider>
+      <LayoutInner>{children}</LayoutInner>
+    </LanguageProvider>
   );
 }

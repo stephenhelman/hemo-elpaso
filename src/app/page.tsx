@@ -1,12 +1,13 @@
+"use client";
+
 import Hero from "@/components/home/Hero";
 import ImpactStats from "@/components/home/ImpactStats";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import NewsletterSignup from "@/components/home/NewsletterSignup";
+import { useLang } from "@/context/LanguageContext";
 
 export default function Home() {
-  // TODO: pass lang from context/cookie
-  const lang = "en" as "en" | "es";
-
+  const { lang } = useLang();
   return (
     <>
       <Hero lang={lang} />
