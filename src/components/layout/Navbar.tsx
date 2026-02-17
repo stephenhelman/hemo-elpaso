@@ -78,6 +78,22 @@ export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
               <span>{lang === "en" ? "ES" : "EN"}</span>
             </button>
 
+            {/* Login link - temporary for testing */}
+            <Link
+              href="/api/auth/login"
+              className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
+            >
+              Login
+            </Link>
+
+            {/* Get Involved CTA */}
+            <Link
+              href="/get-involved"
+              className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
+            >
+              {lang === "en" ? "Get Involved" : "Participa"}
+            </Link>
+
             {/* Get Involved CTA */}
             <Link
               href="/get-involved"
