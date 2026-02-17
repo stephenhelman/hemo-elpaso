@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Patient {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  preferredLanguage String    @default("en")
+  consentDate       DateTime
+  consentToContact  Boolean   @default(true)
+  consentToPhotos   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  profile           PatientProfile?
+  rsvps             Rsvp[]
+  checkIns          CheckIn[]
+}
+
+model PatientProfile {
+  id               String   @id @default(uuid())
+  patientId        String   @unique
+  patient          Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  diagnosis        String
+  severity         String
+  inhibitorStatus  Boolean  @default(false)
+  familyAdults     Int      @default(1)
+  familyChildren   Int      @default(0)
+  childrenAges     Int[]
+  supportInterests String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Event {
+  id            String    @id @default(uuid())
+  slug          String    @unique
+  titleEn       String
+  titleEs       String
+  descriptionEn String?
+  descriptionEs String?
+  eventDate     DateTime
+  location      String
+  maxAttendees  Int?
+  rsvpDeadline  DateTime?
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  targeting     EventTargeting?
+  rsvps         Rsvp[]
+  checkIns      CheckIn[]
+  interactions  EventInteraction[]
+  photos        EventPhoto[]
+  questions     EventQuestion[]
+}
+
+model EventTargeting {
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  targetConditions  String[]
+  targetSeverity    String[]
+  targetAgeGroups   String[]
+  targetInterests   String[]
+  requireInhibitors Boolean?
+}
+
+model Rsvp {
+  id                  String   @id @default(uuid())
+  eventId             String
+  patientId           String
+  event               Event    @relation(fields: [eventId], references: [id])
+  patient             Patient  @relation(fields: [patientId], references: [id])
+  status              String   @default("confirmed")
+  adultsAttending     Int      @default(1)
+  childrenAttending   Int      @default(0)
+  dietaryRestrictions String?
+  specialNeeds        String?
+  rsvpDate            DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([eventId, patientId])
+}
+
+model CheckIn {
+  id               String   @id @default(uuid())
+  eventId          String
+  patientId        String
+  event            Event    @relation(fields: [eventId], references: [id])
+  patient          Patient  @relation(fields: [patientId], references: [id])
+  checkInTime      DateTime @default(now())
+  sessionToken     String   @unique
+  sessionExpiresAt DateTime
+
+  @@unique([eventId, patientId])
+}
+
+model EventInteraction {
+  id            String    @id @default(uuid())
+  eventId       String
+  event         Event     @relation(fields: [eventId], references: [id])
+  type          String
+  titleEn       String
+  titleEs       String
+  options       Json?
+  active        Boolean   @default(false)
+  sequenceOrder Int       @default(0)
+  createdAt     DateTime  @default(now())
+
+  responses     InteractionResponse[]
+}
+
+model InteractionResponse {
+  id            String           @id @default(uuid())
+  interactionId String
+  interaction   EventInteraction @relation(fields: [interactionId], references: [id])
+  sessionToken  String
+  responseData  Json
+  createdAt     DateTime         @default(now())
+}
+
+model EventQuestion {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  question  String
+  upvotes   Int      @default(0)
+  answered  Boolean  @default(false)
+  answer    String?
+  createdAt DateTime @default(now())
+}
+
+model EventPhoto {
+  id            String   @id @default(uuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  s3Key         String
+  cloudfrontUrl String
+  captionEn     String?
+  captionEs     String?
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?
+  action       String
+  resourceType String?
+  resourceId   String?
+  ipAddress    String?
+  userAgent    String?
+  changes      Json?
+  createdAt    DateTime @default(now())
+}
