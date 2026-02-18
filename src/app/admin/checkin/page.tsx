@@ -1,8 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Camera, Users, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Camera,
+  Users,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
 import QrScanner from "@/components/admin/QrScanner";
 
 export default function AdminCheckinPage() {
@@ -148,15 +155,13 @@ export default function AdminCheckinPage() {
               <h2 className="font-display font-bold text-neutral-900 text-xl">
                 QR Code Scanner
               </h2>
-              <button
-                onClick={() => {
-                  setSelectedEvent(null);
-                  setSelectedEventData(null);
-                }}
-                className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+              <Link
+                href="/admin/events"
+                className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
               >
-                Change Event
-              </button>
+                <ArrowLeft className="w-4 h-4" />
+                Back to Events
+              </Link>
             </div>
 
             {/* Event Info Card */}

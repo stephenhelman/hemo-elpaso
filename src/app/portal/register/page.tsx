@@ -72,12 +72,14 @@ export default function RegisterPage() {
   const nextStep = () => {
     if (currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 

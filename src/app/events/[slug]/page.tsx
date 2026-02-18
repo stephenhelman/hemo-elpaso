@@ -327,9 +327,9 @@ export default async function EventPage({ params }: Props) {
             )}
 
             {/* Share Button */}
-            <button className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors">
+            {/* <button className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors">
               {t.share}
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

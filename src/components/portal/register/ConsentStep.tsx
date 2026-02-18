@@ -89,23 +89,23 @@ export default function ConsentStep({
         </p>
       </div>
 
-      <div className="flex justify-between pt-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-3 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-neutral-400 transition-colors"
+          className="w-full sm:w-auto px-6 py-3 text-sm sm:text-base rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-neutral-400 transition-colors"
         >
-          ← Back
+          Back
         </button>
         <button
           type="submit"
           disabled={loading || !data.hipaaConsent}
-          className="px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:flex-1 px-6 py-3 text-sm sm:text-base rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
         >
           {loading
             ? "Submitting..."
             : allConsentsGiven
-              ? "Complete Registration ✓"
+              ? "Complete Registration"
               : "Complete Registration"}
         </button>
       </div>
