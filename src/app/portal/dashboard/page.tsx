@@ -1,8 +1,15 @@
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
-import { Calendar, User, CheckCircle, ArrowRight } from "lucide-react";
+import {
+  Calendar,
+  User,
+  CheckCircle,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getRecommendedEvents } from "@/lib/event-matching";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -36,6 +43,28 @@ export default async function DashboardPage() {
   if (!patient || !patient.profile) {
     redirect("/portal/register");
   }
+
+  // Get recommended events
+  const recommendedMatches = await getRecommendedEvents(patient.id, 3);
+  const recommendedEventIds = recommendedMatches.map((m) => m.eventId);
+
+  const recommendedEvents = await prisma.event.findMany({
+    where: {
+      id: { in: recommendedEventIds },
+    },
+  });
+
+  // Match events with their scores and reasons
+  const recommendedWithScores = recommendedEvents
+    .map((event) => {
+      const match = recommendedMatches.find((m) => m.eventId === event.id);
+      return {
+        ...event,
+        matchScore: match?.score || 0,
+        matchReasons: match?.reasons || [],
+      };
+    })
+    .sort((a, b) => b.matchScore - a.matchScore);
 
   const upcomingRsvps = patient.rsvps.filter(
     (rsvp) => new Date(rsvp.event.eventDate) > new Date(),
@@ -81,7 +110,34 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Upcoming Events */}
+      {/* Recommended For You */}
+      {recommendedWithScores.length > 0 && (
+        <div className="bg-gradient-to-br from-primary-50 to-secondary/10 rounded-2xl border border-primary-200 p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h2 className="font-display font-bold text-neutral-900 text-xl">
+              Recommended For You
+            </h2>
+          </div>
+          <p className="text-neutral-600 text-sm mb-6">
+            Based on your preferences and family profile
+          </p>
+          <div className="space-y-3">
+            {recommendedWithScores.map((event) => (
+              <RecommendedEventCard key={event.id} event={event} />
+            ))}
+          </div>
+          <Link
+            href="/events"
+            className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
+          >
+            View All Events
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
+      {/* Your Upcoming Events */}
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">
         <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
           Your Upcoming Events
@@ -96,7 +152,7 @@ export default async function DashboardPage() {
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
             <p className="text-neutral-400 text-sm mb-4">
-              No upcoming RSVPs yet. Browse events to get started!
+              No upcoming RSVPs yet. Check out our recommendations above!
             </p>
             <Link
               href="/events"
@@ -141,6 +197,55 @@ function StatCard({
       </p>
       <p className="text-sm text-neutral-500">{label}</p>
     </div>
+  );
+}
+
+function RecommendedEventCard({ event }: { event: any }) {
+  const eventDate = new Date(event.eventDate);
+
+  return (
+    <Link
+      href={`/events/${event.slug}`}
+      className="flex items-start gap-4 p-4 rounded-xl bg-white border border-neutral-200 hover:border-primary-300 hover:shadow-md transition-all group"
+    >
+      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex flex-col items-center justify-center flex-shrink-0">
+        <span className="text-xs text-white font-semibold">
+          {eventDate
+            .toLocaleDateString("en-US", { month: "short" })
+            .toUpperCase()}
+        </span>
+        <span className="text-2xl font-bold text-white">
+          {eventDate.getDate()}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
+            {event.titleEn}
+          </h3>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex-shrink-0">
+            <Sparkles className="w-3 h-3" />
+            {event.matchScore}%
+          </div>
+        </div>
+        <p className="text-sm text-neutral-500 mb-2 line-clamp-1">
+          {event.descriptionEn}
+        </p>
+        {event.matchReasons.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {event.matchReasons.slice(0, 2).map((reason: string, i: number) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-50 text-primary-600 text-xs font-medium"
+              >
+                ✓ {reason}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
+    </Link>
   );
 }
 

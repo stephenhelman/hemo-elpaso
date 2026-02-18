@@ -131,9 +131,15 @@ model Event {
   descriptionEs String?
   eventDate     DateTime
   location      String
-  maxAttendees  Int?
+  maxCapacity   Int?      // RENAMED from maxAttendees
   rsvpDeadline  DateTime?
-  status        String    @default("draft")
+  status        String    @default("draft") // draft, published, cancelled, completed
+  
+  category      String    @default("FAMILY_SUPPORT") // Maps to EventTopic enum
+  targetAudience String   @default("all") // all, youth, adults, families
+  language      String    @default("both") // en, es, both
+  isPriority    Boolean   @default(false)
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -143,17 +149,21 @@ model Event {
   interactions  EventInteraction[]
   photos        EventPhoto[]
   questions     EventQuestion[]
+
+  @@map("events")
 }
 
 model EventTargeting {
   id                String   @id @default(uuid())
   eventId           String   @unique
   event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  targetConditions  String[]
-  targetSeverity    String[]
-  targetAgeGroups   String[]
-  targetInterests   String[]
+  targetConditions  String[] // hemophilia_a, hemophilia_b, von_willebrand, other
+  targetSeverity    String[] // mild, moderate, severe
+  targetAgeGroups   String[] // children, teens, adults, seniors
+  targetInterests   String[] // Can map to EventTopic enum values
   requireInhibitors Boolean?
+  
+  @@map("event_targeting")
 }
 
 model Rsvp {

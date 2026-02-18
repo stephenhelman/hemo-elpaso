@@ -1,44 +1,68 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { getEventBySlug } from "@/lib/placeholder-events";
+import { formatEventDate, getStatusLabel } from "@/lib/event-utils";
 import {
+  ArrowLeft,
   Calendar,
   MapPin,
   Users,
   Clock,
-  ArrowLeft,
-  Share2,
-  CheckCircle,
   FileImage,
-  Download,
 } from "lucide-react";
-import Section from "@/components/layout/Section";
-import HoepCard from "@/components/ui/HoepCard";
-import { getEventBySlug, placeholderEvents } from "@/lib/placeholder-events";
-import { formatEventDate, getStatusLabel } from "@/lib/event-utils";
+import Link from "next/link";
 import { Lang } from "@/types";
+import { getSession } from "@auth0/nextjs-auth0";
+import { prisma } from "@/lib/db";
+import RsvpButton from "@/components/events/RsvpButton";
 
 interface Props {
   params: { slug: string };
 }
 
 export async function generateStaticParams() {
-  return placeholderEvents.map((e) => ({ slug: e.slug }));
+  // TODO: Get slugs from database when we have real events
+  return [];
 }
 
-export async function generateMetadata({ params }: Props) {
-  const event = getEventBySlug(params.slug);
-  if (!event) return {};
-  return {
-    title: event.titleEn,
-    description: event.descriptionEn,
-  };
-}
+export default async function EventPage({ params }: Props) {
+  const lang: Lang = "en";
 
-export default function EventPage({ params }: Props) {
+  // TODO: Replace with database query when we have real events
   const event = getEventBySlug(params.slug);
   if (!event) notFound();
 
-  const lang = "en" as Lang;
+  const session = await getSession();
+  let hasRsvp = false;
+  let rsvpId: string | undefined;
+  let currentRsvpCount = 0;
+
+  // If user is logged in, check if they have RSVP'd
+  if (session?.user) {
+    const patient = await prisma.patient.findUnique({
+      where: { auth0Id: session.user.sub },
+    });
+
+    if (patient) {
+      // Check for existing RSVP
+      const rsvp = await prisma.rsvp.findFirst({
+        where: {
+          patientId: patient.id,
+          eventId: event.id,
+        },
+      });
+
+      if (rsvp) {
+        hasRsvp = true;
+        rsvpId = rsvp.id;
+      }
+    }
+
+    // Get current RSVP count
+    currentRsvpCount = await prisma.rsvp.count({
+      where: { eventId: event.id },
+    });
+  }
+
   const title = lang === "en" ? event.titleEn : event.titleEs;
   const desc = lang === "en" ? event.descriptionEn : event.descriptionEs;
   const date = formatEventDate(event.eventDate, lang);
@@ -46,46 +70,46 @@ export default function EventPage({ params }: Props) {
 
   const t = {
     en: {
-      back: "All Events",
-      details: "Event Details",
-      date: "Date & Time",
+      backToEvents: "Back to Events",
+      eventDetails: "Event Details",
+      quickInfo: "Quick Info",
+      dateTime: "Date & Time",
       location: "Location",
       capacity: "Capacity",
-      rsvpBy: "RSVP Deadline",
-      rsvp: "Reserve Your Spot",
-      rsvpSub: "Free to attend. Space is limited.",
-      name: "Full Name",
-      email: "Email Address",
-      adults: "Number of Adults",
-      children: "Number of Children",
-      submit: "Confirm RSVP",
-      photos: "Event Photos",
-      noPhotos: "Photos will be posted after the event.",
-      share: "Share Event",
-      spots: `${event.maxAttendees} spots available`,
-      past: "This event has already taken place.",
-      viewPhotos: "View Photos Below",
+      rsvpDeadline: "RSVP Deadline",
+      description: "Description",
+      eventFlyer: "Event Flyer",
+      flyerPlaceholder: "Event flyer will be available soon",
+      downloadFlyer: "Download Flyer",
+      photoGallery: "Photo Gallery",
+      photosWillBePosted: "Photos will be posted after the event",
+      pastEventNotice: "This event has already taken place.",
+      viewPhotos: "View Photos",
+      rsvp: "RSVP",
+      share: "Share",
+      spots: "spots",
+      unlimited: "Unlimited",
     },
     es: {
-      back: "Todos los Eventos",
-      details: "Detalles del Evento",
-      date: "Fecha y Hora",
+      backToEvents: "Volver a Eventos",
+      eventDetails: "Detalles del Evento",
+      quickInfo: "Información Rápida",
+      dateTime: "Fecha y Hora",
       location: "Ubicación",
       capacity: "Capacidad",
-      rsvpBy: "Fecha Límite de Confirmación",
-      rsvp: "Reserve Su Lugar",
-      rsvpSub: "Entrada gratuita. El espacio es limitado.",
-      name: "Nombre Completo",
-      email: "Correo Electrónico",
-      adults: "Número de Adultos",
-      children: "Número de Niños",
-      submit: "Confirmar Asistencia",
-      photos: "Fotos del Evento",
-      noPhotos: "Las fotos se publicarán después del evento.",
-      share: "Compartir Evento",
-      spots: `${event.maxAttendees} lugares disponibles`,
-      past: "Este evento ya tuvo lugar.",
-      viewPhotos: "Ver Fotos Abajo",
+      rsvpDeadline: "Fecha Límite de RSVP",
+      description: "Descripción",
+      eventFlyer: "Volante del Evento",
+      flyerPlaceholder: "El volante del evento estará disponible pronto",
+      downloadFlyer: "Descargar Volante",
+      photoGallery: "Galería de Fotos",
+      photosWillBePosted: "Las fotos se publicarán después del evento",
+      pastEventNotice: "Este evento ya ha tenido lugar.",
+      viewPhotos: "Ver Fotos",
+      rsvp: "RSVP",
+      share: "Compartir",
+      spots: "lugares",
+      unlimited: "Ilimitado",
     },
   }[lang];
 
@@ -93,203 +117,190 @@ export default function EventPage({ params }: Props) {
   const isPast = event.status === "completed";
 
   return (
-    <>
+    <div className="min-h-screen bg-neutral-50">
       {/* Hero */}
-      <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-20">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary-500/10 -translate-y-1/2 translate-x-1/3" />
-        <div className="container-max px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Back link */}
+      <div className="bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-12">
+        <div className="container-max px-4 sm:px-6 lg:px-8">
           <Link
             href="/events"
-            className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm mb-8 group"
+            className="inline-flex items-center gap-2 text-primary-300 hover:text-primary-200 transition-colors mb-6"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            {t.back}
+            <ArrowLeft className="w-4 h-4" />
+            {t.backToEvents}
           </Link>
 
-          {/* Status badge */}
-          <div className="mb-4">
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                isUpcoming
-                  ? "bg-primary-500/20 text-primary-300 border border-primary-500/30"
-                  : "bg-neutral-500/20 text-neutral-300 border border-neutral-500/30"
-              }`}
-            >
-              {status}
-            </span>
-          </div>
+          <div className="flex items-start justify-between gap-6 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-semibold border border-primary-400/30">
+                  {status}
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
+                {title}
+              </h1>
 
-          <h1 className="font-display text-4xl sm:text-5xl font-bold text-white leading-[1.2] mb-6 max-w-3xl">
-            {title}
-          </h1>
-
-          {/* Quick meta */}
-          <div className="flex flex-wrap gap-4">
-            <QuickMeta
-              icon={<Calendar className="w-4 h-4" />}
-              text={date.full}
-            />
-            <QuickMeta icon={<Clock className="w-4 h-4" />} text={date.time} />
-            <QuickMeta
-              icon={<MapPin className="w-4 h-4" />}
-              text={event.location.split(",")[0]}
-            />
+              {/* Quick Meta */}
+              <div className="flex flex-wrap gap-4 text-neutral-300">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary-400" />
+                  <span className="text-sm">{date.full}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary-400" />
+                  <span className="text-sm">{date.time}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary-400" />
+                  <span className="text-sm">{event.location}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-neutral-50 to-transparent" />
       </div>
 
       {/* Content */}
-      <Section background="neutral">
+      <div className="container-max px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main content */}
+          {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Description */}
-            <HoepCard>
+            {/* Event Details Card */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
               <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-                {t.details}
+                {t.eventDetails}
               </h2>
-              <p className="text-neutral-600 leading-relaxed">{desc}</p>
-            </HoepCard>
+              <div className="prose prose-neutral max-w-none">
+                <p className="text-neutral-600 leading-relaxed whitespace-pre-line">
+                  {desc}
+                </p>
+              </div>
+            </div>
 
-            {/* Past event notice */}
+            {/* Past Event Notice */}
             {isPast && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-100 border border-neutral-200">
-                <CheckCircle className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-neutral-600">{t.past}</p>
-                  <p className="text-sm text-neutral-400">{t.viewPhotos}</p>
-                </div>
+              <div className="bg-neutral-100 border border-neutral-200 rounded-xl p-4">
+                <p className="text-neutral-600 text-sm">{t.pastEventNotice}</p>
               </div>
             )}
 
-            {/* Photo Gallery placeholder */}
-            <HoepCard>
-              <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-                {t.photos}
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {isPast ? (
-                  // Placeholder photo grid
-                  Array.from({ length: 6 }).map((_, i) => (
+            {/* Photo Gallery Placeholder */}
+            {isPast && (
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+                <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
+                  {t.photoGallery}
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                       key={i}
                       className="aspect-square rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center"
                     >
-                      <span className="text-neutral-300 text-xs">
-                        Photo {i + 1}
-                      </span>
+                      <FileImage className="w-8 h-8 text-neutral-300" />
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-3 text-center py-8">
-                    <p className="text-neutral-400 text-sm">{t.noPhotos}</p>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-            </HoepCard>
+            )}
+
+            {!isPast && (
+              <div className="bg-neutral-100 border border-neutral-200 rounded-xl p-4 text-center">
+                <p className="text-neutral-500 text-sm">
+                  {t.photosWillBePosted}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Event details card */}
-            <HoepCard>
+          <div className="space-y-6">
+            {/* Quick Info Card */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
               <h3 className="font-display font-bold text-neutral-900 mb-4">
-                {t.details}
+                {t.quickInfo}
               </h3>
               <div className="space-y-4">
-                <DetailRow
+                <InfoRow
                   icon={<Calendar className="w-4 h-4" />}
-                  label={t.date}
+                  label={t.dateTime}
                   value={`${date.full} at ${date.time}`}
                 />
-                <DetailRow
+                <InfoRow
                   icon={<MapPin className="w-4 h-4" />}
                   label={t.location}
                   value={event.location}
                 />
-                {event.maxAttendees && (
-                  <DetailRow
-                    icon={<Users className="w-4 h-4" />}
-                    label={t.capacity}
-                    value={t.spots}
-                  />
-                )}
-                {event.rsvpDeadline && isUpcoming && (
-                  <DetailRow
+                <InfoRow
+                  icon={<Users className="w-4 h-4" />}
+                  label={t.capacity}
+                  value={
+                    event.maxCapacity
+                      ? `${currentRsvpCount}/${event.maxCapacity} ${t.spots}`
+                      : t.unlimited
+                  }
+                />
+                {event.rsvpDeadline && (
+                  <InfoRow
                     icon={<Clock className="w-4 h-4" />}
-                    label={t.rsvpBy}
+                    label={t.rsvpDeadline}
                     value={formatEventDate(event.rsvpDeadline, lang).full}
                   />
                 )}
               </div>
-            </HoepCard>
-            {/* Flyer */}
-            {isUpcoming && (
-              <HoepCard padding="none" className="overflow-hidden">
-                <div className="px-5 py-4 border-b border-neutral-100">
-                  <h3 className="font-display font-bold text-neutral-900 text-sm">
-                    {lang === "en" ? "Event Flyer" : "Volante del Evento"}
-                  </h3>
-                </div>
-                {/* Flyer image slot */}
-                <div className="aspect-[8.5/11] bg-neutral-50 flex flex-col items-center justify-center gap-3 p-6">
-                  <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center">
-                    <FileImage className="w-6 h-6 text-neutral-300" />
-                  </div>
-                  <p className="text-xs text-neutral-400 text-center">
-                    {lang === "en"
-                      ? "Flyer coming soon"
-                      : "Volante próximamente"}
-                  </p>
-                </div>
-                {/* Download button */}
-                <div className="px-5 py-4 border-t border-neutral-100">
-                  <button
-                    disabled
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-neutral-200 text-neutral-400 text-sm font-medium cursor-not-allowed"
-                  >
-                    <Download className="w-4 h-4" />
-                    {lang === "en" ? "Download Flyer" : "Descargar Volante"}
-                  </button>
-                </div>
-              </HoepCard>
+            </div>
+
+            {/* Event Flyer Placeholder */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+              <h3 className="font-display font-bold text-neutral-900 mb-4">
+                {t.eventFlyer}
+              </h3>
+              <div className="aspect-[8.5/11] rounded-xl bg-neutral-100 border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center p-6 text-center">
+                <FileImage className="w-12 h-12 text-neutral-400 mb-3" />
+                <p className="text-sm text-neutral-500">{t.flyerPlaceholder}</p>
+              </div>
+            </div>
+
+            {/* RSVP Button */}
+            {isUpcoming && session?.user && (
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+                <RsvpButton
+                  eventId={event.id}
+                  eventTitle={title}
+                  hasRsvp={hasRsvp}
+                  rsvpId={rsvpId}
+                  maxCapacity={event.maxCapacity || undefined}
+                  currentRsvps={currentRsvpCount}
+                />
+              </div>
             )}
 
-            {/* RSVP form */}
-            {isUpcoming && (
-              <HoepCard className="bg-primary-500 border-primary-600">
-                <h3 className="font-display font-bold text-white mb-1">
-                  {t.rsvp}
-                </h3>
-                <p className="text-primary-100 text-sm mb-5">{t.rsvpSub}</p>
-                <RsvpForm lang={lang} t={t} />
-              </HoepCard>
+            {/* Not logged in prompt */}
+            {isUpcoming && !session?.user && (
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+                <p className="text-neutral-600 text-sm mb-4">
+                  Sign in to RSVP for this event
+                </p>
+                <Link
+                  href="/api/auth/login"
+                  className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
             )}
 
-            {/* Share */}
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-neutral-200 text-neutral-600 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
-              <Share2 className="w-4 h-4" />
+            {/* Share Button */}
+            <button className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors">
               {t.share}
             </button>
           </div>
         </div>
-      </Section>
-    </>
-  );
-}
-
-function QuickMeta({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <div className="flex items-center gap-2 text-neutral-300 text-sm">
-      <span className="text-primary-400">{icon}</span>
-      {text}
+      </div>
     </div>
   );
 }
 
-function DetailRow({
+function InfoRow({
   icon,
   label,
   value,
@@ -299,53 +310,14 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className="flex gap-3">
-      <span className="text-primary-500 flex-shrink-0 mt-0.5">{icon}</span>
-      <div>
-        <p className="text-xs text-neutral-400 font-medium uppercase tracking-wide mb-0.5">
-          {label}
-        </p>
-        <p className="text-sm text-neutral-700 leading-snug">{value}</p>
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary flex-shrink-0">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-neutral-500 font-medium">{label}</p>
+        <p className="text-sm text-neutral-900 font-medium">{value}</p>
       </div>
     </div>
-  );
-}
-
-function RsvpForm({ lang, t }: { lang: Lang; t: Record<string, string> }) {
-  return (
-    <form className="space-y-3">
-      <input
-        type="text"
-        placeholder={t.name}
-        className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-primary-200 text-sm focus:outline-none focus:border-white/40 transition-colors"
-      />
-      <input
-        type="email"
-        placeholder={t.email}
-        className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-primary-200 text-sm focus:outline-none focus:border-white/40 transition-colors"
-      />
-      <div className="grid grid-cols-2 gap-3">
-        <input
-          type="number"
-          placeholder={t.adults}
-          min="1"
-          defaultValue="1"
-          className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-primary-200 text-sm focus:outline-none focus:border-white/40 transition-colors"
-        />
-        <input
-          type="number"
-          placeholder={t.children}
-          min="0"
-          defaultValue="0"
-          className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-primary-200 text-sm focus:outline-none focus:border-white/40 transition-colors"
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full px-4 py-3 rounded-lg bg-white text-primary font-display font-bold text-sm hover:bg-primary-50 transition-colors"
-      >
-        {t.submit}
-      </button>
-    </form>
   );
 }

@@ -1,20 +1,36 @@
 "use client";
 
+import { useLang } from "@/context/LanguageContext";
 import { Calendar } from "lucide-react";
 import EventCard from "@/components/events/EventCard";
 import Section from "@/components/layout/Section";
-import { upcomingEvents, pastEvents } from "@/lib/placeholder-events";
-import { Lang } from "@/types";
-import { useLang } from "@/context/LanguageContext";
+import { useEffect, useState } from "react";
 
 export default function EventsPage() {
   const { lang } = useLang();
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/events")
+      .then((res) => res.json())
+      .then((data) => {
+        setUpcomingEvents(data.upcoming || []);
+        setPastEvents(data.past || []);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <>
       <EventsHero lang={lang} />
-      <UpcomingEventsSection lang={lang} />
-      <PastEventsSection lang={lang} />
+      <UpcomingEventsSection
+        lang={lang}
+        events={upcomingEvents}
+        loading={loading}
+      />
+      <PastEventsSection lang={lang} events={pastEvents} loading={loading} />
     </>
   );
 }
