@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import EventsDisplay from "@/components/admin/EventsDisplay";
+import EventsDisplay from "@/components/admin/EventDisplay";
 
 export default async function AdminEventsPage() {
   const events = await prisma.event.findMany({
