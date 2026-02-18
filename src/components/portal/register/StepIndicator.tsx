@@ -5,7 +5,14 @@ interface Props {
   totalSteps: number;
 }
 
-const stepLabels = ["Basic Info", "Diagnosis", "Emergency Contact", "Consent"];
+const stepLabels = [
+  "Basic Info",
+  "Diagnosis",
+  "Family",
+  "Emergency",
+  "Preferences",
+  "Consent",
+];
 
 export default function StepIndicator({ currentStep, totalSteps }: Props) {
   return (

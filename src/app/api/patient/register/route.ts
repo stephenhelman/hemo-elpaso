@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Check if patient already exists with this auth0Id
+    // Check if patient already exists
     const existingPatient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
     });
@@ -24,54 +24,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create patient and profile in a transaction
+    // Create patient with profile, preferences, and family members in transaction
     const patient = await prisma.patient.create({
       data: {
         auth0Id: session.user.sub,
         email: session.user.email!,
         role: "patient",
+        preferredLanguage: body.languagePreference || "en",
+
+        // Create profile
         profile: {
           create: {
             firstName: body.firstName,
             lastName: body.lastName,
             dateOfBirth: new Date(body.dateOfBirth),
             phone: body.phone,
-            /* address: body.address,
+            address: body.address,
             city: body.city,
             state: body.state,
-            zipCode: body.zipCode, */
+            zipCode: body.zipCode,
 
-            // Diagnosis info
             primaryCondition: body.primaryCondition,
             severity: body.severity,
             diagnosisDate: new Date(body.diagnosisDate),
-
             treatingPhysician: body.treatingPhysician || null,
             specialtyPharmacy: body.specialtyPharmacy || null,
 
-            // Emergency contact
             emergencyContactName: body.emergencyName,
             emergencyContactRelationship: body.emergencyRelationship,
             emergencyContactPhone: body.emergencyPhone,
 
-            // Consent
             hipaaConsent: body.hipaaConsent,
             photoConsent: body.photoConsent,
             communicationConsent: body.communicationConsent,
           },
         },
+
+        // Create preferences
+        preferences: {
+          create: {
+            interestedTopics: body.interestedTopics || [],
+            preferredEventTimes: body.preferredEventTimes || [],
+            maxTravelDistance: body.maxTravelDistance || 30,
+            dietaryRestrictions: body.dietaryRestrictions || ["NONE"],
+            accessibilityNeeds: body.accessibilityNeeds || null,
+            emailNotifications: body.emailNotifications ?? true,
+            smsNotifications: body.smsNotifications ?? false,
+            languagePreference: body.languagePreference || "en",
+          },
+        },
+
+        // Create family members
+        familyMembers: {
+          create: (body.familyMembers || []).map((member: any) => ({
+            firstName: member.firstName,
+            lastName: member.lastName,
+            dateOfBirth: member.dateOfBirth
+              ? new Date(member.dateOfBirth)
+              : null,
+            relationship: member.relationship,
+            hasBleedingDisorder: member.hasBleedingDisorder || false,
+            condition: member.condition || null,
+            severity: member.severity || null,
+          })),
+        },
       },
       include: {
         profile: true,
+        preferences: true,
+        familyMembers: true,
       },
     });
 
-    // Create audit log entry
+    // Create audit log
     await prisma.auditLog.create({
       data: {
-        userId: patient.id,
+        patientId: patient.id,
         action: "patient_registration",
-        changes: { message: "Patient profile created" },
+        details: `Patient profile created with ${patient.familyMembers.length} family members`,
       },
     });
 

@@ -6,11 +6,59 @@ datasource db {
   provider = "postgresql"
 }
 
+enum EventTopic {
+  EDUCATION
+  SOCIAL
+  FUNDRAISING
+  ADVOCACY
+  YOUTH
+  FAMILY_SUPPORT
+  MEDICAL_UPDATE
+  FINANCIAL_ASSISTANCE
+}
+
+enum DietaryRestriction {
+  NONE
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
+  NUT_ALLERGY
+  HALAL
+  KOSHER
+  OTHER
+}
+
+model PatientPreferences {
+  id                    String              @id @default(uuid())
+  patientId             String              @unique
+  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  // Event preferences
+  interestedTopics      EventTopic[]
+  preferredEventTimes   String[]            // ["weekday_evening", "weekend_morning", "weekend_afternoon"]
+  maxTravelDistance     Int?                // miles willing to travel
+  
+  // Accessibility & dietary
+  dietaryRestrictions   DietaryRestriction[]
+  accessibilityNeeds    String?             // wheelchair, ASL interpreter, etc
+  
+  // Communication preferences
+  emailNotifications    Boolean             @default(true)
+  smsNotifications      Boolean             @default(false)
+  languagePreference    String              @default("en")  // en, es
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@map("patient_preferences")
+}
+
 model Patient {
   id                 String            @id @default(uuid())
-  auth0Id            String            @unique 
+  auth0Id            String            @unique
   email              String            @unique
-  role               String            @default("patient") // patient, coordinator, board
+  role               String            @default("patient")
   preferredLanguage  String            @default("en")
   consentDate        DateTime?
   consentToContact   Boolean           @default(false)
@@ -19,8 +67,11 @@ model Patient {
   updatedAt          DateTime          @updatedAt
   
   profile            PatientProfile?
+  preferences        PatientPreferences?
+  familyMembers      FamilyMember[]
   rsvps              Rsvp[]
   checkIns           CheckIn[]
+  auditLogs          AuditLog[]        // ADD THIS
 
   @@map("patients")
 }
@@ -33,11 +84,15 @@ model PatientProfile {
   lastName         String
   dateOfBirth      DateTime
   phone            String
+  address          String   
+  city             String   
+  state            String  
+  zipCode          String   
   primaryCondition        String
   severity         String
   diagnosisDate    DateTime
-  treatingPhysician String
-  specialtyPharmacy String
+  treatingPhysician String?  
+  specialtyPharmacy String?  
   emergencyContactName String
   emergencyContactRelationship String
   emergencyContactPhone String
@@ -46,6 +101,25 @@ model PatientProfile {
   communicationConsent Boolean
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@map("patient_profiles")
+}
+
+model FamilyMember {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  relationship String  // parent, child, spouse, sibling, other
+  hasBleedingDisorder Boolean @default(false)
+  condition   String?  // if hasBleedingDisorder is true
+  severity    String?  // mild, moderate, severe
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("family_members")
 }
 
 model Event {
@@ -161,12 +235,16 @@ model EventPhoto {
 
 model AuditLog {
   id           String   @id @default(uuid())
-  userId       String?
+  patientId    String?  // ADD THIS
+  patient      Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
   action       String
   resourceType String?
   resourceId   String?
   ipAddress    String?
   userAgent    String?
-  changes      Json?
+  details      String?  // ADD THIS - simpler than Json for most cases
+  changes      Json?    // Keep this for complex data
   createdAt    DateTime @default(now())
+
+  @@map("audit_logs")
 }
