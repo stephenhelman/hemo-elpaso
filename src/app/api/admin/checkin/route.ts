@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import crypto from "crypto";
+import { resend } from "@/lib/resend";
+import { render } from "@react-email/render";
+import CheckInConfirmation from "@/messages/CheckInConfirmation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,19 +88,77 @@ export async function POST(request: NextRequest) {
       data: {
         eventId,
         patientId: rsvp.patientId,
-        checkedInBy: admin.email, // REMOVE THIS - field doesn't exist
-        sessionToken: crypto.randomUUID(), // ADD THIS
-        sessionExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // ADD THIS - expires in 24 hours
+        checkedInBy: admin.email,
+        sessionToken: crypto.randomUUID(),
+        sessionExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
 
-    // And in the response:
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        patientId: admin.id,
+        action: "checkin_created",
+        resourceType: "CheckIn",
+        resourceId: checkIn.id,
+        details: `Checked in ${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName} for ${rsvp.event.titleEn}`,
+      },
+    });
+
+    // Send check-in confirmation email
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+
+      const emailHtml = await render(
+        CheckInConfirmation({
+          patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
+          eventTitle: rsvp.event.titleEn,
+          eventDate: new Date(rsvp.event.eventDate).toLocaleDateString(
+            "en-US",
+            {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            },
+          ),
+          eventTime: new Date(rsvp.event.eventDate).toLocaleTimeString(
+            "en-US",
+            {
+              hour: "numeric",
+              minute: "2-digit",
+            },
+          ),
+          location: rsvp.event.location,
+          checkInTime: new Date(checkIn.checkInTime).toLocaleTimeString(
+            "en-US",
+            {
+              hour: "numeric",
+              minute: "2-digit",
+            },
+          ),
+          liveEventUrl: `${baseUrl}/events/${rsvp.event.slug}/live`,
+        }),
+      );
+
+      await resend.emails.send({
+        from: "HOEP Events <onboarding@resend.dev>",
+        to: rsvp.patient.email,
+        subject: `Welcome to ${rsvp.event.titleEn}!`,
+        html: emailHtml,
+      });
+    } catch (emailError) {
+      console.error("Check-in email error:", emailError);
+      // Don't fail the check-in if email fails
+    }
+
     return NextResponse.json({
       success: true,
       patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
       checkIn: {
         id: checkIn.id,
-        checkInTime: checkIn.checkInTime, // Changed from checkedInAt
+        checkInTime: checkIn.checkInTime,
       },
     });
   } catch (error) {

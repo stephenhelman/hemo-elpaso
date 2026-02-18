@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { resend } from "@/lib/resend";
 import { render } from "@react-email/render";
 import RsvpConfirmation from "@/messages/RsvpConfirmation";
+import RsvpCancellation from "@/messages/RsvpCancellation";
 import QRCode from "qrcode";
 
 export async function POST(request: NextRequest) {
@@ -208,6 +209,9 @@ export async function DELETE(request: NextRequest) {
     // Get patient
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
+      include: {
+        profile: true,
+      },
     });
 
     if (!patient) {
@@ -239,6 +243,43 @@ export async function DELETE(request: NextRequest) {
         details: `RSVP cancelled for ${rsvp.event.titleEn}`,
       },
     });
+
+    // Send cancellation email
+    try {
+      const emailHtml = await render(
+        RsvpCancellation({
+          patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+          eventTitle: rsvp.event.titleEn,
+          eventDate: new Date(rsvp.event.eventDate).toLocaleDateString(
+            "en-US",
+            {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            },
+          ),
+          eventTime: new Date(rsvp.event.eventDate).toLocaleTimeString(
+            "en-US",
+            {
+              hour: "numeric",
+              minute: "2-digit",
+            },
+          ),
+          eventSlug: rsvp.event.slug,
+        }),
+      );
+
+      await resend.emails.send({
+        from: "HOEP Events <onboarding@resend.dev>",
+        to: patient.email,
+        subject: `RSVP Cancelled: ${rsvp.event.titleEn}`,
+        html: emailHtml,
+      });
+    } catch (emailError) {
+      console.error("Cancellation email error:", emailError);
+      // Don't fail the cancellation if email fails
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
