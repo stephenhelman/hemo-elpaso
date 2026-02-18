@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, User, LogOut, Home } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  User,
+  LogOut,
+  Home,
+  Shield,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -10,6 +17,7 @@ interface Props {
     name?: string;
     email?: string;
     picture?: string;
+    role?: string; // ADD THIS
   };
 }
 
@@ -21,6 +29,7 @@ const navItems = [
 
 export default function PortalSidebar({ user }: Props) {
   const pathname = usePathname();
+  const isAdmin = user.role === "board" || user.role === "admin";
 
   return (
     <>
@@ -81,6 +90,19 @@ export default function PortalSidebar({ user }: Props) {
                 </Link>
               );
             })}
+
+            {/* Admin Dashboard Link */}
+            {isAdmin && (
+              <div className="pt-4 mt-4 border-t border-neutral-200">
+                <Link
+                  href="/admin/dashboard"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors"
+                >
+                  <Shield className="w-5 h-5" />
+                  Admin Dashboard
+                </Link>
+              </div>
+            )}
           </nav>
 
           {/* Bottom actions */}

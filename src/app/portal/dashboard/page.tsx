@@ -6,6 +6,8 @@ import {
   CheckCircle,
   ArrowRight,
   Sparkles,
+  Bell,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
@@ -23,6 +25,7 @@ export default async function DashboardPage() {
     where: { auth0Id: session.user.sub },
     include: {
       profile: true,
+      preferences: true,
       rsvps: {
         include: {
           event: true,
@@ -76,93 +79,209 @@ export default async function DashboardPage() {
     patient.profile.primaryCondition
   );
 
+  // Get recent activity
+  const recentActivity = await prisma.auditLog.findMany({
+    where: { patientId: patient.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
   return (
-    <div className="p-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Welcome back, {patient.profile.firstName}!
-        </h1>
-        <p className="text-neutral-500">
-          Manage your events, profile, and stay connected with the HOEP
-          community.
-        </p>
-      </div>
-
-      {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          icon={<Calendar className="w-6 h-6" />}
-          label="Upcoming RSVPs"
-          value={upcomingRsvps.length.toString()}
-          color="primary"
-        />
-        <StatCard
-          icon={<CheckCircle className="w-6 h-6" />}
-          label="Events Attended"
-          value={eventsAttended.toString()}
-          color="secondary"
-        />
-        <StatCard
-          icon={<User className="w-6 h-6" />}
-          label="Profile Status"
-          value={profileComplete ? "Complete" : "Incomplete"}
-          color="accent"
-        />
-      </div>
-
-      {/* Recommended For You */}
-      {recommendedWithScores.length > 0 && (
-        <div className="bg-gradient-to-br from-primary-50 to-secondary/10 rounded-2xl border border-primary-200 p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="font-display font-bold text-neutral-900 text-xl">
-              Recommended For You
-            </h2>
-          </div>
-          <p className="text-neutral-600 text-sm mb-6">
-            Based on your preferences and family profile
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+            Welcome back, {patient.profile.firstName}!
+          </h1>
+          <p className="text-neutral-500">
+            Manage your events, profile, and stay connected with the HOEP
+            community.
           </p>
-          <div className="space-y-3">
-            {recommendedWithScores.map((event) => (
-              <RecommendedEventCard key={event.id} event={event} />
-            ))}
-          </div>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
-          >
-            View All Events
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
-      )}
 
-      {/* Your Upcoming Events */}
-      <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-        <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-          Your Upcoming Events
-        </h2>
-        {upcomingRsvps.length > 0 ? (
-          <div className="space-y-3">
-            {upcomingRsvps.map((rsvp) => (
-              <EventRow key={rsvp.id} rsvp={rsvp} />
-            ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Quick stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard
+                icon={<Calendar className="w-6 h-6" />}
+                label="Upcoming RSVPs"
+                value={upcomingRsvps.length.toString()}
+                color="primary"
+              />
+              <StatCard
+                icon={<CheckCircle className="w-6 h-6" />}
+                label="Events Attended"
+                value={eventsAttended.toString()}
+                color="secondary"
+              />
+              <StatCard
+                icon={<User className="w-6 h-6" />}
+                label="Profile Status"
+                value={profileComplete ? "Complete" : "Incomplete"}
+                color="accent"
+              />
+            </div>
+
+            {/* Recommended For You */}
+            {recommendedWithScores.length > 0 && (
+              <div className="bg-gradient-to-br from-primary-50 to-secondary/10 rounded-2xl border border-primary-200 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <h2 className="font-display font-bold text-neutral-900 text-xl">
+                    Recommended For You
+                  </h2>
+                </div>
+                <p className="text-neutral-600 text-sm mb-6">
+                  Based on your preferences and family profile
+                </p>
+                <div className="space-y-3">
+                  {recommendedWithScores.map((event) => (
+                    <RecommendedEventCard key={event.id} event={event} />
+                  ))}
+                </div>
+                <Link
+                  href="/events"
+                  className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
+                >
+                  View All Events
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
+            {/* Your Upcoming Events */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+              <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
+                Your Upcoming Events
+              </h2>
+              {upcomingRsvps.length > 0 ? (
+                <div className="space-y-3">
+                  {upcomingRsvps.map((rsvp) => (
+                    <EventRow key={rsvp.id} rsvp={rsvp} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                  <p className="text-neutral-400 text-sm mb-4">
+                    No upcoming RSVPs yet. Check out our recommendations above!
+                  </p>
+                  <Link
+                    href="/events"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
+                  >
+                    Browse Events
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-400 text-sm mb-4">
-              No upcoming RSVPs yet. Check out our recommendations above!
-            </p>
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
-            >
-              Browse Events
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+              <h3 className="font-display font-bold text-neutral-900 text-lg mb-4">
+                Quick Actions
+              </h3>
+              <div className="space-y-2">
+                <Link
+                  href="/events"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary-50 group-hover:bg-primary flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-neutral-900 text-sm">
+                      Browse Events
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      Find upcoming activities
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-primary transition-colors" />
+                </Link>
+
+                <Link
+                  href="/portal/profile"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary-50 group-hover:bg-primary flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-neutral-900 text-sm">
+                      Edit Profile
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      Update your information
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-primary transition-colors" />
+                </Link>
+
+                <Link
+                  href="/resources"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary-50 group-hover:bg-primary flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-neutral-900 text-sm">
+                      Resources
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      Educational materials
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-primary transition-colors" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+              <h3 className="font-display font-bold text-neutral-900 text-lg mb-4">
+                Recent Activity
+              </h3>
+              {recentActivity.length > 0 ? (
+                <div className="space-y-3">
+                  {recentActivity.map((log) => (
+                    <ActivityItem key={log.id} log={log} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-neutral-400 text-center py-4">
+                  No recent activity
+                </p>
+              )}
+            </div>
+
+            {/* Notifications */}
+            <div className="bg-gradient-to-br from-primary-50 to-white rounded-2xl border border-primary-200 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <h3 className="font-display font-bold text-neutral-900 text-lg">
+                  Stay Updated
+                </h3>
+              </div>
+              <p className="text-sm text-neutral-600 mb-4">
+                Get notifications about upcoming events, RSVP reminders, and
+                community updates.
+              </p>
+              <p className="text-xs text-neutral-500">
+                {patient.preferences?.emailNotifications
+                  ? "✓ Email notifications enabled"
+                  : "○ Email notifications disabled"}
+              </p>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -273,11 +392,50 @@ function EventRow({ rsvp }: { rsvp: any }) {
             {rsvp.event.titleEn}
           </h3>
           <p className="text-sm text-neutral-500">
-            {rsvp.adultsCount + rsvp.childrenCount} attendees
+            {rsvp.adultsAttending + rsvp.childrenAttending} attendees
           </p>
         </div>
       </div>
       <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-primary transition-colors" />
     </Link>
+  );
+}
+
+function ActivityItem({ log }: { log: any }) {
+  const getActivityIcon = (action: string) => {
+    if (action.includes("rsvp")) return <Calendar className="w-4 h-4" />;
+    if (action.includes("profile")) return <User className="w-4 h-4" />;
+    return <Bell className="w-4 h-4" />;
+  };
+
+  const getActivityLabel = (action: string) => {
+    if (action === "patient_registration") return "Joined HOEP";
+    if (action === "rsvp_created") return "RSVP Created";
+    if (action === "rsvp_cancelled") return "RSVP Cancelled";
+    return action.replace(/_/g, " ");
+  };
+
+  const timeAgo = (date: Date) => {
+    const seconds = Math.floor(
+      (new Date().getTime() - new Date(date).getTime()) / 1000,
+    );
+    if (seconds < 60) return "just now";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  };
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-600 flex-shrink-0">
+        {getActivityIcon(log.action)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-neutral-900">
+          {getActivityLabel(log.action)}
+        </p>
+        <p className="text-xs text-neutral-500">{timeAgo(log.createdAt)}</p>
+      </div>
+    </div>
   );
 }

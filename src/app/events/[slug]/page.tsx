@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getEventBySlug } from "@/lib/placeholder-events";
 import { formatEventDate, getStatusLabel } from "@/lib/event-utils";
 import {
   ArrowLeft,
@@ -20,21 +19,31 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  // TODO: Get slugs from database when we have real events
-  return [];
+  const events = await prisma.event.findMany({
+    select: { slug: true },
+  });
+  return events.map((event) => ({ slug: event.slug }));
 }
 
 export default async function EventPage({ params }: Props) {
   const lang: Lang = "en";
 
-  // TODO: Replace with database query when we have real events
-  const event = getEventBySlug(params.slug);
+  // Get event from database
+  const event = await prisma.event.findUnique({
+    where: { slug: params.slug },
+    include: {
+      _count: {
+        select: { rsvps: true },
+      },
+    },
+  });
+
   if (!event) notFound();
 
   const session = await getSession();
   let hasRsvp = false;
   let rsvpId: string | undefined;
-  let currentRsvpCount = 0;
+  const currentRsvpCount = event._count.rsvps;
 
   // If user is logged in, check if they have RSVP'd
   if (session?.user) {
@@ -43,7 +52,6 @@ export default async function EventPage({ params }: Props) {
     });
 
     if (patient) {
-      // Check for existing RSVP
       const rsvp = await prisma.rsvp.findFirst({
         where: {
           patientId: patient.id,
@@ -56,11 +64,6 @@ export default async function EventPage({ params }: Props) {
         rsvpId = rsvp.id;
       }
     }
-
-    // Get current RSVP count
-    currentRsvpCount = await prisma.rsvp.count({
-      where: { eventId: event.id },
-    });
   }
 
   const title = lang === "en" ? event.titleEn : event.titleEs;
