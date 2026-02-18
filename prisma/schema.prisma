@@ -132,7 +132,7 @@ model Event {
   descriptionEs String?
   eventDate     DateTime
   location      String
-  maxCapacity   Int?      // RENAMED from maxAttendees
+  maxCapacity   Int?    
   rsvpDeadline  DateTime?
   status        String    @default("draft") // draft, published, cancelled, completed
   
@@ -140,6 +140,7 @@ model Event {
   targetAudience String   @default("all") // all, youth, adults, families
   language      String    @default("both") // en, es, both
   isPriority    Boolean   @default(false)
+  liveEnabled   Boolean   @default(false)
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

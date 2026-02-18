@@ -7,6 +7,7 @@ import {
   Users,
   Clock,
   FileImage,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { Lang } from "@/types";
@@ -43,9 +44,10 @@ export default async function EventPage({ params }: Props) {
   const session = await getSession();
   let hasRsvp = false;
   let rsvpId: string | undefined;
+  let isCheckedIn = false;
   const currentRsvpCount = event._count.rsvps;
 
-  // If user is logged in, check if they have RSVP'd
+  // If user is logged in, check if they have RSVP'd and if they're checked in
   if (session?.user) {
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
@@ -63,6 +65,16 @@ export default async function EventPage({ params }: Props) {
         hasRsvp = true;
         rsvpId = rsvp.id;
       }
+
+      // Check if patient is checked in
+      const checkIn = await prisma.checkIn.findFirst({
+        where: {
+          patientId: patient.id,
+          eventId: event.id,
+        },
+      });
+
+      isCheckedIn = !!checkIn;
     }
   }
 
@@ -263,8 +275,30 @@ export default async function EventPage({ params }: Props) {
               </div>
             </div>
 
+            {/* Join Live Event Button - Only if checked in and live enabled */}
+            {isCheckedIn && event.liveEnabled && (
+              <div className="bg-white rounded-2xl border-2 border-green-200 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-green-700 text-sm font-semibold">
+                    You're Checked In!
+                  </span>
+                </div>
+                <Link
+                  href={`/events/${event.slug}/live`}
+                  className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Join Live Event
+                </Link>
+                <p className="text-xs text-neutral-500 text-center mt-2">
+                  Access live polls, Q&A, and event updates
+                </p>
+              </div>
+            )}
+
             {/* RSVP Button */}
-            {isUpcoming && session?.user && (
+            {isUpcoming && session?.user && !isCheckedIn && (
               <div className="bg-white rounded-2xl border border-neutral-200 p-6">
                 <RsvpButton
                   eventId={event.id}

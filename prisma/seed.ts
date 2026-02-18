@@ -24,6 +24,7 @@ async function main() {
       targetAudience: "all",
       language: "both",
       isPriority: true,
+      liveEnabled: true,
     },
     {
       slug: "family-support-workshop-march-2026",
@@ -42,6 +43,7 @@ async function main() {
       targetAudience: "adults",
       language: "both",
       isPriority: false,
+      liveEnabled: true,
     },
     {
       slug: "kids-summer-camp-info-session-2026",
@@ -60,6 +62,7 @@ async function main() {
       targetAudience: "families",
       language: "both",
       isPriority: true,
+      liveEnabled: true,
     },
     {
       slug: "annual-fundraiser-gala-2026",
@@ -78,6 +81,7 @@ async function main() {
       targetAudience: "all",
       language: "both",
       isPriority: true,
+      liveEnabled: true,
     },
     {
       slug: "medical-update-seminar-feb-2026",
@@ -96,6 +100,7 @@ async function main() {
       targetAudience: "adults",
       language: "en",
       isPriority: false,
+      liveEnabled: true,
     },
   ];
 

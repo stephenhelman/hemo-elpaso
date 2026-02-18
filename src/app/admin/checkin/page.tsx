@@ -1,14 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Camera, Users, CheckCircle, AlertCircle } from "lucide-react";
 import QrScanner from "@/components/admin/QrScanner";
 
 export default function AdminCheckinPage() {
+  const searchParams = useSearchParams();
+  const preselectedEventId = searchParams.get("event");
+
   const [events, setEvents] = useState<any[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(
+    preselectedEventId,
+  );
   const [checkIns, setCheckIns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEventData, setSelectedEventData] = useState<any>(null);
 
   useEffect(() => {
     // Fetch upcoming events
@@ -16,9 +23,18 @@ export default function AdminCheckinPage() {
       .then((res) => res.json())
       .then((data) => {
         setEvents(data.upcoming || []);
+
+        // If preselected, find and set the event data
+        if (preselectedEventId) {
+          const event = data.upcoming.find(
+            (e: any) => e.id === preselectedEventId,
+          );
+          setSelectedEventData(event);
+        }
+
         setLoading(false);
       });
-  }, []);
+  }, [preselectedEventId]);
 
   useEffect(() => {
     if (!selectedEvent) return;
@@ -53,23 +69,23 @@ export default function AdminCheckinPage() {
     );
   }
 
-  return (
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Event Check-In
-          </h1>
-          <p className="text-neutral-500">
-            Scan QR codes to check families in at the event entrance
-          </p>
-        </div>
+  // Show event selection ONLY if no event is preselected
+  if (!selectedEvent) {
+    return (
+      <div className="p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+              Event Check-In
+            </h1>
+            <p className="text-neutral-500">
+              Select an event to start checking in attendees
+            </p>
+          </div>
 
-        {/* Event Selection */}
-        {!selectedEvent ? (
           <div className="space-y-4">
             <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-              Select Event to Check In
+              Select Event
             </h2>
             {events.length === 0 ? (
               <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
@@ -81,7 +97,10 @@ export default function AdminCheckinPage() {
                 {events.map((event) => (
                   <button
                     key={event.id}
-                    onClick={() => setSelectedEvent(event.id)}
+                    onClick={() => {
+                      setSelectedEvent(event.id);
+                      setSelectedEventData(event);
+                    }}
                     className="bg-white rounded-xl border-2 border-neutral-200 p-6 text-left hover:border-primary transition-all group"
                   >
                     <h3 className="font-semibold text-neutral-900 text-lg mb-2 group-hover:text-primary transition-colors">
@@ -104,55 +123,94 @@ export default function AdminCheckinPage() {
               </div>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Scanner Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-neutral-900 text-xl">
-                  QR Code Scanner
-                </h2>
-                <button
-                  onClick={() => setSelectedEvent(null)}
-                  className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-                >
-                  Change Event
-                </button>
-              </div>
+        </div>
+      </div>
+    );
+  }
 
-              <QrScanner
-                eventId={selectedEvent}
-                onScanSuccess={handleScanSuccess}
-              />
+  // Scanner view (when event is selected)
+  return (
+    <div className="p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+            Event Check-In
+          </h1>
+          <p className="text-neutral-500">
+            Scan QR codes to check families in at the event entrance
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Scanner Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display font-bold text-neutral-900 text-xl">
+                QR Code Scanner
+              </h2>
+              <button
+                onClick={() => {
+                  setSelectedEvent(null);
+                  setSelectedEventData(null);
+                }}
+                className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                Change Event
+              </button>
             </div>
 
-            {/* Check-In List */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-neutral-900 text-xl">
-                  Checked In ({checkIns.length})
-                </h2>
+            {/* Event Info Card */}
+            {selectedEventData && (
+              <div className="bg-primary-50 rounded-xl border border-primary-200 p-4 mb-4">
+                <h3 className="font-semibold text-primary-900 mb-1">
+                  {selectedEventData.titleEn}
+                </h3>
+                <p className="text-sm text-primary-700">
+                  {new Date(selectedEventData.eventDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    },
+                  )}
+                </p>
               </div>
+            )}
 
-              <div className="bg-white rounded-xl border border-neutral-200 max-h-[600px] overflow-y-auto">
-                {checkIns.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <CheckCircle className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-                    <p className="text-neutral-400 text-sm">
-                      No check-ins yet. Start scanning!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-neutral-200">
-                    {checkIns.map((checkIn) => (
-                      <CheckInItem key={checkIn.id} checkIn={checkIn} />
-                    ))}
-                  </div>
-                )}
-              </div>
+            <QrScanner
+              eventId={selectedEvent}
+              onScanSuccess={handleScanSuccess}
+            />
+          </div>
+
+          {/* Check-In List */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display font-bold text-neutral-900 text-xl">
+                Checked In ({checkIns.length})
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-xl border border-neutral-200 max-h-[600px] overflow-y-auto">
+              {checkIns.length === 0 ? (
+                <div className="p-8 text-center">
+                  <CheckCircle className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                  <p className="text-neutral-400 text-sm">
+                    No check-ins yet. Start scanning!
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-neutral-200">
+                  {checkIns.map((checkIn) => (
+                    <CheckInItem key={checkIn.id} checkIn={checkIn} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
