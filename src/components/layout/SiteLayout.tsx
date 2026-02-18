@@ -1,6 +1,7 @@
 "use client";
 
 import { LanguageProvider } from "@/context/LanguageContext";
+import { EventsProvider } from "@/context/EventsContext";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -29,7 +30,9 @@ export default function SiteLayout({
   return (
     <UserProvider>
       <LanguageProvider>
-        <LayoutInner>{children}</LayoutInner>
+        <EventsProvider>
+          <LayoutInner>{children}</LayoutInner>
+        </EventsProvider>
       </LanguageProvider>
     </UserProvider>
   );

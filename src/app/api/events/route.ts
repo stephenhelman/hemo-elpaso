@@ -5,35 +5,25 @@ export async function GET() {
   try {
     const now = new Date();
 
-    const upcoming = await prisma.event.findMany({
-      where: {
-        status: "published",
-        eventDate: {
-          gte: now,
+    const events = await prisma.event.findMany({
+      where: { status: "published" },
+      orderBy: { eventDate: "asc" },
+      include: {
+        _count: {
+          select: { rsvps: true }, // Make sure this is here
         },
       },
-      orderBy: {
-        eventDate: "asc",
-      },
-      take: 10,
     });
 
-    const past = await prisma.event.findMany({
-      where: {
-        status: "completed",
-        eventDate: {
-          lt: now,
-        },
-      },
-      orderBy: {
-        eventDate: "desc",
-      },
-      take: 6,
-    });
+    const upcoming = events.filter((e) => new Date(e.eventDate) >= now);
+    const past = events.filter((e) => new Date(e.eventDate) < now);
 
     return NextResponse.json({ upcoming, past });
   } catch (error) {
-    console.error("Events fetch error:", error);
-    return NextResponse.json({ upcoming: [], past: [] });
+    console.error("Events API error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch events" },
+      { status: 500 },
+    );
   }
 }

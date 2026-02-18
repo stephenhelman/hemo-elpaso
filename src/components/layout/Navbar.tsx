@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -118,7 +119,13 @@ export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
                   {lang === "en" ? link.labelEn : link.labelEs}
                 </Link>
               ))}
-              <div className="pt-2 border-t border-neutral-100 mt-1">
+              <div className="pt-2 border-t border-neutral-100 mt-1 space-y-2">
+                {/* Sign In Button - Only show if not logged in */}
+                <MobileSignInButton
+                  lang={lang}
+                  onClose={() => setMobileOpen(false)}
+                />
+
                 <Link
                   href="/get-involved"
                   onClick={() => setMobileOpen(false)}
@@ -132,5 +139,29 @@ export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
         )}
       </div>
     </header>
+  );
+}
+
+function MobileSignInButton({
+  lang,
+  onClose,
+}: {
+  lang: "en" | "es";
+  onClose: () => void;
+}) {
+  const { user, isLoading } = useUser();
+
+  if (isLoading || user) {
+    return null; // Don't show if loading or already logged in
+  }
+
+  return (
+    <Link
+      href="/api/auth/login"
+      onClick={onClose}
+      className="flex items-center justify-center px-4 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
+    >
+      {lang === "en" ? "Sign In" : "Iniciar Sesión"}
+    </Link>
   );
 }

@@ -1,11 +1,29 @@
 "use client";
 
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
 
 export default function UserMenu() {
   const { user, isLoading } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      // Check if user is admin/board
+      fetch("/api/user/role")
+        .then((res) => res.json())
+        .then((data) => {
+          setIsAdmin(data.role === "admin" || data.role === "board");
+          setCheckingRole(false);
+        })
+        .catch(() => setCheckingRole(false));
+    } else {
+      setCheckingRole(false);
+    }
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -61,6 +79,20 @@ export default function UserMenu() {
             <User className="w-4 h-4" />
             Profile
           </Link>
+
+          {/* Admin Dashboard Link */}
+          {!checkingRole && isAdmin && (
+            <>
+              <div className="border-t border-neutral-100 my-2" />
+              <Link
+                href="/admin/dashboard"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-colors"
+              >
+                <Shield className="w-4 h-4" />
+                Admin Dashboard
+              </Link>
+            </>
+          )}
         </div>
         <div className="border-t border-neutral-100 py-2">
           <a

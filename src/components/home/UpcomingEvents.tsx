@@ -1,149 +1,160 @@
-import Link from "next/link";
-import { Calendar, MapPin, ArrowRight } from "lucide-react";
-import Section from "@/components/layout/Section";
-import HoepCard from "@/components/ui/HoepCard";
-import HoepBadge from "@/components/ui/HoepBadge";
+"use client";
 
-interface UpcomingEventsProps {
+import Link from "next/link";
+import { Calendar, MapPin, Users, ArrowRight } from "lucide-react";
+import { useEvents } from "@/context/EventsContext";
+
+interface Props {
   lang: "en" | "es";
 }
 
-const content = {
-  en: {
-    heading: "Upcoming Events",
-    sub: "Join us at our next community gathering",
-    viewAll: "View All Events",
-    rsvp: "RSVP",
-    noEvents: "No upcoming events. Check back soon!",
-    upcoming: "Upcoming",
-  },
-  es: {
-    heading: "Próximos Eventos",
-    sub: "Únete a nuestra próxima reunión comunitaria",
-    viewAll: "Ver Todos los Eventos",
-    rsvp: "Confirmar Asistencia",
-    noEvents: "No hay eventos próximos. ¡Vuelve pronto!",
-    upcoming: "Próximo",
-  },
-};
+export default function UpcomingEvents({ lang }: Props) {
+  const { upcomingEvents, loading } = useEvents();
 
-// Placeholder events — will be replaced with real DB data
-const placeholderEvents = [
-  {
-    id: "1",
-    titleEn: "Spring Educational Dinner",
-    titleEs: "Cena Educativa de Primavera",
-    date: "March 15, 2025",
-    location: "El Paso Community Center",
-    slug: "spring-educational-dinner-2025",
-  },
-  {
-    id: "2",
-    titleEn: "Family Support Workshop",
-    titleEs: "Taller de Apoyo Familiar",
-    date: "April 5, 2025",
-    location: "HOEP Office, El Paso",
-    slug: "family-support-workshop-2025",
-  },
-  {
-    id: "3",
-    titleEn: "Annual Fundraiser Gala",
-    titleEs: "Gala Anual de Recaudación",
-    date: "May 20, 2025",
-    location: "Hotel Paso del Norte",
-    slug: "annual-fundraiser-gala-2025",
-  },
-];
+  const t = {
+    en: {
+      title: "Upcoming Events",
+      subtitle:
+        "Join us for educational programs, family activities, and community support events",
+      noEvents: "No upcoming events at this time. Check back soon!",
+      viewAll: "View All Events",
+      spotsLeft: "spots left",
+      eventFull: "Event full",
+      learnMore: "Learn More & RSVP",
+    },
+    es: {
+      title: "Próximos Eventos",
+      subtitle:
+        "Únase a nosotros para programas educativos, actividades familiares y eventos de apoyo comunitario",
+      noEvents: "No hay eventos próximos en este momento. ¡Vuelva pronto!",
+      viewAll: "Ver Todos los Eventos",
+      spotsLeft: "lugares disponibles",
+      eventFull: "Evento lleno",
+      learnMore: "Más Información y RSVP",
+    },
+  }[lang];
 
-export default function UpcomingEvents({ lang }: UpcomingEventsProps) {
-  const t = content[lang];
+  // Only show first 3 events on homepage
+  const displayEvents = upcomingEvents.slice(0, 3);
 
   return (
-    <Section background="neutral" id="events">
-      <SectionHeader heading={t.heading} sub={t.sub} />
+    <section className="py-20 bg-white">
+      <div className="container-max px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-neutral-900 mb-4">
+            {t.title}
+          </h2>
+          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+            {t.subtitle}
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {placeholderEvents.map((event) => (
-          <EventPreviewCard
-            key={event.id}
-            event={event}
-            lang={lang}
-            rsvpLabel={t.rsvp}
-            upcomingLabel={t.upcoming}
-          />
-        ))}
-      </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          </div>
+        ) : displayEvents.length === 0 ? (
+          <div className="text-center py-12">
+            <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <p className="text-neutral-500">{t.noEvents}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayEvents.map((event) => (
+              <EventCard key={event.id} event={event} lang={lang} t={t} />
+            ))}
+          </div>
+        )}
 
-      <div className="text-center">
-        <Link
-          href="/events"
-          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border-2 border-primary text-primary font-display font-semibold hover:bg-primary hover:text-white transition-all duration-200 group"
-        >
-          {t.viewAll}
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </Link>
+        <div className="text-center mt-12">
+          <Link
+            href="/events"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+          >
+            {t.viewAll}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-function SectionHeader({ heading, sub }: { heading: string; sub: string }) {
-  return (
-    <div className="text-center mb-12">
-      <h2 className="font-display text-3xl font-bold text-neutral-900 mb-3">
-        {heading}
-      </h2>
-      <p className="text-neutral-500 max-w-xl mx-auto">{sub}</p>
-    </div>
-  );
-}
-
-function EventPreviewCard({
+function EventCard({
   event,
   lang,
-  rsvpLabel,
-  upcomingLabel,
+  t,
 }: {
-  event: (typeof placeholderEvents)[0];
+  event: any;
   lang: "en" | "es";
-  rsvpLabel: string;
-  upcomingLabel: string;
+  t: any;
 }) {
+  const eventDate = new Date(event.eventDate);
+  const spotsLeft =
+    event.maxCapacity && event._count?.rsvps !== undefined
+      ? event.maxCapacity - event._count.rsvps
+      : null;
   const title = lang === "en" ? event.titleEn : event.titleEs;
+  const description = lang === "en" ? event.descriptionEn : event.descriptionEs;
 
   return (
-    <HoepCard hover className="flex flex-col">
-      <div className="flex items-start justify-between mb-4">
-        <HoepBadge variant="primary">{upcomingLabel}</HoepBadge>
+    <div className="bg-neutral-50 rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-lg transition-all group">
+      {/* Date Badge */}
+      <div className="bg-gradient-to-br from-primary to-secondary p-6 text-white">
+        <div className="text-center">
+          <div className="text-4xl font-bold">{eventDate.getDate()}</div>
+          <div className="text-sm font-semibold uppercase tracking-wide">
+            {eventDate.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
+              month: "short",
+            })}
+          </div>
+        </div>
       </div>
 
-      <h3 className="font-display font-semibold text-neutral-900 text-lg mb-4 leading-snug">
-        {title}
-      </h3>
+      {/* Content */}
+      <div className="p-6">
+        <h3 className="font-display font-bold text-neutral-900 text-xl mb-3 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
 
-      <div className="flex flex-col gap-2 mb-6 mt-auto">
-        <EventMeta icon={<Calendar className="w-4 h-4" />} text={event.date} />
-        <EventMeta
-          icon={<MapPin className="w-4 h-4" />}
-          text={event.location}
-        />
+        <div className="space-y-2 mb-4 text-sm text-neutral-600">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span>
+              {eventDate.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-primary" />
+            <span className="line-clamp-1">{event.location}</span>
+          </div>
+          {spotsLeft !== null && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              <span>
+                {spotsLeft > 0 ? `${spotsLeft} ${t.spotsLeft}` : t.eventFull}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {description && (
+          <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
+            {description}
+          </p>
+        )}
+
+        <Link
+          href={`/events/${event.slug}`}
+          className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+        >
+          {t.learnMore}
+        </Link>
       </div>
-
-      <Link
-        href={`/events/${event.slug}`}
-        className="w-full text-center px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold font-display hover:bg-primary-600 transition-colors"
-      >
-        {rsvpLabel}
-      </Link>
-    </HoepCard>
-  );
-}
-
-function EventMeta({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-neutral-500">
-      <span className="text-primary-400">{icon}</span>
-      <span>{text}</span>
     </div>
   );
 }
