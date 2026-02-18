@@ -1,174 +1,64 @@
-"use client";
-
-import { useLang } from "@/context/LanguageContext";
+import { prisma } from "@/lib/db";
+import PublicEventsDisplay from "@/components/events/PublicEventsDisplay";
 import { Calendar } from "lucide-react";
-import EventCard from "@/components/events/EventCard";
-import Section from "@/components/layout/Section";
-import { useEffect, useState } from "react";
-import { Lang } from "@/types";
 
-export default function EventsPage() {
-  const { lang } = useLang();
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [pastEvents, setPastEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default async function EventsPage() {
+  const now = new Date();
 
-  useEffect(() => {
-    fetch("/api/events")
-      .then((res) => res.json())
-      .then((data) => {
-        setUpcomingEvents(data.upcoming || []);
-        setPastEvents(data.past || []);
-        setLoading(false);
-      });
-  }, []);
+  // Get all published events
+  const allEvents = await prisma.event.findMany({
+    where: {
+      status: "published",
+    },
+    include: {
+      _count: {
+        select: { rsvps: true },
+      },
+    },
+    orderBy: {
+      eventDate: "asc",
+    },
+  });
+
+  const upcomingEvents = allEvents.filter((e) => new Date(e.eventDate) >= now);
+  const pastEvents = allEvents.filter((e) => new Date(e.eventDate) < now);
 
   return (
-    <>
-      <EventsHero lang={lang} />
-      <UpcomingEventsSection
-        lang={lang}
-        events={upcomingEvents}
-        loading={loading}
-      />
-      <PastEventsSection lang={lang} events={pastEvents} loading={loading} />
-    </>
-  );
-}
-
-function EventsHero({ lang }: { lang: Lang }) {
-  const t = {
-    en: {
-      eyebrow: "Community Gatherings",
-      heading: "Events & Programs",
-      sub: "From educational dinners to family celebrations — our events bring the El Paso bleeding disorders community together.",
-    },
-    es: {
-      eyebrow: "Reuniones Comunitarias",
-      heading: "Eventos y Programas",
-      sub: "Desde cenas educativas hasta celebraciones familiares — nuestros eventos unen a la comunidad de trastornos hemorrágicos de El Paso.",
-    },
-  }[lang];
-
-  return (
-    <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">
-      <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary-500/10 -translate-y-1/2 translate-x-1/3" />
-      <div className="container-max px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-0.5 bg-primary-400" />
-            <span className="text-primary-400 text-sm font-semibold tracking-widest uppercase">
-              {t.eyebrow}
-            </span>
+    <div className="min-h-screen bg-neutral-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-16">
+        <div className="container-max px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-white mb-4">
+              Events & Programs
+            </h1>
+            <p className="text-xl text-neutral-300">
+              Join us for educational programs, family activities, and community
+              support events
+            </p>
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold text-white leading-[1.2] mb-6">
-            {t.heading}
-          </h1>
-          <p className="text-lg text-neutral-300 leading-relaxed">{t.sub}</p>
         </div>
       </div>
-      <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-neutral-50 to-transparent" />
-    </div>
-  );
-}
 
-function UpcomingEventsSection({
-  lang,
-  events,
-  loading,
-}: {
-  lang: Lang;
-  events: any[];
-  loading: boolean;
-}) {
-  const t = {
-    en: {
-      heading: "Upcoming Events",
-      sub: "Reserve your spot at our next community gathering",
-      empty: "No upcoming events scheduled. Check back soon!",
-      loading: "Loading events...",
-    },
-    es: {
-      heading: "Próximos Eventos",
-      sub: "Reserve su lugar en nuestra próxima reunión comunitaria",
-      empty: "No hay eventos próximos programados. ¡Vuelva pronto!",
-      loading: "Cargando eventos...",
-    },
-  }[lang];
-
-  return (
-    <Section background="neutral">
-      <SectionHeader heading={t.heading} sub={t.sub} />
-      {loading ? (
-        <div className="text-center py-16">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-neutral-400">{t.loading}</p>
-        </div>
-      ) : events.length === 0 ? (
-        <EmptyState message={t.empty} />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} lang={lang} />
-          ))}
-        </div>
-      )}
-    </Section>
-  );
-}
-
-function PastEventsSection({
-  lang,
-  events,
-  loading,
-}: {
-  lang: Lang;
-  events: any[];
-  loading: boolean;
-}) {
-  const t = {
-    en: {
-      heading: "Past Events",
-      sub: "A look back at our community gatherings",
-      empty: "No past events yet.",
-    },
-    es: {
-      heading: "Eventos Pasados",
-      sub: "Un vistazo a nuestras reuniones comunitarias",
-      empty: "No hay eventos pasados todavía.",
-    },
-  }[lang];
-
-  if (loading || events.length === 0) return null;
-
-  return (
-    <Section background="white">
-      <SectionHeader heading={t.heading} sub={t.sub} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} lang={lang} />
-        ))}
+      {/* Events Display */}
+      <div className="container-max px-4 sm:px-6 lg:px-8 py-12">
+        {upcomingEvents.length === 0 && pastEvents.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center max-w-2xl mx-auto">
+            <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <h3 className="text-xl font-display font-bold text-neutral-900 mb-2">
+              No Events Scheduled
+            </h3>
+            <p className="text-neutral-500">
+              Check back soon for upcoming events and programs!
+            </p>
+          </div>
+        ) : (
+          <PublicEventsDisplay
+            upcomingEvents={upcomingEvents}
+            pastEvents={pastEvents}
+          />
+        )}
       </div>
-    </Section>
-  );
-}
-
-function SectionHeader({ heading, sub }: { heading: string; sub: string }) {
-  return (
-    <div className="text-center mb-12">
-      <h2 className="font-display text-3xl font-bold text-neutral-900 mb-3">
-        {heading}
-      </h2>
-      <p className="text-neutral-500 max-w-xl mx-auto">{sub}</p>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="text-center py-16">
-      <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-      <p className="text-neutral-400">{message}</p>
     </div>
   );
 }

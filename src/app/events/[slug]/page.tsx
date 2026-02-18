@@ -14,9 +14,11 @@ import { Lang } from "@/types";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import RsvpButton from "@/components/events/RsvpButton";
+import BackButton from "@/components/events/BackButton";
 
 interface Props {
   params: { slug: string };
+  searchParams: { from?: string };
 }
 
 export async function generateStaticParams() {
@@ -26,8 +28,9 @@ export async function generateStaticParams() {
   return events.map((event) => ({ slug: event.slug }));
 }
 
-export default async function EventPage({ params }: Props) {
+export default async function EventPage({ params, searchParams }: Props) {
   const lang: Lang = "en";
+  const referrer = searchParams.from;
 
   // Get event from database
   const event = await prisma.event.findUnique({
@@ -136,13 +139,7 @@ export default async function EventPage({ params }: Props) {
       {/* Hero */}
       <div className="bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-12">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 text-primary-300 hover:text-primary-200 transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t.backToEvents}
-          </Link>
+          <BackButton referrer={referrer} lang={lang} />
 
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="flex-1 min-w-0">

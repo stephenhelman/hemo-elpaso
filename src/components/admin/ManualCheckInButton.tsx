@@ -44,7 +44,7 @@ export default function ManualCheckInButton({
         alert(data.error || "Check-in failed");
       }
     } catch (error) {
-      alert("An error occurred");
+      alert(error);
     } finally {
       setLoading(false);
     }

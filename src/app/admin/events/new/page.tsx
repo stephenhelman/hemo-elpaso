@@ -110,7 +110,7 @@ export default function NewEventPage() {
         alert(data.error || "Failed to create event");
       }
     } catch (error) {
-      alert("An error occurred");
+      alert(error);
     } finally {
       setLoading(false);
     }

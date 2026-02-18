@@ -1,0 +1,428 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import {
+  LayoutGrid,
+  List,
+  Search,
+  Calendar,
+  MapPin,
+  Users,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+} from "lucide-react";
+import QrCodeDisplay from "./QrCodeDisplay";
+
+interface Event {
+  id: string;
+  slug: string;
+  titleEn: string;
+  titleEs: string;
+  eventDate: Date;
+  location: string;
+  status: string;
+  category: string;
+  maxCapacity: number | null;
+  isPriority: boolean;
+  _count: {
+    rsvps: number;
+  };
+}
+
+interface RSVP {
+  id: string;
+  eventId: string;
+  adultsAttending: number;
+  childrenAttending: number;
+  event: Event;
+}
+
+interface Props {
+  myRsvps: RSVP[];
+  recommendedEvents: Event[];
+  allEvents: Event[];
+}
+
+export default function PortalEventsDisplay({
+  myRsvps,
+  recommendedEvents,
+  allEvents,
+}: Props) {
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [showAllEvents, setShowAllEvents] = useState(false);
+  const [expandedQr, setExpandedQr] = useState<string | null>(null);
+
+  const now = new Date();
+
+  // Filter events
+  const filteredAllEvents = useMemo(() => {
+    return allEvents.filter((event) => {
+      const matchesSearch =
+        event.titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory =
+        categoryFilter === "all" || event.category === categoryFilter;
+
+      return (
+        matchesSearch && matchesCategory && new Date(event.eventDate) >= now
+      );
+    });
+  }, [allEvents, searchQuery, categoryFilter]);
+
+  return (
+    <div className="space-y-8">
+      {/* My Upcoming Events */}
+      {myRsvps.length > 0 && (
+        <div>
+          <h2 className="font-display font-bold text-neutral-900 text-2xl mb-4">
+            My Upcoming Events ({myRsvps.length})
+          </h2>
+          <div className="space-y-4">
+            {myRsvps.map((rsvp) => (
+              <MyEventCard
+                key={rsvp.id}
+                rsvp={rsvp}
+                expanded={expandedQr === rsvp.id}
+                onToggleQr={() =>
+                  setExpandedQr(expandedQr === rsvp.id ? null : rsvp.id)
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recommended Events */}
+      {recommendedEvents.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-6 h-6 text-primary" />
+            <h2 className="font-display font-bold text-neutral-900 text-2xl">
+              Recommended for You ({recommendedEvents.length})
+            </h2>
+          </div>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 lg:grid-cols-2 gap-4"
+                : "space-y-3"
+            }
+          >
+            {recommendedEvents.map((event) =>
+              viewMode === "grid" ? (
+                <EventCard key={event.id} event={event} />
+              ) : (
+                <EventTableRow key={event.id} event={event} />
+              ),
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Browse All Events */}
+      <div>
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowAllEvents(!showAllEvents)}
+              className="flex items-center gap-2 font-display font-bold text-neutral-900 text-xl hover:text-primary transition-colors"
+            >
+              Browse All Events ({filteredAllEvents.length})
+              {showAllEvents ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 bg-neutral-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 rounded transition-colors ${
+                  viewMode === "grid"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-neutral-600 hover:text-neutral-900"
+                }`}
+                title="Grid view"
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded transition-colors ${
+                  viewMode === "table"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-neutral-600 hover:text-neutral-900"
+                }`}
+                title="Table view"
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {showAllEvents && (
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">All Categories</option>
+                <option value="EDUCATION">Education</option>
+                <option value="FAMILY_SUPPORT">Family Support</option>
+                <option value="YOUTH">Youth</option>
+                <option value="FUNDRAISING">Fundraising</option>
+                <option value="MEDICAL_UPDATE">Medical Update</option>
+                <option value="SOCIAL">Social</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        {showAllEvents &&
+          (filteredAllEvents.length === 0 ? (
+            <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
+              <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+              <p className="text-neutral-400">No events match your filters</p>
+            </div>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {filteredAllEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <EventsTable events={filteredAllEvents} />
+          ))}
+      </div>
+    </div>
+  );
+}
+
+// My Event Card with QR Code
+function MyEventCard({
+  rsvp,
+  expanded,
+  onToggleQr,
+}: {
+  rsvp: RSVP;
+  expanded: boolean;
+  onToggleQr: () => void;
+}) {
+  const event = rsvp.event;
+  const eventDate = new Date(event.eventDate);
+  const spotsLeft = event.maxCapacity
+    ? event.maxCapacity - event._count.rsvps
+    : null;
+
+  return (
+    <div className="bg-white rounded-2xl border-2 border-primary-200 overflow-hidden">
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Date Badge */}
+          <div className="w-16 h-16 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0">
+            <span className="text-xs text-primary-600 font-semibold">
+              {eventDate
+                .toLocaleDateString("en-US", { month: "short" })
+                .toUpperCase()}
+            </span>
+            <span className="text-2xl font-bold text-primary">
+              {eventDate.getDate()}
+            </span>
+          </div>
+
+          {/* Event Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-neutral-900 text-lg mb-2">
+              {event.titleEn}
+            </h3>
+            <div className="space-y-1 text-sm text-neutral-600 mb-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                {eventDate.toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                {event.location}
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                {rsvp.adultsAttending} adult
+                {rsvp.adultsAttending !== 1 ? "s" : ""},{" "}
+                {rsvp.childrenAttending} child
+                {rsvp.childrenAttending !== 1 ? "ren" : ""}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link
+                href={`/events/${event.slug}?from=portal`}
+                className="text-sm text-primary hover:underline"
+              >
+                View Details
+              </Link>
+              <button
+                onClick={onToggleQr}
+                className="text-sm text-primary hover:underline"
+              >
+                {expanded ? "Hide QR Code" : "Show QR Code"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code Section */}
+        {expanded && (
+          <div className="mt-6 pt-6 border-t border-neutral-200">
+            <QrCodeDisplay rsvpId={rsvp.id} mode="full" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Event Card for Recommended/Browse
+function EventCard({ event }: { event: Event }) {
+  const eventDate = new Date(event.eventDate);
+  const spotsLeft = event.maxCapacity
+    ? event.maxCapacity - event._count.rsvps
+    : null;
+
+  return (
+    <div className="bg-white rounded-xl border border-neutral-200 hover:shadow-md transition-all">
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 rounded-xl bg-neutral-100 flex flex-col items-center justify-center flex-shrink-0">
+            <span className="text-xs text-neutral-600 font-semibold">
+              {eventDate
+                .toLocaleDateString("en-US", { month: "short" })
+                .toUpperCase()}
+            </span>
+            <span className="text-xl font-bold text-neutral-900">
+              {eventDate.getDate()}
+            </span>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-neutral-900 mb-2">
+              {event.titleEn}
+            </h3>
+            <div className="space-y-1 text-sm text-neutral-600 mb-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="truncate">{event.location}</span>
+              </div>
+              {spotsLeft !== null && (
+                <div className="flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{spotsLeft} spots left</span>
+                </div>
+              )}
+            </div>
+            <Link
+              href={`/events/${event.slug}?from=portal`}
+              className="inline-block px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
+            >
+              View & RSVP
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Table Components (simplified versions of admin)
+function EventsTable({ events }: { events: Event[] }) {
+  return (
+    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-neutral-50 border-b border-neutral-200">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                Event
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                Location
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                Availability
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-200">
+            {events.map((event) => (
+              <EventTableRow key={event.id} event={event} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function EventTableRow({ event }: { event: Event }) {
+  const eventDate = new Date(event.eventDate);
+  const spotsLeft = event.maxCapacity
+    ? event.maxCapacity - event._count.rsvps
+    : null;
+
+  return (
+    <tr className="hover:bg-neutral-50 transition-colors">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
+        {eventDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })}
+      </td>
+      <td className="px-6 py-4 text-sm font-medium text-neutral-900">
+        {event.titleEn}
+      </td>
+      <td className="px-6 py-4 text-sm text-neutral-600">
+        <div className="max-w-xs truncate">{event.location}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
+        {spotsLeft !== null ? `${spotsLeft} spots` : "Unlimited"}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm">
+        <Link
+          href={`/events/${event.slug}?from=portal`}
+          className="text-primary hover:underline font-medium"
+        >
+          View Details
+        </Link>
+      </td>
+    </tr>
+  );
+}

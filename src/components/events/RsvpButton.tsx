@@ -55,7 +55,7 @@ export default function RsvpButton({
         alert(data.error || "Failed to RSVP");
       }
     } catch (error) {
-      alert("An error occurred");
+      alert(error);
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function RsvpButton({
         alert("Failed to cancel RSVP");
       }
     } catch (error) {
-      alert("An error occurred");
+      alert(error);
     } finally {
       setLoading(false);
     }
