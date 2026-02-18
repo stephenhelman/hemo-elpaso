@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { resend, EMAIL_FROM } from "@/lib/resend";
 import { render } from "@react-email/render";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 
@@ -143,8 +143,9 @@ export async function POST(request: NextRequest) {
       );
 
       await resend.emails.send({
-        from: "HOEP Events <onboarding@resend.dev>",
+        from: EMAIL_FROM,
         to: rsvp.patient.email,
+        replyTo: "info@hemo-el-paso.org",
         subject: `Welcome to ${rsvp.event.titleEn}!`,
         html: emailHtml,
       });

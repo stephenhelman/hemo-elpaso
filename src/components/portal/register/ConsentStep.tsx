@@ -80,10 +80,10 @@ export default function ConsentStep({
           copy of your data or delete your account at any time by contacting us
           at{" "}
           <a
-            href="mailto:info@hemoelpaso.org"
+            href="mailto:info@hemo-el-paso.org"
             className="text-primary hover:underline"
           >
-            info@hemoelpaso.org
+            info@hemo-el-paso.org
           </a>
           .
         </p>

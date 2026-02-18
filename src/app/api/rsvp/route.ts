@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { resend, EMAIL_FROM } from "@/lib/resend";
 import { render } from "@react-email/render";
 import RsvpConfirmation from "@/messages/RsvpConfirmation";
 import RsvpCancellation from "@/messages/RsvpCancellation";
@@ -151,8 +151,9 @@ export async function POST(request: NextRequest) {
       );
 
       const result = await resend.emails.send({
-        from: "HOEP Events <onboarding@resend.dev>",
+        from: EMAIL_FROM,
         to: patient.email,
+        replyTo: "info@hemo-el-paso.org",
         subject: `RSVP Confirmed: ${event.titleEn}`,
         html: emailHtml,
         attachments: [
@@ -271,8 +272,9 @@ export async function DELETE(request: NextRequest) {
       );
 
       await resend.emails.send({
-        from: "HOEP Events <onboarding@resend.dev>",
+        from: EMAIL_FROM,
         to: patient.email,
+        replyTo: "info@hemo-el-paso.org",
         subject: `RSVP Cancelled: ${rsvp.event.titleEn}`,
         html: emailHtml,
       });

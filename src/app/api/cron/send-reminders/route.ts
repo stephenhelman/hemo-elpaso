@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { resend, EMAIL_FROM } from "@/lib/resend";
 import { render } from "@react-email/render";
 import EventReminder from "@/messages/EventReminder";
 import QRCode from "qrcode";
@@ -107,7 +107,8 @@ export async function GET(request: NextRequest) {
 
           // Send email
           await resend.emails.send({
-            from: "HOEP Events <onboarding@resend.dev>",
+            from: EMAIL_FROM,
+            replyTo: "info@hemo-el-paso.org",
             to: rsvp.patient.email,
             subject: `Reminder: ${event.titleEn} is Tomorrow!`,
             html: emailHtml,

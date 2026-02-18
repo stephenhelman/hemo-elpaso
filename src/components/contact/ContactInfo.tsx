@@ -50,8 +50,8 @@ export default function ContactInfo({ lang }: Props) {
           <InfoRow
             icon={<Mail className="w-4 h-4" />}
             label={t.email}
-            value="info@hemoelpaso.org"
-            href="mailto:info@hemoelpaso.org"
+            value="info@hemo-el-paso.org"
+            href="mailto:info@hemo-el-paso.org"
           />
           <InfoRow
             icon={<MapPin className="w-4 h-4" />}

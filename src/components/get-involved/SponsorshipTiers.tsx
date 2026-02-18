@@ -242,10 +242,10 @@ export default function SponsorshipTiers({ lang }: Props) {
       <p className="text-center text-sm text-neutral-500">
         {t.contact}{" "}
         <a
-          href="mailto:info@hemoelpaso.org"
+          href="mailto:info@hemo-el-paso.org"
           className="text-primary font-semibold hover:underline"
         >
-          info@hemoelpaso.org
+          info@hemo-el-paso.org
         </a>
       </p>
     </Section>

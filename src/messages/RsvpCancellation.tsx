@@ -85,8 +85,8 @@ export default function RsvpCancellation({
             <Text style={footerText}>We hope to see you at future events!</Text>
             <Text style={footerText}>
               Questions? Email{" "}
-              <a href="mailto:info@hemoelpaso.org" style={link}>
-                info@hemoelpaso.org
+              <a href="mailto:info@hemo-el-paso.org" style={link}>
+                info@hemo-el-paso.org
               </a>
             </Text>
           </Section>

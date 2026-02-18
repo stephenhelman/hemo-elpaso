@@ -121,10 +121,10 @@ export default function Footer({ lang }: FooterProps) {
               <li className="flex items-center gap-2 text-sm text-neutral-400">
                 <Mail className="w-4 h-4 text-primary-400 flex-shrink-0" />
                 <a
-                  href="mailto:info@hemoelpaso.org"
+                  href="mailto:info@hemo-el-paso.org"
                   className="hover:text-primary-400 transition-colors"
                 >
-                  info@hemoelpaso.org
+                  info@hemo-el-paso.org
                 </a>
               </li>
             </ul>

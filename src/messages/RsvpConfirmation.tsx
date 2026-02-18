@@ -118,8 +118,8 @@ export default function RsvpConfirmation({
           <Section style={footer}>
             <Text style={footerText}>
               Questions? Contact us at{" "}
-              <a href="mailto:info@hemoelpaso.org" style={link}>
-                info@hemoelpaso.org
+              <a href="mailto:info@hemo-el-paso.org" style={link}>
+                info@hemo-el-paso.org
               </a>
             </Text>
             <Text style={footerText}>

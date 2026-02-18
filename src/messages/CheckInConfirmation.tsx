@@ -100,8 +100,8 @@ export default function CheckInConfirmation({
           <Section style={footer}>
             <Text style={footerText}>
               Questions? Contact event staff or email{" "}
-              <a href="mailto:info@hemoelpaso.org" style={link}>
-                info@hemoelpaso.org
+              <a href="mailto:info@hemo-el-paso.org" style={link}>
+                info@hemo-el-paso.org
               </a>
             </Text>
             <Text style={footerText}>Enjoy the event! 🎊</Text>
