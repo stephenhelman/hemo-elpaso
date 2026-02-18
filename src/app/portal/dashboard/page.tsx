@@ -15,6 +15,8 @@ import { prisma } from "@/lib/db";
 import { getRecommendedEvents } from "@/lib/event-matching";
 import QrCodeDisplay from "@/components/portal/QrCodeDisplay";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const session = await getSession();
 

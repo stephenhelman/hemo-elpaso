@@ -19,11 +19,10 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const events = await prisma.event.findMany({
-    select: { slug: true },
-  });
-  return events.map((event) => ({ slug: event.slug }));
+  return [];
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function EventPage({ params }: Props) {
   const lang: Lang = "en";

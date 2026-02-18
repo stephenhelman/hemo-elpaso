@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Calendar, Users, CheckCircle, TrendingUp } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   // Get stats
   const [totalEvents, upcomingEvents, totalRsvps, totalPatients] =
