@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Calendar, MapPin, Users, Pencil, QrCode } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Pencil,
+  QrCode,
+  ScanLine,
+} from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
 import EventAccessQr from "./EventAccessQr";
 
@@ -91,11 +98,18 @@ export default function EventRowWithQr({ event, isPast }: Props) {
           {/* Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
+              href={`/admin/events/${event.id}/attendees`}
+              className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-blue-600 transition-colors"
+              title="View Attendees"
+            >
+              <Users className="w-4 h-4" />
+            </Link>
+            <Link
               href={`/admin/checkin?event=${event.id}`}
               className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-green-600 transition-colors"
               title="Check-In"
             >
-              <Users className="w-4 h-4" />
+              <ScanLine className="w-4 h-4" />
             </Link>
             <Link
               href={`/admin/events/${event.id}/edit`}
