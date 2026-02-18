@@ -5,6 +5,7 @@ import { Calendar } from "lucide-react";
 import EventCard from "@/components/events/EventCard";
 import Section from "@/components/layout/Section";
 import { useEffect, useState } from "react";
+import { Lang } from "@/types";
 
 export default function EventsPage() {
   const { lang } = useLang();
@@ -71,28 +72,43 @@ function EventsHero({ lang }: { lang: Lang }) {
   );
 }
 
-function UpcomingEventsSection({ lang }: { lang: Lang }) {
+function UpcomingEventsSection({
+  lang,
+  events,
+  loading,
+}: {
+  lang: Lang;
+  events: any[];
+  loading: boolean;
+}) {
   const t = {
     en: {
       heading: "Upcoming Events",
       sub: "Reserve your spot at our next community gathering",
       empty: "No upcoming events scheduled. Check back soon!",
+      loading: "Loading events...",
     },
     es: {
       heading: "Próximos Eventos",
       sub: "Reserve su lugar en nuestra próxima reunión comunitaria",
       empty: "No hay eventos próximos programados. ¡Vuelva pronto!",
+      loading: "Cargando eventos...",
     },
   }[lang];
 
   return (
     <Section background="neutral">
       <SectionHeader heading={t.heading} sub={t.sub} />
-      {upcomingEvents.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-16">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-neutral-400">{t.loading}</p>
+        </div>
+      ) : events.length === 0 ? (
         <EmptyState message={t.empty} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {upcomingEvents.map((event) => (
+          {events.map((event) => (
             <EventCard key={event.id} event={event} lang={lang} />
           ))}
         </div>
@@ -101,23 +117,35 @@ function UpcomingEventsSection({ lang }: { lang: Lang }) {
   );
 }
 
-function PastEventsSection({ lang }: { lang: Lang }) {
+function PastEventsSection({
+  lang,
+  events,
+  loading,
+}: {
+  lang: Lang;
+  events: any[];
+  loading: boolean;
+}) {
   const t = {
     en: {
       heading: "Past Events",
       sub: "A look back at our community gatherings",
+      empty: "No past events yet.",
     },
     es: {
       heading: "Eventos Pasados",
       sub: "Un vistazo a nuestras reuniones comunitarias",
+      empty: "No hay eventos pasados todavía.",
     },
   }[lang];
+
+  if (loading || events.length === 0) return null;
 
   return (
     <Section background="white">
       <SectionHeader heading={t.heading} sub={t.sub} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pastEvents.map((event) => (
+        {events.map((event) => (
           <EventCard key={event.id} event={event} lang={lang} />
         ))}
       </div>
