@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { resend } from "@/lib/resend";
+import { render } from "@react-email/render";
+import RsvpConfirmation from "@/messages/RsvpConfirmation";
+import QRCode from "qrcode";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,13 +20,16 @@ export async function POST(request: NextRequest) {
     // Get patient
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
+      include: {
+        profile: true,
+      },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    // Get event and check capacity
+    // Get event
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
@@ -101,7 +108,71 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send confirmation email via Resend
+    // Generate QR code for email
+    const qrData = `RSVP-${rsvp.id}`;
+    const qrCodeDataURL = await QRCode.toDataURL(qrData, {
+      width: 500,
+      margin: 2,
+      color: {
+        dark: "#8B1538",
+        light: "#FFFFFF",
+      },
+    });
+
+    // Convert base64 to buffer for email attachment
+    const base64Data = qrCodeDataURL.replace(/^data:image\/png;base64,/, "");
+    const qrBuffer = Buffer.from(base64Data, "base64");
+
+    // Send confirmation email
+    try {
+      console.log("Attempting to send email to:", patient.email);
+
+      const emailHtml = await render(
+        RsvpConfirmation({
+          patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+          eventTitle: event.titleEn,
+          eventDate: new Date(event.eventDate).toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+          eventTime: new Date(event.eventDate).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          location: event.location,
+          adultsCount,
+          childrenCount,
+          qrCodeDataUrl: "cid:qrcode", // Use CID reference instead
+          eventSlug: event.slug,
+        }),
+      );
+
+      const result = await resend.emails.send({
+        from: "HOEP Events <onboarding@resend.dev>",
+        to: patient.email,
+        subject: `RSVP Confirmed: ${event.titleEn}`,
+        html: emailHtml,
+        attachments: [
+          {
+            filename: "qr-code.png",
+            content: qrBuffer,
+            contentId: "qrcode",
+          },
+        ],
+      });
+
+      console.log("Resend response:", result);
+
+      if (result.error) {
+        console.error("Resend error:", result.error);
+      } else {
+        console.log("Email sent successfully! ID:", result.data?.id);
+      }
+    } catch (emailError) {
+      console.error("Email send error:", emailError);
+    }
 
     return NextResponse.json({
       success: true,
