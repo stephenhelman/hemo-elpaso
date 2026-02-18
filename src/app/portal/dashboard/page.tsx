@@ -1,3 +1,4 @@
+import UpcomingEventCard from "@/components/portal/UpcomingEventCard";
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import {
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getRecommendedEvents } from "@/lib/event-matching";
+import QrCodeDisplay from "@/components/portal/QrCodeDisplay";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -159,7 +161,7 @@ export default async function DashboardPage() {
               {upcomingRsvps.length > 0 ? (
                 <div className="space-y-3">
                   {upcomingRsvps.map((rsvp) => (
-                    <EventRow key={rsvp.id} rsvp={rsvp} />
+                    <UpcomingEventCard key={rsvp.id} rsvp={rsvp} />
                   ))}
                 </div>
               ) : (
@@ -369,35 +371,55 @@ function RecommendedEventCard({ event }: { event: any }) {
 }
 
 function EventRow({ rsvp }: { rsvp: any }) {
+  const [showQr, setShowQr] = useState(false);
   const eventDate = new Date(rsvp.event.eventDate);
 
   return (
-    <Link
-      href={`/events/${rsvp.event.slug}`}
-      className="flex items-center justify-between p-4 rounded-xl border border-neutral-200 hover:border-primary-200 hover:bg-primary-50/50 transition-all group"
-    >
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary-50 flex flex-col items-center justify-center">
-          <span className="text-xs text-primary-600 font-semibold">
-            {eventDate
-              .toLocaleDateString("en-US", { month: "short" })
-              .toUpperCase()}
-          </span>
-          <span className="text-lg font-bold text-primary">
-            {eventDate.getDate()}
-          </span>
+    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+      <Link
+        href={`/events/${rsvp.event.slug}`}
+        className="flex items-center justify-between p-4 hover:bg-primary-50/50 transition-all group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary-50 flex flex-col items-center justify-center">
+            <span className="text-xs text-primary-600 font-semibold">
+              {eventDate
+                .toLocaleDateString("en-US", { month: "short" })
+                .toUpperCase()}
+            </span>
+            <span className="text-lg font-bold text-primary">
+              {eventDate.getDate()}
+            </span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
+              {rsvp.event.titleEn}
+            </h3>
+            <p className="text-sm text-neutral-500">
+              {rsvp.adultsAttending + rsvp.childrenAttending} attendees
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
-            {rsvp.event.titleEn}
-          </h3>
-          <p className="text-sm text-neutral-500">
-            {rsvp.adultsAttending + rsvp.childrenAttending} attendees
-          </p>
-        </div>
+        <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-primary transition-colors" />
+      </Link>
+
+      {/* QR Code Toggle */}
+      <div className="border-t border-neutral-200">
+        <button
+          onClick={() => setShowQr(!showQr)}
+          className="w-full px-4 py-2 text-sm text-primary hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
+        >
+          <QrCode className="w-4 h-4" />
+          {showQr ? "Hide QR Code" : "Show Check-in QR Code"}
+        </button>
+
+        {showQr && (
+          <div className="p-4 bg-neutral-50 border-t border-neutral-200">
+            <QrCodeDisplay rsvpId={rsvp.id} eventTitle={rsvp.event.titleEn} />
+          </div>
+        )}
       </div>
-      <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-primary transition-colors" />
-    </Link>
+    </div>
   );
 }
 

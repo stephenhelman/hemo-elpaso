@@ -190,6 +190,7 @@ model CheckIn {
   event            Event    @relation(fields: [eventId], references: [id])
   patient          Patient  @relation(fields: [patientId], references: [id])
   checkInTime      DateTime @default(now())
+  checkedInBy      String?
   sessionToken     String   @unique
   sessionExpiresAt DateTime
 
