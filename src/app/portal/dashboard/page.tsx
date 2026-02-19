@@ -57,7 +57,7 @@ export default async function DashboardPage() {
 
   // If no patient record, redirect to registration
   if (!patient || !patient.profile) {
-    redirect("/portal/register");
+    redirect("/register");
   }
 
   // Get recommended events
