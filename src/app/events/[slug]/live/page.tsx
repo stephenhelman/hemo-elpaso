@@ -1,8 +1,15 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { ArrowLeft, CheckCircle, XCircle, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
+import LivePoll from "@/components/events/live/LivePoll";
 
 interface Props {
   params: { slug: string };
@@ -37,7 +44,7 @@ export default async function LiveEventPage({ params }: Props) {
   });
 
   if (!patient) {
-    redirect("/portal/register");
+    redirect("/register");
   }
 
   // Check if patient is checked in to THIS event
@@ -85,17 +92,21 @@ export default async function LiveEventPage({ params }: Props) {
             </span>
           </div>
         </div>
+        {/* Live Polls Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary-400" />
+            </div>
+            <h2 className="font-display font-bold text-white text-2xl">
+              Live Polls
+            </h2>
+          </div>
 
-        {/* Live Features Grid */}
+          <LivePoll eventId={event.id} sessionToken={checkIn.sessionToken} />
+        </div>
+        {/* Other Features Coming Soon */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Placeholder: Live Poll */}
-          <FeatureCard
-            icon={<Sparkles className="w-6 h-6" />}
-            title="Live Poll"
-            description="Vote on event topics and see real-time results"
-            status="Coming Soon"
-          />
-
           {/* Placeholder: Sponsor Questions */}
           <FeatureCard
             icon={<Sparkles className="w-6 h-6" />}
@@ -120,7 +131,6 @@ export default async function LiveEventPage({ params }: Props) {
             status="Coming Soon"
           />
         </div>
-
         {/* Demo Message */}
         <div className="mt-8 bg-primary-900/50 border border-primary-500/30 rounded-2xl p-6 text-center">
           <Sparkles className="w-12 h-12 text-primary-400 mx-auto mb-3" />
@@ -133,6 +143,7 @@ export default async function LiveEventPage({ params }: Props) {
             will be added next.
           </p>
         </div>
+        ;
       </div>
     </div>
   );

@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { QrCode, Loader2, Monitor, Download } from "lucide-react";
 
 interface Props {
-  eventSlug: string;
+  eventId: string;
   eventTitle: string;
 }
 
-export default function EventAccessQr({ eventSlug, eventTitle }: Props) {
+export default function EventAccessQr({ eventId, eventTitle }: Props) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [liveUrl, setLiveUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/events/${eventSlug}/access-qr`)
+    fetch(`/api/events/${eventId}/access-qr`)
       .then((res) => res.json())
       .then((data) => {
         setQrCode(data.qrCode);
@@ -22,14 +22,14 @@ export default function EventAccessQr({ eventSlug, eventTitle }: Props) {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [eventSlug]);
+  }, [eventId]);
 
   const handleDownload = () => {
     if (!qrCode) return;
 
     const link = document.createElement("a");
     link.href = qrCode;
-    link.download = `event-access-qr-${eventSlug}.png`;
+    link.download = `event-access-qr-${eventId}.png`;
     link.click();
   };
 

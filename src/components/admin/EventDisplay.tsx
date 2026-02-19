@@ -13,6 +13,7 @@ import {
   ScanLine,
   ChevronDown,
   ChevronUp,
+  BarChart3,
 } from "lucide-react";
 import EventRowWithQr from "./EventRowWithQr";
 
@@ -306,6 +307,13 @@ function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm">
         <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/events/${event.id}/polls`}
+            className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+            title="Manage Polls"
+          >
+            <BarChart3 className="w-4 h-4" />
+          </Link>
           <Link
             href={`/admin/events/${event.id}/attendees`}
             className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-blue-600 transition-colors"

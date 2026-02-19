@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import EventEditForm from "@/components/admin/EventEditForm";
+import { BarChart3 } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   params: { id: string };
@@ -36,13 +38,22 @@ export default async function EditEventPage({ params }: Props) {
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Edit Event
-          </h1>
-          <p className="text-neutral-500">
-            Update event details and targeting preferences
-          </p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+              Edit Event
+            </h1>
+            <p className="text-neutral-500">
+              Update event details and targeting preferences
+            </p>
+          </div>
+          <Link
+            href={`/admin/events/${event.id}/polls`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary-50 transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Manage Polls
+          </Link>
         </div>
 
         <EventEditForm event={event} />

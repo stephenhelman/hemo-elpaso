@@ -4,11 +4,11 @@ import QRCode from "qrcode";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: { id: string } },
 ) {
   try {
     const event = await prisma.event.findUnique({
-      where: { slug: params.slug },
+      where: { id: params.id },
     });
 
     if (!event) {

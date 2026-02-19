@@ -149,6 +149,7 @@ model Event {
   rsvps         Rsvp[]
   checkIns      CheckIn[]
   interactions  EventInteraction[]
+  pollCreationTokens PollCreationToken[]
   photos        EventPhoto[]
   questions     EventQuestion[]
 
@@ -203,25 +204,51 @@ model CheckIn {
 model EventInteraction {
   id            String    @id @default(uuid())
   eventId       String
-  event         Event     @relation(fields: [eventId], references: [id])
-  type          String
+  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  type          String    // 'poll', 'question', 'announcement'
   titleEn       String
   titleEs       String
-  options       Json?
+  options       Json?     // For polls: {options: [{id, text}]}
+  
+  status        String    @default("draft") // draft, pending, approved, active, completed
   active        Boolean   @default(false)
   sequenceOrder Int       @default(0)
+  
+  createdBy     String?   // admin email or "rep:{repEmail}"
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   responses     InteractionResponse[]
+  
+  @@map("event_interactions")
+}
+
+model PollCreationToken {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  token       String   @unique
+  repEmail    String
+  repName     String?
+  expiresAt   DateTime
+  
+  createdBy   String   // admin who generated the link
+  createdAt   DateTime @default(now())
+  
+  @@map("poll_creation_tokens")
 }
 
 model InteractionResponse {
   id            String           @id @default(uuid())
   interactionId String
-  interaction   EventInteraction @relation(fields: [interactionId], references: [id])
+  interaction   EventInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
   sessionToken  String
   responseData  Json
   createdAt     DateTime         @default(now())
+  
+  @@map("interaction_responses")
 }
 
 model EventQuestion {
