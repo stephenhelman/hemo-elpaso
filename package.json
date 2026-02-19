@@ -49,6 +49,7 @@
     "react-dom": "^18",
     "react-email": "^5.2.8",
     "react-hook-form": "^7.71.1",
+    "react-hot-toast": "^2.6.0",
     "recharts": "^3.7.0",
     "resend": "^6.9.2",
     "sharp": "^0.34.5",

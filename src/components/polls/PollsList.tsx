@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Trash2, CheckCircle, Clock, Pencil } from "lucide-react";
+import toast from "react-hot-toast";
+import { useConfirm } from "@/hooks/useConfirm";
+import ConfirmModal from "../ui/ConfirmModal";
 
 interface Poll {
   id: string;
@@ -25,6 +28,7 @@ interface Props {
 export default function PollsList({ eventId, polls, adminEmail }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   // Group polls by status
   const pendingPolls = polls.filter((p) => p.status === "pending");
@@ -44,12 +48,18 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
       });
 
       if (response.ok) {
+        toast.success(
+          currentActive
+            ? "Poll removed from live feed"
+            : "Poll added to live feed",
+        );
         router.refresh();
       } else {
-        alert("Failed to toggle poll");
+        const data = await response.json();
+        toast.error(data.error || "Failed to toggle poll");
       }
-    } catch (error) {
-      alert(error);
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
     } finally {
       setLoading(null);
     }
@@ -64,19 +74,30 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
       });
 
       if (response.ok) {
+        toast.success("Poll approved successfully"); // CHANGED
         router.refresh();
       } else {
-        alert("Failed to approve poll");
+        const data = await response.json();
+        toast.error(data.error || "Failed to approve poll"); // CHANGED
       }
-    } catch (error) {
-      alert(error);
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred"); // CHANGED
     } finally {
       setLoading(null);
     }
   };
 
   const handleDelete = async (pollId: string) => {
-    if (!confirm("Are you sure you want to delete this poll?")) return;
+    const confirmed = await confirm({
+      title: "Delete Poll?",
+      message:
+        "This will permanently delete the poll and all responses. This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (!confirmed) return;
 
     setLoading(pollId);
 
@@ -86,12 +107,14 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
       });
 
       if (response.ok) {
+        toast.success("Poll deleted successfully"); // CHANGED
         router.refresh();
       } else {
-        alert("Failed to delete poll");
+        const data = await response.json();
+        toast.error(data.error || "Failed to delete poll"); // CHANGED
       }
-    } catch (error) {
-      alert(error);
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred"); // CHANGED
     } finally {
       setLoading(null);
     }
@@ -110,73 +133,76 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Pending Polls - Need Approval */}
-      {pendingPolls.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-amber-600" />
-            Pending Approval ({pendingPolls.length})
-          </h2>
-          <div className="space-y-3">
-            {pendingPolls.map((poll) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                onToggleActive={handleToggleActive}
-                onApprove={handleApprove}
-                onDelete={handleDelete}
-                loading={loading === poll.id}
-              />
-            ))}
+    <>
+      <ConfirmDialog />
+      <div className="space-y-6">
+        {/* Pending Polls - Need Approval */}
+        {pendingPolls.length > 0 && (
+          <div>
+            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-600" />
+              Pending Approval ({pendingPolls.length})
+            </h2>
+            <div className="space-y-3">
+              {pendingPolls.map((poll) => (
+                <PollCard
+                  key={poll.id}
+                  poll={poll}
+                  onToggleActive={handleToggleActive}
+                  onApprove={handleApprove}
+                  onDelete={handleDelete}
+                  loading={loading === poll.id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Active/Approved Polls */}
-      {approvedPolls.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            Active & Approved ({approvedPolls.length})
-          </h2>
-          <div className="space-y-3">
-            {approvedPolls.map((poll) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                onToggleActive={handleToggleActive}
-                onApprove={handleApprove}
-                onDelete={handleDelete}
-                loading={loading === poll.id}
-              />
-            ))}
+        {/* Active/Approved Polls */}
+        {approvedPolls.length > 0 && (
+          <div>
+            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              Active & Approved ({approvedPolls.length})
+            </h2>
+            <div className="space-y-3">
+              {approvedPolls.map((poll) => (
+                <PollCard
+                  key={poll.id}
+                  poll={poll}
+                  onToggleActive={handleToggleActive}
+                  onApprove={handleApprove}
+                  onDelete={handleDelete}
+                  loading={loading === poll.id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Draft Polls */}
-      {draftPolls.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-            <Pencil className="w-5 h-5 text-neutral-600" />
-            Drafts ({draftPolls.length})
-          </h2>
-          <div className="space-y-3">
-            {draftPolls.map((poll) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                onToggleActive={handleToggleActive}
-                onApprove={handleApprove}
-                onDelete={handleDelete}
-                loading={loading === poll.id}
-              />
-            ))}
+        {/* Draft Polls */}
+        {draftPolls.length > 0 && (
+          <div>
+            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-neutral-600" />
+              Drafts ({draftPolls.length})
+            </h2>
+            <div className="space-y-3">
+              {draftPolls.map((poll) => (
+                <PollCard
+                  key={poll.id}
+                  poll={poll}
+                  onToggleActive={handleToggleActive}
+                  onApprove={handleApprove}
+                  onDelete={handleDelete}
+                  loading={loading === poll.id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
 

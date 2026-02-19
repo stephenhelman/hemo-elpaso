@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Shield, Camera, Mail } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
   data: any;
@@ -20,7 +21,7 @@ export default function ConsentStep({
     e.preventDefault();
 
     if (!data.hipaaConsent) {
-      alert("HIPAA consent is required to continue.");
+      toast.error("HIPAA consent is required to continue.");
       return;
     }
 

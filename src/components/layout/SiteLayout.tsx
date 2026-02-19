@@ -6,6 +6,7 @@ import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useLang } from "@/context/LanguageContext";
+import ToastProvider from "@/components/providers/ToastProvider";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const { lang, setLang } = useLang();
@@ -31,7 +32,10 @@ export default function SiteLayout({
     <UserProvider>
       <LanguageProvider>
         <EventsProvider>
-          <LayoutInner>{children}</LayoutInner>
+          <LayoutInner>
+            {children}
+            <ToastProvider />
+          </LayoutInner>
         </EventsProvider>
       </LanguageProvider>
     </UserProvider>

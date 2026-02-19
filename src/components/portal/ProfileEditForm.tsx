@@ -15,6 +15,8 @@ import {
   Pencil,
   X,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface FamilyMember {
   id: string;
@@ -55,6 +57,7 @@ interface Props {
 
 export default function ProfileEditForm({ patient }: Props) {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"personal" | "medical" | "family">(
     "personal",
@@ -107,13 +110,13 @@ export default function ProfileEditForm({ patient }: Props) {
 
       if (response.ok) {
         router.refresh();
-        alert("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to update profile");
+        toast.error(data.error || "Failed to update profile");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -180,19 +183,23 @@ export default function ProfileEditForm({ patient }: Props) {
         });
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to save family member");
+        toast.error(data.error || "Failed to save family member");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to save family member");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteMember = async (memberId: string) => {
-    if (!confirm("Are you sure you want to remove this family member?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Remove Family Member?",
+      message: "Are you sure you want to remove this family member? This action cannot be undone.",
+      confirmText: "Remove",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     setLoading(true);
 
@@ -205,10 +212,10 @@ export default function ProfileEditForm({ patient }: Props) {
         router.refresh();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete family member");
+        toast.error(data.error || "Failed to delete family member");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete family member");
     } finally {
       setLoading(false);
     }
@@ -813,6 +820,7 @@ export default function ProfileEditForm({ patient }: Props) {
           </button>
         </div>
       )}
+      <ConfirmDialog />
     </form>
   );
 }

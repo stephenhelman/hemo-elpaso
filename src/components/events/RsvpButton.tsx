@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Users, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface Props {
   eventId: string;
@@ -22,6 +24,7 @@ export default function RsvpButton({
   currentRsvps,
 }: Props) {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [adultsCount, setAdultsCount] = useState(1);
@@ -52,17 +55,23 @@ export default function RsvpButton({
         setShowForm(false);
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to RSVP");
+        toast.error(data.error || "Failed to RSVP");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit RSVP");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = async () => {
-    if (!confirm("Are you sure you want to cancel your RSVP?")) return;
+    const confirmed = await confirm({
+      title: "Cancel RSVP?",
+      message: "Are you sure you want to cancel your RSVP for this event?",
+      confirmText: "Cancel RSVP",
+      variant: "warning",
+    });
+    if (!confirmed) return;
 
     setLoading(true);
 
@@ -74,10 +83,10 @@ export default function RsvpButton({
       if (response.ok) {
         router.refresh();
       } else {
-        alert("Failed to cancel RSVP");
+        toast.error("Failed to cancel RSVP");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to cancel RSVP");
     } finally {
       setLoading(false);
     }
@@ -86,19 +95,22 @@ export default function RsvpButton({
   // If already RSVP'd
   if (hasRsvp) {
     return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary border border-secondary/20">
-          <Calendar className="w-4 h-4" />
-          <span className="text-sm font-semibold">You're registered!</span>
+      <>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary border border-secondary/20">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-semibold">You're registered!</span>
+          </div>
+          <button
+            onClick={handleCancel}
+            disabled={loading}
+            className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 text-sm font-semibold hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Cancelling..." : "Cancel RSVP"}
+          </button>
         </div>
-        <button
-          onClick={handleCancel}
-          disabled={loading}
-          className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 text-sm font-semibold hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
-        >
-          {loading ? "Cancelling..." : "Cancel RSVP"}
-        </button>
-      </div>
+        <ConfirmDialog />
+      </>
     );
   }
 

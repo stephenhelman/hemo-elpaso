@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
   eventId: string;
@@ -67,10 +68,10 @@ export default function CreatePollButton({ eventId }: Props) {
         resetForm();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to create poll");
+        toast.error(data.error || "Failed to create poll");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to create poll");
     } finally {
       setLoading(false);
     }

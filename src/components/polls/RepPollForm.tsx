@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
   token: string;
@@ -74,10 +75,10 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
         }, 2000);
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to create poll");
+        toast.error(data.error || "Failed to submit poll");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit poll");
     } finally {
       setLoading(false);
     }

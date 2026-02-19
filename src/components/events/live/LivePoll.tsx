@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart3, Users, CheckCircle, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface PollOption {
   id: string;
@@ -74,10 +75,10 @@ export default function LivePoll({ eventId, sessionToken }: Props) {
         await fetchPolls(); // Refresh results
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to vote");
+        toast.error(data.error || "Failed to vote");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit vote");
     } finally {
       setVoting(null);
     }

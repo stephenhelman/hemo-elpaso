@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import StepIndicator from "@/components/portal/register/StepIndicator";
 import BasicInfoStep from "@/components/portal/register/BasicInfoStep";
 import DiagnosisStep from "@/components/portal/register/DiagnosisStep";
@@ -94,11 +95,11 @@ export default function RegisterPage() {
       if (response.ok) {
         router.push("/portal/dashboard");
       } else {
-        alert("Registration failed. Please try again.");
+        toast.error("Registration failed. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 

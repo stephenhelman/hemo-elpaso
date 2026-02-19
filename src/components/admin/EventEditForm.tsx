@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface Event {
   id: string;
@@ -36,6 +38,7 @@ interface Props {
 
 export default function EventEditForm({ event }: Props) {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -79,23 +82,23 @@ export default function EventEditForm({ event }: Props) {
         router.refresh();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to update event");
+        toast.error(data.error || "Failed to update event");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to update event");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this event? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete Event?",
+      message: "Are you sure you want to delete this event? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     setDeleting(true);
 
@@ -109,16 +112,18 @@ export default function EventEditForm({ event }: Props) {
         router.refresh();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete event");
+        toast.error(data.error || "Failed to delete event");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete event");
     } finally {
       setDeleting(false);
     }
   };
 
   return (
+    <>
+    <ConfirmDialog />
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="bg-white rounded-2xl border border-neutral-200 p-8">
         <Link
@@ -368,5 +373,6 @@ export default function EventEditForm({ event }: Props) {
         </button>
       </div>
     </form>
+    </>
   );
 }

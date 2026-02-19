@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, X, Loader2, Copy, Check } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
   eventId: string;
@@ -40,10 +41,10 @@ export default function InviteRepButton({ eventId }: Props) {
         setGeneratedLink(data.link);
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to generate link");
+        toast.error(data.error || "Failed to generate invitation link");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate invitation link");
     } finally {
       setLoading(false);
     }

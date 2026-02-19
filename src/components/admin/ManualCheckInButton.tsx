@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface Props {
   rsvpId?: string;
@@ -20,10 +22,17 @@ export default function ManualCheckInButton({
   isCheckedIn,
 }: Props) {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
 
   const handleCheckIn = async () => {
-    if (!confirm(`Check in ${patientName}?`)) return;
+    const confirmed = await confirm({
+      title: `Check In ${patientName}?`,
+      message: `Confirm manual check-in for ${patientName}.`,
+      confirmText: "Check In",
+      variant: "info",
+    });
+    if (!confirmed) return;
 
     setLoading(true);
 
@@ -41,22 +50,23 @@ export default function ManualCheckInButton({
         router.refresh();
       } else {
         const data = await response.json();
-        alert(data.error || "Check-in failed");
+        toast.error(data.error || "Check-in failed");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Check-in failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCheckOut = async () => {
-    if (
-      !confirm(
-        `Remove check-in for ${patientName}? This will undo the check-in.`,
-      )
-    )
-      return;
+    const confirmed = await confirm({
+      title: `Undo Check-In for ${patientName}?`,
+      message: `This will remove the check-in for ${patientName}.`,
+      confirmText: "Undo Check-In",
+      variant: "warning",
+    });
+    if (!confirmed) return;
 
     setLoading(true);
 
@@ -72,10 +82,10 @@ export default function ManualCheckInButton({
         router.refresh();
       } else {
         const data = await response.json();
-        alert(data.error || "Check-out failed");
+        toast.error(data.error || "Check-out failed");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Check-out failed");
     } finally {
       setLoading(false);
     }
@@ -83,43 +93,49 @@ export default function ManualCheckInButton({
 
   if (isCheckedIn) {
     return (
-      <button
-        onClick={handleCheckOut}
-        disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-red-600 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Removing...
-          </>
-        ) : (
-          <>
-            <XCircle className="w-4 h-4" />
-            Undo Check-In
-          </>
-        )}
-      </button>
+      <>
+        <button
+          onClick={handleCheckOut}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-red-600 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Removing...
+            </>
+          ) : (
+            <>
+              <XCircle className="w-4 h-4" />
+              Undo Check-In
+            </>
+          )}
+        </button>
+        <ConfirmDialog />
+      </>
     );
   }
 
   return (
-    <button
-      onClick={handleCheckIn}
-      disabled={loading}
-      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
-    >
-      {loading ? (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Checking In...
-        </>
-      ) : (
-        <>
-          <CheckCircle className="w-4 h-4" />
-          Check In
-        </>
-      )}
-    </button>
+    <>
+      <button
+        onClick={handleCheckIn}
+        disabled={loading}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Checking In...
+          </>
+        ) : (
+          <>
+            <CheckCircle className="w-4 h-4" />
+            Check In
+          </>
+        )}
+      </button>
+      <ConfirmDialog />
+    </>
   );
 }

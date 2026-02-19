@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const categoryOptions = [
   { value: "EDUCATION", label: "Educational Seminar" },
@@ -107,10 +108,10 @@ export default function NewEventPage() {
         router.push("/admin/events");
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to create event");
+        toast.error(data.error || "Failed to create event");
       }
     } catch (error) {
-      alert(error);
+      toast.error(error instanceof Error ? error.message : "Failed to create event");
     } finally {
       setLoading(false);
     }
