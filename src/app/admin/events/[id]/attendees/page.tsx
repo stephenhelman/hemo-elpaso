@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { ArrowLeft, Users, CheckCircle, XCircle, Calendar } from "lucide-react";
-import ManualCheckInButton from "@/components/admin/ManualCheckinButton";
+import ManualCheckInButton from "@/components/admin/test";
 
 interface Props {
   params: { id: string };
