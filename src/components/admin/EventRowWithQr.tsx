@@ -10,6 +10,7 @@ import {
   QrCode,
   ScanLine,
   BarChart3,
+  MessageSquare,
 } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
 import EventAccessQr from "./EventAccessQr";
@@ -104,6 +105,13 @@ export default function EventRowWithQr({ event, isPast }: Props) {
               title="Manage Polls"
             >
               <BarChart3 className="w-4 h-4" />
+            </Link>
+            <Link
+              href={`/admin/events/${event.id}/questions`}
+              className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-indigo-600 transition-colors"
+              title="Q&A Dashboard"
+            >
+              <MessageSquare className="w-4 h-4" />
             </Link>
             <Link
               href={`/admin/events/${event.id}/attendees`}

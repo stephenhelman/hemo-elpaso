@@ -7,9 +7,11 @@ import {
   XCircle,
   BarChart3,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import LivePoll from "@/components/events/live/LivePoll";
+import QandA from "@/components/events/live/QandA";
 
 interface Props {
   params: { slug: string };
@@ -40,7 +42,15 @@ export default async function LiveEventPage({ params }: Props) {
   // Get patient
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
-    select: { id: true, profile: true },
+    select: {
+      id: true,
+      profile: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
   });
 
   if (!patient) {
@@ -58,6 +68,10 @@ export default async function LiveEventPage({ params }: Props) {
   if (!checkIn) {
     return <NotCheckedIn eventTitle={event.titleEn} eventSlug={params.slug} />;
   }
+
+  const patientName = patient.profile
+    ? `${patient.profile.firstName} ${patient.profile.lastName}`
+    : undefined;
 
   // Patient is checked in! Show live event features
   return (
@@ -105,16 +119,26 @@ export default async function LiveEventPage({ params }: Props) {
 
           <LivePoll eventId={event.id} sessionToken={checkIn.sessionToken} />
         </div>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <MessageSquare className="w-5 h-5 text-purple-400" />
+            </div>
+            <h2 className="font-display font-bold text-white text-2xl">
+              Q&A with Sponsors
+            </h2>
+          </div>
+
+          <QandA
+            eventId={event.id}
+            sessionToken={checkIn.sessionToken}
+            patientId={patient.id}
+            patientName={patientName}
+            lang="en" // TODO: Get from user preference
+          />
+        </div>
         {/* Other Features Coming Soon */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Placeholder: Sponsor Questions */}
-          <FeatureCard
-            icon={<Sparkles className="w-6 h-6" />}
-            title="Sponsor Q&A"
-            description="Submit questions for our sponsors and partners"
-            status="Coming Soon"
-          />
-
           {/* Placeholder: Photo Gallery */}
           <FeatureCard
             icon={<Sparkles className="w-6 h-6" />}

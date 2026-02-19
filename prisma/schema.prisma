@@ -255,11 +255,31 @@ model EventQuestion {
   id        String   @id @default(uuid())
   eventId   String
   event     Event    @relation(fields: [eventId], references: [id])
-  question  String
-  upvotes   Int      @default(0)
-  answered  Boolean  @default(false)
-  answer    String?
-  createdAt DateTime @default(now())
+
+  // Question Content
+  questionEn String
+  questionEs String
+  originalLang String @default("en")
+
+  //submitter info
+  patientId String?
+  patientName String?
+  isAnonymous Boolean @default(false)
+  sessionToken String
+
+  // Engagement
+  upvotes Int @default(0)
+  upvotedBy String[] @default([])
+
+  // Answer
+  answered Boolean @default(false)
+  answerEn String?
+  answerEs String?
+  answeredBy String?
+  answeredAt DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model EventPhoto {
