@@ -14,6 +14,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getRecommendedEvents } from "@/lib/event-matching";
 import QrCodeDisplay from "@/components/portal/QrCodeDisplay";
+import LiveEventBanner from "@/components/portal/LiveEventBanner";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -32,9 +33,19 @@ export default async function DashboardPage() {
         include: {
           event: true,
         },
-        orderBy: {
-          updatedAt: "desc",
+        where: {
+          event: {
+            eventDate: {
+              gte: new Date(),
+            },
+          },
         },
+        orderBy: {
+          event: {
+            eventDate: "asc",
+          },
+        },
+        take: 3,
       },
       checkIns: {
         include: {
@@ -91,6 +102,7 @@ export default async function DashboardPage() {
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
+        <LiveEventBanner patientId={patient.id} />
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
             Welcome back, {patient.profile.firstName}!

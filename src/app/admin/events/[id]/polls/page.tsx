@@ -6,6 +6,7 @@ import Link from "next/link";
 import PollsList from "@/components/polls/PollsList";
 import CreatePollButton from "@/components/admin/polls/CreatePollButton";
 import InviteRepButton from "@/components/admin/polls/InviteRepbutton";
+import { headers } from "next/headers";
 
 interface Props {
   params: { id: string };
@@ -26,6 +27,11 @@ export default async function EventPollsPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const headersList = headers();
+  const referer = headersList.get("referer") || "";
+  const cameFromEvents =
+    referer.includes("/admin/events") && !referer.includes("/admin/events/");
 
   // Get event with polls
   const event = await prisma.event.findUnique({
@@ -50,11 +56,13 @@ export default async function EventPollsPage({ params }: Props) {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <Link
-          href={`/admin/events/${event.id}/edit`}
+          href={
+            cameFromEvents ? "/admin/events" : `/admin/events/${event.id}/edit`
+          }
           className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Event
+          {cameFromEvents ? "Back to Events" : "Back to Event"}
         </Link>
 
         <div className="flex items-start justify-between mb-8">

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import EventEditForm from "@/components/admin/EventEditForm";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, MessageSquare, Users, ScanLine } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -47,13 +47,28 @@ export default async function EditEventPage({ params }: Props) {
               Update event details and targeting preferences
             </p>
           </div>
-          <Link
-            href={`/admin/events/${event.id}/polls`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary-50 transition-colors"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Manage Polls
-          </Link>
+          <div className="mb-8 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+            <p className="text-sm font-medium text-neutral-700 mb-3">
+              Quick Actions
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/admin/events/${event.id}/polls`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-purple-300 hover:text-purple-600 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Manage Polls
+              </Link>
+
+              <Link
+                href={`/admin/events/${event.id}/questions`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Q&A Dashboard
+              </Link>
+            </div>
+          </div>
         </div>
 
         <EventEditForm event={event} />

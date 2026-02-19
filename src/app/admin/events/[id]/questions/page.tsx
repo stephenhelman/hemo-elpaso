@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import QuestionsList from "@/components/admin/questions/QuestionsList";
+import { headers } from "next/headers";
 
 interface Props {
   params: { id: string };
@@ -24,6 +25,11 @@ export default async function EventQuestionsPage({ params }: Props) {
     redirect("/portal/dashboard");
   }
 
+  const headersList = headers();
+  const referer = headersList.get("referer") || "";
+  const cameFromEvents =
+    referer.includes("/admin/events") && !referer.includes("/admin/events/");
+
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
@@ -41,11 +47,13 @@ export default async function EventQuestionsPage({ params }: Props) {
     <div className="p-8">
       <div className="max-w-6xl mx-auto">
         <Link
-          href={`/admin/events/${event.id}/edit`}
+          href={
+            cameFromEvents ? "/admin/events" : `/admin/events/${event.id}/edit`
+          }
           className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Event
+          {cameFromEvents ? "Back to Events" : "Back to Event"}
         </Link>
 
         <div className="flex items-start justify-between mb-8">
