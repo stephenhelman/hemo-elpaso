@@ -141,6 +141,13 @@ export default function AdminCheckinPage() {
     <div className="p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
+          <Link
+            href="/admin/events"
+            className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Events
+          </Link>
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
             Event Check-In
           </h1>
@@ -156,13 +163,6 @@ export default function AdminCheckinPage() {
               <h2 className="font-display font-bold text-neutral-900 text-xl">
                 QR Code Scanner
               </h2>
-              <Link
-                href="/admin/events"
-                className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Events
-              </Link>
             </div>
 
             {/* Event Info Card */}

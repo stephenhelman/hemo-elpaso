@@ -1,0 +1,97 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@auth0/nextjs-auth0";
+import { prisma } from "@/lib/db";
+import { uploadToR2, deleteFromR2, generateFileKey } from "@/lib/r2";
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const session = await getSession();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const admin = await prisma.patient.findUnique({
+      where: { auth0Id: session.user.sub },
+    });
+
+    if (!admin || !["board", "admin"].includes(admin.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const formData = await request.formData();
+    const fileEn = formData.get("flyerEn") as File | null;
+    const fileEs = formData.get("flyerEs") as File | null;
+
+    const event = await prisma.event.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!event) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    let flyerEnUrl = event.flyerEnUrl;
+    let flyerEsUrl = event.flyerEsUrl;
+
+    // Upload English flyer
+    if (fileEn) {
+      // Delete old flyer if exists
+      if (event.flyerEnUrl) {
+        const oldKey = event.flyerEnUrl.replace(
+          `${process.env.R2_PUBLIC_URL}/`,
+          "",
+        );
+        await deleteFromR2(oldKey).catch(console.error);
+      }
+
+      const buffer = Buffer.from(await fileEn.arrayBuffer());
+      const key = generateFileKey(`flyers/${params.id}`, `en-${fileEn.name}`);
+      flyerEnUrl = await uploadToR2(buffer, key, fileEn.type);
+    }
+
+    // Upload Spanish flyer
+    if (fileEs) {
+      // Delete old flyer if exists
+      if (event.flyerEsUrl) {
+        const oldKey = event.flyerEsUrl.replace(
+          `${process.env.R2_PUBLIC_URL}/`,
+          "",
+        );
+        await deleteFromR2(oldKey).catch(console.error);
+      }
+
+      const buffer = Buffer.from(await fileEs.arrayBuffer());
+      const key = generateFileKey(`flyers/${params.id}`, `es-${fileEs.name}`);
+      flyerEsUrl = await uploadToR2(buffer, key, fileEs.type);
+    }
+
+    // Update event
+    await prisma.event.update({
+      where: { id: params.id },
+      data: {
+        flyerEnUrl,
+        flyerEsUrl,
+      },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        patientId: admin.id,
+        action: "event_flyers_updated",
+        resourceType: "Event",
+        resourceId: params.id,
+        details: `Updated event flyers`,
+      },
+    });
+
+    return NextResponse.json({ success: true, flyerEnUrl, flyerEsUrl });
+  } catch (error) {
+    console.error("Flyer upload error:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  }
+}

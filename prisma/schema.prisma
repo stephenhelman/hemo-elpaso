@@ -130,15 +130,19 @@ model Event {
   titleEs       String
   descriptionEn String?
   descriptionEs String?
+
+  flyerEnUrl    String? 
+  flyerEsUrl    String?  
+
   eventDate     DateTime
   location      String
   maxCapacity   Int?    
   rsvpDeadline  DateTime?
-  status        String    @default("draft") // draft, published, cancelled, completed
+  status        String    @default("draft") 
   
-  category      String    @default("FAMILY_SUPPORT") // Maps to EventTopic enum
-  targetAudience String   @default("all") // all, youth, adults, families
-  language      String    @default("both") // en, es, both
+  category      String    @default("FAMILY_SUPPORT") 
+  targetAudience String   @default("all") 
+  language      String    @default("both") 
   isPriority    Boolean   @default(false)
   liveEnabled   Boolean   @default(false)
   
@@ -157,6 +161,21 @@ model Event {
   itineraryItems  EventItineraryItem[]
 
   @@map("events")
+}
+
+model EventPhoto {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  url         String   // R2 URL
+  key         String   // R2 key for deletion
+  caption     String?
+  
+  uploadedBy  String   // Admin email
+  uploadedAt  DateTime @default(now())
+  
+  @@map("event_photos")
 }
 
 model EventTargeting {
@@ -304,17 +323,6 @@ model EventQuestion {
   updatedAt    DateTime @updatedAt
 }
 
-model EventPhoto {
-  id            String   @id @default(uuid())
-  eventId       String
-  event         Event    @relation(fields: [eventId], references: [id])
-  s3Key         String
-  cloudfrontUrl String
-  captionEn     String?
-  captionEs     String?
-  approved      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-}
 
 model AuditLog {
   id           String   @id @default(uuid())

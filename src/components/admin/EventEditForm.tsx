@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Trash2 } from "lucide-react";
+
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
+import FlyerUpload from "./FlyerUpload";
 
 interface Event {
   id: string;
@@ -14,6 +15,8 @@ interface Event {
   titleEs: string;
   descriptionEn: string | null;
   descriptionEs: string | null;
+  flyerEnUrl: string | null;
+  flyerEsUrl: string | null;
   eventDate: Date;
   location: string;
   maxCapacity: number | null;
@@ -61,6 +64,10 @@ export default function EventEditForm({ event }: Props) {
     liveEnabled: event.liveEnabled,
   });
 
+  const handleFlyerUploadComplete = () => {
+    router.refresh();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -85,7 +92,9 @@ export default function EventEditForm({ event }: Props) {
         toast.error(data.error || "Failed to update event");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update event");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update event",
+      );
     } finally {
       setLoading(false);
     }
@@ -94,7 +103,8 @@ export default function EventEditForm({ event }: Props) {
   const handleDelete = async () => {
     const confirmed = await confirm({
       title: "Delete Event?",
-      message: "Are you sure you want to delete this event? This action cannot be undone.",
+      message:
+        "Are you sure you want to delete this event? This action cannot be undone.",
       confirmText: "Delete",
       variant: "danger",
     });
@@ -115,7 +125,9 @@ export default function EventEditForm({ event }: Props) {
         toast.error(data.error || "Failed to delete event");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete event");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete event",
+      );
     } finally {
       setDeleting(false);
     }
@@ -123,34 +135,116 @@ export default function EventEditForm({ event }: Props) {
 
   return (
     <>
-    <ConfirmDialog />
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="bg-white rounded-2xl border border-neutral-200 p-8">
-        <Link
-          href="/admin/events"
-          className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Events
-        </Link>
+      <ConfirmDialog />
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-8">
+          {/* Basic Information */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-display font-bold text-neutral-900">
+              Basic Information
+            </h2>
 
-        {/* Basic Information */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-display font-bold text-neutral-900">
-            Basic Information
-          </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Title (English) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.titleEn}
+                  onChange={(e) =>
+                    setFormData({ ...formData, titleEn: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Title (Spanish) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.titleEs}
+                  onChange={(e) =>
+                    setFormData({ ...formData, titleEs: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Title (English) *
+                Description (English)
+              </label>
+              <textarea
+                rows={4}
+                value={formData.descriptionEn}
+                onChange={(e) =>
+                  setFormData({ ...formData, descriptionEn: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Description (Spanish)
+              </label>
+              <textarea
+                rows={4}
+                value={formData.descriptionEs}
+                onChange={(e) =>
+                  setFormData({ ...formData, descriptionEs: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Event Date & Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={formData.eventDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, eventDate: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  RSVP Deadline
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.rsvpDeadline}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rsvpDeadline: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Location *
               </label>
               <input
                 type="text"
                 required
-                value={formData.titleEn}
+                value={formData.location}
                 onChange={(e) =>
-                  setFormData({ ...formData, titleEn: e.target.value })
+                  setFormData({ ...formData, location: e.target.value })
                 }
                 className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -158,221 +252,146 @@ export default function EventEditForm({ event }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Title (Spanish) *
+                Max Capacity
               </label>
               <input
-                type="text"
-                required
-                value={formData.titleEs}
+                type="number"
+                min="1"
+                value={formData.maxCapacity}
                 onChange={(e) =>
-                  setFormData({ ...formData, titleEs: e.target.value })
+                  setFormData({ ...formData, maxCapacity: e.target.value })
                 }
+                placeholder="Leave empty for unlimited"
                 className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Description (English)
-            </label>
-            <textarea
-              rows={4}
-              value={formData.descriptionEn}
-              onChange={(e) =>
-                setFormData({ ...formData, descriptionEn: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Status *
+                </label>
+                <select
+                  required
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Category *
+                </label>
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="EDUCATION">Education</option>
+                  <option value="FAMILY_SUPPORT">Family Support</option>
+                  <option value="YOUTH">Youth</option>
+                  <option value="FUNDRAISING">Fundraising</option>
+                  <option value="MEDICAL_UPDATE">Medical Update</option>
+                  <option value="SOCIAL">Social</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isPriority}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isPriority: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-neutral-700">
+                  Priority Event
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.liveEnabled}
+                  onChange={(e) =>
+                    setFormData({ ...formData, liveEnabled: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-neutral-700">
+                  Enable Live Features
+                </span>
+              </label>
+            </div>
+          </div>
+          <div className="border-t border-neutral-200 pt-8">
+            <h3 className="text-xl font-display font-bold text-neutral-900 mb-4">
+              Event Flyers
+            </h3>
+            <p className="text-sm text-neutral-600 mb-4">
+              Upload PDF flyers in both English and Spanish for attendees to
+              view and download.
+            </p>
+            <FlyerUpload
+              eventId={event.id}
+              currentFlyerEn={event.flyerEnUrl}
+              currentFlyerEs={event.flyerEsUrl}
+              onUploadComplete={handleFlyerUploadComplete}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Description (Spanish)
-            </label>
-            <textarea
-              rows={4}
-              value={formData.descriptionEs}
-              onChange={(e) =>
-                setFormData({ ...formData, descriptionEs: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Event Date & Time *
-              </label>
-              <input
-                type="datetime-local"
-                required
-                value={formData.eventDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, eventDate: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                RSVP Deadline
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.rsvpDeadline}
-                onChange={(e) =>
-                  setFormData({ ...formData, rsvpDeadline: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Location *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.location}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Max Capacity
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.maxCapacity}
-              onChange={(e) =>
-                setFormData({ ...formData, maxCapacity: e.target.value })
-              }
-              placeholder="Leave empty for unlimited"
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Status *
-              </label>
-              <select
-                required
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Category *
-              </label>
-              <select
-                required
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="EDUCATION">Education</option>
-                <option value="FAMILY_SUPPORT">Family Support</option>
-                <option value="YOUTH">Youth</option>
-                <option value="FUNDRAISING">Fundraising</option>
-                <option value="MEDICAL_UPDATE">Medical Update</option>
-                <option value="SOCIAL">Social</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.isPriority}
-                onChange={(e) =>
-                  setFormData({ ...formData, isPriority: e.target.checked })
-                }
-                className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
-              />
-              <span className="text-sm font-medium text-neutral-700">
-                Priority Event
-              </span>
-            </label>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.liveEnabled}
-                onChange={(e) =>
-                  setFormData({ ...formData, liveEnabled: e.target.checked })
-                }
-                className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
-              />
-              <span className="text-sm font-medium text-neutral-700">
-                Enable Live Features
-              </span>
-            </label>
           </div>
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-red-600 text-red-600 font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
-        >
-          {deleting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Deleting...
-            </>
-          ) : (
-            <>
-              <Trash2 className="w-4 h-4" />
-              Delete Event
-            </>
-          )}
-        </button>
+        {/* Actions */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-red-600 text-red-600 font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
+          >
+            {deleting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4" />
+                Delete Event
+              </>
+            )}
+          </button>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Changes"
-          )}
-        </button>
-      </div>
-    </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </button>
+        </div>
+      </form>
     </>
   );
 }

@@ -14,6 +14,7 @@ import LivePoll from "@/components/events/live/LivePoll";
 import QandA from "@/components/events/live/QandA";
 import Announcements from "@/components/events/live/Announcements";
 import LiveItinerary from "@/components/events/live/LiveItinerary";
+import PhotoGallery from "@/components/events/live/PhotoGallery";
 
 interface Props {
   params: { slug: string };
@@ -150,7 +151,6 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
         <div className="mb-8">
           <LiveItinerary eventId={event.id} lang="en" />
         </div>
-        {/* Live Polls Section */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
@@ -182,23 +182,8 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
             attendeeRole={checkIn.attendeeRole}
           />
         </div>
-        {/* Other Features Coming Soon */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Placeholder: Photo Gallery */}
-          <FeatureCard
-            icon={<Sparkles className="w-6 h-6" />}
-            title="Photo Gallery"
-            description="View and share photos from tonight's event"
-            status="Coming Soon"
-          />
-
-          {/* Placeholder: Event Feed */}
-          <FeatureCard
-            icon={<Sparkles className="w-6 h-6" />}
-            title="Event Updates"
-            description="Real-time announcements and schedule changes"
-            status="Coming Soon"
-          />
+        <div className="mb-8">
+          <PhotoGallery eventId={event.id} />
         </div>
         {/* Demo Message */}
         <div className="mt-8 bg-primary-900/50 border border-primary-500/30 rounded-2xl p-6 text-center">
@@ -214,35 +199,6 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
         </div>
         ;
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-  status,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  status: string;
-}) {
-  return (
-    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-400">
-          {icon}
-        </div>
-        <span className="px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-semibold">
-          {status}
-        </span>
-      </div>
-      <h3 className="font-display font-bold text-white text-lg mb-2">
-        {title}
-      </h3>
-      <p className="text-neutral-400 text-sm">{description}</p>
     </div>
   );
 }

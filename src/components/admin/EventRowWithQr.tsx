@@ -14,6 +14,7 @@ import {
   Send,
   Megaphone,
   Clock,
+  Images,
 } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
 import EventAccessQr from "./EventAccessQr";
@@ -107,7 +108,7 @@ export default function EventRowWithQr({ event, isPast }: Props) {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => setShowSponsorInvite(true)}
-                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-yellow-600 transition-colors"
                 title="Invite Sponsor"
               >
                 <Send className="w-4 h-4" />
@@ -121,34 +122,40 @@ export default function EventRowWithQr({ event, isPast }: Props) {
 
               <Link
                 href={`/admin/events/${event.id}/announcements`}
-                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-green-600 transition-colors"
               >
                 <Megaphone className="w-4 h-4" />
               </Link>
               <Link
                 href={`/admin/events/${event.id}/polls`}
-                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-cyan-600 transition-colors"
                 title="Manage Polls"
               >
                 <BarChart3 className="w-4 h-4" />
               </Link>
               <Link
                 href={`/admin/events/${event.id}/questions`}
-                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-indigo-600 transition-colors"
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-blue-600 transition-colors"
                 title="Q&A Dashboard"
               >
                 <MessageSquare className="w-4 h-4" />
               </Link>
               <Link
+                href={`/admin/events/${event.id}/photos`}
+                className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-emerald-600 transition-colors"
+              >
+                <Images className="w-4 h-4" />
+              </Link>
+              <Link
                 href={`/admin/events/${event.id}/attendees`}
-                className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-blue-600 transition-colors"
+                className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-sky-600 transition-colors"
                 title="View Attendees"
               >
                 <Users className="w-4 h-4" />
               </Link>
               <Link
                 href={`/admin/checkin?event=${event.id}`}
-                className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-green-600 transition-colors"
+                className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-pink-600 transition-colors"
                 title="Check-In"
               >
                 <ScanLine className="w-4 h-4" />

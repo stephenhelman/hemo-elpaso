@@ -8,6 +8,8 @@ import {
   Clock,
   FileImage,
   Sparkles,
+  FileText,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { Lang } from "@/types";
@@ -15,6 +17,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import RsvpButton from "@/components/events/RsvpButton";
 import BackButton from "@/components/events/BackButton";
+import FlyerPreview from "@/components/events/FlyerPreview";
 
 interface Props {
   params: { slug: string };
@@ -261,16 +264,11 @@ export default async function EventPage({ params, searchParams }: Props) {
               </div>
             </div>
 
-            {/* Event Flyer Placeholder */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              <h3 className="font-display font-bold text-neutral-900 mb-4">
-                {t.eventFlyer}
-              </h3>
-              <div className="aspect-[8.5/11] rounded-xl bg-neutral-100 border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center p-6 text-center">
-                <FileImage className="w-12 h-12 text-neutral-400 mb-3" />
-                <p className="text-sm text-neutral-500">{t.flyerPlaceholder}</p>
-              </div>
-            </div>
+            <FlyerPreview
+              flyerEnUrl={event.flyerEnUrl}
+              flyerEsUrl={event.flyerEsUrl}
+              lang="en" // Or detect from user preference/browser
+            />
 
             {/* Join Live Event Button - Only if checked in and live enabled */}
             {isCheckedIn && event.liveEnabled && (
