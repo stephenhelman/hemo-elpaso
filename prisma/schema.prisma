@@ -152,6 +152,7 @@ model Event {
   pollCreationTokens PollCreationToken[]
   photos        EventPhoto[]
   questions     EventQuestion[]
+  sponsorAccessTokens SponsorAccessToken[]
 
   @@map("events")
 }
@@ -191,14 +192,33 @@ model CheckIn {
   id               String   @id @default(uuid())
   eventId          String
   patientId        String
-  event            Event    @relation(fields: [eventId], references: [id])
-  patient          Patient  @relation(fields: [patientId], references: [id])
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patient          Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   checkInTime      DateTime @default(now())
   checkedInBy      String?
   sessionToken     String   @unique
   sessionExpiresAt DateTime
-
+  attendeeRole     String   @default("patient") // patient, sponsor, donor, admin, volunteer
+  
   @@unique([eventId, patientId])
+  @@map("check_ins")
+}
+
+model SponsorAccessToken {
+  id           String   @id @default(uuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  token        String   @unique
+  sponsorEmail String
+  sponsorName  String?
+  companyName  String?
+  expiresAt    DateTime
+  
+  createdBy    String   // admin who generated
+  createdAt    DateTime @default(now())
+  
+  @@map("sponsor_access_tokens")
 }
 
 model EventInteraction {

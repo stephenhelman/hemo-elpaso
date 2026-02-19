@@ -32,6 +32,7 @@ interface Props {
   patientId?: string;
   patientName?: string;
   lang: "en" | "es";
+  attendeeRole: string;
 }
 
 export default function QandA({
@@ -40,6 +41,7 @@ export default function QandA({
   patientId,
   patientName,
   lang,
+  attendeeRole,
 }: Props) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,11 @@ export default function QandA({
 
   const [newQuestion, setNewQuestion] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const [answeringQuestion, setAnsweringQuestion] = useState<string | null>(
+    null,
+  );
+  const [answerForm, setAnswerForm] = useState({ answerEn: "", answerEs: "" });
 
   // Fetch questions
   useEffect(() => {
@@ -100,6 +107,45 @@ export default function QandA({
       } else {
         const data = await response.json();
         toast.error(data.error || "Failed to submit question");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAnswerQuestion = async (questionId: string) => {
+    if (!answerForm.answerEn.trim() || !answerForm.answerEs.trim()) {
+      toast.error("Please provide answers in both English and Spanish");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch(
+        `/api/events/${eventId}/questions/${questionId}/answer`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionToken,
+            answerEn: answerForm.answerEn,
+            answerEs: answerForm.answerEs,
+            answeredBy: patientName || "Sponsor",
+          }),
+        },
+      );
+
+      if (response.ok) {
+        toast.success("Answer submitted!");
+        setAnsweringQuestion(null);
+        setAnswerForm({ answerEn: "", answerEs: "" });
+        fetchQuestions();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to submit answer");
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
@@ -249,6 +295,22 @@ export default function QandA({
               onUpvote={handleUpvote}
               lang={lang}
               t={t}
+              canAnswer={attendeeRole === "sponsor" || attendeeRole === "admin"} // ADD THIS
+              isAnswering={answeringQuestion === q.id}
+              answerForm={answerForm}
+              onStartAnswer={(q) => {
+                setAnsweringQuestion(q.id);
+                setAnswerForm({
+                  answerEn: q.answerEn || "",
+                  answerEs: q.answerEs || "",
+                });
+              }}
+              onCancelAnswer={() => {
+                setAnsweringQuestion(null);
+                setAnswerForm({ answerEn: "", answerEs: "" });
+              }}
+              onSaveAnswer={handleAnswerQuestion}
+              onAnswerChange={setAnswerForm}
             />
           ))}
         </div>
@@ -262,11 +324,25 @@ function QuestionCard({
   onUpvote,
   lang,
   t,
+  canAnswer, // ADD THIS
+  isAnswering,
+  answerForm,
+  onStartAnswer,
+  onCancelAnswer,
+  onSaveAnswer,
+  onAnswerChange,
 }: {
   question: Question;
   onUpvote: (id: string) => void;
   lang: "en" | "es";
   t: any;
+  canAnswer: boolean; // ADD THIS
+  isAnswering: boolean;
+  answerForm: { answerEn: string; answerEs: string };
+  onStartAnswer: (q: Question) => void;
+  onCancelAnswer: () => void;
+  onSaveAnswer: (id: string) => void;
+  onAnswerChange: (form: any) => void;
 }) {
   const questionText =
     lang === "en" ? question.questionEn : question.questionEs;
@@ -308,8 +384,59 @@ function QuestionCard({
                 {t.answered}
               </div>
             )}
+            {canAnswer && !question.answered && !isAnswering && (
+              <button
+                onClick={() => onStartAnswer(question)}
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+              >
+                Answer Question
+              </button>
+            )}
           </div>
-
+          {canAnswer && isAnswering && (
+            <div className="mt-4 space-y-3 p-4 bg-white/10 rounded-lg">
+              <div>
+                <label className="block text-xs text-neutral-300 mb-1">
+                  Answer (English)
+                </label>
+                <textarea
+                  value={answerForm.answerEn}
+                  onChange={(e) =>
+                    onAnswerChange({ ...answerForm, answerEn: e.target.value })
+                  }
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-300 mb-1">
+                  Answer (Spanish)
+                </label>
+                <textarea
+                  value={answerForm.answerEs}
+                  onChange={(e) =>
+                    onAnswerChange({ ...answerForm, answerEs: e.target.value })
+                  }
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={onCancelAnswer}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => onSaveAnswer(question.id)}
+                  className="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
+                >
+                  Submit Answer
+                </button>
+              </div>
+            </div>
+          )}
           {/* Answer */}
           {question.answered && answerText && (
             <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20">

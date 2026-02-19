@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import QrScanner from "@/components/admin/QrScanner";
+import ManualCheckInSearch from "@/components/admin/ManualCheckInSearch";
 
 export default function AdminCheckinPage() {
   const searchParams = useSearchParams();
@@ -192,10 +193,13 @@ export default function AdminCheckinPage() {
 
           {/* Check-In List */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-neutral-900 text-xl">
-                Checked In ({checkIns.length})
-              </h2>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display font-bold text-neutral-900 text-xl">
+                  Checked In ({checkIns.length})
+                </h2>
+              </div>
+              <ManualCheckInSearch eventId={selectedEvent} />
             </div>
 
             <div className="bg-white rounded-xl border border-neutral-200 max-h-[600px] overflow-y-auto">

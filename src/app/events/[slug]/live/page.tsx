@@ -15,13 +15,15 @@ import QandA from "@/components/events/live/QandA";
 
 interface Props {
   params: { slug: string };
+  searchParams: { session?: string };
 }
 
-export default async function LiveEventPage({ params }: Props) {
+export default async function LiveEventPage({ params, searchParams }: Props) {
   const session = await getSession();
+  const sponsorSessionToken = searchParams.session;
 
   // Must be logged in
-  if (!session?.user) {
+  if (!session?.user && !sponsorSessionToken) {
     redirect(`/api/auth/login?returnTo=/events/${params.slug}/live`);
   }
 
@@ -38,42 +40,77 @@ export default async function LiveEventPage({ params }: Props) {
   if (!event.liveEnabled) {
     return <LiveNotEnabled eventSlug={params.slug} />;
   }
+  let patient;
+  let checkIn;
+  let patientName;
 
-  // Get patient
-  const patient = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    select: {
-      id: true,
-      profile: {
-        select: {
-          firstName: true,
-          lastName: true,
+  if (sponsorSessionToken) {
+    // Sponsor access via magic link
+    checkIn = await prisma.checkIn.findFirst({
+      where: {
+        eventId: event.id,
+        sessionToken: sponsorSessionToken,
+        attendeeRole: "sponsor",
+      },
+      include: {
+        patient: {
+          include: {
+            profile: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!patient) {
-    redirect("/register");
+    if (!checkIn) {
+      return (
+        <NotCheckedIn eventTitle={event.titleEn} eventSlug={params.slug} />
+      );
+    }
+
+    patient = checkIn.patient;
+    patientName = patient.profile
+      ? `${patient.profile.firstName} ${patient.profile.lastName}`
+      : "Sponsor";
+  } else {
+    // Regular patient access via Auth0
+    patient = await prisma.patient.findUnique({
+      where: { auth0Id: session!.user.sub },
+      select: {
+        id: true,
+        profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!patient) {
+      redirect("/register");
+    }
+
+    checkIn = await prisma.checkIn.findFirst({
+      where: {
+        eventId: event.id,
+        patientId: patient.id,
+      },
+      select: {
+        sessionToken: true,
+        attendeeRole: true,
+      },
+    });
+
+    if (!checkIn) {
+      return (
+        <NotCheckedIn eventTitle={event.titleEn} eventSlug={params.slug} />
+      );
+    }
+
+    patientName = patient.profile
+      ? `${patient.profile.firstName} ${patient.profile.lastName}`
+      : undefined;
   }
-
-  // Check if patient is checked in to THIS event
-  const checkIn = await prisma.checkIn.findFirst({
-    where: {
-      eventId: event.id,
-      patientId: patient.id,
-    },
-  });
-
-  if (!checkIn) {
-    return <NotCheckedIn eventTitle={event.titleEn} eventSlug={params.slug} />;
-  }
-
-  const patientName = patient.profile
-    ? `${patient.profile.firstName} ${patient.profile.lastName}`
-    : undefined;
-
-  // Patient is checked in! Show live event features
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900">
       <div className="container-max px-4 sm:px-6 lg:px-8 py-12">
@@ -101,8 +138,9 @@ export default async function LiveEventPage({ params }: Props) {
           <div className="flex items-center gap-2 text-primary-300">
             <CheckCircle className="w-5 h-5" />
             <span className="text-sm">
-              You're checked in as {patient.profile?.firstName}{" "}
-              {patient.profile?.lastName}
+              {checkIn.attendeeRole === "sponsor"
+                ? `Sponsor Access: ${patientName}`
+                : `You're checked in as ${patientName}`}
             </span>
           </div>
         </div>
@@ -134,7 +172,8 @@ export default async function LiveEventPage({ params }: Props) {
             sessionToken={checkIn.sessionToken}
             patientId={patient.id}
             patientName={patientName}
-            lang="en" // TODO: Get from user preference
+            lang="en"
+            attendeeRole={checkIn.attendeeRole}
           />
         </div>
         {/* Other Features Coming Soon */}
