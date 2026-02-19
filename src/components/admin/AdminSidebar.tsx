@@ -11,6 +11,7 @@ import {
   Home,
   BarChart3,
   CheckCircle,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,11 @@ const navItems = [
     label: "Attendance",
     href: "/admin/attendance",
     icon: CheckCircle,
+  },
+  {
+    label: "Financial Assistance",
+    href: "/admin/assistance",
+    icon: DollarSign,
   },
   {
     label: "Users",
