@@ -30,6 +30,38 @@ enum DietaryRestriction {
   OTHER
 }
 
+enum AssistanceType {
+  EVENT_FEES
+  TRANSPORTATION
+  MEDICATION
+  MEDICAL_EQUIPMENT
+  EMERGENCY_SUPPORT
+  OTHER
+}
+
+enum AssistanceStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  DISBURSED
+  CLOSED
+}
+
+enum DisbursementStatus {
+  PENDING
+  ISSUED
+  CASHED
+  VOID
+}
+
+enum PaymentMethod {
+  CHECK
+  CASH
+  REIMBURSEMENT
+}
+
 model PatientPreferences {
   id        String  @id @default(uuid())
   patientId String  @unique
@@ -72,7 +104,8 @@ model Patient {
   familyMembers FamilyMember[]
   rsvps         Rsvp[]
   checkIns      CheckIn[]
-  auditLogs     AuditLog[] // ADD THIS
+  auditLogs     AuditLog[]
+  financialAssistanceApplications FinancialAssistanceApplication[]
 
   @@map("patients")
 }
@@ -164,6 +197,87 @@ model Event {
 
   @@map("events")
 }
+
+model FinancialAssistanceApplication {
+  id                String            @id @default(uuid())
+  patientId         String
+  patient           Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  // Application Details
+  assistanceType    AssistanceType
+  requestedAmount   Decimal           @db.Decimal(10, 2)
+  purpose           String            // What the money is for
+  description       String?           // Additional context
+  
+  // Status & Review
+  status            AssistanceStatus  @default(DRAFT)
+  reviewedBy        String?           // Admin email who reviewed
+  reviewedAt        DateTime?
+  reviewNotes       String?           // Admin notes on approval/denial
+  
+  // Approval Details
+  approvedAmount    Decimal?          @db.Decimal(10, 2) // May differ from requested
+  
+  // Metadata
+  submittedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Relations
+  documents         AssistanceDocument[]
+  disbursements     AssistanceDisbursement[]
+  
+  @@map("financial_assistance_applications")
+}
+
+model AssistanceDocument {
+  id            String                        @id @default(uuid())
+  applicationId String
+  application   FinancialAssistanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  // File Details
+  fileName      String
+  fileUrl       String  // R2 URL
+  fileKey       String  // R2 key for deletion
+  fileSize      Int     // bytes
+  mimeType      String
+  
+  // Metadata
+  description   String? // What this document is (receipt, bill, prescription, etc)
+  uploadedBy    String  // Patient email
+  uploadedAt    DateTime @default(now())
+  
+  @@map("assistance_documents")
+}
+
+model AssistanceDisbursement {
+  id                  String                        @id @default(uuid())
+  applicationId       String
+  application         FinancialAssistanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  // Payment Details
+  amount              Decimal           @db.Decimal(10, 2)
+  paymentMethod       PaymentMethod
+  checkNumber         String?           // If paid by check
+  
+  // Timing
+  issueDate           DateTime          // When check was written/payment made
+  cashedDate          DateTime?         // When check was cashed (if known)
+  
+  // Tracking
+  status              DisbursementStatus @default(PENDING)
+  issuedBy            String            // Admin email who processed
+  notes               String?
+  proofOfPaymentUrl   String?           // Scanned check, receipt, etc
+  proofOfPaymentKey   String?           // R2 key
+  
+  // Metadata
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  
+  @@map("assistance_disbursements")
+}
+
 
 model EventPhoto {
   id      String @id @default(uuid())

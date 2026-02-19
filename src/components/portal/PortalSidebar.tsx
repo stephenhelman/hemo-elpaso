@@ -10,6 +10,7 @@ import {
   LogOut,
   Home,
   Shield,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,11 @@ const navItems = [
   { href: "/portal/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/portal/events", label: "Events", icon: Calendar },
   { href: "/portal/profile", label: "Profile", icon: User },
+  {
+    href: "/portal/assistance",
+    label: "Financial Assistance",
+    icon: DollarSign,
+  },
 ];
 
 export default function PortalSidebar({ user }: Props) {
