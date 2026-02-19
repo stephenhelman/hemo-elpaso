@@ -108,66 +108,69 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                   type="input"
                   required
                 />
+              </div>
 
-                {/* Time and Duration */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Start Time *
-                    </label>
-                    <input
-                      type="datetime-local"
-                      required
-                      value={formData.startTime}
-                      onChange={(e) =>
-                        setFormData({ ...formData, startTime: e.target.value })
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Duration (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.duration}
-                      onChange={(e) =>
-                        setFormData({ ...formData, duration: e.target.value })
-                      }
-                      placeholder="e.g., 30"
-                      className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-
-                {/* Location */}
+              {/* Time and Duration */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Location (Optional)
+                    Start Time *
                   </label>
                   <input
-                    type="text"
-                    value={formData.location}
+                    type="datetime-local"
+                    required
+                    value={formData.startTime}
                     onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
+                      setFormData({ ...formData, startTime: e.target.value })
                     }
-                    placeholder="e.g., Main Hall, Room B"
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
-                <BilingualInput
-                  label="Description (Optional)"
-                  name="description"
-                  value={formData.description}
-                  onChange={(value) => setFormData({ ...formData, description: value })}
-                  placeholder="Optional details about this activity..."
-                  type="textarea"
-                  rows={2}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: e.target.value })
+                    }
+                    placeholder="e.g., 30"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Location (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  placeholder="e.g., Main Hall, Room B"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+              </div>
+
+              <BilingualInput
+                label="Description (Optional)"
+                name="description"
+                value={formData.description}
+                onChange={(value) =>
+                  setFormData({ ...formData, description: value })
+                }
+                placeholder="Optional details about this activity..."
+                type="textarea"
+                rows={2}
+              />
 
               <div className="flex gap-3 justify-end mt-6">
                 <button

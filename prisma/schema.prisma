@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-   url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 enum EventTopic {
@@ -31,150 +31,152 @@ enum DietaryRestriction {
 }
 
 model PatientPreferences {
-  id                    String              @id @default(uuid())
-  patientId             String              @unique
-  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(uuid())
+  patientId String  @unique
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
   // Event preferences
-  interestedTopics      EventTopic[]
-  preferredEventTimes   String[]            // ["weekday_evening", "weekend_morning", "weekend_afternoon"]
-  maxTravelDistance     Int?                // miles willing to travel
-  
+  interestedTopics    EventTopic[]
+  preferredEventTimes String[] // ["weekday_evening", "weekend_morning", "weekend_afternoon"]
+  maxTravelDistance   Int? // miles willing to travel
+
   // Accessibility & dietary
-  dietaryRestrictions   DietaryRestriction[]
-  accessibilityNeeds    String?             // wheelchair, ASL interpreter, etc
-  
+  dietaryRestrictions DietaryRestriction[]
+  accessibilityNeeds  String? // wheelchair, ASL interpreter, etc
+
   // Communication preferences
-  emailNotifications    Boolean             @default(true)
-  smsNotifications      Boolean             @default(false)
-  languagePreference    String              @default("en")  // en, es
-  
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  languagePreference String  @default("en") // en, es
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("patient_preferences")
 }
 
 model Patient {
-  id                 String            @id @default(uuid())
-  auth0Id            String            @unique
-  email              String            @unique
-  role               String            @default("patient")
-  preferredLanguage  String            @default("en")
-  consentDate        DateTime?
-  consentToContact   Boolean           @default(false)
-  consentToPhotos    Boolean           @default(false)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  
-  profile            PatientProfile?
-  preferences        PatientPreferences?
-  familyMembers      FamilyMember[]
-  rsvps              Rsvp[]
-  checkIns           CheckIn[]
-  auditLogs          AuditLog[]        // ADD THIS
+  id                String    @id @default(uuid())
+  auth0Id           String    @unique
+  email             String    @unique
+  role              String    @default("patient")
+  preferredLanguage String    @default("en")
+  consentDate       DateTime?
+  consentToContact  Boolean   @default(false)
+  consentToPhotos   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  profile       PatientProfile?
+  preferences   PatientPreferences?
+  familyMembers FamilyMember[]
+  rsvps         Rsvp[]
+  checkIns      CheckIn[]
+  auditLogs     AuditLog[] // ADD THIS
 
   @@map("patients")
 }
 
 model PatientProfile {
-  id               String   @id @default(uuid())
-  patientId        String   @unique
-  patient          Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  firstName        String
-  lastName         String
-  dateOfBirth      DateTime
-  phone            String
-  address          String   
-  city             String   
-  state            String  
-  zipCode          String   
-  primaryCondition        String
-  severity         String
-  diagnosisDate    DateTime
-  treatingPhysician String?  
-  specialtyPharmacy String?  
-  emergencyContactName String
+  id                           String   @id @default(uuid())
+  patientId                    String   @unique
+  patient                      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName                    String
+  lastName                     String
+  dateOfBirth                  DateTime
+  phone                        String
+  address                      String
+  city                         String
+  state                        String
+  zipCode                      String
+  primaryCondition             String
+  severity                     String
+  diagnosisDate                DateTime
+  treatingPhysician            String?
+  specialtyPharmacy            String?
+  emergencyContactName         String
   emergencyContactRelationship String
-  emergencyContactPhone String
-  hipaaConsent Boolean
-  photoConsent Boolean
-  communicationConsent Boolean
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  emergencyContactPhone        String
+  hipaaConsent                 Boolean
+  photoConsent                 Boolean
+  communicationConsent         Boolean
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
 
   @@map("patient_profiles")
 }
 
 model FamilyMember {
-  id          String   @id @default(uuid())
-  patientId   String
-  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  firstName   String
-  lastName    String
-  dateOfBirth DateTime?
-  relationship String  // parent, child, spouse, sibling, other
-  hasBleedingDisorder Boolean @default(false)
-  condition   String?  // if hasBleedingDisorder is true
-  severity    String?  // mild, moderate, severe
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String    @id @default(uuid())
+  patientId           String
+  patient             Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName           String
+  lastName            String
+  dateOfBirth         DateTime?
+  relationship        String // parent, child, spouse, sibling, other
+  hasBleedingDisorder Boolean   @default(false)
+  condition           String? // if hasBleedingDisorder is true
+  severity            String? // mild, moderate, severe
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@map("family_members")
 }
 
 model Event {
-  id            String    @id @default(uuid())
-  slug          String    @unique
+  id            String  @id @default(uuid())
+  slug          String  @unique
   titleEn       String
   titleEs       String
   descriptionEn String?
   descriptionEs String?
 
-  flyerEnUrl    String? 
-  flyerEsUrl    String?  
+  flyerEnUrl String?
+  flyerEsUrl String?
 
-  eventDate     DateTime
-  location      String
-  maxCapacity   Int?    
-  rsvpDeadline  DateTime?
-  status        String    @default("draft") 
-  
-  category      String    @default("FAMILY_SUPPORT") 
-  targetAudience String   @default("all") 
-  language      String    @default("both") 
-  isPriority    Boolean   @default(false)
-  liveEnabled   Boolean   @default(false)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  eventDate    DateTime
+  location     String
+  maxCapacity  Int?
+  rsvpDeadline DateTime?
+  status       String    @default("draft")
 
-  targeting     EventTargeting?
-  rsvps         Rsvp[]
-  checkIns      CheckIn[]
-  interactions  EventInteraction[]
-  pollCreationTokens PollCreationToken[]
-  photos        EventPhoto[]
-  questions     EventQuestion[]
+  category       String  @default("FAMILY_SUPPORT")
+  targetAudience String  @default("all")
+  language       String  @default("both")
+  isPriority     Boolean @default(false)
+  liveEnabled    Boolean @default(false)
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  targeting           EventTargeting?
+  rsvps               Rsvp[]
+  checkIns            CheckIn[]
+  interactions        EventInteraction[]
+  pollCreationTokens  PollCreationToken[]
+  photos              EventPhoto[]
+  questions           EventQuestion[]
   sponsorAccessTokens SponsorAccessToken[]
-  announcements   EventAnnouncement[]
-  itineraryItems  EventItineraryItem[]
+  announcements       EventAnnouncement[]
+  itineraryItems      EventItineraryItem[]
+  polls               Poll[]
 
   @@map("events")
 }
 
 model EventPhoto {
-  id          String   @id @default(uuid())
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
-  url         String   // R2 URL
-  key         String   // R2 key for deletion
-  caption     String?
-  
-  uploadedBy  String   // Admin email
-  uploadedAt  DateTime @default(now())
-  
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  url     String // R2 URL
+  key     String // R2 key for deletion
+  caption String?
+
+  uploadedBy String // Admin email
+  uploadedAt DateTime @default(now())
+
   @@map("event_photos")
 }
 
@@ -187,7 +189,7 @@ model EventTargeting {
   targetAgeGroups   String[] // children, teens, adults, seniors
   targetInterests   String[] // Can map to EventTopic enum values
   requireInhibitors Boolean?
-  
+
   @@map("event_targeting")
 }
 
@@ -198,13 +200,12 @@ model Rsvp {
   event               Event    @relation(fields: [eventId], references: [id])
   patient             Patient  @relation(fields: [patientId], references: [id])
   status              String   @default("confirmed")
-  adultsAttending     Int      @default(1)
-  childrenAttending   Int      @default(0)
+  attendeeCount       Int
   dietaryRestrictions String?
   specialNeeds        String?
   rsvpDate            DateTime @default(now())
   updatedAt           DateTime @updatedAt
-  reminderSent        Boolean  @default(false) 
+  reminderSent        Boolean  @default(false)
 
   @@unique([eventId, patientId])
 }
@@ -220,65 +221,108 @@ model CheckIn {
   sessionToken     String   @unique
   sessionExpiresAt DateTime
   attendeeRole     String   @default("patient") // patient, sponsor, donor, admin, volunteer
-  
+
   @@unique([eventId, patientId])
   @@map("check_ins")
 }
 
 model SponsorAccessToken {
-  id           String   @id @default(uuid())
-  eventId      String
-  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   token        String   @unique
   sponsorEmail String
   sponsorName  String?
   companyName  String?
   expiresAt    DateTime
-  
-  createdBy    String   // admin who generated
-  createdAt    DateTime @default(now())
-  
+
+  createdBy String // admin who generated
+  createdAt DateTime @default(now())
+
   @@map("sponsor_access_tokens")
 }
 
 model EventInteraction {
-  id            String    @id @default(uuid())
-  eventId       String
-  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
-  type          String    // 'poll', 'question', 'announcement'
-  titleEn       String
-  titleEs       String
-  options       Json?     // For polls: {options: [{id, text}]}
-  
-  status        String    @default("draft") // draft, pending, approved, active, completed
-  active        Boolean   @default(false)
-  sequenceOrder Int       @default(0)
-  
-  createdBy     String?   // admin email or "rep:{repEmail}"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  responses     InteractionResponse[]
-  
+  type    String // 'poll', 'question', 'announcement'
+  titleEn String
+  titleEs String
+  options Json? // For polls: {options: [{id, text}]}
+
+  status        String  @default("draft") // draft, pending, approved, active, completed
+  active        Boolean @default(false)
+  sequenceOrder Int     @default(0)
+
+  createdBy String? // admin email or "rep:{repEmail}"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  responses InteractionResponse[]
+
   @@map("event_interactions")
 }
 
 model PollCreationToken {
-  id          String   @id @default(uuid())
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
-  token       String   @unique
-  repEmail    String
-  repName     String?
-  expiresAt   DateTime
-  
-  createdBy   String   // admin who generated the link
-  createdAt   DateTime @default(now())
-  
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  repEmail  String
+  repName   String?
+  expiresAt DateTime
+
+  createdBy String // admin who generated the link
+  createdAt DateTime @default(now())
+
   @@map("poll_creation_tokens")
+}
+
+model Poll {
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  questionEn String
+  questionEs String
+  status     String  @default("draft") // draft, pending, approved, active
+  active     Boolean @default(false)
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  options   PollOption[]
+  responses PollResponse[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String @id @default(uuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  textEn String
+  textEs String
+
+  @@map("poll_options")
+}
+
+model PollResponse {
+  id               String   @id @default(uuid())
+  pollId           String
+  poll             Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  sessionToken     String
+  selectedOptionId String
+  createdAt        DateTime @default(now())
+
+  @@unique([pollId, sessionToken])
+  @@map("poll_responses")
 }
 
 model InteractionResponse {
@@ -288,98 +332,97 @@ model InteractionResponse {
   sessionToken  String
   responseData  Json
   createdAt     DateTime         @default(now())
-  
+
   @@map("interaction_responses")
 }
 
 model EventQuestion {
-  id        String   @id @default(uuid())
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id])
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
 
   // Question Content
-  questionEn String
-  questionEs String
+  questionEn   String
+  questionEs   String
   originalLang String @default("en")
 
   //submitter info
-  patientId String?
-  patientName String?
-  isAnonymous Boolean @default(false)
+  patientId    String?
+  patientName  String?
+  isAnonymous  Boolean @default(false)
   sessionToken String
 
   // Engagement
-  upvotes Int @default(0)
+  upvotes   Int      @default(0)
   upvotedBy String[] @default([])
 
   // Answer
-  answered Boolean @default(false)
-  answerEn String?
-  answerEs String?
+  answered   Boolean   @default(false)
+  answerEn   String?
+  answerEs   String?
   answeredBy String?
   answeredAt DateTime?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 model AuditLog {
   id           String   @id @default(uuid())
-  patientId    String?  // ADD THIS
+  patientId    String? // ADD THIS
   patient      Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
   action       String
   resourceType String?
   resourceId   String?
   ipAddress    String?
   userAgent    String?
-  details      String?  // ADD THIS - simpler than Json for most cases
-  changes      Json?    // Keep this for complex data
+  details      String? // ADD THIS - simpler than Json for most cases
+  changes      Json? // Keep this for complex data
   createdAt    DateTime @default(now())
 
   @@map("audit_logs")
 }
 
 model EventAnnouncement {
-  id          String   @id @default(uuid())
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
-  messageEn   String
-  messageEs   String
-  priority    String   @default("normal") // urgent, normal, info
-  
-  active      Boolean  @default(true)
-  expiresAt   DateTime? // Optional auto-hide time
-  
-  createdBy   String
-  createdAt   DateTime @default(now())
-  
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  messageEn String
+  messageEs String
+  priority  String @default("normal") // urgent, normal, info
+
+  active    Boolean   @default(true)
+  expiresAt DateTime? // Optional auto-hide time
+
+  createdBy String
+  createdAt DateTime @default(now())
+
   @@map("event_announcements")
 }
 
 model EventItineraryItem {
-  id            String   @id @default(uuid())
-  eventId       String
-  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(uuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   titleEn       String
   titleEs       String
   descriptionEn String?
   descriptionEs String?
-  
-  startTime     DateTime
-  endTime       DateTime?
-  duration      Int?     // minutes
-  
-  status        String   @default("scheduled") // scheduled, current, completed, skipped
-  sequenceOrder Int      @default(0)
-  
-  location      String?  // Room/area if different from main venue
-  
-  createdBy     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int? // minutes
+
+  status        String @default("scheduled") // scheduled, current, completed, skipped
+  sequenceOrder Int    @default(0)
+
+  location String? // Room/area if different from main venue
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("event_itinerary_items")
 }
