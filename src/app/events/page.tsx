@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/db";
+import { cookies } from "next/headers";
 import PublicEventsDisplay from "@/components/events/PublicEventsDisplay";
 import { Calendar } from "lucide-react";
 
 export default async function EventsPage() {
   const now = new Date();
+  const cookieStore = cookies();
+  const lang = (cookieStore.get("language")?.value as "en" | "es") || "en";
 
   // Get all published events
   const allEvents = await prisma.event.findMany({
@@ -56,6 +59,7 @@ export default async function EventsPage() {
           <PublicEventsDisplay
             upcomingEvents={upcomingEvents}
             pastEvents={pastEvents}
+            lang={lang}
           />
         )}
       </div>

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
@@ -24,6 +25,8 @@ interface Props {
 export default async function LiveEventPage({ params, searchParams }: Props) {
   const session = await getSession();
   const sponsorSessionToken = searchParams.session;
+  const cookieStore = cookies();
+  const lang = (cookieStore.get("language")?.value as "en" | "es") || "en";
 
   // Must be logged in
   if (!session?.user && !sponsorSessionToken) {
@@ -38,6 +41,8 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
   if (!event) {
     notFound();
   }
+
+  const title = lang === "en" ? event.titleEn : event.titleEs;
 
   // Check if live features are enabled
   if (!event.liveEnabled) {
@@ -135,7 +140,7 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
-            {event.titleEn}
+            {title}
           </h1>
 
           <div className="flex items-center gap-2 text-primary-300">
@@ -147,9 +152,9 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
             </span>
           </div>
         </div>
-        <Announcements eventId={event.id} lang="en" />
+        <Announcements eventId={event.id} lang={lang} />
         <div className="mb-8">
-          <LiveItinerary eventId={event.id} lang="en" />
+          <LiveItinerary eventId={event.id} lang={lang} />
         </div>
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -161,7 +166,11 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
             </h2>
           </div>
 
-          <LivePoll eventId={event.id} sessionToken={checkIn.sessionToken} />
+          <LivePoll
+            eventId={event.id}
+            sessionToken={checkIn.sessionToken}
+            lang={lang}
+          />
         </div>
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -178,7 +187,7 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
             sessionToken={checkIn.sessionToken}
             patientId={patient.id}
             patientName={patientName}
-            lang="en"
+            lang={lang}
             attendeeRole={checkIn.attendeeRole}
           />
         </div>

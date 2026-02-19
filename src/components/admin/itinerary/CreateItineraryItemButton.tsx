@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import BilingualInput from "@/components/form/BilingualInput";
 
 interface Props {
   eventId: string;
@@ -15,10 +16,8 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    titleEn: "",
-    titleEs: "",
-    descriptionEn: "",
-    descriptionEs: "",
+    title: { en: "", es: "" },
+    description: { en: "", es: "" },
     startTime: "",
     duration: "",
     location: "",
@@ -33,10 +32,10 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          titleEn: formData.titleEn,
-          titleEs: formData.titleEs,
-          descriptionEn: formData.descriptionEn || null,
-          descriptionEs: formData.descriptionEs || null,
+          titleEn: formData.title.en,
+          titleEs: formData.title.es,
+          descriptionEn: formData.description.en || null,
+          descriptionEs: formData.description.es || null,
           startTime: formData.startTime,
           duration: formData.duration ? parseInt(formData.duration) : null,
           location: formData.location || null,
@@ -62,10 +61,8 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
 
   const resetForm = () => {
     setFormData({
-      titleEn: "",
-      titleEs: "",
-      descriptionEn: "",
-      descriptionEs: "",
+      title: { en: "", es: "" },
+      description: { en: "", es: "" },
       startTime: "",
       duration: "",
       location: "",
@@ -100,39 +97,17 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
               </div>
 
               <div className="space-y-4">
-                {/* Title English */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Title (English) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.titleEn}
-                    onChange={(e) =>
-                      setFormData({ ...formData, titleEn: e.target.value })
-                    }
-                    placeholder="e.g., Registration & Welcome"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                {/* Title Spanish */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Title (Spanish) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.titleEs}
-                    onChange={(e) =>
-                      setFormData({ ...formData, titleEs: e.target.value })
-                    }
-                    placeholder="e.g., Registro y Bienvenida"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+                <BilingualInput
+                  label="Activity Title"
+                  name="title"
+                  value={formData.title}
+                  onChange={(value) =>
+                    setFormData({ ...formData, title: value })
+                  }
+                  placeholder="e.g., Registration & Welcome"
+                  type="input"
+                  required
+                />
 
                 {/* Time and Duration */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -184,44 +159,15 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                   />
                 </div>
 
-                {/* Description English */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Description (English)
-                  </label>
-                  <textarea
-                    value={formData.descriptionEn}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        descriptionEn: e.target.value,
-                      })
-                    }
-                    rows={2}
-                    placeholder="Optional details about this activity"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                {/* Description Spanish */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Description (Spanish)
-                  </label>
-                  <textarea
-                    value={formData.descriptionEs}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        descriptionEs: e.target.value,
-                      })
-                    }
-                    rows={2}
-                    placeholder="Detalles opcionales sobre esta actividad"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </div>
+                <BilingualInput
+                  label="Description (Optional)"
+                  name="description"
+                  value={formData.description}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Optional details about this activity..."
+                  type="textarea"
+                  rows={2}
+                />
 
               <div className="flex gap-3 justify-end mt-6">
                 <button

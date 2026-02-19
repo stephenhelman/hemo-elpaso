@@ -22,9 +22,10 @@ interface Poll {
 interface Props {
   eventId: string;
   sessionToken: string;
+  lang: string;
 }
 
-export default function LivePoll({ eventId, sessionToken }: Props) {
+export default function LivePoll({ eventId, sessionToken, lang }: Props) {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
@@ -78,7 +79,9 @@ export default function LivePoll({ eventId, sessionToken }: Props) {
         toast.error(data.error || "Failed to vote");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit vote");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit vote",
+      );
     } finally {
       setVoting(null);
     }
@@ -111,6 +114,7 @@ export default function LivePoll({ eventId, sessionToken }: Props) {
       {activePolls.map((poll) => {
         const hasVoted = votedPolls.has(poll.id);
         const isVoting = voting === poll.id;
+        const title = lang === "en" ? poll.titleEn : poll.titleEs;
 
         return (
           <div
@@ -121,7 +125,7 @@ export default function LivePoll({ eventId, sessionToken }: Props) {
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
                 <h3 className="font-display font-bold text-white text-lg mb-1">
-                  {poll.titleEn}
+                  {title}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-neutral-400">
                   <Users className="w-4 h-4" />

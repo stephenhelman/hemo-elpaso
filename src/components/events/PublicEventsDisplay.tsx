@@ -20,6 +20,7 @@ interface Event {
   titleEn: string;
   titleEs: string;
   descriptionEn: string | null;
+  descriptionEs: string | null;
   eventDate: Date;
   location: string;
   category: string;
@@ -33,11 +34,13 @@ interface Event {
 interface Props {
   upcomingEvents: Event[];
   pastEvents: Event[];
+  lang: string;
 }
 
 export default function PublicEventsDisplay({
   upcomingEvents,
   pastEvents,
+  lang,
 }: Props) {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,7 +144,7 @@ export default function PublicEventsDisplay({
       {/* Upcoming Events */}
       <div>
         <h2 className="font-display font-bold text-neutral-900 text-2xl mb-6">
-          Upcoming Events
+          {lang === "en" ? "Upcoming Events" : "Próximos Eventos"}
         </h2>
 
         {filteredUpcoming.length === 0 ? (
@@ -154,7 +157,7 @@ export default function PublicEventsDisplay({
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUpcoming.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} lang={lang} />
             ))}
           </div>
         ) : (
@@ -181,7 +184,7 @@ export default function PublicEventsDisplay({
             (viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
                 {filteredPast.map((event) => (
-                  <EventCard key={event.id} event={event} isPast />
+                  <EventCard key={event.id} event={event} isPast lang={lang} />
                 ))}
               </div>
             ) : (
@@ -195,7 +198,17 @@ export default function PublicEventsDisplay({
   );
 }
 
-function EventCard({ event, isPast }: { event: Event; isPast?: boolean }) {
+function EventCard({
+  event,
+  isPast,
+  lang,
+}: {
+  event: Event;
+  isPast?: boolean;
+  lang: string;
+}) {
+  const title = lang === "en" ? event.titleEn : event.titleEs;
+  const description = lang === "en" ? event.descriptionEn : event.descriptionEs;
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -216,7 +229,7 @@ function EventCard({ event, isPast }: { event: Event; isPast?: boolean }) {
       {/* Content */}
       <div className="p-6">
         <h3 className="font-display font-bold text-neutral-900 text-xl mb-3 group-hover:text-primary transition-colors">
-          {event.titleEn}
+          {title}
         </h3>
 
         <div className="space-y-2 mb-4 text-sm text-neutral-600">
@@ -244,9 +257,9 @@ function EventCard({ event, isPast }: { event: Event; isPast?: boolean }) {
           )}
         </div>
 
-        {event.descriptionEn && (
+        {description && (
           <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
-            {event.descriptionEn}
+            {description}
           </p>
         )}
 

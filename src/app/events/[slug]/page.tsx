@@ -1,15 +1,13 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { formatEventDate, getStatusLabel } from "@/lib/event-utils";
 import {
-  ArrowLeft,
   Calendar,
   MapPin,
   Users,
   Clock,
   FileImage,
   Sparkles,
-  FileText,
-  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { Lang } from "@/types";
@@ -32,7 +30,8 @@ export async function generateStaticParams() {
 }
 
 export default async function EventPage({ params, searchParams }: Props) {
-  const lang: Lang = "en";
+  const cookieStore = cookies();
+  const lang = (cookieStore.get("language")?.value as "en" | "es") || "en";
   const referrer = searchParams.from;
 
   // Get event from database
@@ -46,6 +45,9 @@ export default async function EventPage({ params, searchParams }: Props) {
   });
 
   if (!event) notFound();
+
+  const title = lang === "en" ? event.titleEn : event.titleEs;
+  const description = lang === "en" ? event.descriptionEn : event.descriptionEs;
 
   const session = await getSession();
   let hasRsvp = false;
@@ -84,8 +86,6 @@ export default async function EventPage({ params, searchParams }: Props) {
     }
   }
 
-  const title = lang === "en" ? event.titleEn : event.titleEs;
-  const desc = lang === "en" ? event.descriptionEn : event.descriptionEs;
   const date = formatEventDate(event.eventDate, lang);
   const status = getStatusLabel(event.status, lang);
 
@@ -187,7 +187,7 @@ export default async function EventPage({ params, searchParams }: Props) {
               </h2>
               <div className="prose prose-neutral max-w-none">
                 <p className="text-neutral-600 leading-relaxed whitespace-pre-line">
-                  {desc}
+                  {description}
                 </p>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default async function EventPage({ params, searchParams }: Props) {
             <FlyerPreview
               flyerEnUrl={event.flyerEnUrl}
               flyerEsUrl={event.flyerEsUrl}
-              lang="en" // Or detect from user preference/browser
+              lang={lang}
             />
 
             {/* Join Live Event Button - Only if checked in and live enabled */}

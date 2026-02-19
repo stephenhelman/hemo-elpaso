@@ -7,6 +7,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import FlyerUpload from "./FlyerUpload";
+import BilingualInput from "@/components/form/BilingualInput";
 
 interface Event {
   id: string;
@@ -46,10 +47,14 @@ export default function EventEditForm({ event }: Props) {
   const [deleting, setDeleting] = useState(false);
 
   const [formData, setFormData] = useState({
-    titleEn: event.titleEn,
-    titleEs: event.titleEs,
-    descriptionEn: event.descriptionEn || "",
-    descriptionEs: event.descriptionEs || "",
+    title: {
+      en: event?.titleEn,
+      es: event?.titleEs,
+    },
+    description: {
+      en: event.descriptionEn || "",
+      es: event.descriptionEs || "",
+    },
     eventDate: new Date(event.eventDate).toISOString().slice(0, 16),
     location: event.location,
     maxCapacity: event.maxCapacity?.toString() || "",
@@ -73,15 +78,28 @@ export default function EventEditForm({ event }: Props) {
     setLoading(true);
 
     try {
+      const body = {
+        titleEn: formData.title.en,
+        titleEs: formData.title.es,
+        descriptionEn: formData.description.en,
+        descriptionEs: formData.description.es,
+        eventDate: formData.eventDate,
+        location: formData.location,
+        maxCapacity: formData.maxCapacity
+          ? parseInt(formData.maxCapacity)
+          : null,
+        rsvpDeadline: formData.rsvpDeadline || null,
+        status: formData.status,
+        category: formData.category,
+        targetAudience: formData.targetAudience,
+        language: formData.language,
+        isPriority: formData.isPriority,
+        liveEnabled: formData.liveEnabled,
+      };
       const response = await fetch(`/api/admin/events/${event.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          maxCapacity: formData.maxCapacity
-            ? parseInt(formData.maxCapacity)
-            : null,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -145,64 +163,29 @@ export default function EventEditForm({ event }: Props) {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Title (English) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.titleEn}
-                  onChange={(e) =>
-                    setFormData({ ...formData, titleEn: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Title (Spanish) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.titleEs}
-                  onChange={(e) =>
-                    setFormData({ ...formData, titleEs: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Description (English)
-              </label>
-              <textarea
-                rows={4}
-                value={formData.descriptionEn}
-                onChange={(e) =>
-                  setFormData({ ...formData, descriptionEn: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              <BilingualInput
+                label="Event Title"
+                name="title"
+                value={formData.title}
+                onChange={(value) => setFormData({ ...formData, title: value })}
+                placeholder="Enter event title..."
+                type="input"
+                required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Description (Spanish)
-              </label>
-              <textarea
-                rows={4}
-                value={formData.descriptionEs}
-                onChange={(e) =>
-                  setFormData({ ...formData, descriptionEs: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
+            <BilingualInput
+              label="Event Description"
+              name="description"
+              value={formData.description}
+              onChange={(value) =>
+                setFormData({ ...formData, description: value })
+              }
+              placeholder="Enter event description..."
+              type="textarea"
+              rows={4}
+              required
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

@@ -8,6 +8,7 @@ import { Menu, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
@@ -70,15 +71,7 @@ export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Language Toggle */}
-            <button
-              onClick={onLanguageToggle}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-200 text-sm font-medium text-neutral-600 hover:border-primary hover:text-primary transition-colors duration-200"
-              aria-label="Toggle language"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>{lang === "en" ? "ES" : "EN"}</span>
-            </button>
+            <LanguageSwitcher />
 
             <UserMenu />
 

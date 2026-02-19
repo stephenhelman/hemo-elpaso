@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import BilingualInput from "@/components/form/BilingualInput";
 
 interface Props {
   token: string;
@@ -17,39 +18,55 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
-    titleEn: "",
-    titleEs: "",
+    question: { en: "", es: "" }, // CHANGED
     options: [
-      { id: "1", text: "" },
-      { id: "2", text: "" },
+      { en: "", es: "" }, // CHANGED
+      { en: "", es: "" }, // CHANGED
     ],
   });
 
-  const addOption = () => {
+  const handleAddOption = () => {
+    if (formData.options.length >= 6) {
+      toast.error("Maximum 6 options allowed");
+      return;
+    }
     setFormData({
       ...formData,
-      options: [...formData.options, { id: Date.now().toString(), text: "" }],
+      options: [...formData.options, { en: "", es: "" }],
     });
   };
 
-  const removeOption = (id: string) => {
+  const handleRemoveOption = (index: number) => {
+    if (formData.options.length <= 2) {
+      toast.error("Minimum 2 options required");
+      return;
+    }
     setFormData({
       ...formData,
-      options: formData.options.filter((opt) => opt.id !== id),
+      options: formData.options.filter((_, i) => i !== index),
     });
   };
 
-  const updateOption = (id: string, text: string) => {
-    setFormData({
-      ...formData,
-      options: formData.options.map((opt) =>
-        opt.id === id ? { ...opt, text } : opt,
-      ),
-    });
+  const handleOptionChange = (
+    index: number,
+    value: { en: string; es: string },
+  ) => {
+    const newOptions = [...formData.options];
+    newOptions[index] = value;
+    setFormData({ ...formData, options: newOptions });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const allOptionsFilled = formData.options.every(
+      (opt) => opt.en.trim() && opt.es.trim(),
+    );
+    if (!allOptionsFilled) {
+      toast.error("Please translate all poll options");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -59,10 +76,12 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
         body: JSON.stringify({
           token,
           eventId,
-          repEmail,
-          titleEn: formData.titleEn,
-          titleEs: formData.titleEs,
-          options: formData.options.filter((opt) => opt.text.trim()),
+          questionEn: formData.question.en,
+          questionEs: formData.question.es,
+          options: formData.options.map((opt) => ({
+            textEn: opt.en,
+            textEs: opt.es,
+          })),
         }),
       });
 
@@ -78,7 +97,9 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
         toast.error(data.error || "Failed to submit poll");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit poll");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit poll",
+      );
     } finally {
       setLoading(false);
     }
@@ -86,11 +107,10 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
 
   const resetForm = () => {
     setFormData({
-      titleEn: "",
-      titleEs: "",
+      question: { en: "", es: "" }, // CHANGED
       options: [
-        { id: "1", text: "" },
-        { id: "2", text: "" },
+        { en: "", es: "" }, // CHANGED
+        { en: "", es: "" }, // CHANGED
       ],
     });
   };
@@ -113,45 +133,16 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* English Question */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Question (English) *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.titleEn}
-          onChange={(e) =>
-            setFormData({ ...formData, titleEn: e.target.value })
-          }
-          placeholder="e.g., What treatment option interests you most?"
-          className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-        <p className="text-xs text-neutral-500 mt-1">
-          Ask a clear, engaging question for attendees
-        </p>
-      </div>
-
-      {/* Spanish Question */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Question (Spanish) *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.titleEs}
-          onChange={(e) =>
-            setFormData({ ...formData, titleEs: e.target.value })
-          }
-          placeholder="e.g., ¿Qué opción de tratamiento le interesa más?"
-          className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-        <p className="text-xs text-neutral-500 mt-1">
-          Provide the Spanish translation
-        </p>
-      </div>
+      <BilingualInput
+        label="Poll Question"
+        name="question"
+        value={formData.question}
+        onChange={(value) => setFormData({ ...formData, question: value })}
+        placeholder="e.g., What topic interests you most?"
+        type="textarea"
+        rows={2}
+        required
+      />
 
       {/* Answer Options */}
       <div>
@@ -160,26 +151,25 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
         </label>
         <div className="space-y-3">
           {formData.options.map((option, index) => (
-            <div key={option.id} className="flex items-center gap-3">
-              <span className="text-sm text-neutral-500 font-medium w-6">
-                {index + 1}.
-              </span>
-              <input
-                type="text"
-                required
-                value={option.text}
-                onChange={(e) => updateOption(option.id, e.target.value)}
-                placeholder={`Option ${index + 1}`}
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+            <div key={index} className="flex gap-2 items-start">
+              <div className="flex-1">
+                <BilingualInput
+                  label={`Option ${index + 1}`}
+                  name={`option-${index}`}
+                  value={option}
+                  onChange={(value) => handleOptionChange(index, value)}
+                  placeholder={`Enter option ${index + 1}...`}
+                  type="input"
+                  required
+                />
+              </div>
               {formData.options.length > 2 && (
                 <button
                   type="button"
-                  onClick={() => removeOption(option.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Remove option"
+                  onClick={() => handleRemoveOption(index)}
+                  className="mt-8 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-semibold"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  Remove
                 </button>
               )}
             </div>
@@ -189,7 +179,7 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
         {formData.options.length < 6 && (
           <button
             type="button"
-            onClick={addOption}
+            onClick={handleAddOption}
             className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline"
           >
             <Plus className="w-4 h-4" />

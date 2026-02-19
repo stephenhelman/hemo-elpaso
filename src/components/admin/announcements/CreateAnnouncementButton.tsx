@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import BilingualInput from "@/components/form/BilingualInput";
 
 interface Props {
   eventId: string;
@@ -15,8 +16,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    messageEn: "",
-    messageEs: "",
+    message: { en: "", es: "" },
     priority: "normal",
     expiresInMinutes: "",
   });
@@ -30,8 +30,8 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messageEn: formData.messageEn,
-          messageEs: formData.messageEs,
+          messageEn: formData.message.en,
+          messageEs: formData.message.es,
           priority: formData.priority,
           expiresInMinutes: formData.expiresInMinutes
             ? parseInt(formData.expiresInMinutes)
@@ -57,8 +57,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
 
   const resetForm = () => {
     setFormData({
-      messageEn: "",
-      messageEs: "",
+      message: { en: "", es: "" },
       priority: "normal",
       expiresInMinutes: "",
     });
@@ -114,39 +113,18 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                   </p>
                 </div>
 
-                {/* English Message */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Message (English) *
-                  </label>
-                  <textarea
-                    required
-                    value={formData.messageEn}
-                    onChange={(e) =>
-                      setFormData({ ...formData, messageEn: e.target.value })
-                    }
-                    rows={3}
-                    placeholder="e.g., Dinner will be served in 15 minutes in the main hall"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                {/* Spanish Message */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Message (Spanish) *
-                  </label>
-                  <textarea
-                    required
-                    value={formData.messageEs}
-                    onChange={(e) =>
-                      setFormData({ ...formData, messageEs: e.target.value })
-                    }
-                    rows={3}
-                    placeholder="e.g., La cena se servirá en 15 minutos en el salón principal"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+                <BilingualInput
+                  label="Announcement Message"
+                  name="message"
+                  value={formData.message}
+                  onChange={(value) =>
+                    setFormData({ ...formData, message: value })
+                  }
+                  placeholder="e.g., Dinner will be served in 15 minutes..."
+                  type="textarea"
+                  rows={3}
+                  required
+                />
 
                 {/* Auto-expire */}
                 <div>
