@@ -1,84 +1,311 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { Calendar, Users, CheckCircle, TrendingUp } from "lucide-react";
+import { Users, Calendar, CheckCircle, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminDashboardPage() {
-  // Get stats
-  const [totalEvents, upcomingEvents, totalRsvps, totalPatients] =
-    await Promise.all([
-      prisma.event.count(),
-      prisma.event.count({
-        where: {
-          status: "published",
-          eventDate: { gte: new Date() },
+  const session = await getSession();
+
+  if (!session?.user) {
+    redirect("/api/auth/login");
+  }
+
+  const admin = await prisma.patient.findUnique({
+    where: { auth0Id: session.user.sub },
+    include: { profile: true },
+  });
+
+  if (!admin || !["board", "admin"].includes(admin.role)) {
+    redirect("/portal/dashboard");
+  }
+
+  // Fetch dashboard data
+  const now = new Date();
+
+  // Total patients (excluding admin/board)
+  const totalPatients = await prisma.patient.count({
+    where: {
+      role: "patient",
+    },
+  });
+
+  // Total events
+  const totalEvents = await prisma.event.count({
+    where: {
+      status: "published",
+    },
+  });
+
+  // Upcoming events
+  const upcomingEvents = await prisma.event.findMany({
+    where: {
+      status: "published",
+      eventDate: {
+        gte: now,
+      },
+    },
+    orderBy: {
+      eventDate: "asc",
+    },
+    take: 5,
+    include: {
+      _count: {
+        select: {
+          rsvps: true,
         },
-      }),
-      prisma.rsvp.count(),
-      prisma.patient.count(),
-    ]);
+      },
+    },
+  });
+
+  // Recent RSVPs (last 7 days)
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const recentRsvps = await prisma.rsvp.count({
+    where: {
+      rsvpDate: {
+        gte: sevenDaysAgo,
+      },
+    },
+  });
+
+  // Calculate RSVP rate (for upcoming events)
+  const upcomingEventsTotal = await prisma.event.count({
+    where: {
+      status: "published",
+      eventDate: {
+        gte: now,
+      },
+    },
+  });
+
+  const upcomingRsvps = await prisma.rsvp.count({
+    where: {
+      event: {
+        eventDate: {
+          gte: now,
+        },
+      },
+    },
+  });
+
+  const rsvpRate =
+    upcomingEventsTotal > 0 && totalPatients > 0
+      ? Math.round(
+          (upcomingRsvps / (upcomingEventsTotal * totalPatients)) * 100,
+        )
+      : 0;
+
+  // Calculate attendance rate (past events)
+  const pastEventsWithRsvps = await prisma.event.findMany({
+    where: {
+      status: "published",
+      eventDate: {
+        lt: now,
+      },
+    },
+    include: {
+      _count: {
+        select: {
+          rsvps: true,
+          checkIns: {
+            where: {
+              attendeeRole: "patient", // Only count patients
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const totalPastRsvps = pastEventsWithRsvps.reduce(
+    (sum, e) => sum + e._count.rsvps,
+    0,
+  );
+  const totalPastCheckIns = pastEventsWithRsvps.reduce(
+    (sum, e) => sum + e._count.checkIns,
+    0,
+  );
+  const attendanceRate =
+    totalPastRsvps > 0
+      ? Math.round((totalPastCheckIns / totalPastRsvps) * 100)
+      : 0;
+
+  // Recent activity (last 10 RSVPs)
+  const recentActivity = await prisma.rsvp.findMany({
+    take: 10,
+    orderBy: {
+      rsvpDate: "desc",
+    },
+    include: {
+      patient: {
+        include: {
+          profile: true,
+        },
+      },
+      event: true,
+    },
+  });
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-neutral-500">
-          Manage events, view RSVPs, and track community engagement.
-        </p>
-      </div>
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-neutral-600">
+            Welcome back, {admin.profile?.firstName || "Admin"}
+          </p>
+        </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          icon={<Calendar className="w-6 h-6" />}
-          label="Total Events"
-          value={totalEvents.toString()}
-          color="primary"
-        />
-        <StatCard
-          icon={<TrendingUp className="w-6 h-6" />}
-          label="Upcoming Events"
-          value={upcomingEvents.toString()}
-          color="secondary"
-        />
-        <StatCard
-          icon={<CheckCircle className="w-6 h-6" />}
-          label="Total RSVPs"
-          value={totalRsvps.toString()}
-          color="accent"
-        />
-        <StatCard
-          icon={<Users className="w-6 h-6" />}
-          label="Registered Families"
-          value={totalPatients.toString()}
-          color="primary"
-        />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-        <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-          Quick Actions
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <a
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
             href="/admin/events/new"
-            className="px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
           >
-            + Create Event
-          </a>
-          <a
-            href="/admin/events"
-            className="px-6 py-3 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors"
+            <Calendar className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+            <h3 className="font-semibold text-neutral-900">Create Event</h3>
+          </Link>
+
+          <Link
+            href="/admin/reports"
+            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
           >
-            Manage Events
-          </a>
-          <a
-            href="/admin/attendees"
-            className="px-6 py-3 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors"
+            <TrendingUp className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+            <h3 className="font-semibold text-neutral-900">View Reports</h3>
+          </Link>
+
+          <Link
+            href="/admin/users"
+            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
           >
-            View Attendees
-          </a>
+            <Users className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+            <h3 className="font-semibold text-neutral-900">Manage Users</h3>
+          </Link>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Patients */}
+          <StatCard
+            title="Total Patients"
+            value={totalPatients.toString()}
+            icon={<Users className="w-6 h-6" />}
+            color="blue"
+          />
+
+          {/* Total Events */}
+          <StatCard
+            title="Total Events"
+            value={totalEvents.toString()}
+            icon={<Calendar className="w-6 h-6" />}
+            color="purple"
+          />
+
+          {/* RSVP Rate */}
+          <StatCard
+            title="RSVP Rate"
+            value={`${rsvpRate}%`}
+            subtitle="Upcoming events"
+            icon={<TrendingUp className="w-6 h-6" />}
+            color="green"
+          />
+
+          {/* Attendance Rate */}
+          <StatCard
+            title="Attendance Rate"
+            value={`${attendanceRate}%`}
+            subtitle="Past events"
+            icon={<TrendingUp className="w-6 h-6" />}
+            color="amber"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Upcoming Events */}
+          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-display font-bold text-neutral-900">
+                Upcoming Events
+              </h2>
+              <Link
+                href="/admin/events"
+                className="text-sm text-primary hover:text-primary-600 font-semibold"
+              >
+                View All
+              </Link>
+            </div>
+
+            {upcomingEvents.length === 0 ? (
+              <p className="text-neutral-500 text-sm">No upcoming events</p>
+            ) : (
+              <div className="space-y-3">
+                {upcomingEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/admin/events/${event.id}/edit`}
+                    className="block p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-50 transition-colors"
+                  >
+                    <h3 className="font-semibold text-neutral-900 mb-1">
+                      {event.titleEn}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-neutral-600">
+                      <span>
+                        {new Date(event.eventDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span>•</span>
+                      <span>{event._count.rsvps} RSVPs</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+            <h2 className="text-xl font-display font-bold text-neutral-900 mb-4">
+              Recent Activity
+            </h2>
+
+            {recentActivity.length === 0 ? (
+              <p className="text-neutral-500 text-sm">No recent activity</p>
+            ) : (
+              <div className="space-y-3">
+                {recentActivity.map((rsvp) => (
+                  <div
+                    key={rsvp.id}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-primary-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-900">
+                        {rsvp.patient.profile?.firstName}{" "}
+                        {rsvp.patient.profile?.lastName}
+                      </p>
+                      <p className="text-xs text-neutral-600 truncate">
+                        RSVP'd to {rsvp.event.titleEn}
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        {new Date(rsvp.rsvpDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -86,33 +313,39 @@ export default async function AdminDashboardPage() {
 }
 
 function StatCard({
-  icon,
-  label,
+  title,
   value,
+  subtitle,
+  icon,
   color,
 }: {
-  icon: React.ReactNode;
-  label: string;
+  title: string;
   value: string;
-  color: "primary" | "secondary" | "accent";
+  subtitle?: string;
+  icon: React.ReactNode;
+  color: "blue" | "purple" | "green" | "amber";
 }) {
-  const colorMap = {
-    primary: "bg-primary-50 text-primary",
-    secondary: "bg-secondary/10 text-secondary",
-    accent: "bg-accent/10 text-accent-dark",
-  };
+  const colorClasses = {
+    blue: "bg-blue-100 text-blue-600",
+    purple: "bg-purple-100 text-purple-600",
+    green: "bg-green-100 text-green-600",
+    amber: "bg-amber-100 text-amber-600",
+  }[color];
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorMap[color]} flex items-center justify-center mb-4`}
-      >
-        {icon}
+      <div className="flex items-center justify-between mb-4">
+        <div
+          className={`w-12 h-12 rounded-xl ${colorClasses} flex items-center justify-center`}
+        >
+          {icon}
+        </div>
       </div>
-      <p className="text-2xl font-display font-bold text-neutral-900 mb-1">
+      <h3 className="text-sm font-medium text-neutral-600 mb-1">{title}</h3>
+      <p className="text-3xl font-display font-bold text-neutral-900">
         {value}
       </p>
-      <p className="text-sm text-neutral-500">{label}</p>
+      {subtitle && <p className="text-xs text-neutral-500 mt-1">{subtitle}</p>}
     </div>
   );
 }

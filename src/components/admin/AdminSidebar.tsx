@@ -9,6 +9,8 @@ import {
   Settings,
   LogOut,
   Home,
+  BarChart3,
+  CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,9 +22,36 @@ interface Props {
 }
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/events", label: "Events", icon: Calendar },
-  { href: "/admin/attendees", label: "Attendees", icon: Users },
+  {
+    label: "Dashboard",
+    href: "/admin/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Events",
+    href: "/admin/events",
+    icon: Calendar,
+  },
+  {
+    label: "Reports",
+    href: "/admin/reports",
+    icon: BarChart3,
+  },
+  {
+    label: "Attendance",
+    href: "/admin/attendance",
+    icon: CheckCircle,
+  },
+  {
+    label: "Users",
+    href: "/admin/users",
+    icon: Users,
+  },
+  {
+    label: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+  },
 ];
 
 export default function AdminSidebar({ user }: Props) {

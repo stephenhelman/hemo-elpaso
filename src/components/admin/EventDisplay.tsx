@@ -7,7 +7,6 @@ import {
   List,
   Search,
   Calendar,
-  MapPin,
   Users,
   Pencil,
   ScanLine,
