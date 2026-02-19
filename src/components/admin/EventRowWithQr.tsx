@@ -12,6 +12,8 @@ import {
   BarChart3,
   MessageSquare,
   Send,
+  Megaphone,
+  Clock,
 } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
 import EventAccessQr from "./EventAccessQr";
@@ -110,7 +112,19 @@ export default function EventRowWithQr({ event, isPast }: Props) {
               >
                 <Send className="w-4 h-4" />
               </button>
+              <Link
+                href={`/admin/events/${event.id}/itinerary`}
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+              >
+                <Clock className="w-4 h-4" />
+              </Link>
 
+              <Link
+                href={`/admin/events/${event.id}/announcements`}
+                className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
+              >
+                <Megaphone className="w-4 h-4" />
+              </Link>
               <Link
                 href={`/admin/events/${event.id}/polls`}
                 className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"

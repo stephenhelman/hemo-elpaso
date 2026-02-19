@@ -12,6 +12,8 @@ import {
 import Link from "next/link";
 import LivePoll from "@/components/events/live/LivePoll";
 import QandA from "@/components/events/live/QandA";
+import Announcements from "@/components/events/live/Announcements";
+import LiveItinerary from "@/components/events/live/LiveItinerary";
 
 interface Props {
   params: { slug: string };
@@ -143,6 +145,10 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
                 : `You're checked in as ${patientName}`}
             </span>
           </div>
+        </div>
+        <Announcements eventId={event.id} lang="en" />
+        <div className="mb-8">
+          <LiveItinerary eventId={event.id} lang="en" />
         </div>
         {/* Live Polls Section */}
         <div className="mb-8">

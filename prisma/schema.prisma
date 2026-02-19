@@ -153,6 +153,8 @@ model Event {
   photos        EventPhoto[]
   questions     EventQuestion[]
   sponsorAccessTokens SponsorAccessToken[]
+  announcements   EventAnnouncement[]
+  itineraryItems  EventItineraryItem[]
 
   @@map("events")
 }
@@ -328,4 +330,48 @@ model AuditLog {
   createdAt    DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model EventAnnouncement {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  messageEn   String
+  messageEs   String
+  priority    String   @default("normal") // urgent, normal, info
+  
+  active      Boolean  @default(true)
+  expiresAt   DateTime? // Optional auto-hide time
+  
+  createdBy   String
+  createdAt   DateTime @default(now())
+  
+  @@map("event_announcements")
+}
+
+model EventItineraryItem {
+  id            String   @id @default(uuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  titleEn       String
+  titleEs       String
+  descriptionEn String?
+  descriptionEs String?
+  
+  startTime     DateTime
+  endTime       DateTime?
+  duration      Int?     // minutes
+  
+  status        String   @default("scheduled") // scheduled, current, completed, skipped
+  sequenceOrder Int      @default(0)
+  
+  location      String?  // Room/area if different from main venue
+  
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("event_itinerary_items")
 }

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import EventEditForm from "@/components/admin/EventEditForm";
-import { BarChart3, MessageSquare, Users, ScanLine } from "lucide-react";
+import { BarChart3, MessageSquare, Clock, Megaphone } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -52,6 +52,21 @@ export default async function EditEventPage({ params }: Props) {
               Quick Actions
             </p>
             <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/admin/events/${event.id}/itinerary`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-blue-300 hover:text-blue-600 transition-colors"
+              >
+                <Clock className="w-4 h-4" />
+                Event Schedule
+              </Link>
+
+              <Link
+                href={`/admin/events/${event.id}/announcements`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-orange-300 hover:text-orange-600 transition-colors"
+              >
+                <Megaphone className="w-4 h-4" />
+                Announcements
+              </Link>
               <Link
                 href={`/admin/events/${event.id}/polls`}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-purple-300 hover:text-purple-600 transition-colors"
