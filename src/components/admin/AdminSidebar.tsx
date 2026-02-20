@@ -12,6 +12,7 @@ import {
   BarChart3,
   CheckCircle,
   DollarSign,
+  FileCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminMobileNav from "../layout/AdminMobileNav";
@@ -53,6 +54,11 @@ const navItems = [
     label: "Users",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    label: "Verification",
+    href: "/admin/verification",
+    icon: FileCheck,
   },
   {
     label: "Settings",

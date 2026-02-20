@@ -12,12 +12,13 @@ import {
   AlertCircle,
 } from "lucide-react"; // ADD AlertCircle
 import Link from "next/link";
+import DiagnosisVerificationStatus from "@/components/admin/DiagnosisVerificationStatus";
 
 interface Props {
   params: { id: string };
 }
 
-export default async function UserDetailPage({ params }: Props) {
+export default async function patientDetailPage({ params }: Props) {
   const session = await getSession();
 
   if (!session?.user) {
@@ -32,12 +33,11 @@ export default async function UserDetailPage({ params }: Props) {
     redirect("/portal/dashboard");
   }
 
-  // Fetch user with full details
-  const user = await prisma.patient.findUnique({
+  // Fetch patient with full details
+  const patient = await prisma.patient.findUnique({
     where: { id: params.id },
     include: {
       profile: true,
-      familyMembers: true,
       rsvps: {
         include: {
           event: true,
@@ -56,29 +56,36 @@ export default async function UserDetailPage({ params }: Props) {
         },
         take: 10,
       },
+      familyMembers: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 
-  if (!user) notFound();
+  if (!patient) notFound();
 
-  // ADD AUDIT LOG FOR VIEWING USER DETAILS
+  console.log(patient);
+
+  // ADD AUDIT LOG FOR VIEWING patient DETAILS
   await prisma.auditLog.create({
     data: {
       patientId: admin.id,
-      action: "user_viewed",
+      action: "patient_viewed",
       resourceType: "Patient",
-      resourceId: user.id,
-      details: `Viewed user details: ${user.profile?.firstName} ${user.profile?.lastName}`,
+      resourceId: patient.id,
+      details: `Viewed patient details: ${patient.profile?.firstName} ${patient.profile?.lastName}`,
     },
   });
 
   // Calculate stats
   const totalRsvps = await prisma.rsvp.count({
-    where: { patientId: user.id },
+    where: { patientId: patient.id },
   });
 
   const totalCheckIns = await prisma.checkIn.count({
-    where: { patientId: user.id },
+    where: { patientId: patient.id },
   });
 
   const attendanceRate =
@@ -89,36 +96,36 @@ export default async function UserDetailPage({ params }: Props) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <Link
-          href="/admin/users"
+          href="/admin/patients"
           className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Users
+          Back to patients
         </Link>
 
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-              {user.profile?.firstName} {user.profile?.lastName}
+              {patient.profile?.firstName} {patient.profile?.lastName}
             </h1>
             <span
               className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
-                user.role === "admin"
+                patient.role === "admin"
                   ? "bg-purple-100 text-purple-800"
-                  : user.role === "board"
+                  : patient.role === "board"
                     ? "bg-amber-100 text-amber-800"
                     : "bg-blue-100 text-blue-800"
               }`}
             >
-              {user.role}
+              {patient.role}
             </span>
           </div>
 
           <Link
-            href={`/admin/users/${user.id}/edit`}
+            href={`/admin/users/${patient.id}/edit`}
             className="px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
           >
-            Edit User
+            Edit patient
           </Link>
         </div>
 
@@ -160,11 +167,11 @@ export default async function UserDetailPage({ params }: Props) {
                     <p className="text-sm font-medium text-neutral-700">
                       Email
                     </p>
-                    <p className="text-sm text-neutral-900">{user.email}</p>
+                    <p className="text-sm text-neutral-900">{patient.email}</p>
                   </div>
                 </div>
 
-                {user.profile?.phone && (
+                {patient.profile?.phone && (
                   <div className="flex items-start gap-3">
                     <Phone className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
                     <div>
@@ -172,13 +179,13 @@ export default async function UserDetailPage({ params }: Props) {
                         Phone
                       </p>
                       <p className="text-sm text-neutral-900">
-                        {user.profile.phone}
+                        {patient.profile.phone}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {user.profile?.city && (
+                {patient.profile?.city && (
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
                     <div>
@@ -186,10 +193,10 @@ export default async function UserDetailPage({ params }: Props) {
                         Location
                       </p>
                       <p className="text-sm text-neutral-900">
-                        {user.profile.address}
+                        {patient.profile.address}
                         <br />
-                        {user.profile.city}, {user.profile.state}{" "}
-                        {user.profile.zipCode}
+                        {patient.profile.city}, {patient.profile.state}{" "}
+                        {patient.profile.zipCode}
                       </p>
                     </div>
                   </div>
@@ -198,7 +205,7 @@ export default async function UserDetailPage({ params }: Props) {
             </div>
 
             {/* ADD EMERGENCY CONTACT */}
-            {user.profile?.emergencyContactName && (
+            {patient.profile?.emergencyContactName && (
               <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertCircle className="w-5 h-5 text-red-600" />
@@ -211,26 +218,26 @@ export default async function UserDetailPage({ params }: Props) {
                   <div>
                     <p className="text-sm font-medium text-red-900">Name</p>
                     <p className="text-sm text-red-800">
-                      {user.profile.emergencyContactName}
+                      {patient.profile.emergencyContactName}
                     </p>
                   </div>
 
-                  {user.profile.emergencyContactRelationship && (
+                  {patient.profile.emergencyContactRelationship && (
                     <div>
                       <p className="text-sm font-medium text-red-900">
                         Relationship
                       </p>
                       <p className="text-sm text-red-800">
-                        {user.profile.emergencyContactRelationship}
+                        {patient.profile.emergencyContactRelationship}
                       </p>
                     </div>
                   )}
 
-                  {user.profile.emergencyContactPhone && (
+                  {patient.profile.emergencyContactPhone && (
                     <div>
                       <p className="text-sm font-medium text-red-900">Phone</p>
                       <p className="text-sm text-red-800 font-mono">
-                        {user.profile.emergencyContactPhone}
+                        {patient.profile.emergencyContactPhone}
                       </p>
                     </div>
                   )}
@@ -245,7 +252,7 @@ export default async function UserDetailPage({ params }: Props) {
             )}
 
             {/* Medical Information (for patients only) */}
-            {user.role === "patient" && user.profile && (
+            {patient.profile && (
               <div className="bg-white rounded-2xl border border-neutral-200 p-6">
                 <h2 className="text-lg font-display font-bold text-neutral-900 mb-4">
                   Medical Information
@@ -257,7 +264,7 @@ export default async function UserDetailPage({ params }: Props) {
                       Primary Condition
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {user.profile.primaryCondition}
+                      {patient.profile.primaryCondition}
                     </p>
                   </div>
 
@@ -266,7 +273,7 @@ export default async function UserDetailPage({ params }: Props) {
                       Severity
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {user.profile.severity}
+                      {patient.profile.severity}
                     </p>
                   </div>
 
@@ -275,41 +282,43 @@ export default async function UserDetailPage({ params }: Props) {
                       Date of Birth
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {new Date(user.profile.dateOfBirth).toLocaleDateString()}
+                      {new Date(
+                        patient.profile.dateOfBirth,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
 
-                  {user.profile.diagnosisDate && (
+                  {patient.profile.diagnosisDate && (
                     <div>
                       <p className="text-sm font-medium text-neutral-700">
                         Diagnosis Date
                       </p>
                       <p className="text-sm text-neutral-900">
                         {new Date(
-                          user.profile.diagnosisDate,
+                          patient.profile.diagnosisDate,
                         ).toLocaleDateString()}
                       </p>
                     </div>
                   )}
 
-                  {user.profile.treatingPhysician && (
+                  {patient.profile.treatingPhysician && (
                     <div>
                       <p className="text-sm font-medium text-neutral-700">
                         Treating Physician
                       </p>
                       <p className="text-sm text-neutral-900">
-                        {user.profile.treatingPhysician}
+                        {patient.profile.treatingPhysician}
                       </p>
                     </div>
                   )}
 
-                  {user.profile.specialtyPharmacy && (
+                  {patient.profile.specialtyPharmacy && (
                     <div>
                       <p className="text-sm font-medium text-neutral-700">
                         Specialty Pharmacy
                       </p>
                       <p className="text-sm text-neutral-900">
-                        {user.profile.specialtyPharmacy}
+                        {patient.profile.specialtyPharmacy}
                       </p>
                     </div>
                   )}
@@ -326,11 +335,11 @@ export default async function UserDetailPage({ params }: Props) {
                 Recent RSVPs
               </h2>
 
-              {user.rsvps.length === 0 ? (
+              {patient.rsvps.length === 0 ? (
                 <p className="text-neutral-500 text-sm">No RSVPs yet</p>
               ) : (
                 <div className="space-y-3">
-                  {user.rsvps.map((rsvp) => (
+                  {patient.rsvps.map((rsvp) => (
                     <div
                       key={rsvp.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-neutral-50"
@@ -366,11 +375,11 @@ export default async function UserDetailPage({ params }: Props) {
                 Recent Check-Ins
               </h2>
 
-              {user.checkIns.length === 0 ? (
+              {patient.checkIns.length === 0 ? (
                 <p className="text-neutral-500 text-sm">No check-ins yet</p>
               ) : (
                 <div className="space-y-3">
-                  {user.checkIns.map((checkIn) => (
+                  {patient.checkIns.map((checkIn) => (
                     <div
                       key={checkIn.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-neutral-50"
@@ -400,14 +409,14 @@ export default async function UserDetailPage({ params }: Props) {
             </div>
 
             {/* Family Members - UPDATED WITH MORE DETAILS */}
-            {user.familyMembers.length > 0 && (
+            {patient.familyMembers.length > 0 && (
               <div className="bg-white rounded-2xl border border-neutral-200 p-6">
                 <h2 className="text-lg font-display font-bold text-neutral-900 mb-4">
                   Family Members
                 </h2>
 
                 <div className="space-y-4">
-                  {user.familyMembers.map((member) => (
+                  {patient.familyMembers.map((member) => (
                     <div
                       key={member.id}
                       className={`p-4 rounded-lg border ${
@@ -467,6 +476,46 @@ export default async function UserDetailPage({ params }: Props) {
                 </div>
               </div>
             )}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+              <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+                Diagnosis Verification Status
+              </h2>
+
+              {/* Patient's Diagnosis */}
+              {patient.profile?.primaryCondition && (
+                <div className="mb-4">
+                  <h3 className="font-medium text-neutral-700 mb-2">Patient</h3>
+                  <DiagnosisVerificationStatus
+                    diagnosisLetterUrl={patient.diagnosisLetterUrl}
+                    diagnosisVerified={patient.diagnosisVerified}
+                    diagnosisVerifiedAt={patient.diagnosisVerifiedAt}
+                    diagnosisRejectedReason={patient.diagnosisRejectedReason}
+                    gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
+                  />
+                </div>
+              )}
+
+              {/* Family Members with Bleeding Disorders */}
+              {patient.familyMembers
+                .filter((m) => m.hasBleedingDisorder)
+                .map((member) => (
+                  <div
+                    key={member.id}
+                    className="mb-4 pt-4 border-t border-neutral-200"
+                  >
+                    <h3 className="font-medium text-neutral-700 mb-2">
+                      {member.firstName} {member.lastName} (
+                      {member.relationship})
+                    </h3>
+                    <DiagnosisVerificationStatus
+                      diagnosisLetterUrl={member.diagnosisLetterUrl}
+                      diagnosisVerified={member.diagnosisVerified}
+                      diagnosisVerifiedAt={member.diagnosisVerifiedAt}
+                      diagnosisRejectedReason={member.diagnosisRejectedReason}
+                    />
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       </div>

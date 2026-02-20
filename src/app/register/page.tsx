@@ -31,6 +31,7 @@ export default function RegisterPage() {
     diagnosisDate: "",
     treatingPhysician: "",
     specialtyPharmacy: "",
+    diagnosisLetterFile: null as File | null, // ADD THIS
 
     // Step 3: Family Members
     familyMembers: [] as Array<{
@@ -86,16 +87,46 @@ export default function RegisterPage() {
 
   const handleSubmit = async () => {
     try {
+      // CREATE FORMDATA OBJECT
+      const formDataToSend = new FormData();
+
+      // Add all fields EXCEPT diagnosisLetterFile
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "diagnosisLetterFile") {
+          // Skip - we'll add it separately
+          return;
+        }
+
+        if (
+          key === "familyMembers" ||
+          key === "interestedTopics" ||
+          key === "preferredEventTimes" ||
+          key === "dietaryRestrictions"
+        ) {
+          // Stringify arrays/objects
+          formDataToSend.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          formDataToSend.append(key, String(value));
+        }
+      });
+
+      // Add diagnosis letter file if exists
+      if (formData.diagnosisLetterFile) {
+        formDataToSend.append("diagnosisLetter", formData.diagnosisLetterFile);
+      }
+
       const response = await fetch("/api/patient/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // DON'T set Content-Type - browser will set it with proper boundary
+        body: formDataToSend,
       });
 
       if (response.ok) {
+        toast.success("Registration complete! Welcome to HOEP!");
         router.push("/portal/dashboard");
       } else {
-        toast.error("Registration failed. Please try again.");
+        const data = await response.json();
+        toast.error(data.error || "Registration failed. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);

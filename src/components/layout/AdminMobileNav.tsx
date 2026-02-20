@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   Home,
+  FileCheck,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -52,6 +53,11 @@ export default function AdminMobileNav() {
       name: "Users",
       href: "/admin/users",
       icon: Users,
+    },
+    {
+      name: "Verification",
+      href: "/admin/verification",
+      icon: FileCheck,
     },
     {
       name: "Settings",

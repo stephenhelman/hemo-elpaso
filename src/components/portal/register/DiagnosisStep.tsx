@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { Upload, File, X, AlertCircle } from "lucide-react";
+
 interface Props {
   data: any;
   updateData: (data: any) => void;
@@ -11,8 +16,54 @@ export default function DiagnosisStep({
   onNext,
   onBack,
 }: Props) {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [canSkip, setCanSkip] = useState(false);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please upload a PDF or image file");
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File too large (max 10MB)");
+      return;
+    }
+
+    setUploadedFile(file);
+    updateData({ diagnosisLetterFile: file });
+  };
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    updateData({ diagnosisLetterFile: null });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Warn if skipping
+    if (!uploadedFile && !canSkip) {
+      const confirmed = confirm(
+        "You haven't uploaded your diagnosis letter. You will have 60 days to upload it, " +
+          "but you won't be able to RSVP for events or apply for financial assistance until it's verified.\n\n" +
+          "Continue without uploading?",
+      );
+      if (!confirmed) return;
+      setCanSkip(true);
+    }
+
     onNext();
   };
 
@@ -85,6 +136,79 @@ export default function DiagnosisStep({
           placeholder="Pharmacy name"
         />
       </FormField>
+
+      {/* DIAGNOSIS LETTER UPLOAD - NEW SECTION */}
+      <div className="pt-4 border-t border-neutral-200">
+        <FormField label="Diagnosis Letter">
+          <p className="text-xs text-neutral-600 mb-3">
+            Please upload your official diagnosis letter from your physician.
+            This helps us verify your eligibility for services.
+          </p>
+
+          {!uploadedFile ? (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
+              <Upload className="w-8 h-8 text-neutral-400 mb-2" />
+              <span className="text-sm text-neutral-600 mb-1">
+                Click to upload diagnosis letter
+              </span>
+              <span className="text-xs text-neutral-500">
+                PDF, JPG, or PNG (max 10MB)
+              </span>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="p-4 border border-green-200 bg-green-50 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <File className="w-6 h-6 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-900 text-sm">
+                      {uploadedFile.name}
+                    </p>
+                    <p className="text-xs text-green-700">
+                      {(uploadedFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!uploadedFile && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <div className="text-xs text-amber-800">
+                  <p className="font-semibold mb-1">
+                    Don't have your diagnosis letter yet?
+                  </p>
+                  <p>
+                    You can skip this step and upload it later. You'll have{" "}
+                    <strong>60 days</strong> from registration to upload your
+                    diagnosis letter. Without it, you won't be able to:
+                  </p>
+                  <ul className="list-disc ml-4 mt-1">
+                    <li>RSVP for events</li>
+                    <li>Apply for financial assistance</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </FormField>
+      </div>
 
       <div className="flex justify-between pt-4">
         <button

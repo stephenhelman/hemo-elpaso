@@ -50,15 +50,26 @@ export default function RsvpButton({
         }),
       });
 
-      if (response.ok) {
-        router.refresh();
-        setShowForm(false);
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "Failed to RSVP");
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.code === "VERIFICATION_REQUIRED") {
+          toast.error(result.error, { duration: 5000 });
+          // Optionally redirect to profile verification tab
+          router.push("/portal/profile?tab=verification");
+        } else {
+          toast.error(result.error || "Failed to RSVP");
+        }
+        return;
       }
+
+      setShowForm(false);
+      router.refresh();
+      toast.success("RSVP confirmed!");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit RSVP");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit RSVP",
+      );
     } finally {
       setLoading(false);
     }
@@ -86,7 +97,9 @@ export default function RsvpButton({
         toast.error("Failed to cancel RSVP");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to cancel RSVP");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to cancel RSVP",
+      );
     } finally {
       setLoading(false);
     }

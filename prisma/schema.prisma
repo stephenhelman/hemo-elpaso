@@ -154,6 +154,19 @@ model Patient {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  // Diagnosis verification
+  diagnosisLetterUrl       String?
+  diagnosisLetterKey       String?   // R2 storage key
+  diagnosisLetterUploadedAt DateTime?
+  diagnosisVerified        Boolean   @default(false)
+  diagnosisVerifiedBy      String?   // Admin email who verified
+  diagnosisVerifiedAt      DateTime?
+  diagnosisRejectedReason  String?   // If rejected, why
+  
+  // Grace period tracking
+  registrationCompletedAt  DateTime? // When they finished onboarding
+  diagnosisGracePeriodEndsAt DateTime? // registrationCompletedAt + 60 days
+
   profile       PatientProfile?
   preferences   PatientPreferences?
   familyMembers FamilyMember[]
@@ -208,6 +221,14 @@ model FamilyMember {
   severity            String? // mild, moderate, severe
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+
+  diagnosisLetterUrl       String?
+  diagnosisLetterKey       String?
+  diagnosisLetterUploadedAt DateTime?
+  diagnosisVerified        Boolean   @default(false)
+  diagnosisVerifiedBy      String?
+  diagnosisVerifiedAt      DateTime?
+  diagnosisRejectedReason  String?
 
   @@map("family_members")
 }

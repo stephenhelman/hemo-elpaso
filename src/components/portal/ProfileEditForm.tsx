@@ -2,36 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Users,
-  Loader2,
-  Plus,
-  Trash2,
-  Pencil,
-  X,
-} from "lucide-react";
+import { Users, Loader2, Plus, Trash2, Pencil, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
-
-interface FamilyMember {
-  id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: Date | null;
-  relationship: string;
-  hasBleedingDisorder: boolean;
-  condition: string;
-  severity: string;
-}
+import DiagnosisUploadSection from "./register/DiagnosisUploadSection";
 
 interface Patient {
   id: string;
   email: string;
+  diagnosisLetterUrl: string | null;
+  diagnosisLetterKey: string | null;
+  diagnosisLetterUploadedAt: Date | null;
+  diagnosisVerified: boolean;
+  diagnosisVerifiedBy: string | null;
+  diagnosisVerifiedAt: Date | null;
+  diagnosisRejectedReason: string | null;
+  registrationCompletedAt: Date | null;
+  diagnosisGracePeriodEndsAt: Date | null;
+
   profile: {
     firstName: string;
     lastName: string;
@@ -48,7 +36,26 @@ interface Patient {
     emergencyContactName: string | null;
     emergencyContactPhone: string | null;
   } | null;
+
   familyMembers: FamilyMember[];
+}
+
+interface FamilyMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date | null;
+  relationship: string;
+  hasBleedingDisorder: boolean;
+  condition: string;
+  severity: string;
+  diagnosisLetterUrl: string | null;
+  diagnosisLetterKey: string | null;
+  diagnosisLetterUploadedAt: Date | null;
+  diagnosisVerified: boolean;
+  diagnosisVerifiedBy: string | null;
+  diagnosisVerifiedAt: Date | null;
+  diagnosisRejectedReason: string | null;
 }
 
 interface Props {
@@ -59,9 +66,9 @@ export default function ProfileEditForm({ patient }: Props) {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"personal" | "medical" | "family">(
-    "personal",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "personal" | "medical" | "family" | "verification"
+  >("personal");
 
   // Family member state
   const [showAddMember, setShowAddMember] = useState(false);
@@ -116,7 +123,9 @@ export default function ProfileEditForm({ patient }: Props) {
         toast.error(data.error || "Failed to update profile");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile",
+      );
     } finally {
       setLoading(false);
     }
@@ -186,7 +195,9 @@ export default function ProfileEditForm({ patient }: Props) {
         toast.error(data.error || "Failed to save family member");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save family member");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save family member",
+      );
     } finally {
       setLoading(false);
     }
@@ -195,7 +206,8 @@ export default function ProfileEditForm({ patient }: Props) {
   const handleDeleteMember = async (memberId: string) => {
     const confirmed = await confirm({
       title: "Remove Family Member?",
-      message: "Are you sure you want to remove this family member? This action cannot be undone.",
+      message:
+        "Are you sure you want to remove this family member? This action cannot be undone.",
       confirmText: "Remove",
       variant: "danger",
     });
@@ -215,7 +227,11 @@ export default function ProfileEditForm({ patient }: Props) {
         toast.error(data.error || "Failed to delete family member");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete family member");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete family member",
+      );
     } finally {
       setLoading(false);
     }
@@ -273,6 +289,17 @@ export default function ProfileEditForm({ patient }: Props) {
             }`}
           >
             Family Members ({patient.familyMembers.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("verification")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === "verification"
+                ? "border-primary text-primary"
+                : "border-transparent text-neutral-600 hover:text-neutral-900"
+            }`}
+          >
+            Verification
           </button>
         </div>
 
@@ -795,6 +822,67 @@ export default function ProfileEditForm({ patient }: Props) {
               <div className="text-center py-8 text-neutral-500">
                 No family members added yet. Click "Add Family Member" to get
                 started.
+              </div>
+            )}
+          </div>
+        )}
+        {activeTab === "verification" && (
+          <div className="space-y-6">
+            {/* Patient's Diagnosis Letter */}
+            <div>
+              <h3 className="font-semibold text-neutral-900 mb-4">
+                Your Diagnosis Letter
+              </h3>
+
+              {patient.profile?.primaryCondition ? (
+                <DiagnosisUploadSection
+                  patientId={patient.id}
+                  currentFileUrl={patient.diagnosisLetterUrl}
+                  diagnosisVerified={patient.diagnosisVerified}
+                  diagnosisVerifiedAt={patient.diagnosisVerifiedAt}
+                  diagnosisRejectedReason={patient.diagnosisRejectedReason}
+                  gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
+                />
+              ) : (
+                <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg text-sm text-neutral-600">
+                  No bleeding disorder indicated in medical information.
+                </div>
+              )}
+            </div>
+
+            {/* Family Members with Bleeding Disorders */}
+            {patient.familyMembers.filter((m) => m.hasBleedingDisorder).length >
+              0 && (
+              <div className="pt-6 border-t border-neutral-200">
+                <h3 className="font-semibold text-neutral-900 mb-4">
+                  Family Member Diagnosis Letters
+                </h3>
+
+                <div className="space-y-4">
+                  {patient.familyMembers
+                    .filter((m) => m.hasBleedingDisorder)
+                    .map((member) => (
+                      <div
+                        key={member.id}
+                        className="p-4 border border-neutral-200 rounded-lg"
+                      >
+                        <p className="font-medium text-neutral-900 mb-3">
+                          {member.firstName} {member.lastName}
+                        </p>
+
+                        <DiagnosisUploadSection
+                          patientId={patient.id}
+                          familyMemberId={member.id}
+                          currentFileUrl={member.diagnosisLetterUrl}
+                          diagnosisVerified={member.diagnosisVerified}
+                          diagnosisVerifiedAt={member.diagnosisVerifiedAt}
+                          diagnosisRejectedReason={
+                            member.diagnosisRejectedReason
+                          }
+                        />
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>
