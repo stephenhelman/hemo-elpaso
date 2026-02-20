@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email-service"; // ADD THIS
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,7 @@ export async function POST(request: NextRequest) {
 
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
+      include: { profile: true }, // ADD profile here
     });
 
     if (!patient) {
@@ -74,6 +76,38 @@ export async function POST(request: NextRequest) {
         details: `Created ${status === "DRAFT" ? "draft" : "submitted"} application for ${assistanceType}`,
       },
     });
+
+    // SEND EMAIL IF SUBMITTED (not draft)
+    if (status === "SUBMITTED") {
+      try {
+        const typeLabels: Record<string, string> = {
+          EVENT_FEES: "Event Fees",
+          TRANSPORTATION: "Transportation",
+          MEDICATION: "Medication",
+          MEDICAL_EQUIPMENT: "Medical Equipment",
+          EMERGENCY_SUPPORT: "Emergency Support",
+          OTHER: "Other",
+        };
+
+        await sendEmail({
+          templateType: "ASSISTANCE_SUBMITTED",
+          recipient: patient.email,
+          data: {
+            patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+            assistanceType: typeLabels[assistanceType] || assistanceType,
+            requestedAmount: `$${parseFloat(requestedAmount).toFixed(2)}`,
+            applicationId: application.id,
+          },
+          patientId: patient.id,
+        });
+      } catch (emailError) {
+        console.error(
+          "Failed to send application submitted email:",
+          emailError,
+        );
+        // Don't fail the application if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,

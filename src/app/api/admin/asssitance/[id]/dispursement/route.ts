@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email-service"; // ADD THIS
 
 export async function POST(
   request: NextRequest,
@@ -121,6 +122,46 @@ export async function POST(
         details: `Created disbursement of $${amount} for ${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
       },
     });
+
+    // SEND DISBURSEMENT EMAIL
+    try {
+      const typeLabels: Record<string, string> = {
+        EVENT_FEES: "Event Fees",
+        TRANSPORTATION: "Transportation",
+        MEDICATION: "Medication",
+        MEDICAL_EQUIPMENT: "Medical Equipment",
+        EMERGENCY_SUPPORT: "Emergency Support",
+        OTHER: "Other",
+      };
+
+      const paymentMethodLabels: Record<string, string> = {
+        CHECK: "Check",
+        CASH: "Cash",
+        REIMBURSEMENT: "Reimbursement",
+      };
+
+      await sendEmail({
+        templateType: "DISBURSEMENT_ISSUED",
+        recipient: application.patient.email,
+        data: {
+          patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+          assistanceType:
+            typeLabels[application.assistanceType] ||
+            application.assistanceType,
+          amount: `$${Number(amount).toFixed(2)}`,
+          paymentMethod: paymentMethodLabels[paymentMethod] || paymentMethod,
+          checkNumber: checkNumber || "N/A",
+          expectedDate:
+            paymentMethod === "CHECK"
+              ? "within 5-7 business days"
+              : "immediately",
+        },
+        patientId: application.patientId,
+      });
+    } catch (emailError) {
+      console.error("Failed to send disbursement email:", emailError);
+      // Don't fail the disbursement if email fails
+    }
 
     return NextResponse.json({
       success: true,

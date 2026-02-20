@@ -3,6 +3,7 @@ import { seedEvents } from "./seeds/02-events";
 import { seedRsvpsAndCheckIns } from "./seeds/03-rsvps-checkins";
 import { seedEngagement } from "./seeds/04-engagement";
 import { prisma } from "./seed-utils";
+import { seedEmailTemplates } from "./seeds/email-templates";
 
 async function main() {
   console.log("🌱 Starting database seeding...\n");
@@ -27,6 +28,7 @@ async function main() {
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     await seedEngagement();
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    await seedEmailTemplates();
 
     console.log("✅ Database seeding completed successfully!");
 

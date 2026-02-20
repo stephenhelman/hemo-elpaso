@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { resend, EMAIL_FROM } from "@/lib/resend";
-import { render } from "@react-email/render";
-import RsvpConfirmation from "@/messages/RsvpConfirmation";
-import RsvpCancellation from "@/messages/RsvpCancellation";
 import QRCode from "qrcode";
+import { sendRsvpConfirmation, sendEmail } from "@/lib/email-service"; // ADD THIS
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,173 +12,124 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { eventId, adultsCount, childrenCount, dietaryNotes } = body;
-
-    // Get patient
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: {
-        profile: true,
-      },
+      include: { profile: true },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    // Get event
+    const body = await request.json();
+    const { eventId, attendeeCount, dietaryRestrictions, accessibilityNeeds } =
+      body;
+
+    // Validate
+    if (!eventId) {
+      return NextResponse.json({ error: "Event ID required" }, { status: 400 });
+    }
+
+    // Find event
     const event = await prisma.event.findUnique({
       where: { id: eventId },
-      include: {
-        _count: {
-          select: { rsvps: true },
-        },
-      },
     });
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    if (event.status !== "published") {
-      return NextResponse.json(
-        { error: "Event is not open for registration" },
-        { status: 400 },
-      );
-    }
-
-    // Check if RSVP deadline has passed
-    if (event.rsvpDeadline && new Date() > new Date(event.rsvpDeadline)) {
-      return NextResponse.json(
-        { error: "RSVP deadline has passed" },
-        { status: 400 },
-      );
-    }
-
-    // Check capacity
-    const totalAttendees = adultsCount + childrenCount;
-    const currentRsvps = event._count.rsvps;
-    const maxCapacity = event.maxCapacity || 999;
-
-    if (currentRsvps + totalAttendees > maxCapacity) {
-      return NextResponse.json(
-        { error: "Event is at capacity" },
-        { status: 400 },
-      );
-    }
-
-    // Check if already RSVP'd
+    // Check if already RSVPed
     const existingRsvp = await prisma.rsvp.findFirst({
       where: {
         patientId: patient.id,
-        eventId: eventId,
+        eventId: event.id,
       },
     });
 
     if (existingRsvp) {
-      return NextResponse.json(
-        { error: "You have already RSVP'd to this event" },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "Already RSVPed" }, { status: 400 });
+    }
+
+    // Check capacity
+    if (event.maxCapacity) {
+      const currentRsvps = await prisma.rsvp.count({
+        where: { eventId: event.id },
+      });
+
+      if (currentRsvps >= event.maxCapacity) {
+        return NextResponse.json(
+          { error: "Event is at capacity" },
+          { status: 400 },
+        );
+      }
     }
 
     // Create RSVP
     const rsvp = await prisma.rsvp.create({
       data: {
         patientId: patient.id,
-        eventId: eventId,
-        adultsAttending: adultsCount,
-        childrenAttending: childrenCount,
-        dietaryRestrictions: dietaryNotes || null,
+        eventId: event.id,
         status: "confirmed",
+        attendeeCount: attendeeCount || 1,
+        dietaryRestrictions,
+        specialNeeds: accessibilityNeeds,
+        rsvpDate: new Date(),
       },
     });
 
-    // Create audit log
+    // Generate QR code
+    const qrData = JSON.stringify({
+      rsvpId: rsvp.id,
+      patientId: patient.id,
+      eventId: event.id,
+    });
+    const qrCodeDataUrl = await QRCode.toDataURL(qrData);
+
+    // Audit log
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
         action: "rsvp_created",
-        resourceType: "Event",
-        resourceId: eventId,
-        details: `RSVP created for ${event.titleEn} - ${totalAttendees} attendees`,
+        resourceType: "Rsvp",
+        resourceId: rsvp.id,
+        details: `RSVPed for event: ${event.titleEn}`,
       },
     });
 
-    // Generate QR code for email
-    const qrData = `RSVP-${rsvp.id}`;
-    const qrCodeDataURL = await QRCode.toDataURL(qrData, {
-      width: 500,
-      margin: 2,
-      color: {
-        dark: "#8B1538",
-        light: "#FFFFFF",
-      },
-    });
-
-    // Convert base64 to buffer for email attachment
-    const base64Data = qrCodeDataURL.replace(/^data:image\/png;base64,/, "");
-    const qrBuffer = Buffer.from(base64Data, "base64");
-
-    // Send confirmation email
+    // SEND RSVP CONFIRMATION EMAIL
     try {
-      console.log("Attempting to send email to:", patient.email);
-
-      const emailHtml = await render(
-        RsvpConfirmation({
-          patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
-          eventTitle: event.titleEn,
-          eventDate: new Date(event.eventDate).toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          }),
-          eventTime: new Date(event.eventDate).toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-          }),
-          location: event.location,
-          adultsCount,
-          childrenCount,
-          qrCodeDataUrl: "cid:qrcode", // Use CID reference instead
-          eventSlug: event.slug,
+      await sendRsvpConfirmation({
+        recipient: patient.email,
+        patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+        eventTitle: event.titleEn,
+        eventDate: event.eventDate.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         }),
-      );
-
-      const result = await resend.emails.send({
-        from: EMAIL_FROM,
-        to: patient.email,
-        replyTo: "info@hemo-el-paso.org",
-        subject: `RSVP Confirmed: ${event.titleEn}`,
-        html: emailHtml,
-        attachments: [
-          {
-            filename: "qr-code.png",
-            content: qrBuffer,
-            contentId: "qrcode",
-          },
-        ],
+        eventTime: event.eventDate.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        location: event.location || "TBD",
+        adultsCount: attendeeCount || 1,
+        childrenCount: 0,
+        qrCodeDataUrl,
+        eventSlug: event.slug,
+        patientId: patient.id,
+        eventId: event.id,
       });
-
-      console.log("Resend response:", result);
-
-      if (result.error) {
-        console.error("Resend error:", result.error);
-      } else {
-        console.log("Email sent successfully! ID:", result.data?.id);
-      }
     } catch (emailError) {
-      console.error("Email send error:", emailError);
+      console.error("Failed to send RSVP confirmation email:", emailError);
+      // Don't fail the RSVP if email fails
     }
 
     return NextResponse.json({
       success: true,
-      rsvp: {
-        id: rsvp.id,
-        eventId: rsvp.eventId,
-      },
+      rsvpId: rsvp.id,
+      qrCodeDataUrl,
     });
   } catch (error) {
     console.error("RSVP error:", error);
@@ -192,6 +140,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// ADD DELETE METHOD FOR CANCELLATION
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getSession();
@@ -200,29 +149,28 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const rsvpId = searchParams.get("id");
-
-    if (!rsvpId) {
-      return NextResponse.json({ error: "RSVP ID required" }, { status: 400 });
-    }
-
-    // Get patient
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: {
-        profile: true,
-      },
+      include: { profile: true },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    // Verify ownership
+    const { searchParams } = new URL(request.url);
+    const rsvpId = searchParams.get("rsvpId");
+
+    if (!rsvpId) {
+      return NextResponse.json({ error: "RSVP ID required" }, { status: 400 });
+    }
+
+    // Find RSVP with event details
     const rsvp = await prisma.rsvp.findUnique({
       where: { id: rsvpId },
-      include: { event: true },
+      include: {
+        event: true,
+      },
     });
 
     if (!rsvp || rsvp.patientId !== patient.id) {
@@ -234,53 +182,42 @@ export async function DELETE(request: NextRequest) {
       where: { id: rsvpId },
     });
 
-    // Create audit log
+    // Audit log
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
         action: "rsvp_cancelled",
-        resourceType: "Event",
-        resourceId: rsvp.eventId,
-        details: `RSVP cancelled for ${rsvp.event.titleEn}`,
+        resourceType: "Rsvp",
+        resourceId: rsvp.id,
+        details: `Cancelled RSVP for event: ${rsvp.event.titleEn}`,
       },
     });
 
-    // Send cancellation email
+    // SEND CANCELLATION EMAIL
     try {
-      const emailHtml = await render(
-        RsvpCancellation({
+      await sendEmail({
+        templateType: "RSVP_CANCELLATION",
+        recipient: patient.email,
+        data: {
           patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
           eventTitle: rsvp.event.titleEn,
-          eventDate: new Date(rsvp.event.eventDate).toLocaleDateString(
-            "en-US",
-            {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            },
-          ),
-          eventTime: new Date(rsvp.event.eventDate).toLocaleTimeString(
-            "en-US",
-            {
-              hour: "numeric",
-              minute: "2-digit",
-            },
-          ),
+          eventDate: rsvp.event.eventDate.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          eventTime: rsvp.event.eventDate.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
           eventSlug: rsvp.event.slug,
-        }),
-      );
-
-      await resend.emails.send({
-        from: EMAIL_FROM,
-        to: patient.email,
-        replyTo: "info@hemo-el-paso.org",
-        subject: `RSVP Cancelled: ${rsvp.event.titleEn}`,
-        html: emailHtml,
+        },
+        patientId: patient.id,
+        eventId: rsvp.eventId,
       });
     } catch (emailError) {
-      console.error("Cancellation email error:", emailError);
-      // Don't fail the cancellation if email fails
+      console.error("Failed to send cancellation email:", emailError);
     }
 
     return NextResponse.json({ success: true });

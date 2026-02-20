@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email-service"; // ADD THIS
 
 export async function PATCH(
   request: NextRequest,
@@ -89,8 +90,55 @@ export async function PATCH(
       },
     });
 
-    // TODO: Send email notification to patient
-    // Will implement in email notifications phase
+    // SEND APPROVAL OR DENIAL EMAIL
+    try {
+      const typeLabels: Record<string, string> = {
+        EVENT_FEES: "Event Fees",
+        TRANSPORTATION: "Transportation",
+        MEDICATION: "Medication",
+        MEDICAL_EQUIPMENT: "Medical Equipment",
+        EMERGENCY_SUPPORT: "Emergency Support",
+        OTHER: "Other",
+      };
+
+      if (action === "APPROVE") {
+        await sendEmail({
+          templateType: "ASSISTANCE_APPROVED",
+          recipient: application.patient.email,
+          data: {
+            patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+            assistanceType:
+              typeLabels[application.assistanceType] ||
+              application.assistanceType,
+            requestedAmount: `$${Number(application.requestedAmount).toFixed(2)}`,
+            approvedAmount: `$${Number(approvedAmount).toFixed(2)}`,
+            reviewNotes: reviewNotes || "Your application has been approved.",
+            applicationId: application.id,
+          },
+          patientId: application.patientId,
+        });
+      } else {
+        await sendEmail({
+          templateType: "ASSISTANCE_DENIED",
+          recipient: application.patient.email,
+          data: {
+            patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+            assistanceType:
+              typeLabels[application.assistanceType] ||
+              application.assistanceType,
+            requestedAmount: `$${Number(application.requestedAmount).toFixed(2)}`,
+            reviewNotes:
+              reviewNotes ||
+              "Unfortunately, we are unable to approve your application at this time.",
+            applicationId: application.id,
+          },
+          patientId: application.patientId,
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send review email:", emailError);
+      // Don't fail the review if email fails
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { resend, EMAIL_FROM } from "@/lib/resend";
-import { render } from "@react-email/render";
-import CheckInConfirmation from "@/messages/CheckInConfirmation";
+import { sendEmail } from "@/lib/email-service"; // CHANGE THIS
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,22 +103,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send check-in confirmation email
+    // UPDATED: Send check-in confirmation email using email service
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
 
-      const emailHtml = await render(
-        CheckInConfirmation({
+      await sendEmail({
+        templateType: "CHECK_IN_CONFIRMATION",
+        recipient: rsvp.patient.email,
+        data: {
           patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
           eventTitle: rsvp.event.titleEn,
           eventDate: new Date(rsvp.event.eventDate).toLocaleDateString(
             "en-US",
             {
               weekday: "long",
+              year: "numeric",
               month: "long",
               day: "numeric",
-              year: "numeric",
             },
           ),
           eventTime: new Date(rsvp.event.eventDate).toLocaleTimeString(
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
               minute: "2-digit",
             },
           ),
-          location: rsvp.event.location,
+          location: rsvp.event.location || "TBD",
           checkInTime: new Date(checkIn.checkInTime).toLocaleTimeString(
             "en-US",
             {
@@ -139,15 +139,9 @@ export async function POST(request: NextRequest) {
             },
           ),
           liveEventUrl: `${baseUrl}/events/${rsvp.event.slug}/live`,
-        }),
-      );
-
-      await resend.emails.send({
-        from: EMAIL_FROM,
-        to: rsvp.patient.email,
-        replyTo: "info@hemo-el-paso.org",
-        subject: `Welcome to ${rsvp.event.titleEn}!`,
-        html: emailHtml,
+        },
+        patientId: rsvp.patientId,
+        eventId: eventId,
       });
     } catch (emailError) {
       console.error("Check-in email error:", emailError);

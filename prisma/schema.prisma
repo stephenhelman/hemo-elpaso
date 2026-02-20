@@ -62,6 +62,61 @@ enum PaymentMethod {
   REIMBURSEMENT
 }
 
+enum EmailTemplateType {
+  RSVP_CONFIRMATION
+  RSVP_CANCELLATION
+  RSVP_REMINDER
+  CHECK_IN_CONFIRMATION
+  EVENT_PUBLISHED
+  EVENT_CANCELLED
+  ASSISTANCE_SUBMITTED
+  ASSISTANCE_APPROVED
+  ASSISTANCE_DENIED
+  DISBURSEMENT_ISSUED
+  WELCOME_EMAIL
+}
+
+model EmailTemplate {
+  id          String            @id @default(uuid())
+  type        EmailTemplateType @unique
+  name        String            // Display name like "RSVP Confirmation"
+  subject     String            // Email subject line with variables
+  enabled     Boolean           @default(true)
+  
+  // We'll render React components, but store descriptions here
+  description String?           // What this email is for
+  variables   Json              // Available variables like ["patientName", "eventTitle"]
+  
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id          String   @id @default(uuid())
+  templateType EmailTemplateType
+  recipient   String   // Email address
+  subject     String
+  status      String   // "sent", "failed", "bounced"
+  error       String?  // Error message if failed
+  
+  // Optional relations
+  patientId   String?
+  patient     Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  
+  eventId     String?
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  sentAt      DateTime @default(now())
+  
+  @@index([patientId])
+  @@index([eventId])
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+
 model PatientPreferences {
   id        String  @id @default(uuid())
   patientId String  @unique
@@ -106,6 +161,7 @@ model Patient {
   checkIns      CheckIn[]
   auditLogs     AuditLog[]
   financialAssistanceApplications FinancialAssistanceApplication[]
+  emailLogs EmailLog[]
 
   @@map("patients")
 }
@@ -194,6 +250,7 @@ model Event {
   announcements       EventAnnouncement[]
   itineraryItems      EventItineraryItem[]
   polls               Poll[]
+  emailLogs EmailLog[]
 
   @@map("events")
 }
