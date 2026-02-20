@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { Users, Search, Filter } from "lucide-react";
+import { Users, Search, Filter, Download } from "lucide-react";
 import UsersTable from "@/components/admin/users/UsersTable";
 
 interface Props {
@@ -80,13 +80,23 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            User Management
-          </h1>
-          <p className="text-neutral-600">
-            Manage all registered users, roles, and view participation history
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+              User Management
+            </h1>
+            <p className="text-neutral-600">
+              Manage all registered users, roles, and view participation history
+            </p>
+          </div>
+          <a
+            href="/api/admin/users/export"
+            download
+            className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg font-semibold hover:bg-neutral-800 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export to CSV
+          </a>
         </div>
 
         {/* Stats */}
