@@ -9,6 +9,8 @@ import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAIL_FROM =
+  process.env.EMAIL_FROM || "HOEP Events <events@events.hemo-el-paso.org>";
 
 export async function POST(
   request: NextRequest,
@@ -71,7 +73,7 @@ export async function POST(
 
     // Send via Resend
     await resend.emails.send({
-      from: "HOEP <noreply@hemo-elpaso.org>",
+      from: EMAIL_FROM,
       to: testEmail,
       subject: `[TEST] ${subject}`,
       html: emailHtml,

@@ -13,6 +13,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PortalMobileNav from "../layout/PortalMobileNav";
 
 interface Props {
   user: {
@@ -40,6 +41,7 @@ export default function PortalSidebar({ user }: Props) {
 
   return (
     <>
+      <PortalMobileNav isAdmin={isAdmin} />
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-white border-r border-neutral-200">
         <div className="flex flex-col flex-1">
@@ -105,7 +107,10 @@ export default function PortalSidebar({ user }: Props) {
               <div className="pt-4 mt-4 border-t border-neutral-200">
                 <Link
                   href="/admin/dashboard"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-purple-600 to-purple-700
+                    text-white
+                    hover:from-purple-700 hover:to-purple-800
+                    shadow-md hover:shadow-lg"
                 >
                   <Shield className="w-5 h-5" />
                   Admin Dashboard

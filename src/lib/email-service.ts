@@ -7,6 +7,8 @@ import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAIL_FROM =
+  process.env.EMAIL_FROM || "HOEP Events <events@events.hemo-el-paso.org>";
 
 interface EmailData {
   [key: string]: string | number;
@@ -58,7 +60,7 @@ export async function sendEmail({
 
     // Send via Resend
     const result = await resend.emails.send({
-      from: "HOEP <noreply@hemo-elpaso.org>",
+      from: EMAIL_FROM,
       to: recipient,
       subject,
       html: emailHtml,
