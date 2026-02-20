@@ -204,7 +204,7 @@ export default function ProfileEditForm({ patient }: Props) {
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/portal/family-members/${memberId}`, {
+      const response = await fetch(`/api/patient/family-members/${memberId}`, {
         method: "DELETE",
       });
 

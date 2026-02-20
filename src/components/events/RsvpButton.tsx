@@ -76,7 +76,7 @@ export default function RsvpButton({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/rsvp?id=${rsvpId}`, {
+      const response = await fetch(`/api/rsvp?rsvpId=${rsvpId}`, {
         method: "DELETE",
       });
 
