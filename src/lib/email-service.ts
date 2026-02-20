@@ -5,6 +5,13 @@ import RsvpConfirmation from "@/messages/RsvpConfirmation";
 import RsvpCancellation from "@/messages/RsvpCancellation";
 import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
+import AssistanceSubmitted from "@/messages/AssistanceSubmitted";
+import AssistanceApproved from "@/messages/AssistanceApproved";
+import AssistanceDenied from "@/messages/AssistanceDenied";
+import DisbursementIssued from "@/messages/DisbursementIssued";
+import EventPublished from "@/messages/EventPublished";
+import EventCancelled from "@/messages/EventCancelled";
+import WelcomeEmail from "@/messages/WelcomeEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const EMAIL_FROM =
@@ -159,7 +166,86 @@ async function renderEmailTemplate(
           }),
         );
 
-      // TODO: Implement other templates
+      // ADD NEW CASES
+      case "ASSISTANCE_SUBMITTED":
+        return render(
+          AssistanceSubmitted({
+            patientName: String(data.patientName),
+            assistanceType: String(data.assistanceType),
+            requestedAmount: String(data.requestedAmount),
+            applicationId: String(data.applicationId),
+          }),
+        );
+
+      case "ASSISTANCE_APPROVED":
+        return render(
+          AssistanceApproved({
+            patientName: String(data.patientName),
+            assistanceType: String(data.assistanceType),
+            requestedAmount: String(data.requestedAmount),
+            approvedAmount: String(data.approvedAmount),
+            reviewNotes: String(data.reviewNotes),
+            applicationId: String(data.applicationId),
+          }),
+        );
+
+      case "ASSISTANCE_DENIED":
+        return render(
+          AssistanceDenied({
+            patientName: String(data.patientName),
+            assistanceType: String(data.assistanceType),
+            requestedAmount: String(data.requestedAmount),
+            reviewNotes: String(data.reviewNotes),
+            applicationId: String(data.applicationId),
+          }),
+        );
+
+      case "DISBURSEMENT_ISSUED":
+        return render(
+          DisbursementIssued({
+            patientName: String(data.patientName),
+            assistanceType: String(data.assistanceType),
+            amount: String(data.amount),
+            paymentMethod: String(data.paymentMethod),
+            checkNumber: String(data.checkNumber),
+            expectedDate: String(data.expectedDate),
+          }),
+        );
+
+      case "EVENT_PUBLISHED":
+        return render(
+          EventPublished({
+            patientName: String(data.patientName),
+            eventTitle: String(data.eventTitle),
+            eventDate: String(data.eventDate),
+            eventTime: String(data.eventTime),
+            location: String(data.location),
+            description: String(data.description),
+            eventSlug: String(data.eventSlug),
+            imageUrl: data.imageUrl ? String(data.imageUrl) : undefined,
+          }),
+        );
+
+      case "EVENT_CANCELLED":
+        return render(
+          EventCancelled({
+            patientName: String(data.patientName),
+            eventTitle: String(data.eventTitle),
+            eventDate: String(data.eventDate),
+            eventTime: String(data.eventTime),
+            location: String(data.location),
+            cancellationReason: String(data.cancellationReason),
+          }),
+        );
+
+      case "WELCOME_EMAIL":
+        return render(
+          WelcomeEmail({
+            patientName: String(data.patientName),
+            email: String(data.email),
+          }),
+        );
+
       default:
         console.warn(`Email template ${type} not implemented yet`);
         return null;
