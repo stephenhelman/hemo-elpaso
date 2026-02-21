@@ -1,53 +1,16 @@
 import Section from "@/components/layout/Section";
 import { Mail } from "lucide-react";
+import {
+  boardOfDirectors,
+  boardOfDirectorsTranslation,
+} from "@/translation/aboutPage";
 
 interface Props {
   lang: "en" | "es";
 }
 
-const executive = [
-  {
-    name: "Teresita Fernandez de Robles",
-    titleEn: "Vice President",
-    titleEs: "Vicepresidenta",
-    email: "tfernandezr.hoep@gmail.com",
-  },
-];
-
-const officers = [
-  { name: "Angelica Aguiña", email: "angelicaaguina1@gmail.com" },
-  { name: "Yuliana L. Serna Salas", email: "ysernas.hoep@gmail.com" },
-  { name: "Angelica Arellano", email: "aarellano.hoep@gmail.com" },
-  { name: "Maria Barba O.", email: "mbarbaortiz.hoep@gmail.com" },
-  { name: "Michael Ramos", email: "mramos.hoep@gmail.com" },
-  { name: "Tina Terrazas", email: "aterrazas.hoep@gmail.com" },
-  { name: "Esther Yu", email: "eyu.hoep@gmail.com" },
-  { name: "Selene I. Ruiz Carbajal", email: "sruizc.hoep@gmail.com" },
-];
-
-const content = {
-  en: {
-    eyebrow: "Leadership",
-    heading: "Board of Directors 2025",
-    sub: "We are currently welcoming new board members — contact us if you are interested in getting involved in the El Paso bleeding disorders community.",
-    executiveTitle: "Executive Board",
-    officersTitle: "Officers",
-    advisorTitle: "Advisor",
-    advisor: { name: "Rich Lopez", email: "rlopez.hoep@gmail.com" },
-  },
-  es: {
-    eyebrow: "Liderazgo",
-    heading: "Junta Directiva 2025",
-    sub: "Actualmente damos la bienvenida a nuevos miembros de la junta — contáctenos si está interesado en participar en la comunidad de trastornos hemorrágicos de El Paso.",
-    executiveTitle: "Junta Ejecutiva",
-    officersTitle: "Oficiales",
-    advisorTitle: "Asesor",
-    advisor: { name: "Rich Lopez", email: "rlopez.hoep@gmail.com" },
-  },
-};
-
 export default function BoardOfDirectors({ lang }: Props) {
-  const t = content[lang];
+  const t = boardOfDirectorsTranslation[lang];
 
   return (
     <Section background="white">
@@ -70,7 +33,7 @@ export default function BoardOfDirectors({ lang }: Props) {
       <div className="mb-12">
         <SectionLabel label={t.executiveTitle} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {executive.map((member) => (
+          {boardOfDirectors.executive.map((member) => (
             <ExecutiveCard key={member.name} member={member} lang={lang} />
           ))}
         </div>
@@ -80,7 +43,7 @@ export default function BoardOfDirectors({ lang }: Props) {
       <div className="mb-12">
         <SectionLabel label={t.officersTitle} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {officers.map((officer) => (
+          {boardOfDirectors.officers.map((officer) => (
             <OfficerCard key={officer.name} {...officer} />
           ))}
         </div>
@@ -109,7 +72,7 @@ function ExecutiveCard({
   member,
   lang,
 }: {
-  member: (typeof executive)[0];
+  member: (typeof boardOfDirectors.executive)[0];
   lang: "en" | "es";
 }) {
   const initials = member.name

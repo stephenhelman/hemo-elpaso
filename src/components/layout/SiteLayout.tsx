@@ -9,14 +9,11 @@ import { useLang } from "@/context/LanguageContext";
 import ToastProvider from "@/components/providers/ToastProvider";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
-  const { lang, setLang } = useLang();
+  const { lang } = useLang();
 
   return (
     <div className="overflow-x-hidden">
-      <Navbar
-        lang={lang}
-        onLanguageToggle={() => setLang(lang === "en" ? "es" : "en")}
-      />
+      <Navbar lang={lang} />
       {children}
       <Footer lang={lang} />
     </div>

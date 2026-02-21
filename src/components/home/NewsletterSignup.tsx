@@ -3,37 +3,18 @@
 import { useState } from "react";
 import { Mail, CheckCircle } from "lucide-react";
 import Section from "@/components/layout/Section";
+import { newsletterSignupTranslation } from "@/translation/homePage";
 
 interface NewsletterSignupProps {
   lang: "en" | "es";
 }
-
-const content = {
-  en: {
-    heading: "Stay in the Loop",
-    sub: "Get notified about upcoming events, resources, and community news. No spam, ever.",
-    placeholder: "Enter your email address",
-    cta: "Subscribe",
-    success: "You're subscribed! Welcome to the HOEP community.",
-    privacy: "We respect your privacy. Unsubscribe at any time.",
-  },
-  es: {
-    heading: "Mantente Informado",
-    sub: "Recibe notificaciones sobre próximos eventos, recursos y noticias de la comunidad. Sin spam, nunca.",
-    placeholder: "Ingresa tu correo electrónico",
-    cta: "Suscribirse",
-    success: "¡Estás suscrito! Bienvenido a la comunidad HOEP.",
-    privacy:
-      "Respetamos tu privacidad. Cancela la suscripción en cualquier momento.",
-  },
-};
 
 export default function NewsletterSignup({ lang }: NewsletterSignupProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const t = content[lang];
+  const t = newsletterSignupTranslation[lang];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

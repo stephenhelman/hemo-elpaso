@@ -1,24 +1,10 @@
-import Section from "@/components/layout/Section";
-
+import { aboutHeroTranslation } from "@/translation/aboutPage";
 interface Props {
   lang: "en" | "es";
 }
 
-const content = {
-  en: {
-    eyebrow: "Our Story",
-    heading: "Three Decades of Hope",
-    sub: "Founded in 1993 by Lou Anne Fetters, Hemophilia Outreach of El Paso has spent over 30 years standing beside individuals and families affected by bleeding disorders in our community.",
-  },
-  es: {
-    eyebrow: "Nuestra Historia",
-    heading: "Tres Décadas de Esperanza",
-    sub: "Fundada en 1993 por Lou Anne Fetters, Hemophilia Outreach de El Paso ha pasado más de 30 años apoyando a individuos y familias afectadas por trastornos hemorrágicos en nuestra comunidad.",
-  },
-};
-
 export default function AboutHero({ lang }: Props) {
-  const t = content[lang];
+  const t = aboutHeroTranslation[lang];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

@@ -1,51 +1,13 @@
 import Section from "@/components/layout/Section";
 import { Heart } from "lucide-react";
+import { founderStoryTranslation } from "@/translation/aboutPage";
 
 interface Props {
   lang: "en" | "es";
 }
 
-const content = {
-  en: {
-    eyebrow: "Our Founder",
-    heading: "A Mother's Love, A Community's Hope",
-    paragraphs: [
-      "In 1993, Lou Anne Fetters — a mother raising a child with hemophilia — recognized a gap in support for families navigating bleeding disorders in the El Paso region. Rather than accept that gap, she built something to fill it.",
-      "What began as a small group of families sharing resources and experiences has grown into a recognized 501(c)(3) nonprofit organization serving the greater El Paso community for over three decades.",
-      "Lou Anne's vision was simple but powerful: no family should face a bleeding disorder diagnosis alone. That vision remains the heartbeat of everything HOEP does today.",
-    ],
-    founder: "Lou Anne Fetters",
-    founderTitle: "Founder, Hemophilia Outreach of El Paso (1993)",
-    hallOfFame: "Past President Hall of Fame",
-    hallNames: [
-      "Lou Anne Fetters",
-      "Rosamaria Coles",
-      "Felix Garcia",
-      "Yolanda Ortiz",
-    ],
-  },
-  es: {
-    eyebrow: "Nuestra Fundadora",
-    heading: "El Amor de una Madre, la Esperanza de una Comunidad",
-    paragraphs: [
-      "En 1993, Lou Anne Fetters — una madre criando a un hijo con hemofilia — reconoció una brecha en el apoyo para las familias que navegaban por los trastornos hemorrágicos en la región de El Paso. En lugar de aceptar esa brecha, construyó algo para llenarla.",
-      "Lo que comenzó como un pequeño grupo de familias compartiendo recursos y experiencias ha crecido hasta convertirse en una organización sin fines de lucro 501(c)(3) reconocida que sirve a la comunidad del gran El Paso durante más de tres décadas.",
-      "La visión de Lou Ann era simple pero poderosa: ninguna familia debería enfrentar un diagnóstico de trastorno hemorrágico sola. Esa visión sigue siendo el corazón de todo lo que HOEP hace hoy.",
-    ],
-    founder: "Lou Anne Fetters",
-    founderTitle: "Fundadora, Hemophilia Outreach de El Paso (1993)",
-    hallOfFame: "Pasados Presidentes - Salón de la Fama",
-    hallNames: [
-      "Lou Anne Fetters",
-      "Rosamaria Coles",
-      "Felix Garcia",
-      "Yolanda Ortiz",
-    ],
-  },
-};
-
 export default function FounderStory({ lang }: Props) {
-  const t = content[lang];
+  const t = founderStoryTranslation[lang];
 
   return (
     <Section background="white">

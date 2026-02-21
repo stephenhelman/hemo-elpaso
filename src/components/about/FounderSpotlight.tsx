@@ -1,38 +1,13 @@
 import Section from "@/components/layout/Section";
 import { Heart, Star } from "lucide-react";
+import { founderSpotlightTranslation } from "@/translation/aboutPage";
 
 interface Props {
   lang: "en" | "es";
 }
 
-const content = {
-  en: {
-    eyebrow: "Our Founder",
-    name: "Lou Anne Fetters",
-    title: "Founder & Visionary",
-    founded: "Founded HOEP in 1993",
-    quote: '"No family should face a bleeding disorder diagnosis alone."',
-    body: "Lou Anne Fetters is the reason Hemophilia Outreach of El Paso exists. As the mother of a child with hemophilia, she turned personal experience into community action — building an organization from the ground up that has served over 150 families across three decades. Her legacy is not just the organization she created, but every family that has found hope, support, and community because of her vision.",
-    badge1: "30+ Years of Service",
-    badge2: "Community Pioneer",
-    badge3: "Past President",
-  },
-  es: {
-    eyebrow: "Nuestra Fundadora",
-    name: "Lou Anne Fetters",
-    title: "Fundadora y Visionaria",
-    founded: "Fundó HOEP en 1993",
-    quote:
-      '"Ninguna familia debería enfrentar un diagnóstico de trastorno hemorrágico sola."',
-    body: "Lou Anne Fetters es la razón por la que existe Hemophilia Outreach de El Paso. Como madre de un niño con hemofilia, convirtió la experiencia personal en acción comunitaria — construyendo una organización desde cero que ha servido a más de 150 familias durante tres décadas. Su legado no es solo la organización que creó, sino cada familia que ha encontrado esperanza, apoyo y comunidad gracias a su visión.",
-    badge1: "Más de 30 Años de Servicio",
-    badge2: "Pionera Comunitaria",
-    badge3: "Expresidenta",
-  },
-};
-
 export default function FounderSpotlight({ lang }: Props) {
-  const t = content[lang];
+  const t = founderSpotlightTranslation[lang];
 
   return (
     <Section background="white">

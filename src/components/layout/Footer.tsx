@@ -1,59 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
+import { footerTranslation } from "@/translation/layoutPage";
 
 interface FooterProps {
   lang: "en" | "es";
 }
 
 export default function Footer({ lang }: FooterProps) {
-  const t = {
-    en: {
-      tagline: "Giving Hope To Our Community",
-      quickLinks: "Quick Links",
-      contact: "Contact Us",
-      connect: "Connect",
-      rights: "All rights reserved.",
-      madeWith: "Made with",
-      forCommunity: "for the El Paso community",
-      newsletter: "Stay Updated",
-      newsletterSub: "Get event updates and news delivered to your inbox.",
-      emailPlaceholder: "Your email address",
-      subscribe: "Subscribe",
-      links: [
-        { href: "/about", label: "About Us" },
-        { href: "/events", label: "Events" },
-        { href: "/resources", label: "Resources" },
-        { href: "/scholarships", label: "Scholarships" },
-        { href: "/get-involved", label: "Get Involved" },
-        { href: "/contact", label: "Contact" },
-      ],
-    },
-    es: {
-      tagline: "Dando Esperanza A Nuestra Comunidad",
-      quickLinks: "Enlaces Rápidos",
-      contact: "Contáctenos",
-      connect: "Conéctate",
-      rights: "Todos los derechos reservados.",
-      madeWith: "Hecho con",
-      forCommunity: "para la comunidad de El Paso",
-      newsletter: "Mantente Informado",
-      newsletterSub:
-        "Recibe actualizaciones de eventos y noticias en tu correo.",
-      emailPlaceholder: "Tu correo electrónico",
-      subscribe: "Suscribirse",
-      links: [
-        { href: "/about", label: "Nosotros" },
-        { href: "/events", label: "Eventos" },
-        { href: "/resources", label: "Recursos" },
-        { href: "/scholarships", label: "Becas" },
-        { href: "/get-involved", label: "Participa" },
-        { href: "/contact", label: "Contacto" },
-      ],
-    },
-  };
-
-  const content = t[lang];
+  const t = footerTranslation[lang];
 
   return (
     <footer className="bg-neutral-900 text-neutral-300">
@@ -80,17 +35,17 @@ export default function Footer({ lang }: FooterProps) {
               </div>
             </div>
             <p className="text-sm text-neutral-400 leading-relaxed">
-              {content.tagline}
+              {t.tagline}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
-              {content.quickLinks}
+              {t.quickLinks}
             </h3>
             <ul className="space-y-2">
-              {content.links.map((link) => (
+              {t.links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -106,7 +61,7 @@ export default function Footer({ lang }: FooterProps) {
           {/* Contact */}
           <div>
             <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
-              {content.contact}
+              {t.contact}
             </h3>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-neutral-400">
@@ -130,7 +85,7 @@ export default function Footer({ lang }: FooterProps) {
             </ul>
 
             <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mt-6 mb-4">
-              {content.connect}
+              {t.connect}
             </h3>
             <a
               href="https://www.facebook.com/4HOEP"
@@ -146,39 +101,36 @@ export default function Footer({ lang }: FooterProps) {
           {/* Newsletter */}
           <div>
             <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
-              {content.newsletter}
+              {t.newsletter}
             </h3>
-            <p className="text-sm text-neutral-400 mb-4">
-              {content.newsletterSub}
-            </p>
+            <p className="text-sm text-neutral-400 mb-4">{t.newsletterSub}</p>
             <form className="flex flex-col gap-2">
               <input
                 type="email"
-                placeholder={content.emailPlaceholder}
+                placeholder={t.emailPlaceholder}
                 className="px-4 py-2.5 rounded-lg bg-neutral-800 border border-neutral-700 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-primary-500 transition-colors"
               />
               <button
                 type="submit"
                 className="px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
               >
-                {content.subscribe}
+                {t.subscribe}
               </button>
             </form>
           </div>
         </div>
       </div>
-
-      {/* Bottom Bar */}
+      ß{/* Bottom Bar */}
       <div className="border-t border-neutral-800">
         <div className="container-max px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-neutral-500">
             © {new Date().getFullYear()} Hemophilia Outreach of El Paso.{" "}
-            {content.rights}
+            {t.rights}
           </p>
           <p className="text-xs text-neutral-500 flex items-center gap-1">
-            {content.madeWith}{" "}
+            {t.madeWith}{" "}
             <Heart className="w-3 h-3 text-primary-500 fill-primary-500" />{" "}
-            {content.forCommunity}
+            {t.forCommunity}
           </p>
         </div>
       </div>

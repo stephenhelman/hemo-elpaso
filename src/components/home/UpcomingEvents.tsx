@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Calendar, MapPin, Users, ArrowRight } from "lucide-react";
 import { useEvents } from "@/context/EventsContext";
+import { upcomingEventsTranslation } from "@/translation/homePage";
 
 interface Props {
   lang: "en" | "es";
@@ -11,28 +12,7 @@ interface Props {
 export default function UpcomingEvents({ lang }: Props) {
   const { upcomingEvents, loading } = useEvents();
 
-  const t = {
-    en: {
-      title: "Upcoming Events",
-      subtitle:
-        "Join us for educational programs, family activities, and community support events",
-      noEvents: "No upcoming events at this time. Check back soon!",
-      viewAll: "View All Events",
-      spotsLeft: "spots left",
-      eventFull: "Event full",
-      learnMore: "Learn More & RSVP",
-    },
-    es: {
-      title: "Próximos Eventos",
-      subtitle:
-        "Únase a nosotros para programas educativos, actividades familiares y eventos de apoyo comunitario",
-      noEvents: "No hay eventos próximos en este momento. ¡Vuelva pronto!",
-      viewAll: "Ver Todos los Eventos",
-      spotsLeft: "lugares disponibles",
-      eventFull: "Evento lleno",
-      learnMore: "Más Información y RSVP",
-    },
-  }[lang];
+  const t = upcomingEventsTranslation[lang];
 
   // Only show first 3 events on homepage
   const displayEvents = upcomingEvents.slice(0, 3);

@@ -3,33 +3,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart, Users } from "lucide-react";
+import { homeHeroTranslation } from "@/translation/homePage";
 
 interface HeroProps {
   lang: "en" | "es";
 }
-
-const content = {
-  en: {
-    eyebrow: "Hemophilia Outreach of El Paso",
-    heading: "Giving Hope To Our Community",
-    subheading:
-      "Supporting individuals and families affected by bleeding disorders in the El Paso region. You are not alone.",
-    cta1: "Get Involved",
-    cta2: "Upcoming Events",
-    badge1: "Free Support",
-    badge2: "Community Driven",
-  },
-  es: {
-    eyebrow: "Hemophilia Outreach de El Paso",
-    heading: "Dando Esperanza A Nuestra Comunidad",
-    subheading:
-      "Apoyando a individuos y familias afectadas por trastornos hemorrágicos en la región de El Paso. No estás solo.",
-    cta1: "Participa",
-    cta2: "Próximos Eventos",
-    badge1: "Apoyo Gratuito",
-    badge2: "Impulsado por la Comunidad",
-  },
-};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -41,7 +19,7 @@ const fadeUp = {
 };
 
 export default function Hero({ lang }: HeroProps) {
-  const t = content[lang];
+  const t = homeHeroTranslation[lang];
 
   return (
     <div className="relative min-h-[90vh] flex items-center overflow-hidden">
