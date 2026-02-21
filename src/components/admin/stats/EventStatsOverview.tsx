@@ -6,6 +6,7 @@ import {
   BarChart3,
   CheckCircle2,
 } from "lucide-react";
+import { StatCard } from "@/components/ui/StatCard";
 
 interface Props {
   totalRsvps: number;
@@ -74,44 +75,6 @@ export default function EventStatsOverview({
         icon={<CheckCircle2 className="w-6 h-6" />}
         color="teal"
       />
-    </div>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  color,
-}: {
-  title: string;
-  value: string;
-  subtitle?: string;
-  icon: React.ReactNode;
-  color: "blue" | "green" | "amber" | "purple" | "indigo" | "teal";
-}) {
-  const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    green: "bg-green-100 text-green-600",
-    amber: "bg-amber-100 text-amber-600",
-    purple: "bg-purple-100 text-purple-600",
-    indigo: "bg-indigo-100 text-indigo-600",
-    teal: "bg-teal-100 text-teal-600",
-  }[color];
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorClasses} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <h3 className="text-sm font-medium text-neutral-600 mb-1">{title}</h3>
-      <p className="text-3xl font-display font-bold text-neutral-900">
-        {value}
-      </p>
-      {subtitle && <p className="text-xs text-neutral-500 mt-1">{subtitle}</p>}
     </div>
   );
 }

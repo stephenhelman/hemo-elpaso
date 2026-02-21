@@ -3,6 +3,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { Users, Calendar, CheckCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { StatCard } from "@/components/ui/StatCard";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -188,7 +189,7 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Patients */}
         <StatCard
-          title="Total Patients"
+          label="Total Patients"
           value={totalPatients.toString()}
           icon={<Users className="w-6 h-6" />}
           color="blue"
@@ -196,7 +197,7 @@ export default async function AdminDashboardPage() {
 
         {/* Total Events */}
         <StatCard
-          title="Total Events"
+          label="Total Events"
           value={totalEvents.toString()}
           icon={<Calendar className="w-6 h-6" />}
           color="purple"
@@ -204,7 +205,7 @@ export default async function AdminDashboardPage() {
 
         {/* RSVP Rate */}
         <StatCard
-          title="RSVP Rate"
+          label="RSVP Rate"
           value={`${rsvpRate}%`}
           subtitle="Upcoming events"
           icon={<TrendingUp className="w-6 h-6" />}
@@ -213,7 +214,7 @@ export default async function AdminDashboardPage() {
 
         {/* Attendance Rate */}
         <StatCard
-          title="Attendance Rate"
+          label="Attendance Rate"
           value={`${attendanceRate}%`}
           subtitle="Past events"
           icon={<TrendingUp className="w-6 h-6" />}
@@ -306,44 +307,6 @@ export default async function AdminDashboardPage() {
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  color,
-}: {
-  title: string;
-  value: string;
-  subtitle?: string;
-  icon: React.ReactNode;
-  color: "blue" | "purple" | "green" | "amber";
-}) {
-  const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    purple: "bg-purple-100 text-purple-600",
-    green: "bg-green-100 text-green-600",
-    amber: "bg-amber-100 text-amber-600",
-  }[color];
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div
-          className={`w-12 h-12 rounded-xl ${colorClasses} flex items-center justify-center`}
-        >
-          {icon}
-        </div>
-      </div>
-      <h3 className="text-sm font-medium text-neutral-600 mb-1">{title}</h3>
-      <p className="text-3xl font-display font-bold text-neutral-900">
-        {value}
-      </p>
-      {subtitle && <p className="text-xs text-neutral-500 mt-1">{subtitle}</p>}
     </div>
   );
 }

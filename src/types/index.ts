@@ -28,3 +28,15 @@ export interface Photo {
 }
 
 export type Lang = "en" | "es";
+
+export type StatColor =
+  | "primary"
+  | "blue"
+  | "yellow"
+  | "green"
+  | "purple"
+  | "amber"
+  | "secondary"
+  | "accent"
+  | "indigo"
+  | "teal";

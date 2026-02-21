@@ -1,4 +1,4 @@
-import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import { ImpactStatCard } from "./ImpactStatCard";
 import Section from "@/components/layout/Section";
 
 interface ImpactStatsProps {
@@ -42,28 +42,9 @@ export default function ImpactStats({ lang }: ImpactStatsProps) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {t.stats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
+          <ImpactStatCard key={stat.label} {...stat} />
         ))}
       </div>
     </Section>
-  );
-}
-
-function StatCard({
-  value,
-  suffix,
-  label,
-}: {
-  value: number;
-  suffix: string;
-  label: string;
-}) {
-  return (
-    <div className="text-center p-6 rounded-2xl bg-neutral-50 border border-neutral-100">
-      <div className="font-display text-4xl lg:text-5xl font-bold text-primary mb-2">
-        <AnimatedCounter end={value} suffix={suffix} />
-      </div>
-      <p className="text-sm font-medium text-neutral-500">{label}</p>
-    </div>
   );
 }

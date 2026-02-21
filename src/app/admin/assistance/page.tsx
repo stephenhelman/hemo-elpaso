@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { StatCard } from "@/components/ui/StatCard";
 import {
   DollarSign,
   Clock,
@@ -135,39 +136,6 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
           />
         </div>
       </ApplicationsTable>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    yellow: "bg-yellow-100 text-yellow-600",
-    green: "bg-green-100 text-green-600",
-    purple: "bg-purple-100 text-purple-600",
-  }[color];
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorClasses} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <p className="text-2xl font-display font-bold text-neutral-900">
-        {value}
-      </p>
-      <p className="text-sm text-neutral-600">{label}</p>
     </div>
   );
 }

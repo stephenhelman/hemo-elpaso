@@ -15,6 +15,7 @@ import { prisma } from "@/lib/db";
 import { getRecommendedEvents } from "@/lib/event-matching";
 import QrCodeDisplay from "@/components/portal/QrCodeDisplay";
 import LiveEventBanner from "@/components/portal/LiveEventBanner";
+import { StatCard } from "@/components/ui/StatCard";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -297,38 +298,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: "primary" | "secondary" | "accent";
-}) {
-  const colorMap = {
-    primary: "bg-primary-50 text-primary",
-    secondary: "bg-secondary/10 text-secondary",
-    accent: "bg-accent/10 text-accent-dark",
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorMap[color]} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <p className="text-2xl font-display font-bold text-neutral-900 mb-1">
-        {value}
-      </p>
-      <p className="text-sm text-neutral-500">{label}</p>
     </div>
   );
 }

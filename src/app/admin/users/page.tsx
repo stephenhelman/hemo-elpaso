@@ -3,6 +3,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { Users, Search, Filter, Download } from "lucide-react";
 import UsersTable from "@/components/admin/users/UsersTable";
+import { StatCard } from "@/components/ui/StatCard";
 
 interface Props {
   searchParams: {
@@ -105,55 +106,28 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             label="Total Users"
             value={totalUsers.toString()}
             color="blue"
+            icon={<Users className="w-6 h-6" />}
           />
           <StatCard
             label="Patients"
             value={patientCount.toString()}
             color="green"
+            icon={<Users className="w-6 h-6" />}
           />
           <StatCard
             label="Admins"
             value={adminCount.toString()}
             color="purple"
+            icon={<Users className="w-6 h-6" />}
           />
           <StatCard
             label="Board Members"
             value={boardCount.toString()}
             color="amber"
+            icon={<Users className="w-6 h-6" />}
           />
         </div>
       </UsersTable>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    green: "bg-green-100 text-green-600",
-    purple: "bg-purple-100 text-purple-600",
-    amber: "bg-amber-100 text-amber-600",
-  }[color];
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorClasses} flex items-center justify-center mb-4`}
-      >
-        <Users className="w-6 h-6" />
-      </div>
-      <p className="text-2xl font-display font-bold text-neutral-900">
-        {value}
-      </p>
-      <p className="text-sm text-neutral-600">{label}</p>
     </div>
   );
 }

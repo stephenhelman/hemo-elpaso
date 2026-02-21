@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { ArrowLeft, Users, CheckCircle, XCircle, Calendar } from "lucide-react";
 import ManualCheckInButton from "@/components/admin/ManualCheckInButton";
+import { StatCard } from "@/components/ui/StatCard";
 
 interface Props {
   params: { id: string };
@@ -174,39 +175,6 @@ export default async function EventAttendeesPage({ params }: Props) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: "primary" | "green" | "blue" | "purple";
-}) {
-  const colorMap = {
-    primary: "bg-primary-50 text-primary",
-    green: "bg-green-50 text-green-600",
-    blue: "bg-blue-50 text-blue-600",
-    purple: "bg-purple-50 text-purple-600",
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorMap[color]} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <p className="text-2xl font-display font-bold text-neutral-900 mb-1">
-        {value}
-      </p>
-      <p className="text-sm text-neutral-500">{label}</p>
     </div>
   );
 }

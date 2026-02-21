@@ -3,6 +3,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
 import { Calendar, Users, TrendingUp, CheckCircle } from "lucide-react";
+import { StatCard } from "@/components/ui/StatCard";
 
 export default async function AllAttendeesPage() {
   const session = await getSession();
@@ -99,39 +100,6 @@ export default async function AllAttendeesPage() {
           />
         </div>
       </AllAttendeesTable>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: "primary" | "blue" | "green" | "purple";
-}) {
-  const colorMap = {
-    primary: "bg-primary-50 text-primary",
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-green-50 text-green-600",
-    purple: "bg-purple-50 text-purple-600",
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-      <div
-        className={`w-12 h-12 rounded-xl ${colorMap[color]} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <p className="text-2xl font-display font-bold text-neutral-900 mb-1">
-        {value}
-      </p>
-      <p className="text-sm text-neutral-500">{label}</p>
     </div>
   );
 }
