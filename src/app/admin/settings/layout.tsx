@@ -34,7 +34,7 @@ export default function SettingsLayout({
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -51,7 +51,7 @@ export default function SettingsLayout({
 
         {/* Tabs */}
         <div className="border-b border-neutral-200 mb-8">
-          <nav className="flex gap-8">
+          <nav className="flex gap-4 overflow-x-auto">
             {tabs.map((tab) => {
               const isActive = pathname === tab.href;
               const Icon = tab.icon;
@@ -61,7 +61,7 @@ export default function SettingsLayout({
                   key={tab.href}
                   href={tab.disabled ? "#" : tab.href}
                   className={`
-                    flex items-center gap-2 pb-4 border-b-2 transition-colors
+                    flex items-center gap-2 pb-4 border-b-2 transition-colors whitespace-nowrap
                     ${
                       isActive
                         ? "border-primary text-primary font-semibold"

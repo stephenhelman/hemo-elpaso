@@ -16,9 +16,9 @@ export default async function AdminEventsPage() {
   });
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+        <div className="flex-1">
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
             Events
           </h1>
@@ -28,7 +28,7 @@ export default async function AdminEventsPage() {
         </div>
         <Link
           href="/admin/events/new"
-          className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Create Event

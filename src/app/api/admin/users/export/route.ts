@@ -18,8 +18,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get all users with profiles
-    const users = await prisma.patient.findMany({
+    // Parse filter params
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search") ?? "";
+    const role = searchParams.get("role") ?? "";
+    const condition = searchParams.get("condition") ?? "";
+
+    // Build where clause
+    const where: any = {};
+    if (role) where.role = role;
+    if (condition) {
+      where.profile = { primaryCondition: condition };
+    }
+
+    // Get users with profiles, applying server-side filters
+    let users = await prisma.patient.findMany({
+      where,
       include: {
         profile: true,
       },
@@ -27,6 +41,15 @@ export async function GET(request: NextRequest) {
         createdAt: "desc",
       },
     });
+
+    // Apply search filter (name or email)
+    if (search) {
+      const q = search.toLowerCase();
+      users = users.filter((u) => {
+        const name = `${u.profile?.firstName ?? ""} ${u.profile?.lastName ?? ""}`.toLowerCase();
+        return name.includes(q) || u.email.toLowerCase().includes(q);
+      });
+    }
 
     // Create CSV content
     const headers = [
@@ -94,7 +117,7 @@ export async function GET(request: NextRequest) {
         patientId: admin.id,
         action: "users_exported",
         resourceType: "Patient",
-        details: `Exported ${users.length} users to CSV`,
+        details: `Exported ${users.length} users to CSV${search ? ` (search: ${search})` : ""}${role ? ` (role: ${role})` : ""}${condition ? ` (condition: ${condition})` : ""}`,
       },
     });
 

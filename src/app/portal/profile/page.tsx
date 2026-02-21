@@ -58,7 +58,7 @@ export default async function ProfilePage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">

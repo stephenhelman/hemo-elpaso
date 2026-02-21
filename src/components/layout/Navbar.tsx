@@ -1,10 +1,10 @@
 "use client";
 
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
@@ -21,12 +21,15 @@ const navLinks = [
 
 interface NavbarProps {
   lang: "en" | "es";
-  onLanguageToggle: () => void;
 }
 
-export default function Navbar({ lang, onLanguageToggle }: NavbarProps) {
+export default function Navbar({ lang }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">

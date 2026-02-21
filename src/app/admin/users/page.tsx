@@ -89,39 +89,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               Manage all registered users, roles, and view participation history
             </p>
           </div>
-          <a
-            href="/api/admin/users/export"
-            download
-            className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg font-semibold hover:bg-neutral-800 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export to CSV
-          </a>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            label="Total Users"
-            value={totalUsers.toString()}
-            color="blue"
-          />
-          <StatCard
-            label="Patients"
-            value={patientCount.toString()}
-            color="green"
-          />
-          <StatCard
-            label="Admins"
-            value={adminCount.toString()}
-            color="purple"
-          />
-          <StatCard
-            label="Board Members"
-            value={boardCount.toString()}
-            color="amber"
-          />
-        </div>
 
         {/* Users Table */}
         <UsersTable
@@ -130,7 +100,30 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           currentSearch={searchParams.search}
           currentRole={searchParams.role}
           currentCondition={searchParams.condition}
-        />
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              label="Total Users"
+              value={totalUsers.toString()}
+              color="blue"
+            />
+            <StatCard
+              label="Patients"
+              value={patientCount.toString()}
+              color="green"
+            />
+            <StatCard
+              label="Admins"
+              value={adminCount.toString()}
+              color="purple"
+            />
+            <StatCard
+              label="Board Members"
+              value={boardCount.toString()}
+              color="amber"
+            />
+          </div>
+        </UsersTable>
       </div>
     </div>
   );

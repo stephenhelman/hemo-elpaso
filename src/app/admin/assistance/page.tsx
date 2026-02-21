@@ -102,40 +102,40 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={<DollarSign className="w-6 h-6" />}
-            label="Total Applications"
-            value={totalApplications.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={<Clock className="w-6 h-6" />}
-            label="Pending Review"
-            value={pendingReview.toString()}
-            color="yellow"
-          />
-          <StatCard
-            icon={<CheckCircle className="w-6 h-6" />}
-            label="Approved"
-            value={approved.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={<AlertCircle className="w-6 h-6" />}
-            label="Requested / Approved"
-            value={`$${totalRequested.toFixed(0)} / $${totalApproved.toFixed(0)}`}
-            color="purple"
-          />
-        </div>
-
         {/* Applications Table */}
         <ApplicationsTable
           applications={applicationsFormatted}
           currentStatus={searchParams.status}
           currentType={searchParams.type}
-        />
+        >
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              icon={<DollarSign className="w-6 h-6" />}
+              label="Total Applications"
+              value={totalApplications.toString()}
+              color="blue"
+            />
+            <StatCard
+              icon={<Clock className="w-6 h-6" />}
+              label="Pending Review"
+              value={pendingReview.toString()}
+              color="yellow"
+            />
+            <StatCard
+              icon={<CheckCircle className="w-6 h-6" />}
+              label="Approved"
+              value={approved.toString()}
+              color="green"
+            />
+            <StatCard
+              icon={<AlertCircle className="w-6 h-6" />}
+              label="Requested / Approved"
+              value={`$${totalRequested.toFixed(0)} / $${totalApproved.toFixed(0)}`}
+              color="purple"
+            />
+          </div>
+        </ApplicationsTable>
       </div>
     </div>
   );

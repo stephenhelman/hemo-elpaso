@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Download,
@@ -10,8 +10,11 @@ import {
   XCircle,
   Loader2,
   FileText,
+  Search,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import FilterBar from "@/components/ui/FilterBar";
+import ExportButton from "@/components/ui/ExportButton";
 
 interface Patient {
   id: string;
@@ -47,12 +50,14 @@ interface Props {
   patients: Patient[];
   familyMembers: FamilyMember[];
   adminEmail: string;
+  children: React.ReactNode;
 }
 
 export default function DiagnosisVerificationList({
   patients,
   familyMembers,
   adminEmail,
+  children,
 }: Props) {
   const router = useRouter();
   const [processing, setProcessing] = useState<string | null>(null);
@@ -62,6 +67,63 @@ export default function DiagnosisVerificationList({
     action: "approve" | "deny";
   } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "patient" | "family">(
+    "all",
+  );
+
+  const filteredPatients = useMemo(() => {
+    if (typeFilter === "family") return [];
+    if (!searchQuery) return patients;
+    const q = searchQuery.toLowerCase();
+    return patients.filter((p) => {
+      const name =
+        `${p.profile?.firstName ?? ""} ${p.profile?.lastName ?? ""}`.toLowerCase();
+      return name.includes(q) || p.email.toLowerCase().includes(q);
+    });
+  }, [patients, searchQuery, typeFilter]);
+
+  const filteredFamilyMembers = useMemo(() => {
+    if (typeFilter === "patient") return [];
+    if (!searchQuery) return familyMembers;
+    const q = searchQuery.toLowerCase();
+    return familyMembers.filter((m) => {
+      const name = `${m.firstName} ${m.lastName}`.toLowerCase();
+      return name.includes(q) || m.patient.email.toLowerCase().includes(q);
+    });
+  }, [familyMembers, searchQuery, typeFilter]);
+
+  const totalFiltered = filteredPatients.length + filteredFamilyMembers.length;
+  const totalAll = patients.length + familyMembers.length;
+
+  const exportRows = [
+    ...filteredPatients.map((p) => [
+      `${p.profile?.firstName ?? ""} ${p.profile?.lastName ?? ""}`.trim(),
+      "Patient",
+      "",
+      "",
+      p.email,
+      p.profile?.primaryCondition ?? "N/A",
+      p.diagnosisLetterUploadedAt
+        ? new Date(p.diagnosisLetterUploadedAt).toLocaleDateString()
+        : "Unknown",
+      p.diagnosisGracePeriodEndsAt
+        ? new Date(p.diagnosisGracePeriodEndsAt).toLocaleDateString()
+        : "N/A",
+    ]),
+    ...filteredFamilyMembers.map((m) => [
+      `${m.firstName} ${m.lastName}`,
+      "Family Member",
+      m.relationship,
+      `${m.patient.profile?.firstName ?? ""} ${m.patient.profile?.lastName ?? ""}`.trim(),
+      m.patient.email,
+      "N/A",
+      m.diagnosisLetterUploadedAt
+        ? new Date(m.diagnosisLetterUploadedAt).toLocaleDateString()
+        : "Unknown",
+      "N/A",
+    ]),
+  ];
 
   const handleAction = async (
     id: string,
@@ -113,8 +175,62 @@ export default function DiagnosisVerificationList({
 
   return (
     <div className="space-y-6">
+      {/* Filter Card */}
+      <FilterBar
+        exportButton={
+          <ExportButton
+            headers={[
+              "Name",
+              "Type",
+              "Relationship",
+              "Parent Patient",
+              "Email",
+              "Condition",
+              "Upload Date",
+              "Grace Period End",
+            ]}
+            rows={exportRows}
+            filename={`diagnosis-verification-${new Date().toISOString().split("T")[0]}.csv`}
+          />
+        }
+        stats={
+          <>
+            Showing <span className="font-semibold">{totalFiltered}</span> of{" "}
+            <span className="font-semibold">{totalAll}</span> pending
+            verifications
+          </>
+        }
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* Type Filter */}
+          <select
+            value={typeFilter}
+            onChange={(e) =>
+              setTypeFilter(e.target.value as "all" | "patient" | "family")
+            }
+            className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary whitespace-nowrap"
+          >
+            <option value="all">All Types</option>
+            <option value="patient">Patient</option>
+            <option value="family">Family Member</option>
+          </select>
+        </div>
+      </FilterBar>
+      {children}
       {/* Patients */}
-      {patients.length > 0 && (
+      {filteredPatients.length > 0 && (
         <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-lg font-semibold text-neutral-900">
@@ -123,7 +239,7 @@ export default function DiagnosisVerificationList({
           </div>
 
           <div className="divide-y divide-neutral-200">
-            {patients.map((patient) => (
+            {filteredPatients.map((patient) => (
               <div
                 key={patient.id}
                 className="p-6 hover:bg-neutral-50 transition-colors"
@@ -244,7 +360,7 @@ export default function DiagnosisVerificationList({
       )}
 
       {/* Family Members */}
-      {familyMembers.length > 0 && (
+      {filteredFamilyMembers.length > 0 && (
         <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-lg font-semibold text-neutral-900">
@@ -253,7 +369,7 @@ export default function DiagnosisVerificationList({
           </div>
 
           <div className="divide-y divide-neutral-200">
-            {familyMembers.map((member) => (
+            {filteredFamilyMembers.map((member) => (
               <div
                 key={member.id}
                 className="p-6 hover:bg-neutral-50 transition-colors"
@@ -370,14 +486,16 @@ export default function DiagnosisVerificationList({
       )}
 
       {/* Empty State */}
-      {patients.length === 0 && familyMembers.length === 0 && (
+      {filteredPatients.length === 0 && filteredFamilyMembers.length === 0 && (
         <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
           <FileText className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-            No Pending Verifications
+            {totalAll === 0 ? "No Pending Verifications" : "No Results Found"}
           </h3>
           <p className="text-neutral-600">
-            All diagnosis letters have been reviewed
+            {totalAll === 0
+              ? "All diagnosis letters have been reviewed"
+              : "Try adjusting your search or filter"}
           </p>
         </div>
       )}

@@ -52,7 +52,7 @@ export default async function PortalLayout({
           role: patient?.role || "patient",
         }}
       />
-      <main className="flex-1 lg:ml-64">
+      <main className="flex-1 min-w-0 lg:ml-64">
         {needsDiagnosisLetter && (
           <div className="p-4 lg:p-6">
             <DiagnosisReminderBanner

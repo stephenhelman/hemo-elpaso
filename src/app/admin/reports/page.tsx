@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { FileDown, Calendar, Users, TrendingUp, Filter } from "lucide-react";
+import { Calendar, Users, TrendingUp } from "lucide-react";
 import ReportsFilters from "@/components/admin/reports/ReportsFilters";
 import AttendanceReport from "@/components/admin/reports/AttendanceReport";
 import EngagementReport from "@/components/admin/reports/EngagementReport";
@@ -165,8 +165,23 @@ export default async function ReportsPage({ searchParams }: Props) {
     }
   });
 
+  const attendanceExportRows = events.map((event) => {
+    const rsvps = event._count.rsvps;
+    const checkIns = event.checkIns.length;
+    const rate = rsvps > 0 ? Math.round((checkIns / rsvps) * 100) : 0;
+    return [
+      event.titleEn,
+      new Date(event.eventDate).toLocaleDateString(),
+      event.category,
+      rsvps,
+      checkIns,
+      `${rate}%`,
+      rsvps - checkIns,
+    ];
+  });
+
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -183,6 +198,7 @@ export default async function ReportsPage({ searchParams }: Props) {
           startDate={startDate}
           endDate={endDate}
           category={category}
+          attendanceExportRows={attendanceExportRows}
         />
 
         {/* Summary Stats */}

@@ -26,16 +26,86 @@ export default function EventRowWithQr({ event, isPast }: Props) {
     completed: "bg-blue-100 text-blue-700",
   };
 
+  const Tags = () => (
+    <div className="flex flex-wrap gap-1.5">
+      <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-medium">
+        {event.category.replace(/_/g, " ")}
+      </span>
+      {event.targetAudience && (
+        <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-medium">
+          {event.targetAudience}
+        </span>
+      )}
+      {event.isPriority && (
+        <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-medium">
+          ⭐ Priority
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <>
-      <div
-        className={`bg-white rounded-xl border border-neutral-200 hover:shadow-sm transition-all ${
-          isPast ? "opacity-75" : ""
-        }`}
-      >
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4 flex-1 min-w-0">
+      <div className="bg-white rounded-xl border border-neutral-200 hover:shadow-sm transition-all">
+        <div className="p-4 md:p-5">
+          {/* ── Mobile layout ── */}
+          <div className="sm:hidden">
+            {/* Header row: date badge + actions */}
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-14 h-14 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0 ${isPast ? "opacity-60" : ""}`}>
+                <span className="text-xs text-primary-600 font-semibold leading-none mb-0.5">
+                  {eventDate
+                    .toLocaleDateString("en-US", { month: "short" })
+                    .toUpperCase()}
+                </span>
+                <span className="text-2xl font-bold text-primary leading-none">
+                  {eventDate.getDate()}
+                </span>
+              </div>
+              <EventRowActions
+                event={event}
+                setShowSponsorInvite={setShowSponsorInvite}
+              />
+            </div>
+
+            {/* Content — dimmed for past events */}
+            <div className={isPast ? "opacity-60" : ""}>
+            {/* Title + status */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h3 className="font-semibold text-neutral-900">{event.titleEn}</h3>
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[event.status]}`}
+              >
+                {event.status}
+              </span>
+            </div>
+
+            {/* Detail rows */}
+            <div className="space-y-1.5 text-sm text-neutral-500 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{formatEventDate(event.eventDate, "en").full}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{event.location}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>
+                  {rsvpCount} RSVPs
+                  {spotsLeft !== null && ` (${spotsLeft} spots left)`}
+                </span>
+              </div>
+            </div>
+
+            <Tags />
+            </div>{/* end opacity wrapper */}
+          </div>{/* end sm:hidden */}
+
+          {/* ── Desktop layout ── */}
+          <div className="hidden sm:flex items-start justify-between gap-4">
+            <div className={`flex items-start gap-4 flex-1 min-w-0 ${isPast ? "opacity-60" : ""}`}>
               {/* Date Badge */}
               <div className="w-16 h-16 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0">
                 <span className="text-xs text-primary-600 font-semibold">
@@ -51,7 +121,7 @@ export default function EventRowWithQr({ event, isPast }: Props) {
               {/* Event Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-neutral-900 text-lg truncate">
+                  <h3 className="font-semibold text-neutral-900 text-lg">
                     {event.titleEn}
                   </h3>
                   <span
@@ -75,19 +145,7 @@ export default function EventRowWithQr({ event, isPast }: Props) {
                     {spotsLeft !== null && ` (${spotsLeft} spots left)`}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-medium">
-                    {event.category.replace("_", " ")}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-medium">
-                    {event.targetAudience}
-                  </span>
-                  {event.isPriority && (
-                    <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-medium">
-                      ⭐ Priority
-                    </span>
-                  )}
-                </div>
+                <Tags />
               </div>
             </div>
 

@@ -240,9 +240,9 @@ export default function ProfileEditForm({ patient }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl border border-neutral-200 p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center">
+      <div className="bg-white rounded-2xl border border-neutral-200 p-4 md:p-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 text-center sm:text-left">
+          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
             <span className="text-white text-3xl font-bold">
               {formData.firstName?.charAt(0).toUpperCase()}
             </span>
@@ -256,11 +256,11 @@ export default function ProfileEditForm({ patient }: Props) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-neutral-200 mb-6">
+        <div className="flex gap-2 border-b border-neutral-200 mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
           <button
             type="button"
             onClick={() => setActiveTab("personal")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`whitespace-nowrap px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === "personal"
                 ? "border-primary text-primary"
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
@@ -271,7 +271,7 @@ export default function ProfileEditForm({ patient }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("medical")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`whitespace-nowrap px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === "medical"
                 ? "border-primary text-primary"
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
@@ -282,7 +282,7 @@ export default function ProfileEditForm({ patient }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("family")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`whitespace-nowrap px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === "family"
                 ? "border-primary text-primary"
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
@@ -293,7 +293,7 @@ export default function ProfileEditForm({ patient }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("verification")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`whitespace-nowrap px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === "verification"
                 ? "border-primary text-primary"
                 : "border-transparent text-neutral-600 hover:text-neutral-900"

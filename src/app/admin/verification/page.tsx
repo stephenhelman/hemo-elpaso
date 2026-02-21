@@ -72,7 +72,7 @@ export default async function DiagnosisVerificationPage() {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -84,28 +84,28 @@ export default async function DiagnosisVerificationPage() {
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <StatCard
-            icon={<FileText className="w-6 h-6" />}
-            label="Pending Verification"
-            value={totalPending.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={<AlertCircle className="w-6 h-6" />}
-            label="Grace Period Expiring Soon"
-            value={expiringSoon.toString()}
-            color="amber"
-          />
-        </div>
-
         {/* Verification List */}
         <DiagnosisVerificationList
           patients={patientsWithPendingDiagnosis}
           familyMembers={familyMembersWithPendingDiagnosis}
           adminEmail={admin.email}
-        />
+        >
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <StatCard
+              icon={<FileText className="w-6 h-6" />}
+              label="Pending Verification"
+              value={totalPending.toString()}
+              color="blue"
+            />
+            <StatCard
+              icon={<AlertCircle className="w-6 h-6" />}
+              label="Grace Period Expiring Soon"
+              value={expiringSoon.toString()}
+              color="amber"
+            />
+          </div>
+        </DiagnosisVerificationList>
       </div>
     </div>
   );

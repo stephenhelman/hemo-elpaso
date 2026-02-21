@@ -168,8 +168,8 @@ function TemplateRow({
   getCategoryIcon: (type: string) => string;
 }) {
   return (
-    <div className="p-6 hover:bg-neutral-50 transition-colors">
-      <div className="flex items-start justify-between gap-4">
+    <div className="p-4 md:p-6 hover:bg-neutral-50 transition-colors">
+      <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
         <div className="flex items-start gap-4 flex-1">
           {/* Icon */}
           <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0 text-2xl">
@@ -223,7 +223,7 @@ function TemplateRow({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
           <Link
             href={`/admin/settings/email-templates/${template.id}`}
             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

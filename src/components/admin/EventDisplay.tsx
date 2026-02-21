@@ -7,14 +7,13 @@ import {
   List,
   Search,
   Calendar,
-  Users,
-  Pencil,
-  ScanLine,
   ChevronDown,
   ChevronUp,
-  BarChart3,
 } from "lucide-react";
 import EventRowWithQr from "./EventRowWithQr";
+import { EventRowActions } from "./EventRowActions";
+import InviteSponsorButton from "./InviteSponsorButton";
+import ExportButton from "@/components/ui/ExportButton";
 
 interface Event {
   id: string;
@@ -77,10 +76,21 @@ export default function EventsDisplay({ events }: Props) {
     return { upcomingEvents: upcoming, pastEvents: past };
   }, [events, searchQuery, statusFilter, categoryFilter]);
 
+  const exportRows = [...upcomingEvents, ...pastEvents].map((event) => [
+    event.titleEn,
+    new Date(event.eventDate).toLocaleDateString(),
+    event.location,
+    event.status,
+    event.category.replace(/_/g, " "),
+    event._count.rsvps,
+    event.maxCapacity ?? "Unlimited",
+    event.isPriority ? "Yes" : "No",
+  ]);
+
   return (
     <div className="space-y-6">
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+      <div className="bg-white rounded-2xl border border-neutral-200 p-4 md:p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -121,6 +131,13 @@ export default function EventsDisplay({ events }: Props) {
             <option value="MEDICAL_UPDATE">Medical Update</option>
             <option value="SOCIAL">Social</option>
           </select>
+
+          {/* Export */}
+          <ExportButton
+            headers={["Title", "Date", "Location", "Status", "Category", "RSVPs", "Capacity", "Priority"]}
+            rows={exportRows}
+            filename={`events-${new Date().toISOString().split("T")[0]}.csv`}
+          />
 
           {/* View Toggle */}
           <div className="flex items-center gap-1 bg-neutral-100 rounded-lg p-1">
@@ -221,25 +238,25 @@ function EventsTable({
   return (
     <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[560px]">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Event
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Location
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 RSVPs
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+              <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -256,6 +273,7 @@ function EventsTable({
 }
 
 function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
+  const [showSponsorInvite, setShowSponsorInvite] = useState(false);
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -269,73 +287,56 @@ function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
   };
 
   return (
-    <tr
-      className={`hover:bg-neutral-50 transition-colors ${isPast ? "opacity-75" : ""}`}
-    >
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-        {eventDate.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
-      </td>
-      <td className="px-6 py-4 text-sm text-neutral-900">
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{event.titleEn}</span>
-          {event.isPriority && <span className="text-xs">⭐</span>}
-        </div>
-        <div className="text-xs text-neutral-500 mt-1">
-          {event.category.replace("_", " ")}
-        </div>
-      </td>
-      <td className="px-6 py-4 text-sm text-neutral-600">
-        <div className="max-w-xs truncate">{event.location}</div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-        {event._count.rsvps}
-        {spotsLeft !== null && (
-          <span className="text-neutral-500"> / {event.maxCapacity}</span>
-        )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[event.status]}`}
-        >
-          {event.status}
-        </span>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm">
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/admin/events/${event.id}/polls`}
-            className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-purple-600 transition-colors"
-            title="Manage Polls"
+    <>
+      <tr
+        className={`hover:bg-neutral-50 transition-colors ${isPast ? "opacity-75" : ""}`}
+      >
+        <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-900">
+          {eventDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </td>
+        <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-neutral-900">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{event.titleEn}</span>
+            {event.isPriority && <span className="text-xs">⭐</span>}
+          </div>
+          <div className="text-xs text-neutral-500 mt-1">
+            {event.category.replace("_", " ")}
+          </div>
+        </td>
+        <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-neutral-600">
+          <div className="max-w-xs truncate">{event.location}</div>
+        </td>
+        <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-900">
+          {event._count.rsvps}
+          {spotsLeft !== null && (
+            <span className="text-neutral-500"> / {event.maxCapacity}</span>
+          )}
+        </td>
+        <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[event.status]}`}
           >
-            <BarChart3 className="w-4 h-4" />
-          </Link>
-          <Link
-            href={`/admin/events/${event.id}/attendees`}
-            className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-blue-600 transition-colors"
-            title="View Attendees"
-          >
-            <Users className="w-4 h-4" />
-          </Link>
-          <Link
-            href={`/admin/checkin?event=${event.id}`}
-            className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-green-600 transition-colors"
-            title="Check-In Scanner"
-          >
-            <ScanLine className="w-4 h-4" />
-          </Link>
-          <Link
-            href={`/admin/events/${event.id}/edit`}
-            className="p-1.5 rounded text-neutral-600 hover:bg-neutral-100 hover:text-primary transition-colors"
-            title="Edit"
-          >
-            <Pencil className="w-4 h-4" />
-          </Link>
-        </div>
-      </td>
-    </tr>
+            {event.status}
+          </span>
+        </td>
+        <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+          <EventRowActions
+            event={event}
+            setShowSponsorInvite={setShowSponsorInvite}
+          />
+        </td>
+      </tr>
+      {showSponsorInvite && (
+        <InviteSponsorButton
+          eventId={event.id}
+          isOpen={showSponsorInvite}
+          onClose={() => setShowSponsorInvite(false)}
+        />
+      )}
+    </>
   );
 }

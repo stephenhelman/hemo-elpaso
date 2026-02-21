@@ -14,6 +14,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import QrCodeDisplay from "./QrCodeDisplay";
+import EmptyState from "@/components/ui/EmptyState";
+import DateBadge from "@/components/ui/DateBadge";
+import InfoRow from "@/components/ui/InfoRow";
 
 interface Event {
   id: string;
@@ -201,10 +204,11 @@ export default function PortalEventsDisplay({
 
         {showAllEvents &&
           (filteredAllEvents.length === 0 ? (
-            <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
-              <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-              <p className="text-neutral-400">No events match your filters</p>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="No Events Found"
+              description="No events match your filters"
+            />
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredAllEvents.map((event) => (
@@ -219,7 +223,6 @@ export default function PortalEventsDisplay({
   );
 }
 
-// My Event Card with QR Code
 function MyEventCard({
   rsvp,
   expanded,
@@ -240,16 +243,7 @@ function MyEventCard({
       <div className="p-6">
         <div className="flex items-start gap-4">
           {/* Date Badge */}
-          <div className="w-16 h-16 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0">
-            <span className="text-xs text-primary-600 font-semibold">
-              {eventDate
-                .toLocaleDateString("en-US", { month: "short" })
-                .toUpperCase()}
-            </span>
-            <span className="text-2xl font-bold text-primary">
-              {eventDate.getDate()}
-            </span>
-          </div>
+          <DateBadge date={eventDate} variant="primary" size="md" />
 
           {/* Event Info */}
           <div className="flex-1 min-w-0">
@@ -257,25 +251,20 @@ function MyEventCard({
               {event.titleEn}
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
+              <InfoRow icon={Calendar}>
                 {eventDate.toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
                   day: "numeric",
                 })}
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                {event.location}
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
+              </InfoRow>
+              <InfoRow icon={MapPin}>{event.location}</InfoRow>
+              <InfoRow icon={Users}>
                 {rsvp.adultsAttending} adult
                 {rsvp.adultsAttending !== 1 ? "s" : ""},{" "}
                 {rsvp.childrenAttending} child
                 {rsvp.childrenAttending !== 1 ? "ren" : ""}
-              </div>
+              </InfoRow>
             </div>
             <div className="flex gap-2">
               <Link
@@ -316,31 +305,20 @@ function EventCard({ event }: { event: Event }) {
     <div className="bg-white rounded-xl border border-neutral-200 hover:shadow-md transition-all">
       <div className="p-6">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-xl bg-neutral-100 flex flex-col items-center justify-center flex-shrink-0">
-            <span className="text-xs text-neutral-600 font-semibold">
-              {eventDate
-                .toLocaleDateString("en-US", { month: "short" })
-                .toUpperCase()}
-            </span>
-            <span className="text-xl font-bold text-neutral-900">
-              {eventDate.getDate()}
-            </span>
-          </div>
+          <DateBadge date={eventDate} variant="neutral" size="md" />
 
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-neutral-900 mb-2">
               {event.titleEn}
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5" />
+              <InfoRow icon={MapPin} iconClassName="w-3.5 h-3.5">
                 <span className="truncate">{event.location}</span>
-              </div>
+              </InfoRow>
               {spotsLeft !== null && (
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5" />
-                  <span>{spotsLeft} spots left</span>
-                </div>
+                <InfoRow icon={Users} iconClassName="w-3.5 h-3.5">
+                  {spotsLeft} spots left
+                </InfoRow>
               )}
             </div>
             <Link
@@ -360,8 +338,16 @@ function EventCard({ event }: { event: Event }) {
 function EventsTable({ events }: { events: Event[] }) {
   return (
     <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      {/* Mobile: card list */}
+      <div className="md:hidden divide-y divide-neutral-200">
+        {events.map((event) => (
+          <EventMobileCard key={event.id} event={event} />
+        ))}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full min-w-[520px]">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
@@ -387,6 +373,47 @@ function EventsTable({ events }: { events: Event[] }) {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function EventMobileCard({ event }: { event: Event }) {
+  const eventDate = new Date(event.eventDate);
+  const spotsLeft = event.maxCapacity
+    ? event.maxCapacity - event._count.rsvps
+    : null;
+
+  return (
+    <div className="p-4 hover:bg-neutral-50 transition-colors">
+      <div className="flex items-start gap-3">
+        <div className="w-12 h-12 rounded-lg bg-neutral-100 flex flex-col items-center justify-center flex-shrink-0">
+          <span className="text-xs text-neutral-600 font-semibold leading-none">
+            {eventDate.toLocaleDateString("en-US", { month: "short" }).toUpperCase()}
+          </span>
+          <span className="text-lg font-bold text-neutral-900 leading-none">
+            {eventDate.getDate()}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-neutral-900 text-sm mb-1">{event.titleEn}</p>
+          <div className="flex items-center gap-1 text-xs text-neutral-500 mb-1">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{event.location}</span>
+          </div>
+          {spotsLeft !== null && (
+            <div className="flex items-center gap-1 text-xs text-neutral-500 mb-2">
+              <Users className="w-3 h-3" />
+              <span>{spotsLeft} spots left</span>
+            </div>
+          )}
+          <Link
+            href={`/events/${event.slug}?from=portal`}
+            className="text-xs text-primary hover:underline font-medium"
+          >
+            View Details
+          </Link>
+        </div>
       </div>
     </div>
   );

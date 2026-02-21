@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, QrCode } from "lucide-react";
 import QrCodeDisplay from "./QrCodeDisplay";
+import DateBadge from "@/components/ui/DateBadge";
 
 interface Props {
   rsvp: {
@@ -29,16 +30,7 @@ export default function UpcomingEventCard({ rsvp }: Props) {
         className="flex items-center justify-between p-4 hover:bg-primary-50/50 transition-all group"
       >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary-50 flex flex-col items-center justify-center">
-            <span className="text-xs text-primary-600 font-semibold">
-              {eventDate
-                .toLocaleDateString("en-US", { month: "short" })
-                .toUpperCase()}
-            </span>
-            <span className="text-lg font-bold text-primary">
-              {eventDate.getDate()}
-            </span>
-          </div>
+          <DateBadge date={eventDate} variant="primary" size="sm" />
           <div>
             <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
               {rsvp.event.titleEn}
