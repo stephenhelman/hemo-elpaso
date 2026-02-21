@@ -60,47 +60,45 @@ export default async function AllAttendeesPage() {
 
   return (
     <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            All Attendees
-          </h1>
-          <p className="text-neutral-500">
-            View and export attendance records across all events
-          </p>
-        </div>
-
-        {/* Table */}
-        <AllAttendeesTable checkIns={checkIns} events={events}>
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              icon={<CheckCircle className="w-6 h-6" />}
-              label="Total Check-Ins"
-              value={totalCheckIns.toString()}
-              color="primary"
-            />
-            <StatCard
-              icon={<Users className="w-6 h-6" />}
-              label="Unique Families"
-              value={uniqueAttendees.toString()}
-              color="blue"
-            />
-            <StatCard
-              icon={<Calendar className="w-6 h-6" />}
-              label="Events with Attendance"
-              value={eventsWithAttendance.toString()}
-              color="green"
-            />
-            <StatCard
-              icon={<TrendingUp className="w-6 h-6" />}
-              label="Avg per Event"
-              value={avgAttendance.toString()}
-              color="purple"
-            />
-          </div>
-        </AllAttendeesTable>
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          All Attendees
+        </h1>
+        <p className="text-neutral-500">
+          View and export attendance records across all events
+        </p>
       </div>
+
+      {/* Table */}
+      <AllAttendeesTable checkIns={checkIns} events={events}>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            icon={<CheckCircle className="w-6 h-6" />}
+            label="Total Check-Ins"
+            value={totalCheckIns.toString()}
+            color="primary"
+          />
+          <StatCard
+            icon={<Users className="w-6 h-6" />}
+            label="Unique Families"
+            value={uniqueAttendees.toString()}
+            color="blue"
+          />
+          <StatCard
+            icon={<Calendar className="w-6 h-6" />}
+            label="Events with Attendance"
+            value={eventsWithAttendance.toString()}
+            color="green"
+          />
+          <StatCard
+            icon={<TrendingUp className="w-6 h-6" />}
+            label="Avg per Event"
+            value={avgAttendance.toString()}
+            color="purple"
+          />
+        </div>
+      </AllAttendeesTable>
     </div>
   );
 }

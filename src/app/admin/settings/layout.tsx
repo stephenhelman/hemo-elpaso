@@ -35,32 +35,31 @@ export default function SettingsLayout({
 
   return (
     <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Settings className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-display font-bold text-neutral-900">
-              Settings
-            </h1>
-          </div>
-          <p className="text-neutral-600">
-            Manage your organization settings and preferences
-          </p>
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <Settings className="w-8 h-8 text-primary" />
+          <h1 className="text-3xl font-display font-bold text-neutral-900">
+            Settings
+          </h1>
         </div>
+        <p className="text-neutral-600">
+          Manage your organization settings and preferences
+        </p>
+      </div>
 
-        {/* Tabs */}
-        <div className="border-b border-neutral-200 mb-8">
-          <nav className="flex gap-4 overflow-x-auto">
-            {tabs.map((tab) => {
-              const isActive = pathname === tab.href;
-              const Icon = tab.icon;
+      {/* Tabs */}
+      <div className="border-b border-neutral-200 mb-8">
+        <nav className="flex gap-4 overflow-x-auto">
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.href;
+            const Icon = tab.icon;
 
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.disabled ? "#" : tab.href}
-                  className={`
+            return (
+              <Link
+                key={tab.href}
+                href={tab.disabled ? "#" : tab.href}
+                className={`
                     flex items-center gap-2 pb-4 border-b-2 transition-colors whitespace-nowrap
                     ${
                       isActive
@@ -70,19 +69,18 @@ export default function SettingsLayout({
                           : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
                     }
                   `}
-                  onClick={(e) => tab.disabled && e.preventDefault()}
-                >
-                  <Icon className="w-5 h-5" />
-                  {tab.name}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Content */}
-        {children}
+                onClick={(e) => tab.disabled && e.preventDefault()}
+              >
+                <Icon className="w-5 h-5" />
+                {tab.name}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
+
+      {/* Content */}
+      {children}
     </div>
   );
 }

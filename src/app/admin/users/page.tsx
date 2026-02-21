@@ -78,53 +78,51 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   return (
     <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-              User Management
-            </h1>
-            <p className="text-neutral-600">
-              Manage all registered users, roles, and view participation history
-            </p>
-          </div>
+      {/* Header */}
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+            User Management
+          </h1>
+          <p className="text-neutral-600">
+            Manage all registered users, roles, and view participation history
+          </p>
         </div>
-
-        {/* Stats */}
-
-        {/* Users Table */}
-        <UsersTable
-          users={users}
-          conditions={conditions}
-          currentSearch={searchParams.search}
-          currentRole={searchParams.role}
-          currentCondition={searchParams.condition}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              label="Total Users"
-              value={totalUsers.toString()}
-              color="blue"
-            />
-            <StatCard
-              label="Patients"
-              value={patientCount.toString()}
-              color="green"
-            />
-            <StatCard
-              label="Admins"
-              value={adminCount.toString()}
-              color="purple"
-            />
-            <StatCard
-              label="Board Members"
-              value={boardCount.toString()}
-              color="amber"
-            />
-          </div>
-        </UsersTable>
       </div>
+
+      {/* Stats */}
+
+      {/* Users Table */}
+      <UsersTable
+        users={users}
+        conditions={conditions}
+        currentSearch={searchParams.search}
+        currentRole={searchParams.role}
+        currentCondition={searchParams.condition}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            label="Total Users"
+            value={totalUsers.toString()}
+            color="blue"
+          />
+          <StatCard
+            label="Patients"
+            value={patientCount.toString()}
+            color="green"
+          />
+          <StatCard
+            label="Admins"
+            value={adminCount.toString()}
+            color="purple"
+          />
+          <StatCard
+            label="Board Members"
+            value={boardCount.toString()}
+            color="amber"
+          />
+        </div>
+      </UsersTable>
     </div>
   );
 }

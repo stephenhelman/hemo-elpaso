@@ -147,165 +147,163 @@ export default async function AdminDashboardPage() {
   });
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Admin Dashboard
-          </h1>
-          <p className="text-neutral-600">
-            Welcome back, {admin.profile?.firstName || "Admin"}
-          </p>
-        </div>
+    <div className="p-4 md:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          Admin Dashboard
+        </h1>
+        <p className="text-neutral-600">
+          Welcome back, {admin.profile?.firstName || "Admin"}
+        </p>
+      </div>
 
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            href="/admin/events/new"
-            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
-          >
-            <Calendar className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-            <h3 className="font-semibold text-neutral-900">Create Event</h3>
-          </Link>
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          href="/admin/events/new"
+          className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
+        >
+          <Calendar className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+          <h3 className="font-semibold text-neutral-900">Create Event</h3>
+        </Link>
 
-          <Link
-            href="/admin/reports"
-            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
-          >
-            <TrendingUp className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-            <h3 className="font-semibold text-neutral-900">View Reports</h3>
-          </Link>
+        <Link
+          href="/admin/reports"
+          className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
+        >
+          <TrendingUp className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+          <h3 className="font-semibold text-neutral-900">View Reports</h3>
+        </Link>
 
-          <Link
-            href="/admin/users"
-            className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
-          >
-            <Users className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-            <h3 className="font-semibold text-neutral-900">Manage Users</h3>
-          </Link>
-        </div>
+        <Link
+          href="/admin/users"
+          className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
+        >
+          <Users className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+          <h3 className="font-semibold text-neutral-900">Manage Users</h3>
+        </Link>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Total Patients */}
-          <StatCard
-            title="Total Patients"
-            value={totalPatients.toString()}
-            icon={<Users className="w-6 h-6" />}
-            color="blue"
-          />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Patients */}
+        <StatCard
+          title="Total Patients"
+          value={totalPatients.toString()}
+          icon={<Users className="w-6 h-6" />}
+          color="blue"
+        />
 
-          {/* Total Events */}
-          <StatCard
-            title="Total Events"
-            value={totalEvents.toString()}
-            icon={<Calendar className="w-6 h-6" />}
-            color="purple"
-          />
+        {/* Total Events */}
+        <StatCard
+          title="Total Events"
+          value={totalEvents.toString()}
+          icon={<Calendar className="w-6 h-6" />}
+          color="purple"
+        />
 
-          {/* RSVP Rate */}
-          <StatCard
-            title="RSVP Rate"
-            value={`${rsvpRate}%`}
-            subtitle="Upcoming events"
-            icon={<TrendingUp className="w-6 h-6" />}
-            color="green"
-          />
+        {/* RSVP Rate */}
+        <StatCard
+          title="RSVP Rate"
+          value={`${rsvpRate}%`}
+          subtitle="Upcoming events"
+          icon={<TrendingUp className="w-6 h-6" />}
+          color="green"
+        />
 
-          {/* Attendance Rate */}
-          <StatCard
-            title="Attendance Rate"
-            value={`${attendanceRate}%`}
-            subtitle="Past events"
-            icon={<TrendingUp className="w-6 h-6" />}
-            color="amber"
-          />
-        </div>
+        {/* Attendance Rate */}
+        <StatCard
+          title="Attendance Rate"
+          value={`${attendanceRate}%`}
+          subtitle="Past events"
+          icon={<TrendingUp className="w-6 h-6" />}
+          color="amber"
+        />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Events */}
-          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-display font-bold text-neutral-900">
-                Upcoming Events
-              </h2>
-              <Link
-                href="/admin/events"
-                className="text-sm text-primary hover:text-primary-600 font-semibold"
-              >
-                View All
-              </Link>
-            </div>
-
-            {upcomingEvents.length === 0 ? (
-              <p className="text-neutral-500 text-sm">No upcoming events</p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <Link
-                    key={event.id}
-                    href={`/admin/events/${event.id}/edit`}
-                    className="block p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-50 transition-colors"
-                  >
-                    <h3 className="font-semibold text-neutral-900 mb-1">
-                      {event.titleEn}
-                    </h3>
-                    <div className="flex items-center gap-4 text-sm text-neutral-600">
-                      <span>
-                        {new Date(event.eventDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span>•</span>
-                      <span>{event._count.rsvps} RSVPs</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-            <h2 className="text-xl font-display font-bold text-neutral-900 mb-4">
-              Recent Activity
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming Events */}
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-display font-bold text-neutral-900">
+              Upcoming Events
             </h2>
-
-            {recentActivity.length === 0 ? (
-              <p className="text-neutral-500 text-sm">No recent activity</p>
-            ) : (
-              <div className="space-y-3">
-                {recentActivity.map((rsvp) => (
-                  <div
-                    key={rsvp.id}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-primary-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900">
-                        {rsvp.patient.profile?.firstName}{" "}
-                        {rsvp.patient.profile?.lastName}
-                      </p>
-                      <p className="text-xs text-neutral-600 truncate">
-                        RSVP'd to {rsvp.event.titleEn}
-                      </p>
-                      <p className="text-xs text-neutral-400 mt-1">
-                        {new Date(rsvp.rsvpDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <Link
+              href="/admin/events"
+              className="text-sm text-primary hover:text-primary-600 font-semibold"
+            >
+              View All
+            </Link>
           </div>
+
+          {upcomingEvents.length === 0 ? (
+            <p className="text-neutral-500 text-sm">No upcoming events</p>
+          ) : (
+            <div className="space-y-3">
+              {upcomingEvents.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/admin/events/${event.id}/edit`}
+                  className="block p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-50 transition-colors"
+                >
+                  <h3 className="font-semibold text-neutral-900 mb-1">
+                    {event.titleEn}
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm text-neutral-600">
+                    <span>
+                      {new Date(event.eventDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span>•</span>
+                    <span>{event._count.rsvps} RSVPs</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+          <h2 className="text-xl font-display font-bold text-neutral-900 mb-4">
+            Recent Activity
+          </h2>
+
+          {recentActivity.length === 0 ? (
+            <p className="text-neutral-500 text-sm">No recent activity</p>
+          ) : (
+            <div className="space-y-3">
+              {recentActivity.map((rsvp) => (
+                <div
+                  key={rsvp.id}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 text-primary-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900">
+                      {rsvp.patient.profile?.firstName}{" "}
+                      {rsvp.patient.profile?.lastName}
+                    </p>
+                    <p className="text-xs text-neutral-600 truncate">
+                      RSVP'd to {rsvp.event.titleEn}
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      {new Date(rsvp.rsvpDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

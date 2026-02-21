@@ -73,40 +73,38 @@ export default async function DiagnosisVerificationPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Diagnosis Letter Verification
-          </h1>
-          <p className="text-neutral-600">
-            Review and verify patient diagnosis letters
-          </p>
-        </div>
-
-        {/* Verification List */}
-        <DiagnosisVerificationList
-          patients={patientsWithPendingDiagnosis}
-          familyMembers={familyMembersWithPendingDiagnosis}
-          adminEmail={admin.email}
-        >
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <StatCard
-              icon={<FileText className="w-6 h-6" />}
-              label="Pending Verification"
-              value={totalPending.toString()}
-              color="blue"
-            />
-            <StatCard
-              icon={<AlertCircle className="w-6 h-6" />}
-              label="Grace Period Expiring Soon"
-              value={expiringSoon.toString()}
-              color="amber"
-            />
-          </div>
-        </DiagnosisVerificationList>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          Diagnosis Letter Verification
+        </h1>
+        <p className="text-neutral-600">
+          Review and verify patient diagnosis letters
+        </p>
       </div>
+
+      {/* Verification List */}
+      <DiagnosisVerificationList
+        patients={patientsWithPendingDiagnosis}
+        familyMembers={familyMembersWithPendingDiagnosis}
+        adminEmail={admin.email}
+      >
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <StatCard
+            icon={<FileText className="w-6 h-6" />}
+            label="Pending Verification"
+            value={totalPending.toString()}
+            color="blue"
+          />
+          <StatCard
+            icon={<AlertCircle className="w-6 h-6" />}
+            label="Grace Period Expiring Soon"
+            value={expiringSoon.toString()}
+            color="amber"
+          />
+        </div>
+      </DiagnosisVerificationList>
     </div>
   );
 }

@@ -91,52 +91,50 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
   }));
   return (
     <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Financial Assistance Applications
-          </h1>
-          <p className="text-neutral-600">
-            Review and manage financial assistance requests from patients
-          </p>
-        </div>
-
-        {/* Applications Table */}
-        <ApplicationsTable
-          applications={applicationsFormatted}
-          currentStatus={searchParams.status}
-          currentType={searchParams.type}
-        >
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              icon={<DollarSign className="w-6 h-6" />}
-              label="Total Applications"
-              value={totalApplications.toString()}
-              color="blue"
-            />
-            <StatCard
-              icon={<Clock className="w-6 h-6" />}
-              label="Pending Review"
-              value={pendingReview.toString()}
-              color="yellow"
-            />
-            <StatCard
-              icon={<CheckCircle className="w-6 h-6" />}
-              label="Approved"
-              value={approved.toString()}
-              color="green"
-            />
-            <StatCard
-              icon={<AlertCircle className="w-6 h-6" />}
-              label="Requested / Approved"
-              value={`$${totalRequested.toFixed(0)} / $${totalApproved.toFixed(0)}`}
-              color="purple"
-            />
-          </div>
-        </ApplicationsTable>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          Financial Assistance Applications
+        </h1>
+        <p className="text-neutral-600">
+          Review and manage financial assistance requests from patients
+        </p>
       </div>
+
+      {/* Applications Table */}
+      <ApplicationsTable
+        applications={applicationsFormatted}
+        currentStatus={searchParams.status}
+        currentType={searchParams.type}
+      >
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            icon={<DollarSign className="w-6 h-6" />}
+            label="Total Applications"
+            value={totalApplications.toString()}
+            color="blue"
+          />
+          <StatCard
+            icon={<Clock className="w-6 h-6" />}
+            label="Pending Review"
+            value={pendingReview.toString()}
+            color="yellow"
+          />
+          <StatCard
+            icon={<CheckCircle className="w-6 h-6" />}
+            label="Approved"
+            value={approved.toString()}
+            color="green"
+          />
+          <StatCard
+            icon={<AlertCircle className="w-6 h-6" />}
+            label="Requested / Approved"
+            value={`$${totalRequested.toFixed(0)} / $${totalApproved.toFixed(0)}`}
+            color="purple"
+          />
+        </div>
+      </ApplicationsTable>
     </div>
   );
 }

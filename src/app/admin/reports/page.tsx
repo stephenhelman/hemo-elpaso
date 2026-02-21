@@ -182,71 +182,69 @@ export default async function ReportsPage({ searchParams }: Props) {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Reports & Analytics
-          </h1>
-          <p className="text-neutral-600">
-            View attendance, engagement, and demographic insights
-          </p>
-        </div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          Reports & Analytics
+        </h1>
+        <p className="text-neutral-600">
+          View attendance, engagement, and demographic insights
+        </p>
+      </div>
 
-        {/* Filters */}
-        <ReportsFilters
-          startDate={startDate}
-          endDate={endDate}
-          category={category}
-          attendanceExportRows={attendanceExportRows}
+      {/* Filters */}
+      <ReportsFilters
+        startDate={startDate}
+        endDate={endDate}
+        category={category}
+        attendanceExportRows={attendanceExportRows}
+      />
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <SummaryCard
+          title="Total Events"
+          value={totalEvents.toString()}
+          icon={<Calendar className="w-6 h-6" />}
+          color="blue"
         />
+        <SummaryCard
+          title="Total RSVPs"
+          value={totalRsvps.toString()}
+          icon={<Users className="w-6 h-6" />}
+          color="purple"
+        />
+        <SummaryCard
+          title="Patient Attendance"
+          value={totalCheckIns.toString()}
+          subtitle="Patients only"
+          icon={<Users className="w-6 h-6" />}
+          color="green"
+        />
+        <SummaryCard
+          title="Attendance Rate"
+          value={`${avgAttendanceRate}%`}
+          icon={<TrendingUp className="w-6 h-6" />}
+          color="amber"
+        />
+      </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <SummaryCard
-            title="Total Events"
-            value={totalEvents.toString()}
-            icon={<Calendar className="w-6 h-6" />}
-            color="blue"
-          />
-          <SummaryCard
-            title="Total RSVPs"
-            value={totalRsvps.toString()}
-            icon={<Users className="w-6 h-6" />}
-            color="purple"
-          />
-          <SummaryCard
-            title="Patient Attendance"
-            value={totalCheckIns.toString()}
-            subtitle="Patients only"
-            icon={<Users className="w-6 h-6" />}
-            color="green"
-          />
-          <SummaryCard
-            title="Attendance Rate"
-            value={`${avgAttendanceRate}%`}
-            icon={<TrendingUp className="w-6 h-6" />}
-            color="amber"
-          />
-        </div>
+      {/* Reports Sections */}
+      <div className="space-y-8">
+        {/* Attendance Report */}
+        <AttendanceReport events={events} />
 
-        {/* Reports Sections */}
-        <div className="space-y-8">
-          {/* Attendance Report */}
-          <AttendanceReport events={events} />
+        {/* Engagement Report */}
+        <EngagementReport events={events} uniquePatients={uniquePatients} />
 
-          {/* Engagement Report */}
-          <EngagementReport events={events} uniquePatients={uniquePatients} />
-
-          {/* Demographics Report */}
-          <DemographicsReport
-            totalPatients={allPatients.length}
-            ageGroups={ageGroups}
-            conditions={conditions}
-            severities={severities}
-            cities={cities}
-          />
-        </div>
+        {/* Demographics Report */}
+        <DemographicsReport
+          totalPatients={allPatients.length}
+          ageGroups={ageGroups}
+          conditions={conditions}
+          severities={severities}
+          cities={cities}
+        />
       </div>
     </div>
   );
