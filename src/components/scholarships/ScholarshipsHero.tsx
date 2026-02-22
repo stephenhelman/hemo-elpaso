@@ -1,24 +1,12 @@
 import { Lang } from "@/types";
+import { scholarshipHeroTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Educational Support",
-    heading: "Scholarships",
-    sub: "Hemophilia Outreach of El Paso is proud to support students affected by bleeding disorders in pursuing their education in healthcare and pharmacy.",
-  },
-  es: {
-    eyebrow: "Apoyo Educativo",
-    heading: "Becas",
-    sub: "Hemophilia Outreach de El Paso se enorgullece de apoyar a estudiantes afectados por trastornos hemorrágicos en la búsqueda de su educación en atención médica y farmacia.",
-  },
-};
-
 export default function ScholarshipsHero({ lang }: Props) {
-  const t = content[lang];
+  const t = scholarshipHeroTranslation[lang];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

@@ -2,144 +2,15 @@ import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { ExternalLink } from "lucide-react";
 import { Lang } from "@/types";
+import { conditionCardsTranslation } from "@/translation/resourcesPage";
+import { colorMap } from "@/lib/statColorConfig";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Understanding Bleeding Disorders",
-    heading: "Condition Information",
-    sub: "Learn about the conditions we support and how they affect daily life.",
-    conditions: [
-      {
-        name: "Hemophilia A",
-        color: "primary",
-        abbr: "HA",
-        what: "What is it?",
-        body: "Hemophilia A is the most common form of hemophilia, caused by a deficiency of clotting factor VIII. It is an inherited bleeding disorder where the blood does not clot properly.",
-        facts: [
-          "Affects approximately 1 in 5,000 male births",
-          "Caused by mutations in the F8 gene on the X chromosome",
-          "Ranges from mild to severe based on factor levels",
-          "Treatment involves factor VIII replacement therapy",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/hemophilia-a",
-        linkLabel: "Learn More at NHF",
-      },
-      {
-        name: "Hemophilia B",
-        color: "secondary",
-        abbr: "HB",
-        what: "What is it?",
-        body: "Hemophilia B, also called Christmas Disease, is caused by a deficiency of clotting factor IX. It is less common than Hemophilia A but presents similarly.",
-        facts: [
-          "Affects approximately 1 in 30,000 male births",
-          "Caused by mutations in the F9 gene on the X chromosome",
-          "Named after Stephen Christmas, the first patient described",
-          "Treated with factor IX replacement or gene therapy",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/hemophilia-b",
-        linkLabel: "Learn More at NHF",
-      },
-      {
-        name: "Von Willebrand Disease",
-        color: "accent",
-        abbr: "VWD",
-        what: "What is it?",
-        body: "Von Willebrand Disease is the most common inherited bleeding disorder, affecting both males and females equally. It involves a deficiency or dysfunction of Von Willebrand factor.",
-        facts: [
-          "Affects up to 1% of the general population",
-          "Three main types: Type 1, Type 2, and Type 3",
-          "Often underdiagnosed, especially in women",
-          "Treatment includes desmopressin (DDAVP) or factor replacement",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/von-willebrand-disease",
-        linkLabel: "Learn More at NHF",
-      },
-    ],
-  },
-  es: {
-    eyebrow: "Comprender los Trastornos Hemorrágicos",
-    heading: "Información sobre Condiciones",
-    sub: "Aprenda sobre las condiciones que apoyamos y cómo afectan la vida diaria.",
-    conditions: [
-      {
-        name: "Hemofilia A",
-        color: "primary",
-        abbr: "HA",
-        what: "¿Qué es?",
-        body: "La hemofilia A es la forma más común de hemofilia, causada por una deficiencia del factor de coagulación VIII. Es un trastorno hemorrágico hereditario donde la sangre no coagula correctamente.",
-        facts: [
-          "Afecta aproximadamente a 1 de cada 5,000 nacimientos masculinos",
-          "Causada por mutaciones en el gen F8 en el cromosoma X",
-          "Varía de leve a severa según los niveles del factor",
-          "El tratamiento implica terapia de reemplazo del factor VIII",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/hemophilia-a",
-        linkLabel: "Más Información en NHF",
-      },
-      {
-        name: "Hemofilia B",
-        color: "secondary",
-        abbr: "HB",
-        what: "¿Qué es?",
-        body: "La hemofilia B, también llamada Enfermedad de Christmas, es causada por una deficiencia del factor de coagulación IX. Es menos común que la hemofilia A pero se presenta de manera similar.",
-        facts: [
-          "Afecta aproximadamente a 1 de cada 30,000 nacimientos masculinos",
-          "Causada por mutaciones en el gen F9 en el cromosoma X",
-          "Named after Stephen Christmas, el primer paciente descrito",
-          "Se trata con reemplazo de factor IX o terapia génica",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/hemophilia-b",
-        linkLabel: "Más Información en NHF",
-      },
-      {
-        name: "Enfermedad de Von Willebrand",
-        color: "accent",
-        abbr: "VWD",
-        what: "¿Qué es?",
-        body: "La enfermedad de Von Willebrand es el trastorno hemorrágico hereditario más común, que afecta por igual a hombres y mujeres. Implica una deficiencia o disfunción del factor de Von Willebrand.",
-        facts: [
-          "Afecta hasta al 1% de la población general",
-          "Tres tipos principales: Tipo 1, Tipo 2 y Tipo 3",
-          "A menudo no se diagnostica, especialmente en mujeres",
-          "El tratamiento incluye desmopresina (DDAVP) o reemplazo de factores",
-        ],
-        link: "https://www.hemophilia.org/bleeding-disorders-a-z/types/von-willebrand-disease",
-        linkLabel: "Más Información en NHF",
-      },
-    ],
-  },
-};
-
-const colorMap: Record<
-  string,
-  { bg: string; text: string; border: string; avatar: string }
-> = {
-  primary: {
-    bg: "bg-primary-50",
-    text: "text-primary-700",
-    border: "border-primary-200",
-    avatar: "bg-gradient-to-br from-primary-400 to-primary-600",
-  },
-  secondary: {
-    bg: "bg-secondary/10",
-    text: "text-secondary-700",
-    border: "border-secondary/20",
-    avatar: "bg-gradient-to-br from-secondary/70 to-secondary",
-  },
-  accent: {
-    bg: "bg-accent/10",
-    text: "text-accent-dark",
-    border: "border-accent/20",
-    avatar: "bg-gradient-to-br from-accent/70 to-accent",
-  },
-};
-
 export default function ConditionCards({ lang }: Props) {
-  const t = content[lang];
+  const t = conditionCardsTranslation[lang];
 
   return (
     <Section background="neutral" id="conditions">

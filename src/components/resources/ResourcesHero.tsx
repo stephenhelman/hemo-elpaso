@@ -1,24 +1,12 @@
 import { Lang } from "@/types";
+import { resourcesHeroTranslation } from "@/translation/resourcesPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Knowledge & Support",
-    heading: "Resources for Our Community",
-    sub: "Everything you need to navigate life with a bleeding disorder — from condition education to local care, financial assistance, and youth programs.",
-  },
-  es: {
-    eyebrow: "Conocimiento y Apoyo",
-    heading: "Recursos para Nuestra Comunidad",
-    sub: "Todo lo que necesita para navegar la vida con un trastorno hemorrágico — desde educación sobre condiciones hasta atención local, asistencia financiera y programas juveniles.",
-  },
-};
-
 export default function ResourcesHero({ lang }: Props) {
-  const t = content[lang];
+  const t = resourcesHeroTranslation[lang];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

@@ -2,28 +2,14 @@ import Link from "next/link";
 import Section from "@/components/layout/Section";
 import { ArrowRight, Bell } from "lucide-react";
 import { Lang } from "@/types";
+import { scholarshipCTATranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    heading: "Want to Be Notified About Future Scholarships?",
-    sub: "Sign up for our newsletter to be the first to know when the next scholarship cycle opens.",
-    cta1: "Subscribe to Newsletter",
-    cta2: "Contact Us",
-  },
-  es: {
-    heading: "¿Quiere ser Notificado sobre Futuras Becas?",
-    sub: "Suscríbase a nuestro boletín para ser el primero en saber cuándo abre el próximo ciclo de becas.",
-    cta1: "Suscribirse al Boletín",
-    cta2: "Contáctenos",
-  },
-};
-
 export default function ScholarshipCTA({ lang }: Props) {
-  const t = content[lang];
+  const t = scholarshipCTATranslation[lang];
 
   return (
     <Section background="white">

@@ -10,6 +10,13 @@ interface Props {
 export default function MissionValues({ lang }: Props) {
   const t = missionValuesTranslation[lang];
 
+  const iconConfig = {
+    bookOpen: <BookOpen className={t.valuesClassName} />,
+    heart: <Heart className={t.valuesClassName} />,
+    users: <Users className={t.valuesClassName} />,
+    globe: <Globe className={t.valuesClassName} />,
+  };
+
   return (
     <Section background="neutral">
       {/* Mission / Objective / Goal */}
@@ -49,12 +56,6 @@ export default function MissionValues({ lang }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {t.values.map((value) => {
-          const iconConfig = {
-            bookOpen: <BookOpen className={t.valuesClassName} />,
-            heart: <Heart className={t.valuesClassName} />,
-            users: <Users className={t.valuesClassName} />,
-            globe: <Globe className={t.valuesClassName} />,
-          };
           return <ValueCard key={value.title} {...value} config={iconConfig} />;
         })}
       </div>

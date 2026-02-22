@@ -1,38 +1,14 @@
 import { Phone, Mail, MapPin, Facebook, Clock } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { Lang } from "@/types";
+import { contactInfoTranslation } from "@/translation/contactPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    heading: "Contact Information",
-    phone: "Phone",
-    email: "Email",
-    address: "Location",
-    hours: "Office Hours",
-    social: "Follow Us",
-    hoursVal: "Monday – Friday, 9:00 AM – 5:00 PM",
-    addrVal: "El Paso, Texas",
-    note: "We serve the greater El Paso and surrounding border region.",
-  },
-  es: {
-    heading: "Información de Contacto",
-    phone: "Teléfono",
-    email: "Correo Electrónico",
-    address: "Ubicación",
-    hours: "Horario de Oficina",
-    social: "Síguenos",
-    hoursVal: "Lunes – Viernes, 9:00 AM – 5:00 PM",
-    addrVal: "El Paso, Texas",
-    note: "Servimos a El Paso y la región fronteriza.",
-  },
-};
-
 export default function ContactInfo({ lang }: Props) {
-  const t = content[lang];
+  const t = contactInfoTranslation[lang];
 
   return (
     <div className="space-y-4">

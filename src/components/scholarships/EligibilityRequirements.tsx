@@ -1,78 +1,14 @@
 import Section from "@/components/layout/Section";
 import { CheckCircle } from "lucide-react";
 import { Lang } from "@/types";
+import { scholarshipEligibilityTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Who Can Apply",
-    heading: "Eligibility Requirements",
-    sub: "All of the following criteria must be met to be considered for the scholarship.",
-    requirements: [
-      {
-        title: "Bleeding Disorder Connection",
-        body: "Must be a student diagnosed with hemophilia or Von Willebrand Disease, or an immediate family member of someone with a bleeding disorder.",
-      },
-      {
-        title: "U.S. Residency",
-        body: "Must be a United States resident.",
-      },
-      {
-        title: "Healthcare or Pharmacy Enrollment",
-        body: "Must be accepted to or currently enrolled in a Pharmacy or Healthcare curriculum at a college, university, or technical school in the United States on a full-time basis (12 credit hours or more).",
-      },
-      {
-        title: "Minimum GPA of 2.5",
-        body: "Must maintain a minimum grade point average of 2.5 on a 4.0 scale during the entire senior year of high school, or current year of college or graduate school.",
-      },
-      {
-        title: "Proof of Enrollment",
-        body: "Must provide proof of admission or enrollment to the college, university, technical school, or certification program.",
-      },
-      {
-        title: "Essay Submission",
-        body: 'Must submit a 300–400 word essay answering: "How will you be advocating for bleeding disorders through your time in college?"',
-      },
-    ],
-  },
-  es: {
-    eyebrow: "Quién Puede Aplicar",
-    heading: "Requisitos de Elegibilidad",
-    sub: "Todos los siguientes criterios deben cumplirse para ser considerado para la beca.",
-    requirements: [
-      {
-        title: "Conexión con Trastorno Hemorrágico",
-        body: "Debe ser un estudiante diagnosticado con hemofilia o enfermedad de Von Willebrand, o un familiar inmediato de alguien con un trastorno hemorrágico.",
-      },
-      {
-        title: "Residencia en EE.UU.",
-        body: "Debe ser residente de los Estados Unidos.",
-      },
-      {
-        title: "Inscripción en Salud o Farmacia",
-        body: "Debe estar aceptado o inscrito actualmente en un plan de estudios de Farmacia o Atención Médica en una universidad o escuela técnica en EE.UU. a tiempo completo (12 créditos o más).",
-      },
-      {
-        title: "Promedio Mínimo de 2.5",
-        body: "Debe mantener un promedio mínimo de 2.5 en una escala de 4.0 durante el año escolar actual.",
-      },
-      {
-        title: "Prueba de Inscripción",
-        body: "Debe proporcionar prueba de admisión o inscripción al colegio, universidad o escuela técnica.",
-      },
-      {
-        title: "Ensayo",
-        body: 'Debe enviar un ensayo de 300–400 palabras respondiendo: "¿Cómo abogará por los trastornos hemorrágicos durante su tiempo en la universidad?"',
-      },
-    ],
-  },
-};
-
 export default function EligibilityRequirements({ lang }: Props) {
-  const t = content[lang];
+  const t = scholarshipEligibilityTranslation[lang];
 
   return (
     <Section background="white" id="eligibility">

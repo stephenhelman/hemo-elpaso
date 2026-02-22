@@ -1,25 +1,13 @@
 import { MapPin, ExternalLink } from "lucide-react";
 import { Lang } from "@/types";
+import { contactMapTranslation } from "@/translation/contactPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    heading: "Find Us",
-    sub: "Proudly serving El Paso and the surrounding border region since 1993.",
-    directions: "Get Directions",
-  },
-  es: {
-    heading: "Encuéntrenos",
-    sub: "Sirviendo orgullosamente a El Paso y la región fronteriza desde 1993.",
-    directions: "Obtener Direcciones",
-  },
-};
-
 export default function ContactMap({ lang }: Props) {
-  const t = content[lang];
+  const t = contactMapTranslation[lang];
 
   return (
     <div className="bg-white border-t border-neutral-100">

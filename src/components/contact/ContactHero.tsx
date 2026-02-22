@@ -1,24 +1,12 @@
 import { Lang } from "@/types";
+import { contactHeroTranslation } from "@/translation/contactPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Get In Touch",
-    heading: "We're Here For You",
-    sub: "Whether you're a family affected by a bleeding disorder, a potential volunteer, or a sponsor — we'd love to hear from you.",
-  },
-  es: {
-    eyebrow: "Contáctenos",
-    heading: "Estamos Aquí Para Usted",
-    sub: "Ya sea que sea una familia afectada por un trastorno hemorrágico, un posible voluntario o patrocinador — nos encantaría saber de usted.",
-  },
-};
-
 export default function ContactHero({ lang }: Props) {
-  const t = content[lang];
+  const t = contactHeroTranslation[lang];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

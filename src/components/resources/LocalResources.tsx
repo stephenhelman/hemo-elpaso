@@ -2,96 +2,15 @@ import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { MapPin, Phone, ExternalLink } from "lucide-react";
 import { Lang } from "@/types";
+import { avatarColors } from "@/lib/statColorConfig";
+import { localResourcesTranslation } from "@/translation/resourcesPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Local Care",
-    heading: "El Paso Area Resources",
-    sub: "Local healthcare providers and specialty care centers serving the bleeding disorders community in El Paso.",
-    providers: [
-      {
-        name: "University Medical Center of El Paso",
-        abbr: "UMC",
-        type: "Regional Medical Center",
-        address: "4815 Alameda Ave, El Paso, TX 79905",
-        phone: "(915) 521-7602",
-        body: "The region's leading safety-net hospital with hematology services and specialty care for bleeding disorders.",
-        link: "https://www.umcelpaso.org",
-        color: "primary",
-      },
-      {
-        name: "Texas Tech HSC El Paso",
-        abbr: "TTHSC",
-        type: "Academic Medical Center",
-        address: "5001 El Paso Dr, El Paso, TX 79905",
-        phone: "(915) 215-4000",
-        body: "Academic medical center providing hematology specialty care, research, and comprehensive bleeding disorder treatment.",
-        link: "https://elpaso.ttuhsc.edu",
-        color: "secondary",
-      },
-      {
-        name: "El Paso Children's Hospital",
-        abbr: "EPCH",
-        type: "Pediatric Care",
-        address: "4845 Alameda Ave, El Paso, TX 79905",
-        phone: "(915) 298-5444",
-        body: "Dedicated pediatric care for children with bleeding disorders, including hematology specialty services.",
-        link: "https://www.elpasochildrens.org",
-        color: "accent",
-      },
-    ],
-  },
-  es: {
-    eyebrow: "Atención Local",
-    heading: "Recursos del Área de El Paso",
-    sub: "Proveedores de atención médica locales y centros de atención especializada que sirven a la comunidad de trastornos hemorrágicos en El Paso.",
-    providers: [
-      {
-        name: "Centro Médico Universitario de El Paso",
-        abbr: "UMC",
-        type: "Centro Médico Regional",
-        address: "4815 Alameda Ave, El Paso, TX 79905",
-        phone: "(915) 521-7602",
-        body: "El hospital de red de seguridad líder de la región con servicios de hematología y atención especializada para trastornos hemorrágicos.",
-        link: "https://www.umcelpaso.org",
-        color: "primary",
-      },
-      {
-        name: "Texas Tech HSC El Paso",
-        abbr: "TTHSC",
-        type: "Centro Médico Académico",
-        address: "5001 El Paso Dr, El Paso, TX 79905",
-        phone: "(915) 215-4000",
-        body: "Centro médico académico que brinda atención especializada en hematología, investigación y tratamiento integral de trastornos hemorrágicos.",
-        link: "https://elpaso.ttuhsc.edu",
-        color: "secondary",
-      },
-      {
-        name: "Hospital Infantil de El Paso",
-        abbr: "EPCH",
-        type: "Atención Pediátrica",
-        address: "4845 Alameda Ave, El Paso, TX 79905",
-        phone: "(915) 298-5444",
-        body: "Atención pediátrica dedicada para niños con trastornos hemorrágicos, incluidos servicios especializados de hematología.",
-        link: "https://www.elpasochildrens.org",
-        color: "accent",
-      },
-    ],
-  },
-};
-
-const avatarColors: Record<string, string> = {
-  primary: "bg-gradient-to-br from-primary-400 to-primary-600",
-  secondary: "bg-gradient-to-br from-secondary/70 to-secondary",
-  accent: "bg-gradient-to-br from-accent/70 to-accent",
-};
-
 export default function LocalResources({ lang }: Props) {
-  const t = content[lang];
+  const t = localResourcesTranslation[lang];
 
   return (
     <Section background="neutral" id="local">

@@ -1,62 +1,14 @@
 import Section from "@/components/layout/Section";
 import { Calendar, DollarSign, Users, AlertCircle } from "lucide-react";
 import { Lang } from "@/types";
+import { scholarshipCardTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Current Scholarship",
-    heading: "Jesus M. Terrazas & Luis Ostos Memorial Scholarship",
-    semester: "Spring Semester 2026",
-    in_memory:
-      "In memory of Jesus M. Terrazas and Luis Ostos — dedicated members of our bleeding disorders community.",
-    amount: "$500",
-    amountLabel: "Award Amount",
-    recipients: "3 Students",
-    recipientsLabel: "Recipients",
-    deadline: "November 25, 2025",
-    deadlineLabel: "Application Deadline",
-    deadlinePast:
-      "The deadline for this scholarship cycle has passed. Check back for the next cycle.",
-    essay: "Essay Prompt",
-    essayPrompt:
-      '"How will you be advocating for bleeding disorders through your time in college?"',
-    essayLength: "300–400 words",
-    apply: "Apply at",
-    applyUrl: "www.hemoelpaso.org",
-    status: "Deadline Passed",
-    statusOpen: "Now Accepting Applications",
-  },
-  es: {
-    eyebrow: "Beca Actual",
-    heading: "Beca Memorial Jesus M. Terrazas y Luis Ostos",
-    semester: "Semestre de Primavera 2026",
-    in_memory:
-      "En memoria de Jesus M. Terrazas y Luis Ostos — miembros dedicados de nuestra comunidad de trastornos hemorrágicos.",
-    amount: "$500",
-    amountLabel: "Monto del Premio",
-    recipients: "3 Estudiantes",
-    recipientsLabel: "Beneficiarios",
-    deadline: "25 de noviembre de 2025",
-    deadlineLabel: "Fecha Límite",
-    deadlinePast:
-      "La fecha límite para este ciclo de becas ha pasado. Vuelva para el próximo ciclo.",
-    essay: "Tema del Ensayo",
-    essayPrompt:
-      '"¿Cómo abogará por los trastornos hemorrágicos durante su tiempo en la universidad?"',
-    essayLength: "300–400 palabras",
-    apply: "Aplique en",
-    applyUrl: "www.hemoelpaso.org",
-    status: "Plazo Vencido",
-    statusOpen: "Aceptando Solicitudes",
-  },
-};
-
 export default function ScholarshipCard({ lang }: Props) {
-  const t = content[lang];
+  const t = scholarshipCardTranslation[lang];
   const deadlinePassed = new Date() > new Date("2025-11-25");
 
   return (

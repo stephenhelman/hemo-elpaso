@@ -1,42 +1,14 @@
 import Section from "@/components/layout/Section";
 import { Mail, Phone } from "lucide-react";
 import { Lang } from "@/types";
+import { scholarshipContactsTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Questions?",
-    heading: "Contact Scholarship Coordinators",
-    sub: "Reach out to our scholarship coordinators with any questions about eligibility or the application process.",
-    contacts: [
-      {
-        name: "Teresita Fernandez de Robles",
-        title: "Vice President, HOEP",
-        email: "tfernandezr.hoep@gmail.com",
-        phone: "(915) 621-8291",
-      },
-    ],
-  },
-  es: {
-    eyebrow: "¿Preguntas?",
-    heading: "Contactar Coordinadores de Becas",
-    sub: "Comuníquese con nuestros coordinadores de becas si tiene preguntas sobre elegibilidad o el proceso de solicitud.",
-    contacts: [
-      {
-        name: "Teresita Fernandez de Robles",
-        title: "Vicepresidenta, HOEP",
-        email: "tfernandezr.hoep@gmail.com",
-        phone: "(915) 621-8291",
-      },
-    ],
-  },
-};
-
 export default function ScholarshipContacts({ lang }: Props) {
-  const t = content[lang];
+  const t = scholarshipContactsTranslation[lang];
 
   return (
     <Section background="neutral" id="contact">

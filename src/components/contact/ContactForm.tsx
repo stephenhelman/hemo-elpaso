@@ -4,64 +4,14 @@ import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { Lang } from "@/types";
+import { contactFormTranslation } from "@/translation/contactPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    heading: "Send Us a Message",
-    sub: "Fill out the form below and we'll get back to you within 1-2 business days.",
-    name: "Full Name",
-    email: "Email Address",
-    phone: "Phone Number (optional)",
-    subject: "Subject",
-    message: "Message",
-    reason: "Reason for Contact",
-    submit: "Send Message",
-    sending: "Sending...",
-    successHead: "Message Sent!",
-    successBody:
-      "Thank you for reaching out. We'll be in touch within 1-2 business days.",
-    reasons: [
-      { value: "", label: "Select a reason..." },
-      { value: "general", label: "General Inquiry" },
-      { value: "family", label: "Family / Patient Support" },
-      { value: "volunteer", label: "Volunteering" },
-      { value: "sponsor", label: "Sponsorship" },
-      { value: "media", label: "Media / Press" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  es: {
-    heading: "Envíenos un Mensaje",
-    sub: "Complete el formulario y nos pondremos en contacto en 1-2 días hábiles.",
-    name: "Nombre Completo",
-    email: "Correo Electrónico",
-    phone: "Número de Teléfono (opcional)",
-    subject: "Asunto",
-    message: "Mensaje",
-    reason: "Motivo de Contacto",
-    submit: "Enviar Mensaje",
-    sending: "Enviando...",
-    successHead: "¡Mensaje Enviado!",
-    successBody:
-      "Gracias por comunicarse. Nos pondremos en contacto en 1-2 días hábiles.",
-    reasons: [
-      { value: "", label: "Seleccione un motivo..." },
-      { value: "general", label: "Consulta General" },
-      { value: "family", label: "Apoyo Familiar / Paciente" },
-      { value: "volunteer", label: "Voluntariado" },
-      { value: "sponsor", label: "Patrocinio" },
-      { value: "media", label: "Medios / Prensa" },
-      { value: "other", label: "Otro" },
-    ],
-  },
-};
-
 export default function ContactForm({ lang }: Props) {
-  const t = content[lang];
+  const t = contactFormTranslation[lang];
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);

@@ -1,74 +1,21 @@
 import Section from "@/components/layout/Section";
 import { ExternalLink, DollarSign, Shield, Phone } from "lucide-react";
 import { Lang } from "@/types";
+import { insuranceResourcesTranslation } from "@/translation/resourcesPage";
+import HoepCard from "../ui/HoepCard";
+import React from "react";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Financial Assistance",
-    heading: "Insurance & Financial Help",
-    sub: "Navigating insurance and finances with a bleeding disorder can be overwhelming. These resources can help.",
-    resources: [
-      {
-        icon: <DollarSign className="w-5 h-5" />,
-        title: "HFA Patient Assistance",
-        body: "The Hemophilia Federation of America offers financial assistance programs including help with insurance co-pays, travel costs, and emergency funds.",
-        link: "https://www.hemophiliafed.org/programs-and-services/",
-        cta: "View Programs",
-      },
-      {
-        icon: <Shield className="w-5 h-5" />,
-        title: "NHF Insurance Advocacy",
-        body: "The National Hemophilia Foundation provides insurance advocacy resources, including guides for appealing denials and navigating Medicaid and Medicare.",
-        link: "https://www.hemophilia.org/community-resources/insurance-and-financial-assistance",
-        cta: "Get Help",
-      },
-      {
-        icon: <Phone className="w-5 h-5" />,
-        title: "Contact HOEP Directly",
-        body: "Our team can connect you with local financial assistance resources and help navigate insurance challenges specific to the El Paso border region.",
-        link: "/contact",
-        cta: "Contact Us",
-        internal: true,
-      },
-    ],
-  },
-  es: {
-    eyebrow: "Asistencia Financiera",
-    heading: "Seguro y Ayuda Financiera",
-    sub: "Navegar por el seguro y las finanzas con un trastorno hemorrágico puede ser abrumador. Estos recursos pueden ayudar.",
-    resources: [
-      {
-        icon: <DollarSign className="w-5 h-5" />,
-        title: "Asistencia al Paciente HFA",
-        body: "La Federación de Hemofilia de América ofrece programas de asistencia financiera que incluyen ayuda con copagos de seguro, costos de viaje y fondos de emergencia.",
-        link: "https://www.hemophiliafed.org/programs-and-services/",
-        cta: "Ver Programas",
-      },
-      {
-        icon: <Shield className="w-5 h-5" />,
-        title: "Defensa de Seguros NHF",
-        body: "La Fundación Nacional de Hemofilia proporciona recursos de defensa de seguros, incluidas guías para apelar denegaciones y navegar por Medicaid y Medicare.",
-        link: "https://www.hemophilia.org/community-resources/insurance-and-financial-assistance",
-        cta: "Obtener Ayuda",
-      },
-      {
-        icon: <Phone className="w-5 h-5" />,
-        title: "Contacte a HOEP Directamente",
-        body: "Nuestro equipo puede conectarle con recursos locales de asistencia financiera y ayudar a navegar los desafíos de seguro específicos de la región fronteriza de El Paso.",
-        link: "/contact",
-        cta: "Contáctenos",
-        internal: true,
-      },
-    ],
-  },
-};
-
 export default function InsuranceResources({ lang }: Props) {
-  const t = content[lang];
+  const t = insuranceResourcesTranslation[lang];
+  const iconConfig: Record<string, React.ReactNode> = {
+    dollarSign: <DollarSign className={t.resourceClassName} />,
+    shield: <Shield className={t.resourceClassName} />,
+    phone: <Phone className={t.resourceClassName} />,
+  };
 
   return (
     <Section background="neutral" id="financial">
@@ -88,12 +35,9 @@ export default function InsuranceResources({ lang }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {t.resources.map((resource) => (
-          <div
-            key={resource.title}
-            className="flex flex-col p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-200 hover:shadow-md transition-all duration-200"
-          >
+          <HoepCard key={resource.title}>
             <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center text-primary mb-4">
-              {resource.icon}
+              {iconConfig[resource.icon]}
             </div>
             <h3 className="font-display font-bold text-neutral-900 mb-2">
               {resource.title}
@@ -110,7 +54,7 @@ export default function InsuranceResources({ lang }: Props) {
               {resource.cta}
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
-          </div>
+          </HoepCard>
         ))}
       </div>
     </Section>

@@ -1,66 +1,14 @@
 import Section from "@/components/layout/Section";
 import { ExternalLink, Sun, Heart } from "lucide-react";
 import { Lang } from "@/types";
+import { campProgramTranslation } from "@/translation/resourcesPage";
 
 interface Props {
   lang: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Youth Programs",
-    heading: "Camps & Youth Opportunities",
-    sub: "Special programs designed to give children and teens with bleeding disorders meaningful experiences in safe, supportive environments.",
-    camps: [
-      {
-        name: "Camp Bold Eagle",
-        org: "Texas Central States Region",
-        body: "A summer camp specifically designed for children with bleeding disorders. Kids aged 6-17 enjoy traditional camp activities in a medically supervised, safe environment. Campers build confidence, friendships, and independence.",
-        link: "https://www.hemophilia.org/community-resources/camps",
-        ages: "Ages 6–17",
-        season: "Summer",
-        cost: "Scholarships Available",
-      },
-      {
-        name: "NHF Youth Programs",
-        org: "National Hemophilia Foundation",
-        body: "National leadership and educational programs for teens and young adults with bleeding disorders. Includes Washington Days advocacy training and annual meeting youth programming.",
-        link: "https://www.hemophilia.org/community-resources/youth-programs",
-        ages: "Ages 13–25",
-        season: "Year Round",
-        cost: "Free to Attend",
-      },
-    ],
-  },
-  es: {
-    eyebrow: "Programas Juveniles",
-    heading: "Campamentos y Oportunidades para Jóvenes",
-    sub: "Programas especiales diseñados para brindar a niños y adolescentes con trastornos hemorrágicos experiencias significativas en entornos seguros y de apoyo.",
-    camps: [
-      {
-        name: "Camp Bold Eagle",
-        org: "Región Central de Texas",
-        body: "Un campamento de verano diseñado específicamente para niños con trastornos hemorrágicos. Niños de 6 a 17 años disfrutan de actividades tradicionales de campamento en un entorno médicamente supervisado y seguro.",
-        link: "https://www.hemophilia.org/community-resources/camps",
-        ages: "Edades 6–17",
-        season: "Verano",
-        cost: "Becas Disponibles",
-      },
-      {
-        name: "Programas Juveniles NHF",
-        org: "Fundación Nacional de Hemofilia",
-        body: "Programas nacionales de liderazgo y educación para adolescentes y adultos jóvenes con trastornos hemorrágicos. Incluye capacitación en defensa de Washington Days.",
-        link: "https://www.hemophilia.org/community-resources/youth-programs",
-        ages: "Edades 13–25",
-        season: "Todo el Año",
-        cost: "Gratis",
-      },
-    ],
-  },
-};
-
 export default function CampPrograms({ lang }: Props) {
-  const t = content[lang];
+  const t = campProgramTranslation[lang];
 
   return (
     <Section background="white" id="camps">
