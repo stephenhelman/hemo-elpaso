@@ -1,5 +1,3 @@
-import { Heart, Users, BookOpen, Globe } from "lucide-react";
-
 export const aboutHeroTranslation = {
   en: {
     eyebrow: "Our Story",
@@ -140,24 +138,25 @@ export const missionValuesTranslation = {
       body: "To obtain and make available to our members the most up-to-date information on hemophilia, Von Willebrand disease, and other genetic blood disorders — including treatment options, specialized care, health and fitness, and educational activities.",
     },
     valuesHeading: "What We Do",
+    valuesClassName: "w-6 h-6",
     values: [
       {
-        icon: <BookOpen className="w-6 h-6" />,
+        icon: "bookOpen",
         title: "Education",
         body: "Providing up-to-date educational guidance on bleeding disorders, treatments, and resources.",
       },
       {
-        icon: <Heart className="w-6 h-6" />,
+        icon: "heart",
         title: "Family Support",
         body: "Standing beside every family with compassion, resources, and a welcoming community.",
       },
       {
-        icon: <Users className="w-6 h-6" />,
+        icon: "users",
         title: "Community Events",
         body: "Organizing events that bring our community together, foster connection, and celebrate progress.",
       },
       {
-        icon: <Globe className="w-6 h-6" />,
+        icon: "globe",
         title: "Advocacy",
         body: "Advocating for the rights and needs of the bleeding disorders community in El Paso and beyond.",
       },
@@ -182,24 +181,25 @@ export const missionValuesTranslation = {
       body: "Obtener y poner a disposición de nuestros miembros la información más actualizada sobre hemofilia, enfermedad de Von Willebrand y otros trastornos genéticos de la sangre — incluyendo opciones de tratamiento, atención especializada, salud y fitness, y actividades educativas.",
     },
     valuesHeading: "Lo Que Hacemos",
+    valuesClassName: "w-6 h-6",
     values: [
       {
-        icon: <BookOpen className="w-6 h-6" />,
+        icon: "bookOpen",
         title: "Educación",
         body: "Proporcionando orientación educativa actualizada sobre trastornos hemorrágicos, tratamientos y recursos.",
       },
       {
-        icon: <Heart className="w-6 h-6" />,
+        icon: "heart",
         title: "Apoyo Familiar",
         body: "Apoyando a cada familia con compasión, recursos y una comunidad acogedora.",
       },
       {
-        icon: <Users className="w-6 h-6" />,
+        icon: "users",
         title: "Eventos Comunitarios",
         body: "Organizando eventos que unen a nuestra comunidad, fomentan la conexión y celebran el progreso.",
       },
       {
-        icon: <Globe className="w-6 h-6" />,
+        icon: "globe",
         title: "Defensa",
         body: "Defendiendo los derechos y necesidades de la comunidad de trastornos hemorrágicos en El Paso y más allá.",
       },

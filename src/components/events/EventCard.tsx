@@ -46,17 +46,18 @@ export function EventCard({ event, lang, isPast }: Props) {
             <MapPin className="w-4 h-4 text-primary" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
-          {spotsLeft !== null ? (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span>{spotsLeft > 0 ? `${spotsLeft} ${t.spots}` : t.max}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span>{t.noLimit}</span>
-            </div>
-          )}
+          {!isPast &&
+            (spotsLeft !== null ? (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <span>{spotsLeft > 0 ? `${spotsLeft} ${t.spots}` : t.max}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <span>{t.noLimit}</span>
+              </div>
+            ))}
         </div>
 
         {event[descriptionLang] && (

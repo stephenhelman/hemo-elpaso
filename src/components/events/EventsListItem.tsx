@@ -52,12 +52,18 @@ export function EventListItem({ event, isPast, lang }: Props) {
               <MapPin className="w-4 h-4" />
               {event.location}
             </div>
-            {!isPast && spotsLeft !== null && (
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                {spotsLeft > 0 ? `${spotsLeft} ${t.spots}` : t.max}
-              </div>
-            )}
+            {!isPast &&
+              (spotsLeft !== null ? (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  {spotsLeft > 0 ? `${spotsLeft} ${t.spots}` : t.max}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  {t.noLimit}
+                </div>
+              ))}
           </div>
           {event[descriptionLang] && (
             <p className="text-sm text-neutral-600 mb-3 line-clamp-2">

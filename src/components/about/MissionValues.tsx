@@ -1,6 +1,7 @@
 import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { missionValuesTranslation } from "@/translation/aboutPage";
+import { Heart, Users, BookOpen, Globe } from "lucide-react";
 
 interface Props {
   lang: "en" | "es";
@@ -47,9 +48,15 @@ export default function MissionValues({ lang }: Props) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {t.values.map((value) => (
-          <ValueCard key={value.title} {...value} />
-        ))}
+        {t.values.map((value) => {
+          const iconConfig = {
+            bookOpen: <BookOpen className={t.valuesClassName} />,
+            heart: <Heart className={t.valuesClassName} />,
+            users: <Users className={t.valuesClassName} />,
+            globe: <Globe className={t.valuesClassName} />,
+          };
+          return <ValueCard key={value.title} {...value} config={iconConfig} />;
+        })}
       </div>
     </Section>
   );
@@ -59,15 +66,18 @@ function ValueCard({
   icon,
   title,
   body,
+  config,
 }: {
-  icon: React.ReactNode;
+  icon: string;
   title: string;
   body: string;
+  config: Record<string, React.ReactNode>;
 }) {
+  const iconElement = config[icon];
   return (
     <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-200 hover:shadow-md transition-all duration-200">
       <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center text-primary mb-4">
-        {icon}
+        {iconElement}
       </div>
       <h3 className="font-display font-bold text-neutral-900 mb-2">{title}</h3>
       <p className="text-sm text-neutral-500 leading-relaxed">{body}</p>
