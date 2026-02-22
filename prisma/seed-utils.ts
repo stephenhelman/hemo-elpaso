@@ -11,7 +11,7 @@ export const eventTemplates = [
       "Join us for a day of games, activities, and quality family time. Enjoy food, entertainment, and connect with other families in our community.",
     descriptionEs:
       "Únase a nosotros para un día de juegos, actividades y tiempo de calidad en familia. Disfrute de comida, entretenimiento y conéctese con otras familias de nuestra comunidad.",
-    category: "social",
+    category: "SOCIAL",
   },
   {
     titleEn: "Hemophilia Education Workshop",
@@ -20,7 +20,7 @@ export const eventTemplates = [
       "Learn about the latest treatments, management strategies, and resources available for hemophilia patients and their families.",
     descriptionEs:
       "Aprenda sobre los últimos tratamientos, estrategias de manejo y recursos disponibles para pacientes con hemofilia y sus familias.",
-    category: "educational",
+    category: "EDUCATION",
   },
   {
     titleEn: "Annual Fundraiser Gala",
@@ -29,7 +29,7 @@ export const eventTemplates = [
       "Support HOEP at our annual fundraising event featuring dinner, live music, silent auction, and inspiring stories from our community.",
     descriptionEs:
       "Apoye a HOEP en nuestro evento anual de recaudación de fondos con cena, música en vivo, subasta silenciosa e historias inspiradoras de nuestra comunidad.",
-    category: "fundraiser",
+    category: "FUNDRAISING",
   },
   {
     titleEn: "Back to School Prep",
@@ -38,7 +38,7 @@ export const eventTemplates = [
       "Get ready for the school year with backpacks, supplies, and resources to help your child succeed in the classroom.",
     descriptionEs:
       "Prepárese para el año escolar con mochilas, útiles y recursos para ayudar a su hijo a tener éxito en el aula.",
-    category: "support",
+    category: "FAMILY_SUPPORT",
   },
   {
     titleEn: "Holiday Celebration",
@@ -47,7 +47,7 @@ export const eventTemplates = [
       "Celebrate the holiday season with our community! Enjoy festive activities, gifts for children, and a special visit from Santa.",
     descriptionEs:
       "¡Celebre la temporada navideña con nuestra comunidad! Disfrute de actividades festivas, regalos para niños y una visita especial de Santa Claus.",
-    category: "social",
+    category: "SOCIAL",
   },
   {
     titleEn: "Mental Health Support Group",
@@ -56,7 +56,7 @@ export const eventTemplates = [
       "A safe space to discuss challenges, share experiences, and receive support from others who understand living with hemophilia.",
     descriptionEs:
       "Un espacio seguro para discutir desafíos, compartir experiencias y recibir apoyo de otros que entienden vivir con hemofilia.",
-    category: "support",
+    category: "FAMILY_SUPPORT",
   },
   {
     titleEn: "Sports & Recreation Day",
@@ -65,7 +65,7 @@ export const eventTemplates = [
       "Participate in adapted sports activities designed for people with bleeding disorders. Learn safe ways to stay active and healthy.",
     descriptionEs:
       "Participe en actividades deportivas adaptadas para personas con trastornos hemorrágicos. Aprenda formas seguras de mantenerse activo y saludable.",
-    category: "social",
+    category: "SOCIAL",
   },
   {
     titleEn: "Career Development Workshop",
@@ -74,7 +74,7 @@ export const eventTemplates = [
       "Build job skills, learn about workplace rights, and connect with potential employers who value diversity and inclusion.",
     descriptionEs:
       "Desarrolle habilidades laborales, aprenda sobre los derechos en el lugar de trabajo y conéctese con empleadores potenciales que valoran la diversidad e inclusión.",
-    category: "educational",
+    category: "EDUCATION",
   },
   {
     titleEn: "Summer Camp Kickoff",
@@ -83,7 +83,7 @@ export const eventTemplates = [
       "Get excited for summer camp! Meet counselors, learn about activities, and prepare for an unforgettable summer experience.",
     descriptionEs:
       "¡Prepárese para el campamento de verano! Conozca a los consejeros, aprenda sobre las actividades y prepárese para una experiencia de verano inolvidable.",
-    category: "social",
+    category: "SOCIAL",
   },
   {
     titleEn: "Financial Planning Seminar",
@@ -92,7 +92,7 @@ export const eventTemplates = [
       "Learn about managing medical expenses, insurance navigation, and financial resources available to families affected by hemophilia.",
     descriptionEs:
       "Aprenda sobre el manejo de gastos médicos, navegación de seguros y recursos financieros disponibles para familias afectadas por hemofilia.",
-    category: "educational",
+    category: "EDUCATIONAL",
   },
 ];
 

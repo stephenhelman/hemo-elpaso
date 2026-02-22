@@ -2,7 +2,7 @@ import { format, isPast, isFuture, formatDistanceToNow } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { Lang } from "@/types";
 
-export function formatEventDate(dateString: string, lang: Lang) {
+export function formatEventDate(dateString: string | Date, lang: Lang) {
   const date = new Date(dateString);
   const locale = lang === "es" ? es : enUS;
 
