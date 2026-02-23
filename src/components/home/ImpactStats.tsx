@@ -1,3 +1,5 @@
+"use client";
+
 import { ImpactStatCard } from "./ImpactStatCard";
 import Section from "@/components/layout/Section";
 import { impactStatsTranslation } from "@/translation/homePage";

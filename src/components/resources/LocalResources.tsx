@@ -1,3 +1,5 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { MapPin, Phone, ExternalLink } from "lucide-react";

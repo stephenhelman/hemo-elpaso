@@ -1,3 +1,5 @@
+"use client";
+
 import { Lang } from "@/types";
 import { scholarshipHeroTranslation } from "@/translation/scholarshipsPage";
 

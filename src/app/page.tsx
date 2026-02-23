@@ -1,29 +1,20 @@
-import { Metadata } from "next";
-import { cookies } from "next/headers";
+"use client";
 
 import Hero from "@/components/home/Hero";
 import ImpactStats from "@/components/home/ImpactStats";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import NewsletterSignup from "@/components/home/NewsletterSignup";
+import { useLanguage } from "@/context/LanguageContext";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Hemophilia Outreach of El Paso",
-    template: "%s | Hemophilia Outreach of El Paso",
-  },
-  description:
-    "Supporting individuals and families affected by bleeding disorders in the El Paso community.",
-};
+export default function Home() {
+  const { locale } = useLanguage();
 
-export default async function Home() {
-  const cookieStore = await cookies();
-  const locale = (cookieStore.get("locale")?.value as "en" | "es") || "en";
   return (
     <>
-      <Hero />
+      <Hero locale={locale} />
       <ImpactStats locale={locale} />
-      <UpcomingEvents />
-      <NewsletterSignup />
+      <UpcomingEvents locale={locale} />
+      <NewsletterSignup locale={locale} />
     </>
   );
 }

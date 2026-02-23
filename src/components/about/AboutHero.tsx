@@ -1,8 +1,14 @@
-import { aboutHeroTranslation } from "@/translation/aboutPage";
-import { useLanguage } from "@/context/LanguageContext";
+"use client";
 
-export default function AboutHero() {
-  const { locale } = useLanguage();
+import { aboutHeroTranslation } from "@/translation/aboutPage";
+
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function AboutHero({ locale }: Props) {
   const t = aboutHeroTranslation[locale];
 
   return (

@@ -1,10 +1,16 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import { Heart } from "lucide-react";
 import { founderStoryTranslation } from "@/translation/aboutPage";
-import { useLanguage } from "@/context/LanguageContext";
 
-export default function FounderStory() {
-  const { locale } = useLanguage();
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function FounderStory({ locale }: Props) {
   const t = founderStoryTranslation[locale];
 
   return (

@@ -1,3 +1,5 @@
+"use client";
+
 import { Lang } from "@/types";
 import { resourcesHeroTranslation } from "@/translation/resourcesPage";
 

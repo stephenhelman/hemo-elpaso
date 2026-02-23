@@ -1,13 +1,19 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import { Mail } from "lucide-react";
 import {
   boardOfDirectors,
   boardOfDirectorsTranslation,
 } from "@/translation/aboutPage";
-import { useLanguage } from "@/context/LanguageContext";
 
-export default function BoardOfDirectors() {
-  const { locale } = useLanguage();
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function BoardOfDirectors({ locale }: Props) {
   const t = boardOfDirectorsTranslation[locale];
 
   return (

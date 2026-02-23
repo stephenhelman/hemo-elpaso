@@ -3,7 +3,7 @@
 import { eventsPageTranslation } from "@/translation/eventsPage";
 import PublicEventsDisplay from "@/components/events/PublicEventsDisplay";
 import { Calendar } from "lucide-react";
-import { useLang } from "@/context/LanguageContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Props {
   events: any[];
@@ -11,8 +11,8 @@ interface Props {
 
 export function EventsPageContent({ events }: Props) {
   const now = new Date();
-  const { lang } = useLang();
-  const t = eventsPageTranslation[lang];
+  const { locale } = useLanguage();
+  const t = eventsPageTranslation[locale];
 
   const upcomingEvents = events.filter((e) => new Date(e.eventDate) >= now);
   const pastEvents = events.filter((e) => new Date(e.eventDate) < now);
@@ -45,7 +45,7 @@ export function EventsPageContent({ events }: Props) {
           <PublicEventsDisplay
             upcomingEvents={upcomingEvents}
             pastEvents={pastEvents}
-            lang={lang}
+            lang={locale}
           />
         )}
       </div>

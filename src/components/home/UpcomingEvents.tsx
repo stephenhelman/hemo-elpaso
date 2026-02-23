@@ -4,12 +4,15 @@ import Link from "next/link";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useEvents } from "@/context/EventsContext";
 import { upcomingEventsTranslation } from "@/translation/homePage";
-import { useLanguage } from "@/context/LanguageContext";
 import { EventCard } from "../events/EventCard";
+import { Lang } from "@/types";
 
-export default function UpcomingEvents() {
+interface Props {
+  locale: Lang;
+}
+
+export default function UpcomingEvents({ locale }: Props) {
   const { upcomingEvents, loading } = useEvents();
-  const { locale } = useLanguage();
 
   const t = upcomingEventsTranslation[locale];
 

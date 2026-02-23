@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Section from "@/components/layout/Section";
 import { ArrowRight, Bell } from "lucide-react";

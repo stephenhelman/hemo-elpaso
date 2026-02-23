@@ -4,7 +4,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart, Users } from "lucide-react";
 import { homeHeroTranslation } from "@/translation/homePage";
-import { useLanguage } from "@/context/LanguageContext";
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,8 +19,7 @@ const fadeUp = {
   }),
 };
 
-export default function Hero() {
-  const { locale } = useLanguage();
+export default function Hero({ locale }: Props) {
   const t = homeHeroTranslation[locale];
 
   return (

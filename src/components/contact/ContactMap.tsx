@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin, ExternalLink } from "lucide-react";
 import { Lang } from "@/types";
 import { contactMapTranslation } from "@/translation/contactPage";

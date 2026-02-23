@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import Section from "@/components/layout/Section";
 import { ArrowRight, Mail } from "lucide-react";
 import { aboutCTATranslation } from "@/translation/aboutPage";
-import { useLanguage } from "@/context/LanguageContext";
+import { Lang } from "@/types";
 
-export default function AboutCTA() {
-  const { locale } = useLanguage();
+interface Props {
+  locale: Lang;
+}
+
+export default function AboutCTA({ locale }: Props) {
   const t = aboutCTATranslation[locale];
 
   return (

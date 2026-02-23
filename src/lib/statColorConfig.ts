@@ -27,13 +27,13 @@ export const colorMap: Record<
     bg: "bg-secondary/10",
     text: "text-secondary-700",
     border: "border-secondary/20",
-    avatar: "bg-gradient-to-br from-secondary/70 to-secondary",
+    avatar: "bg-gradient-to-br from-secondary-400 to-secondary-600",
   },
   accent: {
     bg: "bg-accent/10",
     text: "text-accent-dark",
     border: "border-accent/20",
-    avatar: "bg-gradient-to-br from-accent/70 to-accent",
+    avatar: "bg-gradient-to-br from-accent-400 to-accent-600",
   },
 };
 

@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
-import { useLanguage } from "@/context/LanguageContext";
-import { contactFormTranslation } from "@/translation/contactPage";
 
-export default function ContactForm() {
-  const { locale } = useLanguage();
+import { contactFormTranslation } from "@/translation/contactPage";
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function ContactForm({ locale }: Props) {
   const t = contactFormTranslation[locale];
 
   const [submitted, setSubmitted] = useState(false);

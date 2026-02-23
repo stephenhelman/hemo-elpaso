@@ -4,14 +4,17 @@ import { useState } from "react";
 import { Mail, CheckCircle } from "lucide-react";
 import Section from "@/components/layout/Section";
 import { newsletterSignupTranslation } from "@/translation/homePage";
-import { useLanguage } from "@/context/LanguageContext";
+import { Lang } from "@/types";
 
-export default function NewsletterSignup() {
+interface Props {
+  locale: Lang;
+}
+
+export default function NewsletterSignup({ locale }: Props) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { locale } = useLanguage();
   const t = newsletterSignupTranslation[locale];
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,11 +1,17 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { missionValuesTranslation } from "@/translation/aboutPage";
 import { Heart, Users, BookOpen, Globe } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
 
-export default function MissionValues() {
-  const { locale } = useLanguage();
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function MissionValues({ locale }: Props) {
   const t = missionValuesTranslation[locale];
 
   const iconConfig = {

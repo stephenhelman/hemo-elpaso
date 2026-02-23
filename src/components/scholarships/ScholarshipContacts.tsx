@@ -1,3 +1,5 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import { Mail, Phone } from "lucide-react";
 import { Lang } from "@/types";

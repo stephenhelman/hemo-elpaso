@@ -1,3 +1,5 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import { Calendar, DollarSign, Users, AlertCircle } from "lucide-react";
 import { Lang } from "@/types";

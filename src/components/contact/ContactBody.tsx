@@ -1,3 +1,5 @@
+"use client";
+
 import { Lang } from "@/types";
 import ContactForm from "./ContactForm";
 import ContactInfo from "./ContactInfo";

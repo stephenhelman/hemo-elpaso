@@ -1,3 +1,5 @@
+"use client";
+
 import { Phone, Mail, MapPin, Facebook, Clock } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { Lang } from "@/types";

@@ -1,3 +1,5 @@
+"use client";
+
 import { contactHeroTranslation } from "@/translation/contactPage";
 import { Lang } from "@/types";
 interface Props {

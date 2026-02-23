@@ -1,10 +1,16 @@
+"use client";
+
 import Section from "@/components/layout/Section";
 import { Heart, Star } from "lucide-react";
 import { founderSpotlightTranslation } from "@/translation/aboutPage";
-import { useLanguage } from "@/context/LanguageContext";
 
-export default function FounderSpotlight() {
-  const { locale } = useLanguage();
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
+
+export default function FounderSpotlight({ locale }: Props) {
   const t = founderSpotlightTranslation[locale];
 
   return (
