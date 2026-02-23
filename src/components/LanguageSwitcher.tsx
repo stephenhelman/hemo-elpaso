@@ -1,12 +1,12 @@
 "use client";
 
-import { useLang } from "@/context/LanguageContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Globe } from "lucide-react";
 
 export default function LanguageSwitcher() {
-  const { lang, setLang } = useLang();
+  const { locale, setLocale } = useLanguage();
   const toggleLanguage = () => {
-    setLang(lang === "en" ? "es" : "en");
+    setLocale(locale === "en" ? "es" : "en");
   };
 
   return (
@@ -16,7 +16,7 @@ export default function LanguageSwitcher() {
     >
       <Globe className="w-4 h-4 text-neutral-600" />
       <span className="text-sm font-semibold text-neutral-900 uppercase">
-        {lang}
+        {locale}
       </span>
     </button>
   );

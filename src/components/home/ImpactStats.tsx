@@ -1,13 +1,13 @@
 import { ImpactStatCard } from "./ImpactStatCard";
 import Section from "@/components/layout/Section";
 import { impactStatsTranslation } from "@/translation/homePage";
-
-interface ImpactStatsProps {
-  lang: "en" | "es";
+import { Lang } from "@/types";
+interface Props {
+  locale: Lang;
 }
 
-export default function ImpactStats({ lang }: ImpactStatsProps) {
-  const t = impactStatsTranslation[lang];
+export default function ImpactStats({ locale }: Props) {
+  const t = impactStatsTranslation[locale];
 
   return (
     <Section background="white" id="impact">

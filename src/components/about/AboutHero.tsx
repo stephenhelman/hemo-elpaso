@@ -1,10 +1,9 @@
 import { aboutHeroTranslation } from "@/translation/aboutPage";
-interface Props {
-  lang: "en" | "es";
-}
+import { useLanguage } from "@/context/LanguageContext";
 
-export default function AboutHero({ lang }: Props) {
-  const t = aboutHeroTranslation[lang];
+export default function AboutHero() {
+  const { locale } = useLanguage();
+  const t = aboutHeroTranslation[locale];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

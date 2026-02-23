@@ -2,13 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
 import { footerTranslation } from "@/translation/layoutPage";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface FooterProps {
-  lang: "en" | "es";
-}
-
-export default function Footer({ lang }: FooterProps) {
-  const t = footerTranslation[lang];
+export default function Footer() {
+  const { locale } = useLanguage();
+  const t = footerTranslation[locale];
 
   return (
     <footer className="bg-neutral-900 text-neutral-300">

@@ -4,11 +4,11 @@ import { Lang } from "@/types";
 import { contactInfoTranslation } from "@/translation/contactPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ContactInfo({ lang }: Props) {
-  const t = contactInfoTranslation[lang];
+export default function ContactInfo({ locale }: Props) {
+  const t = contactInfoTranslation[locale];
 
   return (
     <div className="space-y-4">

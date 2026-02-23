@@ -5,17 +5,17 @@ import { EventsProvider } from "@/context/EventsContext";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useLang } from "@/context/LanguageContext";
+
 import ToastProvider from "@/components/providers/ToastProvider";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
-  const { lang } = useLang();
+
 
   return (
     <div className="overflow-x-hidden">
-      <Navbar lang={lang} />
+      <Navbar />
       {children}
-      <Footer lang={lang} />
+      <Footer />
     </div>
   );
 }

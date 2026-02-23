@@ -4,12 +4,20 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
+import { Lang } from "@/types";
+import { userMenuTranslation } from "@/translation/layoutPage";
 
-export default function UserMenu() {
+interface Props {
+  lang: Lang;
+}
+
+export default function UserMenu({ lang }: Props) {
   const { user, isLoading } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
-  const [isOpen, setIsOpen] = useState(false); // ADD THIS
+  const [isOpen, setIsOpen] = useState(false);
+
+  const t = userMenuTranslation[lang];
 
   useEffect(() => {
     if (user) {
@@ -26,7 +34,6 @@ export default function UserMenu() {
     }
   }, [user]);
 
-  // ADD: Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -56,16 +63,13 @@ export default function UserMenu() {
         href="/api/auth/login"
         className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
       >
-        Login
+        {t.login}
       </Link>
     );
   }
 
   return (
     <div className="relative user-menu-container">
-      {" "}
-      {/* ADD className */}
-      {/* User avatar button - CHANGED: onClick instead of hover */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 hover:border-primary transition-colors"
@@ -95,7 +99,7 @@ export default function UserMenu() {
               className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
             >
               <LayoutDashboard className="w-4 h-4" />
-              Portal
+              {t.portal}
             </Link>
 
             {/* Admin Dashboard Link */}
@@ -112,7 +116,7 @@ export default function UserMenu() {
                       shadow-md hover:shadow-lg"
                 >
                   <Shield className="w-4 h-4" />
-                  Admin Dashboard
+                  {t.adminDashboard}
                 </Link>
               </>
             )}
@@ -124,7 +128,7 @@ export default function UserMenu() {
               className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              {t.logout}
             </a>
           </div>
         </div>

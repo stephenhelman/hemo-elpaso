@@ -6,11 +6,11 @@ import HoepCard from "../ui/HoepCard";
 import React from "react";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function InsuranceResources({ lang }: Props) {
-  const t = insuranceResourcesTranslation[lang];
+export default function InsuranceResources({ locale }: Props) {
+  const t = insuranceResourcesTranslation[locale];
   const iconConfig: Record<string, React.ReactNode> = {
     dollarSign: <DollarSign className={t.resourceClassName} />,
     shield: <Shield className={t.resourceClassName} />,

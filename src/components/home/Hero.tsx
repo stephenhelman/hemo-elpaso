@@ -4,10 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart, Users } from "lucide-react";
 import { homeHeroTranslation } from "@/translation/homePage";
-
-interface HeroProps {
-  lang: "en" | "es";
-}
+import { useLanguage } from "@/context/LanguageContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -18,8 +15,9 @@ const fadeUp = {
   }),
 };
 
-export default function Hero({ lang }: HeroProps) {
-  const t = homeHeroTranslation[lang];
+export default function Hero() {
+  const { locale } = useLanguage();
+  const t = homeHeroTranslation[locale];
 
   return (
     <div className="relative min-h-[90vh] flex items-center overflow-hidden">

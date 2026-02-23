@@ -1,13 +1,11 @@
 import Section from "@/components/layout/Section";
 import { Heart, Star } from "lucide-react";
 import { founderSpotlightTranslation } from "@/translation/aboutPage";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface Props {
-  lang: "en" | "es";
-}
-
-export default function FounderSpotlight({ lang }: Props) {
-  const t = founderSpotlightTranslation[lang];
+export default function FounderSpotlight() {
+  const { locale } = useLanguage();
+  const t = founderSpotlightTranslation[locale];
 
   return (
     <Section background="white">

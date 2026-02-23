@@ -4,11 +4,11 @@ import { Lang } from "@/types";
 import { scholarshipCardTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ScholarshipCard({ lang }: Props) {
-  const t = scholarshipCardTranslation[lang];
+export default function ScholarshipCard({ locale }: Props) {
+  const t = scholarshipCardTranslation[locale];
   const deadlinePassed = new Date() > new Date("2025-11-25");
 
   return (

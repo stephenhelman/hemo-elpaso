@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
@@ -19,13 +20,10 @@ const navLinks = [
   { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
 ];
 
-interface NavbarProps {
-  lang: "en" | "es";
-}
-
-export default function Navbar({ lang }: NavbarProps) {
+export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { locale } = useLanguage();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -67,7 +65,7 @@ export default function Navbar({ lang }: NavbarProps) {
                     : "text-neutral-600 hover:text-primary hover:bg-primary-50",
                 )}
               >
-                {lang === "en" ? link.labelEn : link.labelEs}
+                {locale === "en" ? link.labelEn : link.labelEs}
               </Link>
             ))}
           </nav>
@@ -76,14 +74,14 @@ export default function Navbar({ lang }: NavbarProps) {
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
 
-            <UserMenu />
+            <UserMenu lang={locale} />
 
             {/* Get Involved CTA */}
             <Link
               href="/get-involved"
               className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
             >
-              {lang === "en" ? "Get Involved" : "Participa"}
+              {locale === "en" ? "Get Involved" : "Participa"}
             </Link>
 
             {/* Mobile menu button */}
@@ -112,13 +110,13 @@ export default function Navbar({ lang }: NavbarProps) {
                   onClick={() => setMobileOpen(false)}
                   className="px-3 py-2.5 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors"
                 >
-                  {lang === "en" ? link.labelEn : link.labelEs}
+                  {locale === "en" ? link.labelEn : link.labelEs}
                 </Link>
               ))}
               <div className="pt-2 border-t border-neutral-100 mt-1 space-y-2">
                 {/* Sign In Button - Only show if not logged in */}
                 <MobileSignInButton
-                  lang={lang}
+                  lang={locale}
                   onClose={() => setMobileOpen(false)}
                 />
 
@@ -127,7 +125,7 @@ export default function Navbar({ lang }: NavbarProps) {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center justify-center px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
                 >
-                  {lang === "en" ? "Get Involved" : "Participa"}
+                  {locale === "en" ? "Get Involved" : "Participa"}
                 </Link>
               </div>
             </nav>

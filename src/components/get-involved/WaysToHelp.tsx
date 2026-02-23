@@ -3,7 +3,7 @@ import { Clock, DollarSign, Megaphone, Heart } from "lucide-react";
 import { Lang } from "@/types";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
 const content = {
@@ -93,8 +93,8 @@ const iconColors: Record<string, string> = {
   accent: "bg-accent/10 text-accent-dark",
 };
 
-export default function WaysToHelp({ lang }: Props) {
-  const t = content[lang];
+export default function WaysToHelp({ locale }: Props) {
+  const t = content[locale];
 
   return (
     <Section background="neutral" id="ways">

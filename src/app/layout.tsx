@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
@@ -15,15 +14,6 @@ const poppins = Poppins({
   variable: "--font-poppins",
   display: "swap",
 });
-
-export const metadata: Metadata = {
-  title: {
-    default: "Hemophilia Outreach of El Paso",
-    template: "%s | Hemophilia Outreach of El Paso",
-  },
-  description:
-    "Supporting individuals and families affected by bleeding disorders in the El Paso community.",
-};
 
 export default function RootLayout({
   children,

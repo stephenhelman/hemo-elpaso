@@ -5,11 +5,11 @@ import { Lang } from "@/types";
 import { scholarshipCTATranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ScholarshipCTA({ lang }: Props) {
-  const t = scholarshipCTATranslation[lang];
+export default function ScholarshipCTA({ locale }: Props) {
+  const t = scholarshipCTATranslation[locale];
 
   return (
     <Section background="white">

@@ -1,18 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, MapPin, Users, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { useEvents } from "@/context/EventsContext";
 import { upcomingEventsTranslation } from "@/translation/homePage";
+import { useLanguage } from "@/context/LanguageContext";
+import { EventCard } from "../events/EventCard";
 
-interface Props {
-  lang: "en" | "es";
-}
-
-export default function UpcomingEvents({ lang }: Props) {
+export default function UpcomingEvents() {
   const { upcomingEvents, loading } = useEvents();
+  const { locale } = useLanguage();
 
-  const t = upcomingEventsTranslation[lang];
+  const t = upcomingEventsTranslation[locale];
 
   // Only show first 3 events on homepage
   const displayEvents = upcomingEvents.slice(0, 3);
@@ -41,7 +40,12 @@ export default function UpcomingEvents({ lang }: Props) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayEvents.map((event) => (
-              <EventCard key={event.id} event={event} lang={lang} t={t} />
+              <EventCard
+                key={event.id}
+                event={event}
+                lang={locale}
+                isPast={false}
+              />
             ))}
           </div>
         )}
@@ -57,84 +61,5 @@ export default function UpcomingEvents({ lang }: Props) {
         </div>
       </div>
     </section>
-  );
-}
-
-function EventCard({
-  event,
-  lang,
-  t,
-}: {
-  event: any;
-  lang: "en" | "es";
-  t: any;
-}) {
-  const eventDate = new Date(event.eventDate);
-  const spotsLeft =
-    event.maxCapacity && event._count?.rsvps !== undefined
-      ? event.maxCapacity - event._count.rsvps
-      : null;
-  const title = lang === "en" ? event.titleEn : event.titleEs;
-  const description = lang === "en" ? event.descriptionEn : event.descriptionEs;
-
-  return (
-    <div className="bg-neutral-50 rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-lg transition-all group">
-      {/* Date Badge */}
-      <div className="bg-gradient-to-br from-primary to-secondary p-6 text-white">
-        <div className="text-center">
-          <div className="text-4xl font-bold">{eventDate.getDate()}</div>
-          <div className="text-sm font-semibold uppercase tracking-wide">
-            {eventDate.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
-              month: "short",
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="font-display font-bold text-neutral-900 text-xl mb-3 group-hover:text-primary transition-colors">
-          {title}
-        </h3>
-
-        <div className="space-y-2 mb-4 text-sm text-neutral-600">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span>
-              {eventDate.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary" />
-            <span className="line-clamp-1">{event.location}</span>
-          </div>
-          {spotsLeft !== null && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span>
-                {spotsLeft > 0 ? `${spotsLeft} ${t.spotsLeft}` : t.eventFull}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {description && (
-          <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
-            {description}
-          </p>
-        )}
-
-        <Link
-          href={`/events/${event.slug}`}
-          className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
-        >
-          {t.learnMore}
-        </Link>
-      </div>
-    </div>
   );
 }

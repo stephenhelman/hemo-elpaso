@@ -5,11 +5,11 @@ import { nationalOrgTranslation } from "@/translation/resourcesPage";
 import { avatarColors } from "@/lib/statColorConfig";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function NationalOrgs({ lang }: Props) {
-  const t = nationalOrgTranslation[lang];
+export default function NationalOrgs({ locale }: Props) {
+  const t = nationalOrgTranslation[locale];
 
   return (
     <Section background="white" id="national">

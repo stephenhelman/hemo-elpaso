@@ -6,11 +6,11 @@ import { avatarColors } from "@/lib/statColorConfig";
 import { localResourcesTranslation } from "@/translation/resourcesPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function LocalResources({ lang }: Props) {
-  const t = localResourcesTranslation[lang];
+export default function LocalResources({ locale }: Props) {
+  const t = localResourcesTranslation[locale];
 
   return (
     <Section background="neutral" id="local">

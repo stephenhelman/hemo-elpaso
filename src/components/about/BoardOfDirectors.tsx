@@ -4,13 +4,11 @@ import {
   boardOfDirectors,
   boardOfDirectorsTranslation,
 } from "@/translation/aboutPage";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface Props {
-  lang: "en" | "es";
-}
-
-export default function BoardOfDirectors({ lang }: Props) {
-  const t = boardOfDirectorsTranslation[lang];
+export default function BoardOfDirectors() {
+  const { locale } = useLanguage();
+  const t = boardOfDirectorsTranslation[locale];
 
   return (
     <Section background="white">
@@ -34,7 +32,7 @@ export default function BoardOfDirectors({ lang }: Props) {
         <SectionLabel label={t.executiveTitle} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {boardOfDirectors.executive.map((member) => (
-            <ExecutiveCard key={member.name} member={member} lang={lang} />
+            <ExecutiveCard key={member.name} member={member} lang={locale} />
           ))}
         </div>
       </div>

@@ -1,12 +1,11 @@
-import { Lang } from "@/types";
 import { contactHeroTranslation } from "@/translation/contactPage";
-
+import { Lang } from "@/types";
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ContactHero({ lang }: Props) {
-  const t = contactHeroTranslation[lang];
+export default function ContactHero({ locale }: Props) {
+  const t = contactHeroTranslation[locale];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

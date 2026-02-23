@@ -1,13 +1,11 @@
 import Section from "@/components/layout/Section";
 import { Heart } from "lucide-react";
 import { founderStoryTranslation } from "@/translation/aboutPage";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface Props {
-  lang: "en" | "es";
-}
-
-export default function FounderStory({ lang }: Props) {
-  const t = founderStoryTranslation[lang];
+export default function FounderStory() {
+  const { locale } = useLanguage();
+  const t = founderStoryTranslation[locale];
 
   return (
     <Section background="white">
@@ -55,10 +53,10 @@ export default function FounderStory({ lang }: Props) {
               1993
             </p>
             <p className="font-display text-2xl font-bold mb-2">
-              {lang === "en" ? "Year Founded" : "Año de Fundación"}
+              {locale === "en" ? "Year Founded" : "Año de Fundación"}
             </p>
             <p className="text-primary-100 text-sm">
-              {lang === "en"
+              {locale === "en"
                 ? "Over 30 years serving the El Paso bleeding disorders community"
                 : "Más de 30 años sirviendo a la comunidad de trastornos hemorrágicos de El Paso"}
             </p>

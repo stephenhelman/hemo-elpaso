@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Lang } from "@/types";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
 const content = {
@@ -22,8 +22,8 @@ const content = {
   },
 };
 
-export default function GetInvolvedCTA({ lang }: Props) {
-  const t = content[lang];
+export default function GetInvolvedCTA({ locale }: Props) {
+  const t = content[locale];
 
   return (
     <Section background="white">

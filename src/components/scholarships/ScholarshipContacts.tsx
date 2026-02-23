@@ -4,11 +4,11 @@ import { Lang } from "@/types";
 import { scholarshipContactsTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ScholarshipContacts({ lang }: Props) {
-  const t = scholarshipContactsTranslation[lang];
+export default function ScholarshipContacts({ locale }: Props) {
+  const t = scholarshipContactsTranslation[locale];
 
   return (
     <Section background="neutral" id="contact">

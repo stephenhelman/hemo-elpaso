@@ -4,11 +4,7 @@ import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import Section from "@/components/layout/Section";
-import { Lang } from "@/types";
-
-interface Props {
-  lang: Lang;
-}
+import { useLanguage } from "@/context/LanguageContext";
 
 const content = {
   en: {
@@ -87,8 +83,9 @@ const inputClass = `
   transition-colors bg-white
 `.trim();
 
-export default function VolunteerForm({ lang }: Props) {
-  const t = content[lang];
+export default function VolunteerForm() {
+  const { locale } = useLanguage();
+  const t = content[locale];
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({

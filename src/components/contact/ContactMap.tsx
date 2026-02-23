@@ -3,11 +3,11 @@ import { Lang } from "@/types";
 import { contactMapTranslation } from "@/translation/contactPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ContactMap({ lang }: Props) {
-  const t = contactMapTranslation[lang];
+export default function ContactMap({ locale }: Props) {
+  const t = contactMapTranslation[locale];
 
   return (
     <div className="bg-white border-t border-neutral-100">

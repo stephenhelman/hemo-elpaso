@@ -1,7 +1,7 @@
 import { Lang } from "@/types";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
 const content = {
@@ -17,8 +17,8 @@ const content = {
   },
 };
 
-export default function GetInvolvedHero({ lang }: Props) {
-  const t = content[lang];
+export default function GetInvolvedHero({ locale }: Props) {
+  const t = content[locale];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

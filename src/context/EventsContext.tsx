@@ -1,4 +1,5 @@
 "use client";
+import { Event } from "@/components/events/PublicEventsDisplay";
 
 import {
   createContext,
@@ -7,22 +8,6 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-
-interface Event {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleEs: string;
-  descriptionEn: string | null;
-  descriptionEs: string | null;
-  eventDate: string;
-  location: string;
-  maxCapacity: number | null;
-  status: string;
-  _count: {
-    rsvps: number;
-  };
-}
 
 interface EventsContextType {
   upcomingEvents: Event[];

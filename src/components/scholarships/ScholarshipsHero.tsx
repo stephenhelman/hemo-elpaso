@@ -2,11 +2,11 @@ import { Lang } from "@/types";
 import { scholarshipHeroTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ScholarshipsHero({ lang }: Props) {
-  const t = scholarshipHeroTranslation[lang];
+export default function ScholarshipsHero({ locale }: Props) {
+  const t = scholarshipHeroTranslation[locale];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

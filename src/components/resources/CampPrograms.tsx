@@ -1,14 +1,14 @@
 import Section from "@/components/layout/Section";
-import { ExternalLink, Sun, Heart } from "lucide-react";
+import { ExternalLink, Sun } from "lucide-react";
 import { Lang } from "@/types";
 import { campProgramTranslation } from "@/translation/resourcesPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function CampPrograms({ lang }: Props) {
-  const t = campProgramTranslation[lang];
+export default function CampPrograms({ locale }: Props) {
+  const t = campProgramTranslation[locale];
 
   return (
     <Section background="white" id="camps">

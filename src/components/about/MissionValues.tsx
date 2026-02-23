@@ -2,13 +2,11 @@ import Section from "@/components/layout/Section";
 import HoepCard from "@/components/ui/HoepCard";
 import { missionValuesTranslation } from "@/translation/aboutPage";
 import { Heart, Users, BookOpen, Globe } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface Props {
-  lang: "en" | "es";
-}
-
-export default function MissionValues({ lang }: Props) {
-  const t = missionValuesTranslation[lang];
+export default function MissionValues() {
+  const { locale } = useLanguage();
+  const t = missionValuesTranslation[locale];
 
   const iconConfig = {
     bookOpen: <BookOpen className={t.valuesClassName} />,

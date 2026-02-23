@@ -4,11 +4,11 @@ import { Lang } from "@/types";
 import { scholarshipEligibilityTranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function EligibilityRequirements({ lang }: Props) {
-  const t = scholarshipEligibilityTranslation[lang];
+export default function EligibilityRequirements({ locale }: Props) {
+  const t = scholarshipEligibilityTranslation[locale];
 
   return (
     <Section background="white" id="eligibility">
@@ -29,7 +29,7 @@ export default function EligibilityRequirements({ lang }: Props) {
       <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
         {t.requirements.map((req, i) => (
           <div
-            key={req.title}
+            key={i}
             className="flex gap-4 p-5 rounded-2xl bg-neutral-50 border border-neutral-200 hover:border-primary-200 transition-colors"
           >
             <div className="flex-shrink-0 mt-0.5">

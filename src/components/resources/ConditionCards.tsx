@@ -6,11 +6,11 @@ import { conditionCardsTranslation } from "@/translation/resourcesPage";
 import { colorMap } from "@/lib/statColorConfig";
 
 interface Props {
-  lang: Lang;
+  locale: Lang;
 }
 
-export default function ConditionCards({ lang }: Props) {
-  const t = conditionCardsTranslation[lang];
+export default function ConditionCards({ locale }: Props) {
+  const t = conditionCardsTranslation[locale];
 
   return (
     <Section background="neutral" id="conditions">

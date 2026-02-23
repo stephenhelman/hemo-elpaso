@@ -206,3 +206,18 @@ export const missionValuesTranslation = {
     ],
   },
 };
+
+export const aboutCTATranslation = {
+  en: {
+    heading: "Ready to Get Involved?",
+    sub: "Whether you're a family affected by a bleeding disorder, a volunteer, or a potential sponsor — there's a place for you in our community.",
+    cta1: "Get Involved",
+    cta2: "Contact Us",
+  },
+  es: {
+    heading: "¿Listo para Participar?",
+    sub: "Ya seas una familia afectada por un trastorno hemorrágico, un voluntario o un posible patrocinador — hay un lugar para ti en nuestra comunidad.",
+    cta1: "Participa",
+    cta2: "Contáctanos",
+  },
+};

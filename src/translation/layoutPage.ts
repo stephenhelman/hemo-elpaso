@@ -7,6 +7,21 @@ export const navbarNavLinksTranslation = [
   { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
 ];
 
+export const userMenuTranslation = {
+  en: {
+    login: "Login",
+    portal: "Portal",
+    adminDashboard: "Admin Dashboard",
+    logout: "Logout",
+  },
+  es: {
+    login: "Iniciar Sesión",
+    portal: "Portal",
+    adminDashboard: "Panel de administración",
+    logout: "Cerrar sesión",
+  },
+};
+
 export const footerTranslation = {
   en: {
     tagline: "Giving Hope To Our Community",
