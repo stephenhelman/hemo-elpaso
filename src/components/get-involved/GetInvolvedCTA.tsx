@@ -4,28 +4,14 @@ import Link from "next/link";
 import Section from "@/components/layout/Section";
 import { ArrowRight } from "lucide-react";
 import { Lang } from "@/types";
+import { getInvolvedCTATranslation } from "@/translation/getInvolvedPage";
 
 interface Props {
   locale: Lang;
 }
 
-const content = {
-  en: {
-    heading: "Ready to Make a Difference?",
-    sub: "Every volunteer, every sponsor, and every advocate helps HOEP serve more families in the El Paso bleeding disorders community.",
-    cta1: "Volunteer Now",
-    cta2: "Contact Us",
-  },
-  es: {
-    heading: "¿Listo para Hacer una Diferencia?",
-    sub: "Cada voluntario, cada patrocinador y cada defensor ayuda a HOEP a servir a más familias en la comunidad de trastornos hemorrágicos de El Paso.",
-    cta1: "Ser Voluntario",
-    cta2: "Contáctenos",
-  },
-};
-
 export default function GetInvolvedCTA({ locale }: Props) {
-  const t = content[locale];
+  const t = getInvolvedCTATranslation[locale];
 
   return (
     <Section background="white">

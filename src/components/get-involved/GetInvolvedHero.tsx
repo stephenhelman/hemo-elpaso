@@ -1,26 +1,14 @@
 "use client";
 
 import { Lang } from "@/types";
+import { getInvolvedHeroTranslation } from "@/translation/getInvolvedPage";
 
 interface Props {
   locale: Lang;
 }
 
-const content = {
-  en: {
-    eyebrow: "Make a Difference",
-    heading: "Get Involved With HOEP",
-    sub: "Whether you volunteer your time, sponsor an event, or spread the word — every contribution helps us serve the El Paso bleeding disorders community.",
-  },
-  es: {
-    eyebrow: "Haz una Diferencia",
-    heading: "Participa con HOEP",
-    sub: "Ya sea que done su tiempo, patrocine un evento o corra la voz — cada contribución nos ayuda a servir a la comunidad de trastornos hemorrágicos de El Paso.",
-  },
-};
-
 export default function GetInvolvedHero({ locale }: Props) {
-  const t = content[locale];
+  const t = getInvolvedHeroTranslation[locale];
 
   return (
     <div className="relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 py-24">

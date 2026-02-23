@@ -9,8 +9,7 @@ import DateBadge from "@/components/ui/DateBadge";
 interface Props {
   rsvp: {
     id: string;
-    adultsAttending: number;
-    childrenAttending: number;
+    attendeeCount: number;
     event: {
       slug: string;
       titleEn: string;
@@ -36,7 +35,7 @@ export default function UpcomingEventCard({ rsvp }: Props) {
               {rsvp.event.titleEn}
             </h3>
             <p className="text-sm text-neutral-500">
-              {rsvp.adultsAttending + rsvp.childrenAttending} attendees
+              {rsvp.attendeeCount} attendees
             </p>
           </div>
         </div>

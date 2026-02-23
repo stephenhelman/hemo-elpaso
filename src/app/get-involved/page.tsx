@@ -1,3 +1,5 @@
+"use client";
+
 import GetInvolvedHero from "@/components/get-involved/GetInvolvedHero";
 import WaysToHelp from "@/components/get-involved/WaysToHelp";
 import VolunteerForm from "@/components/get-involved/VolunteerForm";

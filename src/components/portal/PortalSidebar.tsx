@@ -15,6 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import PortalMobileNav from "../layout/PortalMobileNav";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 interface Props {
   user: {
     name?: string;
@@ -25,12 +27,27 @@ interface Props {
 }
 
 const navItems = [
-  { href: "/portal/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/portal/events", label: "Events", icon: Calendar },
-  { href: "/portal/profile", label: "Profile", icon: User },
+  {
+    href: "/portal/dashboard",
+    label: {
+      en: "Dashboard",
+      es: "Panel",
+    },
+    icon: LayoutDashboard,
+  },
+  {
+    href: "/portal/events",
+    label: { en: "Events", es: "Eventos" },
+    icon: Calendar,
+  },
+  {
+    href: "/portal/profile",
+    label: { en: "Profile", es: "Pagina de Usuario" },
+    icon: User,
+  },
   {
     href: "/portal/assistance",
-    label: "Financial Assistance",
+    label: { en: "Financial Assistance", es: "Asistencia Financiera" },
     icon: DollarSign,
   },
 ];
@@ -38,6 +55,7 @@ const navItems = [
 export default function PortalSidebar({ user }: Props) {
   const pathname = usePathname();
   const isAdmin = user.role === "board" || user.role === "admin";
+  const { locale } = useLanguage();
 
   return (
     <>
@@ -97,7 +115,7 @@ export default function PortalSidebar({ user }: Props) {
                   )}
                 >
                   <Icon className="w-5 h-5" />
-                  {item.label}
+                  {item.label[locale]}
                 </Link>
               );
             })}
@@ -113,7 +131,9 @@ export default function PortalSidebar({ user }: Props) {
                     shadow-md hover:shadow-lg"
                 >
                   <Shield className="w-5 h-5" />
-                  Admin Dashboard
+                  {locale === "en"
+                    ? "Admin Dashboard"
+                    : "Panel de administración"}
                 </Link>
               </div>
             )}

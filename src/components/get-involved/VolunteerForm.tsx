@@ -5,79 +5,10 @@ import { CheckCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import Section from "@/components/layout/Section";
 import { Lang } from "@/types";
+import { volunteerFormTranslation } from "@/translation/getInvolvedPage";
 interface Props {
   locale: Lang;
 }
-
-const content = {
-  en: {
-    eyebrow: "Volunteer",
-    heading: "Sign Up to Volunteer",
-    sub: "Tell us a little about yourself and how you'd like to help. We'll be in touch within a few days.",
-    name: "Full Name",
-    email: "Email Address",
-    phone: "Phone Number",
-    interest: "Area of Interest",
-    availability: "Availability",
-    message: "Anything else you'd like us to know?",
-    submit: "Submit Volunteer Interest",
-    sending: "Submitting...",
-    successHead: "Thank You!",
-    successBody:
-      "We've received your volunteer interest form. Someone from HOEP will reach out within a few days.",
-    interests: [
-      { value: "", label: "Select an area..." },
-      { value: "events", label: "Event Support" },
-      { value: "outreach", label: "Community Outreach" },
-      { value: "admin", label: "Administrative Help" },
-      { value: "board", label: "Board Membership" },
-      {
-        value: "professional",
-        label: "Professional Skills (Medical, Legal, etc.)",
-      },
-      { value: "other", label: "Other" },
-    ],
-    availabilities: [
-      { value: "", label: "Select availability..." },
-      { value: "weekdays", label: "Weekdays" },
-      { value: "weekends", label: "Weekends" },
-      { value: "events", label: "Events Only" },
-      { value: "flexible", label: "Flexible" },
-    ],
-  },
-  es: {
-    eyebrow: "Voluntariado",
-    heading: "Regístrese como Voluntario",
-    sub: "Cuéntenos un poco sobre usted y cómo le gustaría ayudar. Nos pondremos en contacto en unos días.",
-    name: "Nombre Completo",
-    email: "Correo Electrónico",
-    phone: "Número de Teléfono",
-    interest: "Área de Interés",
-    availability: "Disponibilidad",
-    message: "¿Algo más que quiera que sepamos?",
-    submit: "Enviar Interés de Voluntario",
-    sending: "Enviando...",
-    successHead: "¡Gracias!",
-    successBody:
-      "Hemos recibido su formulario de interés de voluntario. Alguien de HOEP se comunicará en unos días.",
-    interests: [
-      { value: "", label: "Seleccione un área..." },
-      { value: "events", label: "Apoyo en Eventos" },
-      { value: "outreach", label: "Divulgación Comunitaria" },
-      { value: "admin", label: "Ayuda Administrativa" },
-      { value: "board", label: "Membresía de la Junta" },
-      { value: "professional", label: "Habilidades Profesionales" },
-      { value: "other", label: "Otro" },
-    ],
-    availabilities: [
-      { value: "", label: "Seleccione disponibilidad..." },
-      { value: "weekdays", label: "Días de Semana" },
-      { value: "weekends", label: "Fines de Semana" },
-      { value: "events", label: "Solo Eventos" },
-      { value: "flexible", label: "Flexible" },
-    ],
-  },
-};
 
 const inputClass = `
   w-full px-4 py-2.5 rounded-xl border border-neutral-200
@@ -87,7 +18,7 @@ const inputClass = `
 `.trim();
 
 export default function VolunteerForm({ locale }: Props) {
-  const t = content[locale];
+  const t = volunteerFormTranslation[locale];
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
