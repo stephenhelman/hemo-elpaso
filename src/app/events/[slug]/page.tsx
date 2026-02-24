@@ -32,7 +32,7 @@ export async function generateStaticParams() {
 
 export default async function EventPage({ params, searchParams }: Props) {
   const cookieStore = cookies();
-  const lang = (cookieStore.get("language")?.value as "en" | "es") || "en";
+  const lang = (cookieStore.get("locale")?.value as "en" | "es") || "en";
   const referrer = searchParams.from;
 
   // Get event from database
@@ -58,7 +58,10 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   // If user is logged in, ensure a Patient row exists then check RSVP/check-in state
   if (session?.user) {
-    const stub = await ensurePatientExists(session.user.sub, session.user.email);
+    const stub = await ensurePatientExists(
+      session.user.sub,
+      session.user.email,
+    );
 
     // Gate: if registration is not complete, send them to finish it and come back
     if (!stub.registrationCompletedAt && !stub.profile) {

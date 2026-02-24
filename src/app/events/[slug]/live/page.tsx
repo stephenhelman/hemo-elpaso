@@ -26,7 +26,7 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
   const session = await getSession();
   const sponsorSessionToken = searchParams.session;
   const cookieStore = cookies();
-  const lang = (cookieStore.get("language")?.value as "en" | "es") || "en";
+  const lang = (cookieStore.get("locale")?.value as "en" | "es") || "en";
 
   // Must be logged in
   if (!session?.user && !sponsorSessionToken) {
@@ -63,7 +63,7 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
       include: {
         patient: {
           include: {
-            profile: true,
+            contactProfile: true,
           },
         },
       },
@@ -76,8 +76,8 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
     }
 
     patient = checkIn.patient;
-    patientName = patient.profile
-      ? `${patient.profile.firstName} ${patient.profile.lastName}`
+    patientName = patient.contactProfile
+      ? `${patient.contactProfile.firstName} ${patient.contactProfile.lastName}`
       : "Sponsor";
   } else {
     // Regular patient access via Auth0
@@ -85,7 +85,7 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
       where: { auth0Id: session!.user.sub },
       select: {
         id: true,
-        profile: {
+        contactProfile: {
           select: {
             firstName: true,
             lastName: true,
@@ -115,8 +115,8 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
       );
     }
 
-    patientName = patient.profile
-      ? `${patient.profile.firstName} ${patient.profile.lastName}`
+    patientName = patient.contactProfile
+      ? `${patient.contactProfile.firstName} ${patient.contactProfile.lastName}`
       : undefined;
   }
   return (
