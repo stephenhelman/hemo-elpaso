@@ -61,7 +61,7 @@ export default function FlyerUpload({
         {/* English Flyer */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            English Flyer (PDF)
+            English Flyer (PDF, JPG, JPEG, PNG)
           </label>
 
           {currentFlyerEn && !flyerEn && (
@@ -86,7 +86,7 @@ export default function FlyerUpload({
           <div className="relative">
             <input
               type="file"
-              accept=".pdf"
+              accept=".pdf, .jpg, .jpeg, .png"
               onChange={(e) => setFlyerEn(e.target.files?.[0] || null)}
               className="hidden"
               id="flyerEn"
@@ -97,7 +97,7 @@ export default function FlyerUpload({
             >
               <Upload className="w-5 h-5" />
               <span className="text-sm">
-                {flyerEn ? flyerEn.name : "Select English PDF"}
+                {flyerEn ? flyerEn.name : "Select English Flyer"}
               </span>
             </label>
             {flyerEn && (
@@ -114,7 +114,7 @@ export default function FlyerUpload({
         {/* Spanish Flyer */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Spanish Flyer (PDF)
+            Spanish Flyer (PDF, JPG, JPEG, PNG)
           </label>
 
           {currentFlyerEs && !flyerEs && (
@@ -139,7 +139,7 @@ export default function FlyerUpload({
           <div className="relative">
             <input
               type="file"
-              accept=".pdf"
+              accept=".pdf, .jpg, .jpeg, .png"
               onChange={(e) => setFlyerEs(e.target.files?.[0] || null)}
               className="hidden"
               id="flyerEs"
@@ -150,7 +150,7 @@ export default function FlyerUpload({
             >
               <Upload className="w-5 h-5" />
               <span className="text-sm">
-                {flyerEs ? flyerEs.name : "Select Spanish PDF"}
+                {flyerEs ? flyerEs.name : "Select Spanish Flyer"}
               </span>
             </label>
             {flyerEs && (

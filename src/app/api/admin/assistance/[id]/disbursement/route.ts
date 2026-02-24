@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email-service"; // ADD THIS
+import { sendEmail } from "@/lib/email-service";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(
   request: NextRequest,
@@ -116,7 +117,7 @@ export async function POST(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "assistance_disbursement_created",
+        action: AuditAction.ASSISTANCE_DISBURSEMENT_CREATED,
         resourceType: "AssistanceDisbursement",
         resourceId: disbursement.id,
         details: `Created disbursement of $${amount} for ${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function GET(
   request: NextRequest,
@@ -79,7 +80,7 @@ export async function POST(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "announcement_created",
+        action: AuditAction.ANNOUNCEMENT_CREATED,
         resourceType: "EventAnnouncement",
         resourceId: announcement.id,
         details: `Posted announcement: ${messageEn.substring(0, 50)}...`,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "poll_approved",
+        action: AuditAction.POLL_APPROVED,
         resourceType: "EventInteraction",
         resourceId: params.pollId,
         details: `Approved poll from rep: ${poll.titleEn}`,

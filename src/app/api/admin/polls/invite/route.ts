@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "poll_invite_sent",
+        action: AuditAction.POLL_INVITE_SENT,
         resourceType: "PollCreationToken",
         resourceId: token,
         details: `Generated poll creation link for ${repEmail}`,

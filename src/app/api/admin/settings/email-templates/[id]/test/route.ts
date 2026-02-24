@@ -7,6 +7,7 @@ import RsvpConfirmation from "@/messages/RsvpConfirmation";
 import RsvpCancellation from "@/messages/RsvpCancellation";
 import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
+import { AuditAction } from "@prisma/client";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const EMAIL_FROM =
@@ -83,7 +84,7 @@ export async function POST(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "test_email_sent",
+        action: AuditAction.TEST_EMAIL_SENT,
         resourceType: "EmailTemplate",
         resourceId: template.id,
         details: `Sent test email to ${testEmail} for template: ${template.name}`,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "email_template_updated",
+        action: AuditAction.EMAIL_TEMPLATE_UPDATED,
         resourceType: "EmailTemplate",
         resourceId: updated.id,
         details: `Updated email template: ${updated.name}`,

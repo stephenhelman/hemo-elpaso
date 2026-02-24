@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import DiagnosisVerificationStatus from "@/components/admin/DiagnosisVerificationStatus";
 import { StatCard } from "@/components/ui/StatCard";
+import { AuditAction } from "@prisma/client";
 
 interface Props {
   params: { id: string };
@@ -78,7 +79,7 @@ export default async function patientDetailPage({ params }: Props) {
   await prisma.auditLog.create({
     data: {
       patientId: admin.id,
-      action: "patient_viewed",
+      action: AuditAction.PATIENT_VIEWED,
       resourceType: "Patient",
       resourceId: patient.id,
       details: `Viewed patient details: ${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
@@ -111,7 +112,8 @@ export default async function patientDetailPage({ params }: Props) {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            {patient.contactProfile?.firstName} {patient.contactProfile?.lastName}
+            {patient.contactProfile?.firstName}{" "}
+            {patient.contactProfile?.lastName}
           </h1>
           <span
             className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
@@ -198,7 +200,8 @@ export default async function patientDetailPage({ params }: Props) {
                     <p className="text-sm text-neutral-900">
                       {patient.contactProfile.addressLine1}
                       <br />
-                      {patient.contactProfile.city}, {patient.contactProfile.state}{" "}
+                      {patient.contactProfile.city},{" "}
+                      {patient.contactProfile.state}{" "}
                       {patient.contactProfile.zipCode}
                     </p>
                   </div>
@@ -286,7 +289,9 @@ export default async function patientDetailPage({ params }: Props) {
                       Date of Birth
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {new Date(patient.contactProfile.dateOfBirth).toLocaleDateString()}
+                      {new Date(
+                        patient.contactProfile.dateOfBirth,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
@@ -429,7 +434,8 @@ export default async function patientDetailPage({ params }: Props) {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {member.contactProfile?.firstName} {member.contactProfile?.lastName}
+                          {member.contactProfile?.firstName}{" "}
+                          {member.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-600">
                           {member.relationship}
@@ -444,25 +450,31 @@ export default async function patientDetailPage({ params }: Props) {
 
                     {member.contactProfile?.dateOfBirth && (
                       <p className="text-sm text-neutral-600 mb-1">
-                        DOB: {new Date(member.contactProfile.dateOfBirth).toLocaleDateString()}
+                        DOB:{" "}
+                        {new Date(
+                          member.contactProfile.dateOfBirth,
+                        ).toLocaleDateString()}
                       </p>
                     )}
 
-                    {member.hasBleedingDisorder && member.disorderProfile?.condition && (
-                      <div className="mt-3 pt-3 border-t border-red-200">
-                        <p className="text-sm font-medium text-red-900 mb-1">
-                          Medical Information:
-                        </p>
-                        <p className="text-sm text-red-800">
-                          <strong>Condition:</strong> {member.disorderProfile.condition}
-                        </p>
-                        {member.disorderProfile.severity && (
-                          <p className="text-sm text-red-800">
-                            <strong>Severity:</strong> {member.disorderProfile.severity}
+                    {member.hasBleedingDisorder &&
+                      member.disorderProfile?.condition && (
+                        <div className="mt-3 pt-3 border-t border-red-200">
+                          <p className="text-sm font-medium text-red-900 mb-1">
+                            Medical Information:
                           </p>
-                        )}
-                      </div>
-                    )}
+                          <p className="text-sm text-red-800">
+                            <strong>Condition:</strong>{" "}
+                            {member.disorderProfile.condition}
+                          </p>
+                          {member.disorderProfile.severity && (
+                            <p className="text-sm text-red-800">
+                              <strong>Severity:</strong>{" "}
+                              {member.disorderProfile.severity}
+                            </p>
+                          )}
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
@@ -486,10 +498,18 @@ export default async function patientDetailPage({ params }: Props) {
               <div className="mb-4">
                 <h3 className="font-medium text-neutral-700 mb-2">Patient</h3>
                 <DiagnosisVerificationStatus
-                  diagnosisLetterUrl={patient.disorderProfile?.diagnosisLetterUrl ?? null}
-                  diagnosisVerified={patient.disorderProfile?.diagnosisVerified ?? false}
-                  diagnosisVerifiedAt={patient.disorderProfile?.diagnosisVerifiedAt ?? null}
-                  diagnosisRejectedReason={patient.disorderProfile?.diagnosisRejectedReason ?? null}
+                  diagnosisLetterUrl={
+                    patient.disorderProfile?.diagnosisLetterUrl ?? null
+                  }
+                  diagnosisVerified={
+                    patient.disorderProfile?.diagnosisVerified ?? false
+                  }
+                  diagnosisVerifiedAt={
+                    patient.disorderProfile?.diagnosisVerifiedAt ?? null
+                  }
+                  diagnosisRejectedReason={
+                    patient.disorderProfile?.diagnosisRejectedReason ?? null
+                  }
                   gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
                 />
               </div>
@@ -504,13 +524,22 @@ export default async function patientDetailPage({ params }: Props) {
                   className="mb-4 pt-4 border-t border-neutral-200"
                 >
                   <h3 className="font-medium text-neutral-700 mb-2">
-                    {member.contactProfile?.firstName} {member.contactProfile?.lastName} ({member.relationship})
+                    {member.contactProfile?.firstName}{" "}
+                    {member.contactProfile?.lastName} ({member.relationship})
                   </h3>
                   <DiagnosisVerificationStatus
-                    diagnosisLetterUrl={member.disorderProfile?.diagnosisLetterUrl ?? null}
-                    diagnosisVerified={member.disorderProfile?.diagnosisVerified ?? false}
-                    diagnosisVerifiedAt={member.disorderProfile?.diagnosisVerifiedAt ?? null}
-                    diagnosisRejectedReason={member.disorderProfile?.diagnosisRejectedReason ?? null}
+                    diagnosisLetterUrl={
+                      member.disorderProfile?.diagnosisLetterUrl ?? null
+                    }
+                    diagnosisVerified={
+                      member.disorderProfile?.diagnosisVerified ?? false
+                    }
+                    diagnosisVerifiedAt={
+                      member.disorderProfile?.diagnosisVerifiedAt ?? null
+                    }
+                    diagnosisRejectedReason={
+                      member.disorderProfile?.diagnosisRejectedReason ?? null
+                    }
                   />
                 </div>
               ))}

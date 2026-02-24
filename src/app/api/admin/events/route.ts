@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log(body.slug);
 
     // Create event with targeting
     const event = await prisma.event.create({
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "event_created",
+        action: AuditAction.EVENT_CREATED,
         resourceType: "Event",
         resourceId: event.id,
         details: `Created event: ${event.titleEn}`,

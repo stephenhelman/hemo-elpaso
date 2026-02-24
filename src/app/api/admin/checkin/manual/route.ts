@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "manual_checkin",
+        action: AuditAction.MANUAL_CHECKIN,
         resourceType: "CheckIn",
         resourceId: rsvp.patientId,
         details: `Manually checked in patient${attendeeRole ? ` as ${attendeeRole}` : ""}`,
@@ -115,7 +116,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "checkin_removed",
+        action: AuditAction.CHECKIN_REMOVED,
         resourceType: "CheckIn",
         resourceId: checkInId,
         details: "Manual check-in removed",

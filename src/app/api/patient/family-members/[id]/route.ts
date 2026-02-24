@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
@@ -74,7 +75,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "FAMILY_MEMBER_UPDATED" as any,
+        action: AuditAction.FAMILY_MEMBER_UPDATED as any,
         resourceType: "FamilyMember",
         resourceId: familyMember.id,
         details: `Updated family member: ${body.firstName} ${body.lastName}`,
@@ -131,7 +132,7 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "FAMILY_MEMBER_DELETED" as any,
+        action: AuditAction.FAMILY_MEMBER_DELETED as any,
         resourceType: "FamilyMember",
         resourceId: params.id,
         details: `Removed family member: ${existingMember.contactProfile?.firstName} ${existingMember.contactProfile?.lastName}`,

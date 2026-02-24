@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { AuditAction } from "@prisma/client";
 
 const s3Client = new S3Client({
   region: "auto",
@@ -76,7 +77,7 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "assistance_document_deleted",
+        action: AuditAction.ASSISTANCE_DOCUMENT_DELETED,
         resourceType: "AssistanceDocument",
         resourceId: document.id,
         details: `Deleted document: ${document.fileName}`,

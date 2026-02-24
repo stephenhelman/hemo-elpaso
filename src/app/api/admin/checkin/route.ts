@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email-service"; // CHANGE THIS
+import { sendEmail } from "@/lib/email-service";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "checkin_created",
+        action: AuditAction.CHECKIN_CREATED,
         resourceType: "CheckIn",
         resourceId: checkIn.id,
         details: `Checked in ${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName} for ${rsvp.event.titleEn}`,

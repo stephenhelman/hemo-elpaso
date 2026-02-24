@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function DELETE(
   request: NextRequest,
@@ -45,7 +46,7 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "poll_deleted",
+        action: AuditAction.POLL_DELETED,
         resourceType: "EventInteraction",
         resourceId: params.pollId,
         details: `Deleted poll: ${poll.titleEn}`,

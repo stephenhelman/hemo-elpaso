@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { uploadImageToR2, generateFileKey } from "@/lib/r2";
+import { AuditAction } from "@prisma/client";
 
 export async function GET(
   request: NextRequest,
@@ -77,7 +78,7 @@ export async function POST(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "event_photos_uploaded",
+        action: AuditAction.EVENT_PHOTOS_UPLOADED,
         resourceType: "Event",
         resourceId: params.id,
         details: `Uploaded ${files.length} photo(s)`,

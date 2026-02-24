@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import QRCode from "qrcode";
-import { sendRsvpConfirmation, sendEmail } from "@/lib/email-service"; // ADD THIS
+import { sendRsvpConfirmation, sendEmail } from "@/lib/email-service";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "rsvp_created",
+        action: AuditAction.RSVP_CREATED,
         resourceType: "Rsvp",
         resourceId: rsvp.id,
         details: `RSVPed for event: ${event.titleEn}`,
@@ -204,7 +205,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "rsvp_cancelled",
+        action: AuditAction.RSVP_CANCELLED,
         resourceType: "Rsvp",
         resourceId: rsvp.id,
         details: `Cancelled RSVP for event: ${rsvp.event.titleEn}`,

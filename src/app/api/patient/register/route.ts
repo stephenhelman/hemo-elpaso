@@ -10,6 +10,7 @@ import {
 import { AuditAction } from "@prisma/client";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import { AuditAction } from "@prisma/client";
 
 const s3Client = new S3Client({
   region: "auto",

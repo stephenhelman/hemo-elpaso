@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +48,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       const q = search.toLowerCase();
       users = users.filter((u) => {
-        const name = `${u.contactProfile?.firstName ?? ""} ${u.contactProfile?.lastName ?? ""}`.toLowerCase();
+        const name =
+          `${u.contactProfile?.firstName ?? ""} ${u.contactProfile?.lastName ?? ""}`.toLowerCase();
         return name.includes(q) || u.email.toLowerCase().includes(q);
       });
     }
@@ -116,7 +118,7 @@ export async function GET(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "users_exported",
+        action: AuditAction.USERS_EXPORTED,
         resourceType: "Patient",
         details: `Exported ${users.length} users to CSV${search ? ` (search: ${search})` : ""}${role ? ` (role: ${role})` : ""}${condition ? ` (condition: ${condition})` : ""}`,
       },

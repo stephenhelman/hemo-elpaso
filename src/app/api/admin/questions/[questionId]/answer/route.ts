@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
@@ -39,7 +40,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "question_answered",
+        action: AuditAction.QUESTION_ANSWERED,
         resourceType: "EventQuestion",
         resourceId: params.questionId,
         details: `Answered question: ${question.questionEn.substring(0, 50)}...`,

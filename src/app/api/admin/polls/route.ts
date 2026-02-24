@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "poll_created",
+        action: AuditAction.POLL_CREATED,
         resourceType: "EventInteraction",
         resourceId: poll.id,
         details: `Created poll: ${titleEn}`,

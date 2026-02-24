@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -43,14 +44,18 @@ export async function PATCH(request: NextRequest) {
           patientId: patient.id,
           condition: body.primaryCondition,
           severity: body.severity || "",
-          dateOfDiagnosis: body.diagnosisDate ? new Date(body.diagnosisDate) : null,
+          dateOfDiagnosis: body.diagnosisDate
+            ? new Date(body.diagnosisDate)
+            : null,
           treatingPhysician: body.treatingPhysician || null,
           specialtyPharmacy: body.specialtyPharmacy || null,
         },
         update: {
           condition: body.primaryCondition,
           severity: body.severity,
-          dateOfDiagnosis: body.diagnosisDate ? new Date(body.diagnosisDate) : undefined,
+          dateOfDiagnosis: body.diagnosisDate
+            ? new Date(body.diagnosisDate)
+            : undefined,
           treatingPhysician: body.treatingPhysician || null,
           specialtyPharmacy: body.specialtyPharmacy || null,
         },
@@ -101,7 +106,7 @@ export async function PATCH(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "PROFILE_UPDATED" as any,
+        action: AuditAction.PROFILE_UPDATED as any,
         resourceType: "ContactProfile",
         resourceId: updatedContactProfile.id,
         details: "Profile information updated",

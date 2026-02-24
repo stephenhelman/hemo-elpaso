@@ -3,6 +3,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import { AuditAction } from "@prisma/client";
 
 const s3Client = new S3Client({
   region: "auto",
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "assistance_document_uploaded",
+        action: AuditAction.ASSISTANCE_DOCUMENT_UPLOADED,
         resourceType: "AssistanceDocument",
         resourceId: document.id,
         details: `Uploaded document: ${file.name}`,

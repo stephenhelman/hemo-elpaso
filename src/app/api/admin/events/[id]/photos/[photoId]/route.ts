@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { deleteFromR2 } from "@/lib/r2";
+import { AuditAction } from "@prisma/client";
 
 export async function DELETE(
   request: NextRequest,
@@ -42,7 +43,7 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "event_photo_deleted",
+        action: AuditAction.EVENT_PHOTO_DELETED,
         resourceType: "EventPhoto",
         resourceId: params.photoId,
         details: `Deleted event photo`,

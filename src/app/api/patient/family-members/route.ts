@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "FAMILY_MEMBER_ADDED" as any,
+        action: AuditAction.FAMILY_MEMBER_ADDED as any,
         resourceType: "FamilyMember",
         resourceId: familyMember.id,
         details: `Added family member: ${body.firstName} ${body.lastName}`,

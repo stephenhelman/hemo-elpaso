@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
+import { AuditAction } from "@prisma/client";
 
 export async function POST(
   request: NextRequest,
@@ -62,7 +63,7 @@ export async function POST(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: "sponsor_invite_sent",
+        action: AuditAction.SPONSOR_INVITE_SENT,
         resourceType: "SponsorAccessToken",
         resourceId: token,
         details: `Generated sponsor access link for ${sponsorEmail}`,

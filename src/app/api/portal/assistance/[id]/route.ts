@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
@@ -70,7 +71,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "assistance_application_updated",
+        action: AuditAction.ASSISTANCE_APPLICATION_UPDATED,
         resourceType: "FinancialAssistanceApplication",
         resourceId: updated.id,
         details: `Updated application for ${assistanceType}`,
