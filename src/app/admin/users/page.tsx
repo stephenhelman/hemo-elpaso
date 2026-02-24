@@ -42,8 +42,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   }
 
   if (searchParams.condition && searchParams.condition !== "all") {
-    where.profile = {
-      primaryCondition: searchParams.condition,
+    where.disorderProfile = {
+      condition: searchParams.condition,
     };
   }
 
@@ -51,7 +51,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const users = await prisma.patient.findMany({
     where,
     include: {
-      profile: true,
+      contactProfile: true,
+      disorderProfile: true,
       _count: {
         select: {
           rsvps: true,
@@ -65,15 +66,15 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   });
 
   // Get unique conditions for filter
-  const allProfiles = await prisma.patientProfile.findMany({
+  const allDisorderProfiles = await prisma.disorderProfile.findMany({
     select: {
-      primaryCondition: true,
+      condition: true,
     },
-    distinct: ["primaryCondition"],
+    distinct: ["condition"],
   });
 
-  const conditions = allProfiles
-    .map((p) => p.primaryCondition)
+  const conditions = allDisorderProfiles
+    .map((p) => p.condition)
     .filter(Boolean)
     .sort();
 

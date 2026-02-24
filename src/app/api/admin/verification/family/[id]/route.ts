@@ -38,8 +38,9 @@ export async function PATCH(
     const familyMember = await prisma.familyMember.findUnique({
       where: { id: params.id },
       include: {
+        contactProfile: true,
         patient: {
-          include: { profile: true },
+          include: { contactProfile: true },
         },
       },
     });
@@ -51,9 +52,9 @@ export async function PATCH(
       );
     }
 
-    // Update verification status
-    await prisma.familyMember.update({
-      where: { id: params.id },
+    // Update verification status on DisorderProfile (where it now lives)
+    await prisma.disorderProfile.update({
+      where: { familyMemberId: params.id },
       data: {
         diagnosisVerified: action === "approve",
         diagnosisVerifiedBy: action === "approve" ? verifiedBy : null,
@@ -66,10 +67,10 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: `diagnosis_${action}d_family`,
+        action: (action === "approve" ? "DIAGNOSIS_APPROVED_FAMILY" : "DIAGNOSIS_REJECTED_FAMILY") as any,
         resourceType: "FamilyMember",
         resourceId: familyMember.id,
-        details: `${action === "approve" ? "Approved" : "Rejected"} diagnosis letter for ${familyMember.firstName} ${familyMember.lastName} (family of ${familyMember.patient.profile?.firstName} ${familyMember.patient.profile?.lastName})`,
+        details: `${action === "approve" ? "Approved" : "Rejected"} diagnosis letter for ${familyMember.contactProfile?.firstName} ${familyMember.contactProfile?.lastName} (family of ${familyMember.patient.contactProfile?.firstName} ${familyMember.patient.contactProfile?.lastName})`,
       },
     });
 

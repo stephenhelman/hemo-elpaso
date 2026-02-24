@@ -52,16 +52,16 @@ export function PortalDashboardContent({
     ) || [];
   const eventsAttended = patient?.checkIns?.length || 0;
   const profileComplete = !!(
-    patient?.profile?.firstName &&
-    patient?.profile?.lastName &&
-    patient?.profile?.primaryCondition
+    patient?.contactProfile?.firstName &&
+    patient?.contactProfile?.lastName &&
+    patient?.disorderProfile?.condition
   );
   return (
     <div className="p-4 md:p-8">
       {liveEventBanner}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          {t.welcome} {patient.profile.firstName}!
+          {t.welcome} {patient.contactProfile?.firstName}!
         </h1>
         <p className="text-neutral-500">{t.header}</p>
       </div>

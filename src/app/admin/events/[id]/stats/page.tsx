@@ -39,7 +39,7 @@ export default async function EventStatsPage({ params }: Props) {
         include: {
           patient: {
             include: {
-              profile: true,
+              contactProfile: true,
             },
           },
         },
@@ -59,10 +59,10 @@ export default async function EventStatsPage({ params }: Props) {
 
   const attendeesForExport = event.checkIns.map((checkIn) => ({
     id: checkIn.id,
-    firstName: checkIn.patient.profile?.firstName || "Unknown",
-    lastName: checkIn.patient.profile?.lastName || "User",
+    firstName: checkIn.patient.contactProfile?.firstName || "Unknown",
+    lastName: checkIn.patient.contactProfile?.lastName || "User",
     email: checkIn.patient.email,
-    phone: checkIn.patient.profile?.phone || null,
+    phone: checkIn.patient.contactProfile?.phone || null,
     checkInTime: checkIn.checkInTime,
     attendeeRole: checkIn.attendeeRole,
   }));

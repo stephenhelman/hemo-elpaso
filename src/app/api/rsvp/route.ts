@@ -14,20 +14,20 @@ export async function POST(request: NextRequest) {
 
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: { profile: true },
+      include: { contactProfile: true, disorderProfile: true },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.profile?.primaryCondition) {
+    if (patient.disorderProfile?.condition) {
       // Has a bleeding disorder - check if verified or within grace period
       const gracePeriodEnded = patient.diagnosisGracePeriodEndsAt
         ? new Date(patient.diagnosisGracePeriodEndsAt) < new Date()
         : false;
 
-      if (!patient.diagnosisVerified && gracePeriodEnded) {
+      if (!patient.disorderProfile?.diagnosisVerified && gracePeriodEnded) {
         return NextResponse.json(
           {
             error:
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     try {
       await sendRsvpConfirmation({
         recipient: patient.email,
-        patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+        patientName: `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
         eventTitle: event.titleEn,
         eventDate: event.eventDate.toLocaleDateString("en-US", {
           weekday: "long",
@@ -169,7 +169,7 @@ export async function DELETE(request: NextRequest) {
 
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: { profile: true },
+      include: { contactProfile: true },
     });
 
     if (!patient) {
@@ -217,7 +217,7 @@ export async function DELETE(request: NextRequest) {
         templateType: "RSVP_CANCELLATION",
         recipient: patient.email,
         data: {
-          patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+          patientName: `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
           eventTitle: rsvp.event.titleEn,
           eventDate: rsvp.event.eventDate.toLocaleDateString("en-US", {
             weekday: "long",

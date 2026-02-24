@@ -27,7 +27,7 @@ export default async function UserEditPage({ params }: Props) {
   const user = await prisma.patient.findUnique({
     where: { id: params.id },
     include: {
-      profile: true,
+      contactProfile: true,
     },
   });
 
@@ -48,7 +48,7 @@ export default async function UserEditPage({ params }: Props) {
           Edit User
         </h1>
         <p className="text-neutral-600">
-          {user.profile?.firstName} {user.profile?.lastName}
+          {user.contactProfile?.firstName} {user.contactProfile?.lastName}
         </p>
       </div>
 

@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
 
   const admin = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
-    include: { profile: true },
+    include: { contactProfile: true },
   });
 
   if (!admin || !["board", "admin"].includes(admin.role)) {
@@ -146,7 +146,7 @@ export default async function AdminDashboardPage() {
     include: {
       patient: {
         include: {
-          profile: true,
+          contactProfile: true,
         },
       },
       event: true,
@@ -161,7 +161,7 @@ export default async function AdminDashboardPage() {
           {t.heading}
         </h1>
         <p className="text-neutral-600">
-          {t.welcome(admin.profile?.firstName || "Admin")}
+          {t.welcome(admin.contactProfile?.firstName || "Admin")}
         </p>
       </div>
 
@@ -290,8 +290,8 @@ export default async function AdminDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-neutral-900">
-                      {rsvp.patient.profile?.firstName}{" "}
-                      {rsvp.patient.profile?.lastName}
+                      {rsvp.patient.contactProfile?.firstName}{" "}
+                      {rsvp.patient.contactProfile?.lastName}
                     </p>
                     <p className="text-xs text-neutral-600 truncate">
                       {t.rsvpdTo}{" "}

@@ -35,7 +35,7 @@ export async function PATCH(
       include: {
         patient: {
           include: {
-            profile: true,
+            contactProfile: true,
           },
         },
       },
@@ -86,7 +86,7 @@ export async function PATCH(
         action: `assistance_application_${action.toLowerCase()}`,
         resourceType: "FinancialAssistanceApplication",
         resourceId: application.id,
-        details: `${action === "APPROVE" ? "Approved" : "Denied"} application for ${application.patient.profile?.firstName} ${application.patient.profile?.lastName} - ${application.assistanceType}`,
+        details: `${action === "APPROVE" ? "Approved" : "Denied"} application for ${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName} - ${application.assistanceType}`,
       },
     });
 
@@ -106,7 +106,7 @@ export async function PATCH(
           templateType: "ASSISTANCE_APPROVED",
           recipient: application.patient.email,
           data: {
-            patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+            patientName: `${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,
             assistanceType:
               typeLabels[application.assistanceType] ||
               application.assistanceType,
@@ -122,7 +122,7 @@ export async function PATCH(
           templateType: "ASSISTANCE_DENIED",
           recipient: application.patient.email,
           data: {
-            patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+            patientName: `${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,
             assistanceType:
               typeLabels[application.assistanceType] ||
               application.assistanceType,

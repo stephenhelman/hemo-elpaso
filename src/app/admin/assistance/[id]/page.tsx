@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import ReviewActions from "@/components/admin/assistance/ReviewActions";
 import DisbursementManager from "@/components/admin/assistance/DisbursementManager";
+import { AuditAction } from "@prisma/client";
 
 interface Props {
   params: { id: string };
@@ -37,7 +38,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
     include: {
       patient: {
         include: {
-          profile: true,
+          contactProfile: true,
         },
       },
       documents: true,
@@ -60,10 +61,10 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
   await prisma.auditLog.create({
     data: {
       patientId: admin.id,
-      action: "assistance_application_viewed",
+      action: AuditAction.ASSISTANCE_APPLICATION_VIEWED,
       resourceType: "FinancialAssistanceApplication",
       resourceId: application.id,
-      details: `Viewed assistance application for ${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+      details: `Viewed assistance application for ${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,
     },
   });
 
@@ -142,8 +143,8 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
                   Name
                 </p>
                 <p className="text-neutral-900">
-                  {application.patient.profile?.firstName}{" "}
-                  {application.patient.profile?.lastName}
+                  {application.patient.contactProfile?.firstName}{" "}
+                  {application.patient.contactProfile?.lastName}
                 </p>
               </div>
 
@@ -154,25 +155,25 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
                 <p className="text-neutral-900">{application.patient.email}</p>
               </div>
 
-              {application.patient.profile?.phone && (
+              {application.patient.contactProfile?.phone && (
                 <div>
                   <p className="text-sm font-medium text-neutral-700 mb-1">
                     Phone
                   </p>
                   <p className="text-neutral-900">
-                    {application.patient.profile.phone}
+                    {application.patient.contactProfile.phone}
                   </p>
                 </div>
               )}
 
-              {application.patient.profile?.city && (
+              {application.patient.contactProfile?.city && (
                 <div>
                   <p className="text-sm font-medium text-neutral-700 mb-1">
                     Location
                   </p>
                   <p className="text-neutral-900">
-                    {application.patient.profile.city},{" "}
-                    {application.patient.profile.state}
+                    {application.patient.contactProfile.city},{" "}
+                    {application.patient.contactProfile.state}
                   </p>
                 </div>
               )}

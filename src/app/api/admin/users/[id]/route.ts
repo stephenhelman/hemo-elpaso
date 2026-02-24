@@ -32,7 +32,7 @@ export async function PATCH(
     // Find user
     const user = await prisma.patient.findUnique({
       where: { id: params.id },
-      include: { profile: true },
+      include: { contactProfile: true },
     });
 
     if (!user) {
@@ -47,17 +47,17 @@ export async function PATCH(
       },
     });
 
-    // Update profile if exists
-    if (user.profile) {
-      await prisma.patientProfile.update({
+    // Update contact profile if exists
+    if (user.contactProfile) {
+      await prisma.contactProfile.update({
         where: { patientId: params.id },
         data: {
           firstName,
           lastName,
-          phone: phone || user.profile.phone,
-          city: city || user.profile.city,
-          state: state || user.profile.state,
-          zipCode: zipCode || user.profile.zipCode,
+          phone: phone || user.contactProfile.phone,
+          city: city || user.contactProfile.city,
+          state: state || user.contactProfile.state,
+          zipCode: zipCode || user.contactProfile.zipCode,
         },
       });
     }
@@ -109,7 +109,7 @@ export async function DELETE(
     // Find user
     const user = await prisma.patient.findUnique({
       where: { id: params.id },
-      include: { profile: true },
+      include: { contactProfile: true },
     });
 
     if (!user) {
@@ -136,7 +136,7 @@ export async function DELETE(
         action: "user_deleted",
         resourceType: "Patient",
         resourceId: params.id,
-        details: `Deleted user: ${user.profile?.firstName} ${user.profile?.lastName}`,
+        details: `Deleted user: ${user.contactProfile?.firstName} ${user.contactProfile?.lastName}`,
       },
     });
 

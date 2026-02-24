@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       include: {
         patient: {
           include: {
-            profile: true,
+            contactProfile: true,
           },
         },
         event: true,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Already checked in",
-          patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
+          patientName: `${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName}`,
         },
         { status: 409 },
       );
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         action: "checkin_created",
         resourceType: "CheckIn",
         resourceId: checkIn.id,
-        details: `Checked in ${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName} for ${rsvp.event.titleEn}`,
+        details: `Checked in ${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName} for ${rsvp.event.titleEn}`,
       },
     });
 
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         templateType: "CHECK_IN_CONFIRMATION",
         recipient: rsvp.patient.email,
         data: {
-          patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
+          patientName: `${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName}`,
           eventTitle: rsvp.event.titleEn,
           eventDate: new Date(rsvp.event.eventDate).toLocaleDateString(
             "en-US",
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
+      patientName: `${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName}`,
       checkIn: {
         id: checkIn.id,
         checkInTime: checkIn.checkInTime,

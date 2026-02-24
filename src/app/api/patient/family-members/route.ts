@@ -23,24 +23,40 @@ export async function POST(request: NextRequest) {
     const familyMember = await prisma.familyMember.create({
       data: {
         patientId: patient.id,
+        relationship: body.relationship,
+        hasBleedingDisorder: body.hasBleedingDisorder || false,
+      },
+    });
+
+    // Create ContactProfile for this family member
+    await prisma.contactProfile.create({
+      data: {
+        familyMemberId: familyMember.id,
         firstName: body.firstName,
         lastName: body.lastName,
         dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-        relationship: body.relationship,
-        hasBleedingDisorder: body.hasBleedingDisorder || false, // ADD
-        condition: body.condition || null, // ADD
-        severity: body.severity || null, // ADD
       },
     });
+
+    // Create DisorderProfile only if they have a bleeding disorder
+    if (body.hasBleedingDisorder && body.condition) {
+      await prisma.disorderProfile.create({
+        data: {
+          familyMemberId: familyMember.id,
+          condition: body.condition,
+          severity: body.severity || "",
+        },
+      });
+    }
 
     // Create audit log
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "family_member_added",
+        action: "FAMILY_MEMBER_ADDED" as any,
         resourceType: "FamilyMember",
         resourceId: familyMember.id,
-        details: `Added family member: ${familyMember.firstName} ${familyMember.lastName}`,
+        details: `Added family member: ${body.firstName} ${body.lastName}`,
       },
     });
 

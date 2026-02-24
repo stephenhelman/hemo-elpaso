@@ -28,14 +28,15 @@ export async function GET(request: NextRequest) {
     const where: any = {};
     if (role) where.role = role;
     if (condition) {
-      where.profile = { primaryCondition: condition };
+      where.disorderProfile = { condition };
     }
 
     // Get users with profiles, applying server-side filters
     let users = await prisma.patient.findMany({
       where,
       include: {
-        profile: true,
+        contactProfile: true,
+        disorderProfile: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       const q = search.toLowerCase();
       users = users.filter((u) => {
-        const name = `${u.profile?.firstName ?? ""} ${u.profile?.lastName ?? ""}`.toLowerCase();
+        const name = `${u.contactProfile?.firstName ?? ""} ${u.contactProfile?.lastName ?? ""}`.toLowerCase();
         return name.includes(q) || u.email.toLowerCase().includes(q);
       });
     }
@@ -73,21 +74,21 @@ export async function GET(request: NextRequest) {
     const rows = users.map((user) => [
       user.id,
       user.email,
-      user.profile?.firstName || "",
-      user.profile?.lastName || "",
-      user.profile?.phone || "",
-      user.profile?.dateOfBirth
-        ? new Date(user.profile.dateOfBirth).toLocaleDateString()
+      user.contactProfile?.firstName || "",
+      user.contactProfile?.lastName || "",
+      user.contactProfile?.phone || "",
+      user.contactProfile?.dateOfBirth
+        ? new Date(user.contactProfile.dateOfBirth).toLocaleDateString()
         : "",
-      user.profile?.city || "",
-      user.profile?.state || "",
-      user.profile?.zipCode || "",
-      user.profile?.primaryCondition || "",
-      user.profile?.severity || "",
+      user.contactProfile?.city || "",
+      user.contactProfile?.state || "",
+      user.contactProfile?.zipCode || "",
+      user.disorderProfile?.condition || "",
+      user.disorderProfile?.severity || "",
       user.role,
-      user.diagnosisVerified ? "Yes" : "No",
+      user.disorderProfile?.diagnosisVerified ? "Yes" : "No",
       new Date(user.createdAt).toLocaleDateString(),
-      user.profile?.preferredLanguage || "en",
+      user.preferredLanguage || "en",
     ]);
 
     // Convert to CSV string

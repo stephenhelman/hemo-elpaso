@@ -18,6 +18,7 @@ export default async function DashboardPage() {
     where: { auth0Id: session.user.sub },
     include: {
       contactProfile: true,
+      disorderProfile: true,
       preferences: true,
       rsvps: {
         include: {

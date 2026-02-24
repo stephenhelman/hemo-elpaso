@@ -14,12 +14,14 @@ interface User {
   email: string;
   role: string;
   createdAt: Date;
-  profile: {
+  contactProfile: {
     firstName: string;
     lastName: string;
-    primaryCondition: string;
-    severity: string;
     city: string;
+  } | null;
+  disorderProfile: {
+    condition: string;
+    severity: string;
   } | null;
   _count: {
     rsvps: number;
@@ -72,7 +74,7 @@ export default function UsersTable({
     if (!search) return true;
     const searchLower = search.toLowerCase();
     const name =
-      `${user.profile?.firstName} ${user.profile?.lastName}`.toLowerCase();
+      `${user.contactProfile?.firstName} ${user.contactProfile?.lastName}`.toLowerCase();
     const email = user.email.toLowerCase();
     return name.includes(searchLower) || email.includes(searchLower);
   });
@@ -216,7 +218,7 @@ export default function UsersTable({
                     <td className="px-3 py-3 md:px-6 md:py-4">
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {user.profile?.firstName} {user.profile?.lastName}
+                          {user.contactProfile?.firstName} {user.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-600">{user.email}</p>
                       </div>
@@ -236,10 +238,10 @@ export default function UsersTable({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-neutral-900">
-                      {user.profile?.primaryCondition || "N/A"}
+                      {user.disorderProfile?.condition || "N/A"}
                     </td>
                     <td className="px-6 py-4 text-sm text-neutral-600">
-                      {user.profile?.city || "N/A"}
+                      {user.contactProfile?.city || "N/A"}
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-medium text-neutral-900">
                       {user._count.rsvps}

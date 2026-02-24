@@ -21,7 +21,7 @@ interface Application {
   createdAt: Date;
   patient: {
     email: string;
-    profile: {
+    contactProfile: {
       firstName: string;
       lastName: string;
     } | null;
@@ -97,7 +97,7 @@ export default function ApplicationsTable({
     if (!search) return true;
     const searchLower = search.toLowerCase();
     const name =
-      `${app.patient.profile?.firstName} ${app.patient.profile?.lastName}`.toLowerCase();
+      `${app.patient.contactProfile?.firstName} ${app.patient.contactProfile?.lastName}`.toLowerCase();
     const email = app.patient.email.toLowerCase();
     const purpose = app.purpose.toLowerCase();
     return (
@@ -108,7 +108,7 @@ export default function ApplicationsTable({
   });
 
   const exportRows = filteredApps.map((app) => [
-    `${app.patient.profile?.firstName ?? ""} ${app.patient.profile?.lastName ?? ""}`.trim(),
+    `${app.patient.contactProfile?.firstName ?? ""} ${app.patient.contactProfile?.lastName ?? ""}`.trim(),
     app.patient.email,
     t.typeLabels[app.assistanceType as keyof typeof t.typeLabels] ??
       app.assistanceType,
@@ -279,8 +279,8 @@ export default function ApplicationsTable({
                     <td className="px-3 py-3 md:px-6 md:py-4">
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {app.patient.profile?.firstName}{" "}
-                          {app.patient.profile?.lastName}
+                          {app.patient.contactProfile?.firstName}{" "}
+                          {app.patient.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-600">
                           {app.patient.email}

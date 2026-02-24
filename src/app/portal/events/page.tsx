@@ -16,9 +16,6 @@ export default async function PortalEventsPage() {
 
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
-    include: {
-      profile: true,
-    },
   });
 
   if (!patient) {

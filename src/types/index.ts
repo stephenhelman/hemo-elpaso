@@ -3,6 +3,8 @@ import {
   CheckIn,
   Event as EventProper,
   PatientPreferences,
+  ContactProfile,
+  DisorderProfile,
 } from "@prisma/client";
 
 export interface Event {
@@ -40,17 +42,15 @@ export interface PortalPatient {
   consentToPhotos: boolean;
   createdAt: Date;
   updatedAt: Date;
-  diagnosisLetterUrl: string | null;
-  diagnosisLetterKey: string | null;
-  diagnosisLetterUploadedAt: Date | null;
-  diagnosisVerified: boolean;
-  diagnosisVerifiedBy: string | null;
-  diagnosisVerifiedAt: Date | null;
-  diagnosisRejectedReason: string | null;
   registrationCompletedAt: Date | null;
   diagnosisGracePeriodEndsAt: Date | null;
-  profile: PatientProfile;
-  preferences: PatientPreferences;
+  diagnosisGracePeriodSource: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelationship: string | null;
+  contactProfile: ContactProfile | null;
+  disorderProfile: DisorderProfile | null;
+  preferences: PatientPreferences | null;
   rsvps: PortalRsvp[] | null;
   checkIns: CheckIn[] | null;
 }

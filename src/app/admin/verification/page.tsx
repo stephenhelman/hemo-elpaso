@@ -29,36 +29,40 @@ export default async function DiagnosisVerificationPage() {
   // Fetch patients with pending diagnosis letters (patient)
   const patientsWithPendingDiagnosis = await prisma.patient.findMany({
     where: {
-      diagnosisLetterUrl: { not: null },
-      diagnosisVerified: false,
-      profile: {
-        primaryCondition: { not: undefined },
+      disorderProfile: {
+        diagnosisLetterUrl: { not: null },
+        diagnosisVerified: false,
+        condition: { not: "" },
       },
     },
     include: {
-      profile: true,
+      contactProfile: true,
+      disorderProfile: true,
     },
     orderBy: {
-      diagnosisLetterUploadedAt: "desc",
+      disorderProfile: { diagnosisLetterUploadedAt: "desc" },
     },
   });
 
   // Fetch family members with pending diagnosis letters
   const familyMembersWithPendingDiagnosis = await prisma.familyMember.findMany({
     where: {
-      diagnosisLetterUrl: { not: null },
-      diagnosisVerified: false,
       hasBleedingDisorder: true,
+      disorderProfile: {
+        diagnosisLetterUrl: { not: null },
+        diagnosisVerified: false,
+      },
     },
     include: {
+      contactProfile: true,
       patient: {
         include: {
-          profile: true,
+          contactProfile: true,
         },
       },
     },
     orderBy: {
-      diagnosisLetterUploadedAt: "desc",
+      disorderProfile: { diagnosisLetterUploadedAt: "desc" },
     },
   });
 
@@ -69,8 +73,10 @@ export default async function DiagnosisVerificationPage() {
 
   const expiringSoon = await prisma.patient.count({
     where: {
-      diagnosisVerified: false,
-      diagnosisLetterUrl: null,
+      disorderProfile: {
+        diagnosisVerified: false,
+        diagnosisLetterUrl: null,
+      },
       diagnosisGracePeriodEndsAt: {
         lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         gte: new Date(),

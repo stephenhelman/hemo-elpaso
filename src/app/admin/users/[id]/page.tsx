@@ -38,7 +38,8 @@ export default async function patientDetailPage({ params }: Props) {
   const patient = await prisma.patient.findUnique({
     where: { id: params.id },
     include: {
-      profile: true,
+      contactProfile: true,
+      disorderProfile: true,
       rsvps: {
         include: {
           event: true,
@@ -58,6 +59,10 @@ export default async function patientDetailPage({ params }: Props) {
         take: 10,
       },
       familyMembers: {
+        include: {
+          contactProfile: true,
+          disorderProfile: true,
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -76,7 +81,7 @@ export default async function patientDetailPage({ params }: Props) {
       action: "patient_viewed",
       resourceType: "Patient",
       resourceId: patient.id,
-      details: `Viewed patient details: ${patient.profile?.firstName} ${patient.profile?.lastName}`,
+      details: `Viewed patient details: ${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
     },
   });
 
@@ -106,7 +111,7 @@ export default async function patientDetailPage({ params }: Props) {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            {patient.profile?.firstName} {patient.profile?.lastName}
+            {patient.contactProfile?.firstName} {patient.contactProfile?.lastName}
           </h1>
           <span
             className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
@@ -169,7 +174,7 @@ export default async function patientDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {patient.profile?.phone && (
+              {patient.contactProfile?.phone && (
                 <div className="flex items-start gap-3">
                   <Phone className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
                   <div>
@@ -177,13 +182,13 @@ export default async function patientDetailPage({ params }: Props) {
                       Phone
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {patient.profile.phone}
+                      {patient.contactProfile.phone}
                     </p>
                   </div>
                 </div>
               )}
 
-              {patient.profile?.city && (
+              {patient.contactProfile?.city && (
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
                   <div>
@@ -191,10 +196,10 @@ export default async function patientDetailPage({ params }: Props) {
                       Location
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {patient.profile.address}
+                      {patient.contactProfile.addressLine1}
                       <br />
-                      {patient.profile.city}, {patient.profile.state}{" "}
-                      {patient.profile.zipCode}
+                      {patient.contactProfile.city}, {patient.contactProfile.state}{" "}
+                      {patient.contactProfile.zipCode}
                     </p>
                   </div>
                 </div>
@@ -203,7 +208,7 @@ export default async function patientDetailPage({ params }: Props) {
           </div>
 
           {/* ADD EMERGENCY CONTACT */}
-          {patient.profile?.emergencyContactName && (
+          {patient.emergencyContactName && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-red-600" />
@@ -216,26 +221,26 @@ export default async function patientDetailPage({ params }: Props) {
                 <div>
                   <p className="text-sm font-medium text-red-900">Name</p>
                   <p className="text-sm text-red-800">
-                    {patient.profile.emergencyContactName}
+                    {patient.emergencyContactName}
                   </p>
                 </div>
 
-                {patient.profile.emergencyContactRelationship && (
+                {patient.emergencyContactRelationship && (
                   <div>
                     <p className="text-sm font-medium text-red-900">
                       Relationship
                     </p>
                     <p className="text-sm text-red-800">
-                      {patient.profile.emergencyContactRelationship}
+                      {patient.emergencyContactRelationship}
                     </p>
                   </div>
                 )}
 
-                {patient.profile.emergencyContactPhone && (
+                {patient.emergencyContactPhone && (
                   <div>
                     <p className="text-sm font-medium text-red-900">Phone</p>
                     <p className="text-sm text-red-800 font-mono">
-                      {patient.profile.emergencyContactPhone}
+                      {patient.emergencyContactPhone}
                     </p>
                   </div>
                 )}
@@ -250,7 +255,7 @@ export default async function patientDetailPage({ params }: Props) {
           )}
 
           {/* Medical Information (for patients only) */}
-          {patient.profile && (
+          {patient.disorderProfile && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
               <h2 className="text-lg font-display font-bold text-neutral-900 mb-4">
                 Medical Information
@@ -262,7 +267,7 @@ export default async function patientDetailPage({ params }: Props) {
                     Primary Condition
                   </p>
                   <p className="text-sm text-neutral-900">
-                    {patient.profile.primaryCondition}
+                    {patient.disorderProfile.condition}
                   </p>
                 </div>
 
@@ -271,50 +276,52 @@ export default async function patientDetailPage({ params }: Props) {
                     Severity
                   </p>
                   <p className="text-sm text-neutral-900">
-                    {patient.profile.severity}
+                    {patient.disorderProfile.severity}
                   </p>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium text-neutral-700">
-                    Date of Birth
-                  </p>
-                  <p className="text-sm text-neutral-900">
-                    {new Date(patient.profile.dateOfBirth).toLocaleDateString()}
-                  </p>
-                </div>
+                {patient.contactProfile?.dateOfBirth && (
+                  <div>
+                    <p className="text-sm font-medium text-neutral-700">
+                      Date of Birth
+                    </p>
+                    <p className="text-sm text-neutral-900">
+                      {new Date(patient.contactProfile.dateOfBirth).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
 
-                {patient.profile.diagnosisDate && (
+                {patient.disorderProfile.dateOfDiagnosis && (
                   <div>
                     <p className="text-sm font-medium text-neutral-700">
                       Diagnosis Date
                     </p>
                     <p className="text-sm text-neutral-900">
                       {new Date(
-                        patient.profile.diagnosisDate,
+                        patient.disorderProfile.dateOfDiagnosis,
                       ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {patient.profile.treatingPhysician && (
+                {patient.disorderProfile.treatingPhysician && (
                   <div>
                     <p className="text-sm font-medium text-neutral-700">
                       Treating Physician
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {patient.profile.treatingPhysician}
+                      {patient.disorderProfile.treatingPhysician}
                     </p>
                   </div>
                 )}
 
-                {patient.profile.specialtyPharmacy && (
+                {patient.disorderProfile.specialtyPharmacy && (
                   <div>
                     <p className="text-sm font-medium text-neutral-700">
                       Specialty Pharmacy
                     </p>
                     <p className="text-sm text-neutral-900">
-                      {patient.profile.specialtyPharmacy}
+                      {patient.disorderProfile.specialtyPharmacy}
                     </p>
                   </div>
                 )}
@@ -422,7 +429,7 @@ export default async function patientDetailPage({ params }: Props) {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {member.firstName} {member.lastName}
+                          {member.contactProfile?.firstName} {member.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-600">
                           {member.relationship}
@@ -435,23 +442,23 @@ export default async function patientDetailPage({ params }: Props) {
                       )}
                     </div>
 
-                    {member.dateOfBirth && (
+                    {member.contactProfile?.dateOfBirth && (
                       <p className="text-sm text-neutral-600 mb-1">
-                        DOB: {new Date(member.dateOfBirth).toLocaleDateString()}
+                        DOB: {new Date(member.contactProfile.dateOfBirth).toLocaleDateString()}
                       </p>
                     )}
 
-                    {member.hasBleedingDisorder && member.condition && (
+                    {member.hasBleedingDisorder && member.disorderProfile?.condition && (
                       <div className="mt-3 pt-3 border-t border-red-200">
                         <p className="text-sm font-medium text-red-900 mb-1">
                           Medical Information:
                         </p>
                         <p className="text-sm text-red-800">
-                          <strong>Condition:</strong> {member.condition}
+                          <strong>Condition:</strong> {member.disorderProfile.condition}
                         </p>
-                        {member.severity && (
+                        {member.disorderProfile.severity && (
                           <p className="text-sm text-red-800">
-                            <strong>Severity:</strong> {member.severity}
+                            <strong>Severity:</strong> {member.disorderProfile.severity}
                           </p>
                         )}
                       </div>
@@ -475,14 +482,14 @@ export default async function patientDetailPage({ params }: Props) {
             </h2>
 
             {/* Patient's Diagnosis */}
-            {patient.profile?.primaryCondition && (
+            {patient.disorderProfile?.condition && (
               <div className="mb-4">
                 <h3 className="font-medium text-neutral-700 mb-2">Patient</h3>
                 <DiagnosisVerificationStatus
-                  diagnosisLetterUrl={patient.diagnosisLetterUrl}
-                  diagnosisVerified={patient.diagnosisVerified}
-                  diagnosisVerifiedAt={patient.diagnosisVerifiedAt}
-                  diagnosisRejectedReason={patient.diagnosisRejectedReason}
+                  diagnosisLetterUrl={patient.disorderProfile?.diagnosisLetterUrl ?? null}
+                  diagnosisVerified={patient.disorderProfile?.diagnosisVerified ?? false}
+                  diagnosisVerifiedAt={patient.disorderProfile?.diagnosisVerifiedAt ?? null}
+                  diagnosisRejectedReason={patient.disorderProfile?.diagnosisRejectedReason ?? null}
                   gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
                 />
               </div>
@@ -497,13 +504,13 @@ export default async function patientDetailPage({ params }: Props) {
                   className="mb-4 pt-4 border-t border-neutral-200"
                 >
                   <h3 className="font-medium text-neutral-700 mb-2">
-                    {member.firstName} {member.lastName} ({member.relationship})
+                    {member.contactProfile?.firstName} {member.contactProfile?.lastName} ({member.relationship})
                   </h3>
                   <DiagnosisVerificationStatus
-                    diagnosisLetterUrl={member.diagnosisLetterUrl}
-                    diagnosisVerified={member.diagnosisVerified}
-                    diagnosisVerifiedAt={member.diagnosisVerifiedAt}
-                    diagnosisRejectedReason={member.diagnosisRejectedReason}
+                    diagnosisLetterUrl={member.disorderProfile?.diagnosisLetterUrl ?? null}
+                    diagnosisVerified={member.disorderProfile?.diagnosisVerified ?? false}
+                    diagnosisVerifiedAt={member.disorderProfile?.diagnosisVerifiedAt ?? null}
+                    diagnosisRejectedReason={member.disorderProfile?.diagnosisRejectedReason ?? null}
                   />
                 </div>
               ))}

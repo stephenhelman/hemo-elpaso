@@ -79,7 +79,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         include: {
           patient: {
             include: {
-              profile: true,
+              contactProfile: true,
             },
           },
         },
@@ -88,7 +88,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         include: {
           patient: {
             include: {
-              profile: true,
+              contactProfile: true,
             },
           },
         },
@@ -118,7 +118,8 @@ export default async function ReportsPage({ searchParams }: Props) {
       role: "patient",
     },
     include: {
-      profile: true,
+      contactProfile: true,
+      disorderProfile: true,
     },
   });
 
@@ -131,10 +132,10 @@ export default async function ReportsPage({ searchParams }: Props) {
   };
 
   allPatients.forEach((patient) => {
-    if (!patient.profile?.dateOfBirth) return;
+    if (!patient.contactProfile?.dateOfBirth) return;
 
     const age = Math.floor(
-      (now.getTime() - new Date(patient.profile.dateOfBirth).getTime()) /
+      (now.getTime() - new Date(patient.contactProfile.dateOfBirth).getTime()) /
         (365.25 * 24 * 60 * 60 * 1000),
     );
 
@@ -147,7 +148,7 @@ export default async function ReportsPage({ searchParams }: Props) {
   // Condition distribution
   const conditions: Record<string, number> = {};
   allPatients.forEach((patient) => {
-    const condition = patient.profile?.primaryCondition;
+    const condition = patient.disorderProfile?.condition;
     if (condition) {
       conditions[condition] = (conditions[condition] || 0) + 1;
     }
@@ -156,7 +157,7 @@ export default async function ReportsPage({ searchParams }: Props) {
   // Severity distribution
   const severities: Record<string, number> = {};
   allPatients.forEach((patient) => {
-    const severity = patient.profile?.severity;
+    const severity = patient.disorderProfile?.severity;
     if (severity) {
       severities[severity] = (severities[severity] || 0) + 1;
     }
@@ -165,7 +166,7 @@ export default async function ReportsPage({ searchParams }: Props) {
   // City distribution
   const cities: Record<string, number> = {};
   allPatients.forEach((patient) => {
-    const city = patient.profile?.city;
+    const city = patient.contactProfile?.city;
     if (city) {
       cities[city] = (cities[city] || 0) + 1;
     }

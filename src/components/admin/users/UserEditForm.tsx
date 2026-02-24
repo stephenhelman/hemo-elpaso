@@ -9,7 +9,7 @@ interface User {
   id: string;
   email: string;
   role: string;
-  profile: {
+  contactProfile: {
     firstName: string;
     lastName: string;
     phone: string;
@@ -29,12 +29,12 @@ export default function UserEditForm({ user }: Props) {
 
   const [formData, setFormData] = useState({
     role: user.role,
-    firstName: user.profile?.firstName || "",
-    lastName: user.profile?.lastName || "",
-    phone: user.profile?.phone || "",
-    city: user.profile?.city || "",
-    state: user.profile?.state || "",
-    zipCode: user.profile?.zipCode || "",
+    firstName: user.contactProfile?.firstName || "",
+    lastName: user.contactProfile?.lastName || "",
+    phone: user.contactProfile?.phone || "",
+    city: user.contactProfile?.city || "",
+    state: user.contactProfile?.state || "",
+    zipCode: user.contactProfile?.zipCode || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

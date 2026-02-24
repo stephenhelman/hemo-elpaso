@@ -13,20 +13,20 @@ export async function POST(request: NextRequest) {
 
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: { profile: true }, // ADD profile here
+      include: { contactProfile: true, disorderProfile: true },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.profile?.primaryCondition) {
+    if (patient.disorderProfile?.condition) {
       // Has a bleeding disorder - check if verified or within grace period
       const gracePeriodEnded = patient.diagnosisGracePeriodEndsAt
         ? new Date(patient.diagnosisGracePeriodEndsAt) < new Date()
         : false;
 
-      if (!patient.diagnosisVerified && gracePeriodEnded) {
+      if (!patient.disorderProfile?.diagnosisVerified && gracePeriodEnded) {
         return NextResponse.json(
           {
             error:
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
           templateType: "ASSISTANCE_SUBMITTED",
           recipient: patient.email,
           data: {
-            patientName: `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+            patientName: `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
             assistanceType: typeLabels[assistanceType] || assistanceType,
             requestedAmount: `$${parseFloat(requestedAmount).toFixed(2)}`,
             applicationId: application.id,

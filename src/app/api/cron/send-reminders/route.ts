@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
           include: {
             patient: {
               include: {
-                profile: true,
+                contactProfile: true,
               },
             },
           },
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
           // Render email
           const emailHtml = await render(
             EventReminder({
-              patientName: `${rsvp.patient.profile?.firstName} ${rsvp.patient.profile?.lastName}`,
+              patientName: `${rsvp.patient.contactProfile?.firstName} ${rsvp.patient.contactProfile?.lastName}`,
               eventTitle: event.titleEn,
               eventDate: new Date(event.eventDate).toLocaleDateString("en-US", {
                 weekday: "long",

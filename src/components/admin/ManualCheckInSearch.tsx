@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 interface Patient {
   id: string;
   email: string;
-  profile: {
+  contactProfile: {
     firstName: string;
     lastName: string;
     phone: string | null;
@@ -169,15 +169,15 @@ export default function ManualCheckInSearch({ eventId }: Props) {
                     >
                       <div>
                         <p className="font-semibold text-neutral-900">
-                          {patient.profile?.firstName}{" "}
-                          {patient.profile?.lastName}
+                          {patient.contactProfile?.firstName}{" "}
+                          {patient.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-500">
                           {patient.email}
                         </p>
-                        {patient.profile?.phone && (
+                        {patient.contactProfile?.phone && (
                           <p className="text-xs text-neutral-400">
-                            {patient.profile.phone}
+                            {patient.contactProfile.phone}
                           </p>
                         )}
                       </div>
@@ -185,7 +185,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
                         onClick={() =>
                           handleCheckIn(
                             patient.id,
-                            `${patient.profile?.firstName} ${patient.profile?.lastName}`,
+                            `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
                           )
                         }
                         disabled={loading}

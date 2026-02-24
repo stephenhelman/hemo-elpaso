@@ -37,16 +37,16 @@ export async function PATCH(
 
     const patient = await prisma.patient.findUnique({
       where: { id: params.id },
-      include: { profile: true },
+      include: { contactProfile: true },
     });
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    // Update verification status
-    await prisma.patient.update({
-      where: { id: params.id },
+    // Update verification status on DisorderProfile (where it now lives)
+    await prisma.disorderProfile.update({
+      where: { patientId: params.id },
       data: {
         diagnosisVerified: action === "approve",
         diagnosisVerifiedBy: action === "approve" ? verifiedBy : null,
@@ -59,10 +59,10 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         patientId: admin.id,
-        action: `diagnosis_${action}d`,
+        action: (action === "approve" ? "DIAGNOSIS_APPROVED" : "DIAGNOSIS_REJECTED") as any,
         resourceType: "Patient",
         resourceId: patient.id,
-        details: `${action === "approve" ? "Approved" : "Rejected"} diagnosis letter for ${patient.profile?.firstName} ${patient.profile?.lastName}`,
+        details: `${action === "approve" ? "Approved" : "Rejected"} diagnosis letter for ${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
       },
     });
 

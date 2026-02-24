@@ -52,7 +52,7 @@ export async function POST(
         disbursements: true,
         patient: {
           include: {
-            profile: true,
+            contactProfile: true,
           },
         },
       },
@@ -119,7 +119,7 @@ export async function POST(
         action: "assistance_disbursement_created",
         resourceType: "AssistanceDisbursement",
         resourceId: disbursement.id,
-        details: `Created disbursement of $${amount} for ${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+        details: `Created disbursement of $${amount} for ${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,
       },
     });
 
@@ -144,7 +144,7 @@ export async function POST(
         templateType: "DISBURSEMENT_ISSUED",
         recipient: application.patient.email,
         data: {
-          patientName: `${application.patient.profile?.firstName} ${application.patient.profile?.lastName}`,
+          patientName: `${application.patient.contactProfile?.firstName} ${application.patient.contactProfile?.lastName}`,
           assistanceType:
             typeLabels[application.assistanceType] ||
             application.assistanceType,

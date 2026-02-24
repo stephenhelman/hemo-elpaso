@@ -19,27 +19,33 @@ import ExportButton from "@/components/ui/ExportButton";
 interface Patient {
   id: string;
   email: string;
-  diagnosisLetterUrl: string | null;
-  diagnosisLetterUploadedAt: Date | null;
   diagnosisGracePeriodEndsAt: Date | null;
-  profile: {
+  contactProfile: {
     firstName: string;
     lastName: string;
-    primaryCondition: string | null;
+  } | null;
+  disorderProfile: {
+    condition: string | null;
+    diagnosisLetterUrl: string | null;
+    diagnosisLetterUploadedAt: Date | null;
   } | null;
 }
 
 interface FamilyMember {
   id: string;
-  firstName: string;
-  lastName: string;
   relationship: string;
-  diagnosisLetterUrl: string | null;
-  diagnosisLetterUploadedAt: Date | null;
+  contactProfile: {
+    firstName: string;
+    lastName: string;
+  } | null;
+  disorderProfile: {
+    diagnosisLetterUrl: string | null;
+    diagnosisLetterUploadedAt: Date | null;
+  } | null;
   patient: {
     id: string;
     email: string;
-    profile: {
+    contactProfile: {
       firstName: string;
       lastName: string;
     } | null;
@@ -78,7 +84,7 @@ export default function DiagnosisVerificationList({
     const q = searchQuery.toLowerCase();
     return patients.filter((p) => {
       const name =
-        `${p.profile?.firstName ?? ""} ${p.profile?.lastName ?? ""}`.toLowerCase();
+        `${p.contactProfile?.firstName ?? ""} ${p.contactProfile?.lastName ?? ""}`.toLowerCase();
       return name.includes(q) || p.email.toLowerCase().includes(q);
     });
   }, [patients, searchQuery, typeFilter]);
@@ -88,7 +94,7 @@ export default function DiagnosisVerificationList({
     if (!searchQuery) return familyMembers;
     const q = searchQuery.toLowerCase();
     return familyMembers.filter((m) => {
-      const name = `${m.firstName} ${m.lastName}`.toLowerCase();
+      const name = `${m.contactProfile?.firstName ?? ""} ${m.contactProfile?.lastName ?? ""}`.toLowerCase();
       return name.includes(q) || m.patient.email.toLowerCase().includes(q);
     });
   }, [familyMembers, searchQuery, typeFilter]);
@@ -98,28 +104,28 @@ export default function DiagnosisVerificationList({
 
   const exportRows = [
     ...filteredPatients.map((p) => [
-      `${p.profile?.firstName ?? ""} ${p.profile?.lastName ?? ""}`.trim(),
+      `${p.contactProfile?.firstName ?? ""} ${p.contactProfile?.lastName ?? ""}`.trim(),
       "Patient",
       "",
       "",
       p.email,
-      p.profile?.primaryCondition ?? "N/A",
-      p.diagnosisLetterUploadedAt
-        ? new Date(p.diagnosisLetterUploadedAt).toLocaleDateString()
+      p.disorderProfile?.condition ?? "N/A",
+      p.disorderProfile?.diagnosisLetterUploadedAt
+        ? new Date(p.disorderProfile.diagnosisLetterUploadedAt).toLocaleDateString()
         : "Unknown",
       p.diagnosisGracePeriodEndsAt
         ? new Date(p.diagnosisGracePeriodEndsAt).toLocaleDateString()
         : "N/A",
     ]),
     ...filteredFamilyMembers.map((m) => [
-      `${m.firstName} ${m.lastName}`,
+      `${m.contactProfile?.firstName ?? ""} ${m.contactProfile?.lastName ?? ""}`.trim(),
       "Family Member",
       m.relationship,
-      `${m.patient.profile?.firstName ?? ""} ${m.patient.profile?.lastName ?? ""}`.trim(),
+      `${m.patient.contactProfile?.firstName ?? ""} ${m.patient.contactProfile?.lastName ?? ""}`.trim(),
       m.patient.email,
       "N/A",
-      m.diagnosisLetterUploadedAt
-        ? new Date(m.diagnosisLetterUploadedAt).toLocaleDateString()
+      m.disorderProfile?.diagnosisLetterUploadedAt
+        ? new Date(m.disorderProfile.diagnosisLetterUploadedAt).toLocaleDateString()
         : "Unknown",
       "N/A",
     ]),
@@ -252,16 +258,16 @@ export default function DiagnosisVerificationList({
 
                     <div className="flex-1">
                       <h3 className="font-semibold text-neutral-900">
-                        {patient.profile?.firstName} {patient.profile?.lastName}
+                        {patient.contactProfile?.firstName} {patient.contactProfile?.lastName}
                       </h3>
                       <p className="text-sm text-neutral-600">
                         {patient.email}
                       </p>
                       <p className="text-sm text-neutral-500 mt-1">
                         Uploaded:{" "}
-                        {patient.diagnosisLetterUploadedAt
+                        {patient.disorderProfile?.diagnosisLetterUploadedAt
                           ? new Date(
-                              patient.diagnosisLetterUploadedAt,
+                              patient.disorderProfile.diagnosisLetterUploadedAt,
                             ).toLocaleDateString()
                           : "Unknown"}
                       </p>
@@ -279,7 +285,7 @@ export default function DiagnosisVerificationList({
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a
-                      href={patient.diagnosisLetterUrl || "#"}
+                      href={patient.disorderProfile?.diagnosisLetterUrl || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -382,21 +388,21 @@ export default function DiagnosisVerificationList({
 
                     <div className="flex-1">
                       <h3 className="font-semibold text-neutral-900">
-                        {member.firstName} {member.lastName}
+                        {member.contactProfile?.firstName} {member.contactProfile?.lastName}
                       </h3>
                       <p className="text-sm text-neutral-600">
                         {member.relationship} of{" "}
-                        {member.patient.profile?.firstName}{" "}
-                        {member.patient.profile?.lastName}
+                        {member.patient.contactProfile?.firstName}{" "}
+                        {member.patient.contactProfile?.lastName}
                       </p>
                       <p className="text-sm text-neutral-500">
                         {member.patient.email}
                       </p>
                       <p className="text-sm text-neutral-500 mt-1">
                         Uploaded:{" "}
-                        {member.diagnosisLetterUploadedAt
+                        {member.disorderProfile?.diagnosisLetterUploadedAt
                           ? new Date(
-                              member.diagnosisLetterUploadedAt,
+                              member.disorderProfile.diagnosisLetterUploadedAt,
                             ).toLocaleDateString()
                           : "Unknown"}
                       </p>
@@ -405,7 +411,7 @@ export default function DiagnosisVerificationList({
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a
-                      href={member.diagnosisLetterUrl || "#"}
+                      href={member.disorderProfile?.diagnosisLetterUrl || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

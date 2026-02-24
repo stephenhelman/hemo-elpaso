@@ -20,32 +20,60 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json();
 
-    // Update profile
-    const updatedProfile = await prisma.patientProfile.update({
+    // Update ContactProfile (name, address, phone, DOB)
+    const updatedContactProfile = await prisma.contactProfile.update({
       where: { patientId: patient.id },
       data: {
         firstName: body.firstName,
         lastName: body.lastName,
         phone: body.phone,
         dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : undefined,
-        address: body.address,
+        addressLine1: body.address,
         city: body.city,
         state: body.state,
         zipCode: body.zipCode,
-        primaryCondition: body.primaryCondition,
-        severity: body.severity,
-        diagnosisDate: body.diagnosisDate
-          ? new Date(body.diagnosisDate)
-          : undefined,
-        treatingPhysician: body.treatingPhysician || null,
-        specialtyPharmacy: body.specialtyPharmacy || null,
-        emergencyContactName: body.emergencyContactName,
-        emergencyContactRelationship: body.emergencyContactRelationship,
-        emergencyContactPhone: body.emergencyContactPhone,
       },
     });
 
-    // Update preferences if provided
+    // Upsert DisorderProfile (condition/diagnosis — patient may not have one)
+    if (body.primaryCondition) {
+      await prisma.disorderProfile.upsert({
+        where: { patientId: patient.id },
+        create: {
+          patientId: patient.id,
+          condition: body.primaryCondition,
+          severity: body.severity || "",
+          dateOfDiagnosis: body.diagnosisDate ? new Date(body.diagnosisDate) : null,
+          treatingPhysician: body.treatingPhysician || null,
+          specialtyPharmacy: body.specialtyPharmacy || null,
+        },
+        update: {
+          condition: body.primaryCondition,
+          severity: body.severity,
+          dateOfDiagnosis: body.diagnosisDate ? new Date(body.diagnosisDate) : undefined,
+          treatingPhysician: body.treatingPhysician || null,
+          specialtyPharmacy: body.specialtyPharmacy || null,
+        },
+      });
+    }
+
+    // Update emergency contact on Patient root
+    if (
+      body.emergencyContactName !== undefined ||
+      body.emergencyContactPhone !== undefined ||
+      body.emergencyContactRelationship !== undefined
+    ) {
+      await prisma.patient.update({
+        where: { id: patient.id },
+        data: {
+          emergencyContactName: body.emergencyContactName,
+          emergencyContactRelationship: body.emergencyContactRelationship,
+          emergencyContactPhone: body.emergencyContactPhone,
+        },
+      });
+    }
+
+    // Update preferences if provided (languagePreference field removed from schema)
     if (body.preferences) {
       await prisma.patientPreferences.update({
         where: { patientId: patient.id },
@@ -57,7 +85,6 @@ export async function PATCH(request: NextRequest) {
           accessibilityNeeds: body.preferences.accessibilityNeeds,
           emailNotifications: body.preferences.emailNotifications,
           smsNotifications: body.preferences.smsNotifications,
-          languagePreference: body.preferences.languagePreference,
         },
       });
     }
@@ -74,9 +101,9 @@ export async function PATCH(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         patientId: patient.id,
-        action: "profile_updated",
-        resourceType: "PatientProfile",
-        resourceId: updatedProfile.id,
+        action: "PROFILE_UPDATED" as any,
+        resourceType: "ContactProfile",
+        resourceId: updatedContactProfile.id,
         details: "Profile information updated",
       },
     });

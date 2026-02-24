@@ -58,7 +58,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
 
     // EventTargeting - Condition match (30 points)
     if (event.targeting) {
-      const patientCondition = patient.disorderProfile!.condition;
+      const patientCondition = patient.disorderProfile?.condition ?? "";
       if (
         event.targeting.targetConditions.length === 0 ||
         event.targeting.targetConditions.includes(patientCondition)
@@ -71,7 +71,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
       }
 
       // Severity match (15 points)
-      const patientSeverity = patient.disorderProfile!.severity;
+      const patientSeverity = patient.disorderProfile?.severity ?? "";
       if (
         event.targeting.targetSeverity.length === 0 ||
         event.targeting.targetSeverity.includes(patientSeverity)
