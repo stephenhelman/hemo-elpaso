@@ -111,7 +111,9 @@ export default function NewEventPage() {
         toast.error(data.error || "Failed to create event");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create event");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create event",
+      );
     } finally {
       setLoading(false);
     }
@@ -168,7 +170,7 @@ export default function NewEventPage() {
               placeholder="spring-educational-dinner-2026"
             />
             <p className="text-xs text-neutral-500 mt-1">
-              URL: hemoelpaso.org/events/{formData.slug || "your-event-slug"}
+              URL: hemo-el-paso.org/events/{formData.slug || "your-event-slug"}
             </p>
           </FormField>
 
