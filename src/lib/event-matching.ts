@@ -1,9 +1,14 @@
 import { prisma } from "./db";
 
+interface Reason {
+  en: string;
+  es: string;
+}
+
 interface MatchScore {
   eventId: string;
   score: number;
-  reasons: string[];
+  reasons: Reason[];
 }
 
 export async function getRecommendedEvents(patientId: string, limit = 10) {
@@ -12,7 +17,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     where: { id: patientId },
     include: {
       preferences: true,
-      profile: true,
+      disorderProfile: true,
       familyMembers: true,
     },
   });
@@ -40,27 +45,33 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
   // Score each event
   const scores: MatchScore[] = events.map((event) => {
     let score = 0;
-    const reasons: string[] = [];
+    const reasons: Reason[] = [];
 
     // Topic/Category match (40 points max)
     if (patient.preferences!.interestedTopics.includes(event.category)) {
       score += 40;
-      reasons.push("Matches your interests");
+      reasons.push({
+        en: "Matches your interests",
+        es: "Coincide con tus intereses",
+      });
     }
 
     // EventTargeting - Condition match (30 points)
     if (event.targeting) {
-      const patientCondition = patient.profile!.primaryCondition;
+      const patientCondition = patient.disorderProfile!.condition;
       if (
         event.targeting.targetConditions.length === 0 ||
         event.targeting.targetConditions.includes(patientCondition)
       ) {
         score += 30;
-        reasons.push("Relevant to your condition");
+        reasons.push({
+          en: "Relevant to your condition",
+          es: "Relevant to your condition",
+        });
       }
 
       // Severity match (15 points)
-      const patientSeverity = patient.profile!.severity;
+      const patientSeverity = patient.disorderProfile!.severity;
       if (
         event.targeting.targetSeverity.length === 0 ||
         event.targeting.targetSeverity.includes(patientSeverity)
@@ -75,16 +86,22 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     );
     if (event.targetAudience === "youth" && hasChildren) {
       score += 20;
-      reasons.push("Great for families with kids");
+      reasons.push({
+        en: "Great for families with kids",
+        es: "Ideal para familias con niños.",
+      });
     } else if (
       event.targetAudience === "families" &&
       patient.familyMembers.length > 0
     ) {
       score += 20;
-      reasons.push("Perfect for your family");
+      reasons.push({ en: "Perfect for your family", es: "" });
     } else if (event.targetAudience === "all") {
       score += 10;
-      reasons.push("Open to all ages");
+      reasons.push({
+        en: "Open to all ages",
+        es: "Abierto a todas las edades",
+      });
     }
 
     // Capacity check (10 points if not full, heavy penalty if full)
@@ -93,11 +110,14 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     if (spotsLeft > 0) {
       score += 10;
       if (spotsLeft <= 5) {
-        reasons.push("⚡ Limited spots remaining!");
+        reasons.push({
+          en: "⚡ Limited spots remaining!",
+          es: "⚡ ¡Quedan plazas limitadas!",
+        });
       }
     } else {
       score -= 50; // Heavily penalize full events
-      reasons.push("Event is full");
+      reasons.push({ en: "Event is full", es: "El evento está lleno" });
     }
 
     // Time preference match (15 points)
@@ -112,11 +132,11 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     const timeKey = `${isWeekend ? "weekend" : "weekday"}_${timeOfDay}`;
     if (patient.preferences!.preferredEventTimes.includes(timeKey)) {
       score += 15;
-      reasons.push("Fits your schedule");
+      reasons.push({ en: "Fits your schedule", es: "Se adapta a tu horario" });
     }
 
     // Language match (10 points)
-    const preferredLang = patient.preferences!.languagePreference;
+    const preferredLang = patient.preferredLanguage;
     if (event.language === preferredLang || event.language === "both") {
       score += 10;
     } else {
@@ -129,13 +149,13 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     );
     if (daysUntil <= 14) {
       score += 5;
-      reasons.push("🔥 Coming up soon");
+      reasons.push({ en: "🔥 Coming up soon", es: "🔥 Próximamente" });
     }
 
     // Priority boost for featured events
     if (event.isPriority) {
       score += 25;
-      reasons.push("⭐ Featured event");
+      reasons.push({ en: "⭐ Featured event", es: "⭐ Evento destacado" });
     }
 
     return {
@@ -155,7 +175,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
 export async function shouldRecommendEvent(
   patientId: string,
   eventId: string,
-): Promise<{ recommend: boolean; score: number; reasons: string[] }> {
+): Promise<{ recommend: boolean; score: number; reasons: Reason[] }> {
   const recommendations = await getRecommendedEvents(patientId, 100);
   const match = recommendations.find((r) => r.eventId === eventId);
 

@@ -34,27 +34,25 @@ export default async function UserEditPage({ params }: Props) {
   if (!user) notFound();
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <Link
-          href={`/admin/users/${user.id}`}
-          className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to User Details
-        </Link>
+    <div className="p-4 md:p-8">
+      <Link
+        href={`/admin/users/${user.id}`}
+        className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to User Details
+      </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Edit User
-          </h1>
-          <p className="text-neutral-600">
-            {user.profile?.firstName} {user.profile?.lastName}
-          </p>
-        </div>
-
-        <UserEditForm user={user} />
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          Edit User
+        </h1>
+        <p className="text-neutral-600">
+          {user.profile?.firstName} {user.profile?.lastName}
+        </p>
       </div>
+
+      <UserEditForm user={user} />
     </div>
   );
 }

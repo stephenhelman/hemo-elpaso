@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { Users, Calendar, CheckCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { StatCard } from "@/components/ui/StatCard";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminDashboardTranslation } from "@/translation/adminPages";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -20,6 +23,9 @@ export default async function AdminDashboardPage() {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminDashboardTranslation[locale];
 
   // Fetch dashboard data
   const now = new Date();
@@ -152,10 +158,10 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Admin Dashboard
+          {t.heading}
         </h1>
         <p className="text-neutral-600">
-          Welcome back, {admin.profile?.firstName || "Admin"}
+          {t.welcome(admin.profile?.firstName || "Admin")}
         </p>
       </div>
 
@@ -165,7 +171,7 @@ export default async function AdminDashboardPage() {
           className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
         >
           <Calendar className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-          <h3 className="font-semibold text-neutral-900">Create Event</h3>
+          <h3 className="font-semibold text-neutral-900">{t.createEvent}</h3>
         </Link>
 
         <Link
@@ -173,7 +179,7 @@ export default async function AdminDashboardPage() {
           className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
         >
           <TrendingUp className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-          <h3 className="font-semibold text-neutral-900">View Reports</h3>
+          <h3 className="font-semibold text-neutral-900">{t.viewReports}</h3>
         </Link>
 
         <Link
@@ -181,42 +187,35 @@ export default async function AdminDashboardPage() {
           className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
         >
           <Users className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-          <h3 className="font-semibold text-neutral-900">Manage Users</h3>
+          <h3 className="font-semibold text-neutral-900">{t.manageUsers}</h3>
         </Link>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Patients */}
         <StatCard
-          label="Total Patients"
+          label={t.totalPatients}
           value={totalPatients.toString()}
           icon={<Users className="w-6 h-6" />}
           color="blue"
         />
-
-        {/* Total Events */}
         <StatCard
-          label="Total Events"
+          label={t.totalEvents}
           value={totalEvents.toString()}
           icon={<Calendar className="w-6 h-6" />}
           color="purple"
         />
-
-        {/* RSVP Rate */}
         <StatCard
-          label="RSVP Rate"
+          label={t.rsvpRate}
           value={`${rsvpRate}%`}
-          subtitle="Upcoming events"
+          subtitle={t.rsvpRateSub}
           icon={<TrendingUp className="w-6 h-6" />}
           color="green"
         />
-
-        {/* Attendance Rate */}
         <StatCard
-          label="Attendance Rate"
+          label={t.attendanceRate}
           value={`${attendanceRate}%`}
-          subtitle="Past events"
+          subtitle={t.attendanceRateSub}
           icon={<TrendingUp className="w-6 h-6" />}
           color="amber"
         />
@@ -227,18 +226,18 @@ export default async function AdminDashboardPage() {
         <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Upcoming Events
+              {t.upcomingEvents}
             </h2>
             <Link
               href="/admin/events"
               className="text-sm text-primary hover:text-primary-600 font-semibold"
             >
-              View All
+              {t.viewAll}
             </Link>
           </div>
 
           {upcomingEvents.length === 0 ? (
-            <p className="text-neutral-500 text-sm">No upcoming events</p>
+            <p className="text-neutral-500 text-sm">{t.noUpcoming}</p>
           ) : (
             <div className="space-y-3">
               {upcomingEvents.map((event) => (
@@ -248,17 +247,22 @@ export default async function AdminDashboardPage() {
                   className="block p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-50 transition-colors"
                 >
                   <h3 className="font-semibold text-neutral-900 mb-1">
-                    {event.titleEn}
+                    {locale === "es" ? event.titleEs : event.titleEn}
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-neutral-600">
                     <span>
-                      {new Date(event.eventDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(event.eventDate).toLocaleDateString(
+                        locale === "es" ? "es-MX" : "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
                     </span>
                     <span>•</span>
-                    <span>{event._count.rsvps} RSVPs</span>
+                    <span>
+                      {event._count.rsvps} {t.rsvps}
+                    </span>
                   </div>
                 </Link>
               ))}
@@ -269,11 +273,11 @@ export default async function AdminDashboardPage() {
         {/* Recent Activity */}
         <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <h2 className="text-xl font-display font-bold text-neutral-900 mb-4">
-            Recent Activity
+            {t.recentActivity}
           </h2>
 
           {recentActivity.length === 0 ? (
-            <p className="text-neutral-500 text-sm">No recent activity</p>
+            <p className="text-neutral-500 text-sm">{t.noActivity}</p>
           ) : (
             <div className="space-y-3">
               {recentActivity.map((rsvp) => (
@@ -290,15 +294,21 @@ export default async function AdminDashboardPage() {
                       {rsvp.patient.profile?.lastName}
                     </p>
                     <p className="text-xs text-neutral-600 truncate">
-                      RSVP'd to {rsvp.event.titleEn}
+                      {t.rsvpdTo}{" "}
+                      {locale === "es"
+                        ? rsvp.event.titleEs
+                        : rsvp.event.titleEn}
                     </p>
                     <p className="text-xs text-neutral-400 mt-1">
-                      {new Date(rsvp.rsvpDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {new Date(rsvp.rsvpDate).toLocaleDateString(
+                        locale === "es" ? "es-MX" : "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        },
+                      )}
                     </p>
                   </div>
                 </div>

@@ -3,59 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import {
-  LayoutDashboard,
-  Calendar,
-  User,
-  LogOut,
-  Home,
-  Shield,
-  DollarSign,
-} from "lucide-react";
+import { LogOut, Home, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PortalMobileNav from "../layout/PortalMobileNav";
-
 import { useLanguage } from "@/context/LanguageContext";
+import {
+  portalSidebarTranslation,
+  portalNavItemsTranslation,
+} from "@/translation/portalSidebar";
 
 interface Props {
   user: {
     name?: string;
     email?: string;
     picture?: string;
-    role?: string; // ADD THIS
+    role?: string;
   };
 }
-
-const navItems = [
-  {
-    href: "/portal/dashboard",
-    label: {
-      en: "Dashboard",
-      es: "Panel",
-    },
-    icon: LayoutDashboard,
-  },
-  {
-    href: "/portal/events",
-    label: { en: "Events", es: "Eventos" },
-    icon: Calendar,
-  },
-  {
-    href: "/portal/profile",
-    label: { en: "Profile", es: "Pagina de Usuario" },
-    icon: User,
-  },
-  {
-    href: "/portal/assistance",
-    label: { en: "Financial Assistance", es: "Asistencia Financiera" },
-    icon: DollarSign,
-  },
-];
 
 export default function PortalSidebar({ user }: Props) {
   const pathname = usePathname();
   const isAdmin = user.role === "board" || user.role === "admin";
   const { locale } = useLanguage();
+  const t = portalSidebarTranslation[locale];
 
   return (
     <>
@@ -74,7 +44,7 @@ export default function PortalSidebar({ user }: Props) {
             />
             <div>
               <p className="font-display font-bold text-neutral-900 text-sm leading-tight">
-                Patient Portal
+                {t.patientPortal}
               </p>
             </div>
           </div>
@@ -100,7 +70,7 @@ export default function PortalSidebar({ user }: Props) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1">
-            {navItems.map((item) => {
+            {portalNavItemsTranslation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
@@ -115,7 +85,7 @@ export default function PortalSidebar({ user }: Props) {
                   )}
                 >
                   <Icon className="w-5 h-5" />
-                  {item.label[locale]}
+                  {locale === "en" ? item.en : item.es}
                 </Link>
               );
             })}
@@ -131,9 +101,7 @@ export default function PortalSidebar({ user }: Props) {
                     shadow-md hover:shadow-lg"
                 >
                   <Shield className="w-5 h-5" />
-                  {locale === "en"
-                    ? "Admin Dashboard"
-                    : "Panel de administración"}
+                  {t.adminDashboard}
                 </Link>
               </div>
             )}
@@ -146,14 +114,14 @@ export default function PortalSidebar({ user }: Props) {
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
             >
               <Home className="w-5 h-5" />
-              Back to Website
+              {t.backToWebsite}
             </Link>
             <a
               href="/api/auth/logout"
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-5 h-5" />
-              Logout
+              {t.logout}
             </a>
           </div>
         </div>

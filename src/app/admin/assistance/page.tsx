@@ -6,10 +6,12 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
-  XCircle,
   AlertCircle,
 } from "lucide-react";
 import ApplicationsTable from "@/components/admin/assistance/ApplicationsTable";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminAssistancePageTranslation } from "@/translation/adminAssistance";
 
 interface Props {
   searchParams: {
@@ -32,6 +34,9 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminAssistancePageTranslation[locale];
 
   // Build filter
   const where: any = {};
@@ -90,16 +95,15 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
       amount: Number(d.amount),
     })),
   }));
+
   return (
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Financial Assistance Applications
+          {t.heading}
         </h1>
-        <p className="text-neutral-600">
-          Review and manage financial assistance requests from patients
-        </p>
+        <p className="text-neutral-600">{t.subtitle}</p>
       </div>
 
       {/* Applications Table */}
@@ -112,25 +116,25 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             icon={<DollarSign className="w-6 h-6" />}
-            label="Total Applications"
+            label={t.totalApplications}
             value={totalApplications.toString()}
             color="blue"
           />
           <StatCard
             icon={<Clock className="w-6 h-6" />}
-            label="Pending Review"
+            label={t.pendingReview}
             value={pendingReview.toString()}
             color="yellow"
           />
           <StatCard
             icon={<CheckCircle className="w-6 h-6" />}
-            label="Approved"
+            label={t.approved}
             value={approved.toString()}
             color="green"
           />
           <StatCard
             icon={<AlertCircle className="w-6 h-6" />}
-            label="Requested / Approved"
+            label={t.requestedApproved}
             value={`$${totalRequested.toFixed(0)} / $${totalApproved.toFixed(0)}`}
             color="purple"
           />

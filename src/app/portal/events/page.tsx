@@ -1,8 +1,11 @@
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import PortalEventsDisplay from "@/components/portal/PortalEventsDisplay";
 import { Calendar } from "lucide-react";
+import { Lang } from "@/types";
+import { portalEventsPageTranslation } from "@/translation/portalPages";
 
 export default async function PortalEventsPage() {
   const session = await getSession();
@@ -21,6 +24,9 @@ export default async function PortalEventsPage() {
   if (!patient) {
     redirect("/portal/register");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = portalEventsPageTranslation[locale];
 
   const now = new Date();
 
@@ -88,36 +94,31 @@ export default async function PortalEventsPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            My Events
-          </h1>
-          <p className="text-neutral-500">
-            Manage your RSVPs and discover new events
-          </p>
-        </div>
-
-        {myRsvps.length === 0 &&
-        recommendedEvents.length === 0 &&
-        allEvents.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
-            <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-            <h3 className="text-xl font-display font-bold text-neutral-900 mb-2">
-              No Events Available
-            </h3>
-            <p className="text-neutral-500">
-              Check back soon for upcoming events!
-            </p>
-          </div>
-        ) : (
-          <PortalEventsDisplay
-            myRsvps={myRsvps}
-            recommendedEvents={recommendedEvents}
-            allEvents={allEvents}
-          />
-        )}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+          {t.heading}
+        </h1>
+        <p className="text-neutral-500">{t.subtitle}</p>
       </div>
+
+      {myRsvps.length === 0 &&
+      recommendedEvents.length === 0 &&
+      allEvents.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
+          <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+          <h3 className="text-xl font-display font-bold text-neutral-900 mb-2">
+            {t.noEvents}
+          </h3>
+          <p className="text-neutral-500">{t.noEventsDesc}</p>
+        </div>
+      ) : (
+        <PortalEventsDisplay
+          myRsvps={myRsvps}
+          recommendedEvents={recommendedEvents}
+          allEvents={allEvents}
+          locale={locale}
+        />
+      )}
     </div>
   );
 }

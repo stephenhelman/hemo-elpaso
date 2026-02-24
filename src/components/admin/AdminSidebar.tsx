@@ -2,20 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  Settings,
-  LogOut,
-  Home,
-  BarChart3,
-  CheckCircle,
-  DollarSign,
-  FileCheck,
-} from "lucide-react";
+import { LogOut, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminMobileNav from "../layout/AdminMobileNav";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  adminSidebarTranslation,
+  adminNavItemsTranslation,
+} from "@/translation/adminSidebar";
 
 interface Props {
   user: {
@@ -24,51 +18,10 @@ interface Props {
   };
 }
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Events",
-    href: "/admin/events",
-    icon: Calendar,
-  },
-  {
-    label: "Reports",
-    href: "/admin/reports",
-    icon: BarChart3,
-  },
-  {
-    label: "Attendance",
-    href: "/admin/attendance",
-    icon: CheckCircle,
-  },
-  {
-    label: "Financial Assistance",
-    href: "/admin/assistance",
-    icon: DollarSign,
-  },
-  {
-    label: "Users",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    label: "Verification",
-    href: "/admin/verification",
-    icon: FileCheck,
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-];
-
 export default function AdminSidebar({ user }: Props) {
   const pathname = usePathname();
+  const { locale } = useLanguage();
+  const t = adminSidebarTranslation[locale];
 
   return (
     <>
@@ -84,7 +37,7 @@ export default function AdminSidebar({ user }: Props) {
             </div>
             <div>
               <p className="font-display font-bold text-white text-sm leading-tight">
-                Admin Portal
+                {t.adminPortal}
               </p>
             </div>
           </div>
@@ -110,7 +63,7 @@ export default function AdminSidebar({ user }: Props) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1">
-            {navItems.map((item) => {
+            {adminNavItemsTranslation.map((item) => {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href || pathname.startsWith(item.href + "/");
@@ -126,7 +79,7 @@ export default function AdminSidebar({ user }: Props) {
                   )}
                 >
                   <Icon className="w-5 h-5" />
-                  {item.label}
+                  {item[locale]}
                 </Link>
               );
             })}
@@ -139,14 +92,14 @@ export default function AdminSidebar({ user }: Props) {
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
             >
               <Home className="w-5 h-5" />
-              Back to Website
+              {t.backToWebsite}
             </Link>
             <a
               href="/api/auth/logout"
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-950/50 transition-colors"
             >
               <LogOut className="w-5 h-5" />
-              Logout
+              {t.logout}
             </a>
           </div>
         </div>

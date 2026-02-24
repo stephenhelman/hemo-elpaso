@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, QrCode } from "lucide-react";
 import QrCodeDisplay from "./QrCodeDisplay";
 import DateBadge from "@/components/ui/DateBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { upcomingEventCardTranslation } from "@/translation/rsvp";
 
 interface Props {
   rsvp: {
@@ -20,6 +22,8 @@ interface Props {
 
 export default function UpcomingEventCard({ rsvp }: Props) {
   const [showQr, setShowQr] = useState(false);
+  const { locale } = useLanguage();
+  const t = upcomingEventCardTranslation[locale];
   const eventDate = new Date(rsvp.event.eventDate);
 
   return (
@@ -35,7 +39,7 @@ export default function UpcomingEventCard({ rsvp }: Props) {
               {rsvp.event.titleEn}
             </h3>
             <p className="text-sm text-neutral-500">
-              {rsvp.attendeeCount} attendees
+              {rsvp.attendeeCount} {t.attendees}
             </p>
           </div>
         </div>
@@ -49,7 +53,7 @@ export default function UpcomingEventCard({ rsvp }: Props) {
           className="w-full px-4 py-2 text-sm text-primary hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
         >
           <QrCode className="w-4 h-4" />
-          {showQr ? "Hide QR Code" : "Show Check-in QR Code"}
+          {showQr ? t.hideQr : t.showQr}
         </button>
 
         {showQr && (

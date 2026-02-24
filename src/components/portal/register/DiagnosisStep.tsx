@@ -19,6 +19,12 @@ export default function DiagnosisStep({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [canSkip, setCanSkip] = useState(false);
 
+  // Check if patient has selected a condition
+  const hasCondition =
+    data.primaryCondition &&
+    data.primaryCondition !== "" &&
+    data.primaryCondition !== "none";
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -53,8 +59,8 @@ export default function DiagnosisStep({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Warn if skipping
-    if (!uploadedFile && !canSkip) {
+    // Only warn about diagnosis letter if patient HAS a condition
+    if (hasCondition && !uploadedFile && !canSkip) {
       const confirmed = confirm(
         "You haven't uploaded your diagnosis letter. You will have 60 days to upload it, " +
           "but you won't be able to RSVP for events or apply for financial assistance until it's verified.\n\n" +
@@ -74,141 +80,178 @@ export default function DiagnosisStep({
           Diagnosis Information
         </h2>
         <p className="text-neutral-500 text-sm">
-          Help us understand your bleeding disorder.
+          Help us understand if you or your family members have a bleeding
+          disorder.
         </p>
       </div>
 
-      <FormField label="Primary Condition" required>
+      <FormField label="Do you have a bleeding disorder?" required>
         <select
           required
-          value={data.primaryCondition}
-          onChange={(e) => updateData({ primaryCondition: e.target.value })}
+          value={data.primaryCondition || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            updateData({
+              primaryCondition: value === "none" ? "" : value,
+              // Clear other fields if selecting "none"
+              ...(value === "none" && {
+                severity: "",
+                diagnosisDate: "",
+                treatingPhysician: "",
+                specialtyPharmacy: "",
+                diagnosisLetterFile: null,
+              }),
+            });
+            if (value === "none") {
+              setUploadedFile(null);
+            }
+          }}
           className={inputClass}
         >
-          <option value="">Select condition...</option>
-          <option value="hemophilia_a">Hemophilia A</option>
-          <option value="hemophilia_b">Hemophilia B</option>
-          <option value="von_willebrand">Von Willebrand Disease</option>
-          <option value="other">Other Bleeding Disorder</option>
+          <option value="">Select...</option>
+          <option value="none">No, I do not have a bleeding disorder</option>
+          <option value="Hemophilia_a">Yes - Hemophilia A</option>
+          <option value="Hemophilia_b">Yes - Hemophilia B</option>
+          <option value="Von_Willebrand">Yes - Von Willebrand Disease</option>
+          <option value="other">Yes - Other Bleeding Disorder</option>
         </select>
       </FormField>
 
-      <FormField label="Severity" required>
-        <select
-          required
-          value={data.severity}
-          onChange={(e) => updateData({ severity: e.target.value })}
-          className={inputClass}
-        >
-          <option value="">Select severity...</option>
-          <option value="mild">Mild</option>
-          <option value="moderate">Moderate</option>
-          <option value="severe">Severe</option>
-        </select>
-      </FormField>
+      {/* Only show rest of form if they have a condition */}
+      {hasCondition && (
+        <>
+          <FormField label="Severity" required>
+            <select
+              required
+              value={data.severity}
+              onChange={(e) => updateData({ severity: e.target.value })}
+              className={inputClass}
+            >
+              <option value="">Select severity...</option>
+              <option value="mild">Mild</option>
+              <option value="moderate">Moderate</option>
+              <option value="severe">Severe</option>
+            </select>
+          </FormField>
 
-      <FormField label="Date of Diagnosis" required>
-        <input
-          type="date"
-          required
-          value={data.diagnosisDate}
-          onChange={(e) => updateData({ diagnosisDate: e.target.value })}
-          className={inputClass}
-        />
-      </FormField>
+          <FormField label="Date of Diagnosis" required>
+            <input
+              type="date"
+              required
+              value={data.diagnosisDate}
+              onChange={(e) => updateData({ diagnosisDate: e.target.value })}
+              className={inputClass}
+            />
+          </FormField>
 
-      <FormField label="Treating Physician">
-        <input
-          type="text"
-          value={data.treatingPhysician}
-          onChange={(e) => updateData({ treatingPhysician: e.target.value })}
-          className={inputClass}
-          placeholder="Dr. Smith"
-        />
-      </FormField>
+          <FormField label="Treating Physician">
+            <input
+              type="text"
+              value={data.treatingPhysician}
+              onChange={(e) =>
+                updateData({ treatingPhysician: e.target.value })
+              }
+              className={inputClass}
+              placeholder="Dr. Smith"
+            />
+          </FormField>
 
-      <FormField label="Specialty Pharmacy">
-        <input
-          type="text"
-          value={data.specialtyPharmacy}
-          onChange={(e) => updateData({ specialtyPharmacy: e.target.value })}
-          className={inputClass}
-          placeholder="Pharmacy name"
-        />
-      </FormField>
+          <FormField label="Specialty Pharmacy">
+            <input
+              type="text"
+              value={data.specialtyPharmacy}
+              onChange={(e) =>
+                updateData({ specialtyPharmacy: e.target.value })
+              }
+              className={inputClass}
+              placeholder="Pharmacy name"
+            />
+          </FormField>
 
-      {/* DIAGNOSIS LETTER UPLOAD - NEW SECTION */}
-      <div className="pt-4 border-t border-neutral-200">
-        <FormField label="Diagnosis Letter">
-          <p className="text-xs text-neutral-600 mb-3">
-            Please upload your official diagnosis letter from your physician.
-            This helps us verify your eligibility for services.
-          </p>
+          {/* DIAGNOSIS LETTER UPLOAD */}
+          <div className="pt-4 border-t border-neutral-200">
+            <FormField label="Diagnosis Letter">
+              <p className="text-xs text-neutral-600 mb-3">
+                Please upload your official diagnosis letter from your
+                physician. This helps us verify your eligibility for services.
+              </p>
 
-          {!uploadedFile ? (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
-              <Upload className="w-8 h-8 text-neutral-400 mb-2" />
-              <span className="text-sm text-neutral-600 mb-1">
-                Click to upload diagnosis letter
-              </span>
-              <span className="text-xs text-neutral-500">
-                PDF, JPG, or PNG (max 10MB)
-              </span>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </label>
-          ) : (
-            <div className="p-4 border border-green-200 bg-green-50 rounded-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <File className="w-6 h-6 text-green-600" />
-                  <div>
-                    <p className="font-medium text-green-900 text-sm">
-                      {uploadedFile.name}
-                    </p>
-                    <p className="text-xs text-green-700">
-                      {(uploadedFile.size / 1024).toFixed(2)} KB
-                    </p>
+              {!uploadedFile ? (
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
+                  <Upload className="w-8 h-8 text-neutral-400 mb-2" />
+                  <span className="text-sm text-neutral-600 mb-1">
+                    Click to upload diagnosis letter
+                  </span>
+                  <span className="text-xs text-neutral-500">
+                    PDF, JPG, or PNG (max 10MB)
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </label>
+              ) : (
+                <div className="p-4 border border-green-200 bg-green-50 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <File className="w-6 h-6 text-green-600" />
+                      <div>
+                        <p className="font-medium text-green-900 text-sm">
+                          {uploadedFile.name}
+                        </p>
+                        <p className="text-xs text-green-700">
+                          {(uploadedFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          )}
+              )}
 
-          {!uploadedFile && (
-            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <div className="text-xs text-amber-800">
-                  <p className="font-semibold mb-1">
-                    Don't have your diagnosis letter yet?
-                  </p>
-                  <p>
-                    You can skip this step and upload it later. You'll have{" "}
-                    <strong>60 days</strong> from registration to upload your
-                    diagnosis letter. Without it, you won't be able to:
-                  </p>
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>RSVP for events</li>
-                    <li>Apply for financial assistance</li>
-                  </ul>
+              {!uploadedFile && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    <div className="text-xs text-amber-800">
+                      <p className="font-semibold mb-1">
+                        Don't have your diagnosis letter yet?
+                      </p>
+                      <p>
+                        You can skip this step and upload it later. You'll have{" "}
+                        <strong>60 days</strong> from registration to upload
+                        your diagnosis letter. Without it, you won't be able to:
+                      </p>
+                      <ul className="list-disc ml-4 mt-1">
+                        <li>RSVP for events</li>
+                        <li>Apply for financial assistance</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </FormField>
-      </div>
+              )}
+            </FormField>
+          </div>
+        </>
+      )}
+
+      {/* Info message if no condition */}
+      {!hasCondition && data.primaryCondition === "" && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-sm text-blue-800">
+            💡 If you don't have a bleeding disorder but your family members do,
+            you can add them in the next step.
+          </p>
+        </div>
+      )}
 
       <div className="flex justify-between pt-4">
         <button

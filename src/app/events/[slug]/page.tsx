@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { formatEventDate, getStatusLabel } from "@/lib/event-utils";
+import { ensurePatientExists } from "@/lib/ensure-patient";
 import {
   Calendar,
   MapPin,
@@ -55,8 +56,15 @@ export default async function EventPage({ params, searchParams }: Props) {
   let isCheckedIn = false;
   const currentRsvpCount = event._count.rsvps;
 
-  // If user is logged in, check if they have RSVP'd and if they're checked in
+  // If user is logged in, ensure a Patient row exists then check RSVP/check-in state
   if (session?.user) {
+    const stub = await ensurePatientExists(session.user.sub, session.user.email);
+
+    // Gate: if registration is not complete, send them to finish it and come back
+    if (!stub.registrationCompletedAt && !stub.profile) {
+      redirect(`/register?callbackUrl=/events/${params.slug}`);
+    }
+
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
     });
@@ -313,7 +321,7 @@ export default async function EventPage({ params, searchParams }: Props) {
                   Sign in to RSVP for this event
                 </p>
                 <Link
-                  href="/api/auth/login"
+                  href={`/api/auth/login?returnTo=/events/${params.slug}`}
                   className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
                 >
                   Sign In

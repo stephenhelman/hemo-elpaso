@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { Users, Search, Filter, Download } from "lucide-react";
+import { Users } from "lucide-react";
 import UsersTable from "@/components/admin/users/UsersTable";
 import { StatCard } from "@/components/ui/StatCard";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminUsersTranslation } from "@/translation/adminPages";
 
 interface Props {
   searchParams: {
@@ -27,6 +30,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminUsersTranslation[locale];
 
   // Build filter
   const where: any = {};
@@ -83,15 +89,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            User Management
+            {t.heading}
           </h1>
-          <p className="text-neutral-600">
-            Manage all registered users, roles, and view participation history
-          </p>
+          <p className="text-neutral-600">{t.subtitle}</p>
         </div>
       </div>
-
-      {/* Stats */}
 
       {/* Users Table */}
       <UsersTable
@@ -103,25 +105,25 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            label="Total Users"
+            label={t.totalUsers}
             value={totalUsers.toString()}
             color="blue"
             icon={<Users className="w-6 h-6" />}
           />
           <StatCard
-            label="Patients"
+            label={t.patients}
             value={patientCount.toString()}
             color="green"
             icon={<Users className="w-6 h-6" />}
           />
           <StatCard
-            label="Admins"
+            label={t.admins}
             value={adminCount.toString()}
             color="purple"
             icon={<Users className="w-6 h-6" />}
           />
           <StatCard
-            label="Board Members"
+            label={t.boardMembers}
             value={boardCount.toString()}
             color="amber"
             icon={<Users className="w-6 h-6" />}

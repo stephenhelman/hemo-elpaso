@@ -1,5 +1,4 @@
 import {
-  PatientProfile,
   Rsvp,
   CheckIn,
   Event as EventProper,

@@ -27,7 +27,7 @@ export async function seedEngagement() {
         include: {
           patient: {
             include: {
-              profile: true, // FIXED
+              contactProfile: true,
             },
           },
         },
@@ -113,7 +113,7 @@ export async function seedEngagement() {
           questionEs: template.questionEs,
           originalLang: randomItem(["en", "es"]),
           patientId: asker.patientId,
-          patientName: `${asker.patient.profile?.firstName} ${asker.patient.profile?.lastName}`,
+          patientName: `${asker.patient.contactProfile?.firstName} ${asker.patient.contactProfile?.lastName}`,
           isAnonymous: randomBoolean(0.3),
           sessionToken: asker.sessionToken,
           answered: isAnswered,

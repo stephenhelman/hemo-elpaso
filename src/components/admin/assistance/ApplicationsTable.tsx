@@ -7,19 +7,8 @@ import Link from "next/link";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ExportButton from "@/components/ui/ExportButton";
 import FilterBar from "@/components/ui/FilterBar";
-
-const APPLICATION_STATUS_CONFIG = {
-  DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-800" },
-  SUBMITTED: { label: "Submitted", color: "bg-blue-100 text-blue-800" },
-  UNDER_REVIEW: {
-    label: "Under Review",
-    color: "bg-yellow-100 text-yellow-800",
-  },
-  APPROVED: { label: "Approved", color: "bg-green-100 text-green-800" },
-  DENIED: { label: "Denied", color: "bg-red-100 text-red-800" },
-  DISBURSED: { label: "Disbursed", color: "bg-purple-100 text-purple-800" },
-  CLOSED: { label: "Closed", color: "bg-gray-100 text-gray-800" },
-};
+import { adminAssistanceTableTranslation } from "@/translation/adminAssistance";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Application {
   id: string;
@@ -57,9 +46,37 @@ export default function ApplicationsTable({
   children,
 }: Props) {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = adminAssistanceTableTranslation[locale];
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(currentStatus);
   const [type, setType] = useState(currentType);
+
+  const APPLICATION_STATUS_CONFIG = {
+    DRAFT: { label: t.statusLabels.DRAFT, color: "bg-gray-100 text-gray-800" },
+    SUBMITTED: {
+      label: t.statusLabels.SUBMITTED,
+      color: "bg-blue-100 text-blue-800",
+    },
+    UNDER_REVIEW: {
+      label: t.statusLabels.UNDER_REVIEW,
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    APPROVED: {
+      label: t.statusLabels.APPROVED,
+      color: "bg-green-100 text-green-800",
+    },
+    DENIED: { label: t.statusLabels.DENIED, color: "bg-red-100 text-red-800" },
+    DISBURSED: {
+      label: t.statusLabels.DISBURSED,
+      color: "bg-purple-100 text-purple-800",
+    },
+    CLOSED: {
+      label: t.statusLabels.CLOSED,
+      color: "bg-gray-100 text-gray-800",
+    },
+  };
 
   const handleFilter = () => {
     const params = new URLSearchParams();
@@ -90,24 +107,15 @@ export default function ApplicationsTable({
     );
   });
 
-  const typeLabels = {
-    EVENT_FEES: "Event Fees",
-    TRANSPORTATION: "Transportation",
-    MEDICATION: "Medication",
-    MEDICAL_EQUIPMENT: "Medical Equipment",
-    EMERGENCY_SUPPORT: "Emergency Support",
-    OTHER: "Other",
-  };
-
   const exportRows = filteredApps.map((app) => [
     `${app.patient.profile?.firstName ?? ""} ${app.patient.profile?.lastName ?? ""}`.trim(),
     app.patient.email,
-    typeLabels[app.assistanceType as keyof typeof typeLabels] ??
+    t.typeLabels[app.assistanceType as keyof typeof t.typeLabels] ??
       app.assistanceType,
     app.purpose,
     Number(app.requestedAmount).toFixed(2),
     app.approvedAmount ? Number(app.approvedAmount).toFixed(2) : "",
-    app.status,
+    t.statusLabels[app.status as keyof typeof t.statusLabels] ?? app.status,
     app._count.documents,
     app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "",
   ]);
@@ -127,52 +135,46 @@ export default function ApplicationsTable({
               onClick={handleFilter}
               className={`${buttonClasses} bg-primary text-white hover:bg-primary-600 flex-1`}
             >
-              Apply
+              {t.apply}
             </button>
             <button
               onClick={handleReset}
               className={`${buttonClasses} border border-neutral-300 text-neutral-700 hover:bg-neutral-50 flex-1`}
             >
-              Reset
+              {t.reset}
             </button>
           </>
         }
         exportButton={
           <ExportButton
             headers={[
-              "Patient Name",
-              "Email",
-              "Type",
-              "Purpose",
-              "Requested",
-              "Approved",
-              "Status",
-              "Docs",
-              "Submitted",
+              t.csvHeaders.patient,
+              t.csvHeaders.email,
+              t.csvHeaders.type,
+              t.csvHeaders.purpose,
+              t.csvHeaders.amount,
+              t.csvHeaders.approved,
+              t.csvHeaders.status,
+              t.csvHeaders.docs,
+              t.csvHeaders.submitted,
             ]}
             rows={exportRows}
             filename={`assistance-applications-${new Date().toISOString().split("T")[0]}.csv`}
           />
         }
-        stats={
-          <>
-            Showing <span className="font-semibold">{filteredApps.length}</span>{" "}
-            of <span className="font-semibold">{applications.length}</span>{" "}
-            applications
-          </>
-        }
+        stats={<>{t.showing(filteredApps.length, applications.length)}</>}
       >
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Search
+              {t.searchLabel}
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search by name, email, or purpose..."
+                placeholder={t.searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className={`pl-10 ${inputClasses}`}
@@ -183,39 +185,47 @@ export default function ApplicationsTable({
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Status
+              {t.statusLabel}
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className={inputClasses}
             >
-              <option value="all">All Status</option>
-              <option value="SUBMITTED">Submitted</option>
-              <option value="UNDER_REVIEW">Under Review</option>
-              <option value="APPROVED">Approved</option>
-              <option value="DENIED">Denied</option>
-              <option value="DISBURSED">Disbursed</option>
+              <option value="all">{t.allStatuses}</option>
+              <option value="SUBMITTED">{t.statusLabels.SUBMITTED}</option>
+              <option value="UNDER_REVIEW">
+                {t.statusLabels.UNDER_REVIEW}
+              </option>
+              <option value="APPROVED">{t.statusLabels.APPROVED}</option>
+              <option value="DENIED">{t.statusLabels.DENIED}</option>
+              <option value="DISBURSED">{t.statusLabels.DISBURSED}</option>
             </select>
           </div>
 
           {/* Type Filter */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Type
+              {t.typeLabel}
             </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
               className={inputClasses}
             >
-              <option value="all">All Types</option>
-              <option value="EVENT_FEES">Event Fees</option>
-              <option value="TRANSPORTATION">Transportation</option>
-              <option value="MEDICATION">Medication</option>
-              <option value="MEDICAL_EQUIPMENT">Medical Equipment</option>
-              <option value="EMERGENCY_SUPPORT">Emergency Support</option>
-              <option value="OTHER">Other</option>
+              <option value="all">{t.allTypes}</option>
+              <option value="EVENT_FEES">{t.typeLabels.EVENT_FEES}</option>
+              <option value="TRANSPORTATION">
+                {t.typeLabels.TRANSPORTATION}
+              </option>
+              <option value="MEDICATION">{t.typeLabels.MEDICATION}</option>
+              <option value="MEDICAL_EQUIPMENT">
+                {t.typeLabels.MEDICAL_EQUIPMENT}
+              </option>
+              <option value="EMERGENCY_SUPPORT">
+                {t.typeLabels.EMERGENCY_SUPPORT}
+              </option>
+              <option value="OTHER">{t.typeLabels.OTHER}</option>
             </select>
           </div>
         </div>
@@ -228,25 +238,25 @@ export default function ApplicationsTable({
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Patient
+                  {t.tableHeaders.patient}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Type
+                  {t.tableHeaders.type}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Purpose
+                  {t.tableHeaders.purpose}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Requested
+                  {t.tableHeaders.requested}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Status
+                  {t.tableHeaders.status}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Docs
+                  {t.tableHeaders.docs}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Actions
+                  {t.tableHeaders.actions}
                 </th>
               </tr>
             </thead>
@@ -257,7 +267,7 @@ export default function ApplicationsTable({
                     colSpan={7}
                     className="px-6 py-12 text-center text-neutral-400"
                   >
-                    No applications found
+                    {t.noFound}
                   </td>
                 </tr>
               ) : (
@@ -278,11 +288,9 @@ export default function ApplicationsTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-neutral-900">
-                      {
-                        typeLabels[
-                          app.assistanceType as keyof typeof typeLabels
-                        ]
-                      }
+                      {t.typeLabels[
+                        app.assistanceType as keyof typeof t.typeLabels
+                      ] ?? app.assistanceType}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4">
                       <p className="text-sm text-neutral-900 line-clamp-2 max-w-xs">
@@ -314,7 +322,7 @@ export default function ApplicationsTable({
                         className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-sm font-semibold"
                       >
                         <Eye className="w-4 h-4" />
-                        Review
+                        {t.review}
                       </Link>
                     </td>
                   </tr>

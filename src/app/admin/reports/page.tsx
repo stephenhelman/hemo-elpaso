@@ -6,6 +6,9 @@ import ReportsFilters from "@/components/admin/reports/ReportsFilters";
 import AttendanceReport from "@/components/admin/reports/AttendanceReport";
 import EngagementReport from "@/components/admin/reports/EngagementReport";
 import DemographicsReport from "@/components/admin/reports/DemographicsReport";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminReportsTranslation } from "@/translation/adminPages";
 
 interface Props {
   searchParams: {
@@ -30,6 +33,9 @@ export default async function ReportsPage({ searchParams }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminReportsTranslation[locale];
 
   // Parse filters
   const now = new Date();
@@ -185,11 +191,9 @@ export default async function ReportsPage({ searchParams }: Props) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Reports & Analytics
+          {t.heading}
         </h1>
-        <p className="text-neutral-600">
-          View attendance, engagement, and demographic insights
-        </p>
+        <p className="text-neutral-600">{t.subtitle}</p>
       </div>
 
       {/* Filters */}
@@ -203,26 +207,26 @@ export default async function ReportsPage({ searchParams }: Props) {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <SummaryCard
-          title="Total Events"
+          title={t.totalEvents}
           value={totalEvents.toString()}
           icon={<Calendar className="w-6 h-6" />}
           color="blue"
         />
         <SummaryCard
-          title="Total RSVPs"
+          title={t.totalRsvps}
           value={totalRsvps.toString()}
           icon={<Users className="w-6 h-6" />}
           color="purple"
         />
         <SummaryCard
-          title="Patient Attendance"
+          title={t.patientAttendance}
           value={totalCheckIns.toString()}
-          subtitle="Patients only"
+          subtitle={t.patientsOnly}
           icon={<Users className="w-6 h-6" />}
           color="green"
         />
         <SummaryCard
-          title="Attendance Rate"
+          title={t.attendanceRate}
           value={`${avgAttendanceRate}%`}
           icon={<TrendingUp className="w-6 h-6" />}
           color="amber"

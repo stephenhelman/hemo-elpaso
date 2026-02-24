@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { Lang } from "@/types";
+import { liveEventBannerTranslation } from "@/translation/portal";
 
 interface Props {
   patientId: string;
+  locale?: Lang;
 }
 
-export default async function LiveEventBanner({ patientId }: Props) {
+export default async function LiveEventBanner({ patientId, locale = "en" }: Props) {
+  const t = liveEventBannerTranslation[locale];
   // Get events the patient is checked into that are live now
   const now = new Date();
 
@@ -61,7 +65,7 @@ export default async function LiveEventBanner({ patientId }: Props) {
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                     <span className="text-white/90 text-xs font-semibold uppercase tracking-wide">
-                      Live Now
+                      {t.liveNow}
                     </span>
                   </div>
                   <h3 className="font-display font-bold text-white text-xl mb-1">
@@ -83,7 +87,7 @@ export default async function LiveEventBanner({ patientId }: Props) {
 
               <div className="flex items-center gap-2 text-white group-hover:translate-x-1 transition-transform">
                 <span className="hidden sm:inline text-sm font-semibold">
-                  Join Live Event
+                  {t.joinLive}
                 </span>
                 <ArrowRight className="w-5 h-5" />
               </div>

@@ -62,6 +62,14 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
+    // Update preferred language on Patient record + sync locale cookie
+    if (body.preferredLanguage) {
+      await prisma.patient.update({
+        where: { id: patient.id },
+        data: { preferredLanguage: body.preferredLanguage },
+      });
+    }
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
@@ -73,7 +81,18 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true });
+
+    // Sync locale cookie if language preference changed
+    if (body.preferredLanguage) {
+      response.cookies.set("locale", body.preferredLanguage, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json(

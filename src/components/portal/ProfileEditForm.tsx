@@ -6,21 +6,20 @@ import { Users, Loader2, Plus, Trash2, Pencil, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import DiagnosisUploadSection from "./register/DiagnosisUploadSection";
+import { Lang } from "@/types";
+import { profileFormTranslation } from "@/translation/portalPages";
 
 interface Patient {
   id: string;
   email: string;
-  diagnosisLetterUrl: string | null;
-  diagnosisLetterKey: string | null;
-  diagnosisLetterUploadedAt: Date | null;
-  diagnosisVerified: boolean;
-  diagnosisVerifiedBy: string | null;
-  diagnosisVerifiedAt: Date | null;
-  diagnosisRejectedReason: string | null;
-  registrationCompletedAt: Date | null;
   diagnosisGracePeriodEndsAt: Date | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelationship: string | null;
 
-  profile: {
+  // Contact Profile (always exists after registration)
+  contactProfile: {
+    id: string;
     firstName: string;
     lastName: string;
     phone: string | null;
@@ -30,11 +29,23 @@ interface Patient {
     city: string | null;
     state: string | null;
     zipCode: string | null;
-    primaryCondition: string | null;
-    severity: string | null;
+  } | null;
+
+  // Disorder Profile (only if patient has condition)
+  disorderProfile: {
+    id: string;
+    condition: string;
+    severity: string;
     dateOfDiagnosis: Date | null;
-    emergencyContactName: string | null;
-    emergencyContactPhone: string | null;
+    treatingPhysician: string | null;
+    specialtyPharmacy: string | null;
+    diagnosisLetterUrl: string | null;
+    diagnosisLetterKey: string | null;
+    diagnosisLetterUploadedAt: Date | null;
+    diagnosisVerified: boolean;
+    diagnosisVerifiedBy: string | null;
+    diagnosisVerifiedAt: Date | null;
+    diagnosisRejectedReason: string | null;
   } | null;
 
   familyMembers: FamilyMember[];
@@ -42,29 +53,43 @@ interface Patient {
 
 interface FamilyMember {
   id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: Date | null;
   relationship: string;
   hasBleedingDisorder: boolean;
-  condition: string;
-  severity: string;
-  diagnosisLetterUrl: string | null;
-  diagnosisLetterKey: string | null;
-  diagnosisLetterUploadedAt: Date | null;
-  diagnosisVerified: boolean;
-  diagnosisVerifiedBy: string | null;
-  diagnosisVerifiedAt: Date | null;
-  diagnosisRejectedReason: string | null;
+  migrationEligibleAt: Date | null;
+
+  contactProfile: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    dateOfBirth: Date | null;
+  } | null;
+
+  disorderProfile: {
+    id: string;
+    condition: string;
+    severity: string;
+    dateOfDiagnosis: Date | null;
+    treatingPhysician: string | null;
+    specialtyPharmacy: string | null;
+    diagnosisLetterUrl: string | null;
+    diagnosisLetterKey: string | null;
+    diagnosisLetterUploadedAt: Date | null;
+    diagnosisVerified: boolean;
+    diagnosisVerifiedBy: string | null;
+    diagnosisVerifiedAt: Date | null;
+    diagnosisRejectedReason: string | null;
+  } | null;
 }
 
 interface Props {
   patient: Patient;
+  locale: Lang;
 }
 
-export default function ProfileEditForm({ patient }: Props) {
+export default function ProfileEditForm({ patient, locale }: Props) {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
+  const t = profileFormTranslation[locale];
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "personal" | "medical" | "family" | "verification"
@@ -81,27 +106,42 @@ export default function ProfileEditForm({ patient }: Props) {
     hasBleedingDisorder: false,
     condition: "",
     severity: "",
+    diagnosisDate: "",
+    treatingPhysician: "",
+    specialtyPharmacy: "",
   });
 
   const [formData, setFormData] = useState({
-    firstName: patient.profile?.firstName || "",
-    lastName: patient.profile?.lastName || "",
-    phone: patient.profile?.phone || "",
-    dateOfBirth: patient.profile?.dateOfBirth
-      ? new Date(patient.profile.dateOfBirth).toISOString().split("T")[0]
+    // Contact Profile fields
+    firstName: patient.contactProfile?.firstName || "",
+    lastName: patient.contactProfile?.lastName || "",
+    phone: patient.contactProfile?.phone || "",
+    dateOfBirth: patient.contactProfile?.dateOfBirth
+      ? new Date(patient.contactProfile.dateOfBirth).toISOString().split("T")[0]
       : "",
-    addressLine1: patient.profile?.addressLine1 || "",
-    addressLine2: patient.profile?.addressLine2 || "",
-    city: patient.profile?.city || "",
-    state: patient.profile?.state || "",
-    zipCode: patient.profile?.zipCode || "",
-    primaryCondition: patient.profile?.primaryCondition || "",
-    severity: patient.profile?.severity || "",
-    dateOfDiagnosis: patient.profile?.dateOfDiagnosis
-      ? new Date(patient.profile.dateOfDiagnosis).toISOString().split("T")[0]
+    addressLine1: patient.contactProfile?.addressLine1 || "",
+    addressLine2: patient.contactProfile?.addressLine2 || "",
+    city: patient.contactProfile?.city || "",
+    state: patient.contactProfile?.state || "",
+    zipCode: patient.contactProfile?.zipCode || "",
+
+    // Disorder Profile fields (may be null)
+    primaryCondition: patient.disorderProfile?.condition || "",
+    severity: patient.disorderProfile?.severity || "",
+    dateOfDiagnosis: patient.disorderProfile?.dateOfDiagnosis
+      ? new Date(patient.disorderProfile.dateOfDiagnosis)
+          .toISOString()
+          .split("T")[0]
       : "",
-    emergencyContactName: patient.profile?.emergencyContactName || "",
-    emergencyContactPhone: patient.profile?.emergencyContactPhone || "",
+    treatingPhysician: patient.disorderProfile?.treatingPhysician || "",
+    specialtyPharmacy: patient.disorderProfile?.specialtyPharmacy || "",
+
+    // Emergency Contact (on Patient)
+    emergencyContactName: patient.emergencyContactName || "",
+    emergencyContactPhone: patient.emergencyContactPhone || "",
+    emergencyContactRelationship: patient.emergencyContactRelationship || "",
+
+    preferredLanguage: locale,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,15 +157,13 @@ export default function ProfileEditForm({ patient }: Props) {
 
       if (response.ok) {
         router.refresh();
-        toast.success("Profile updated successfully!");
+        toast.success(t.saved);
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to update profile");
+        toast.error(data.error || t.error);
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update profile",
-      );
+      toast.error(error instanceof Error ? error.message : t.error);
     } finally {
       setLoading(false);
     }
@@ -141,6 +179,9 @@ export default function ProfileEditForm({ patient }: Props) {
       hasBleedingDisorder: false,
       condition: "",
       severity: "",
+      diagnosisDate: "",
+      treatingPhysician: "",
+      specialtyPharmacy: "",
     });
     setShowAddMember(true);
   };
@@ -148,15 +189,24 @@ export default function ProfileEditForm({ patient }: Props) {
   const handleEditMember = (member: FamilyMember) => {
     setEditingMember(member.id);
     setFamilyMemberForm({
-      firstName: member.firstName,
-      lastName: member.lastName,
-      dateOfBirth: member.dateOfBirth
-        ? new Date(member.dateOfBirth).toISOString().split("T")[0]
+      firstName: member.contactProfile?.firstName || "",
+      lastName: member.contactProfile?.lastName || "",
+      dateOfBirth: member.contactProfile?.dateOfBirth
+        ? new Date(member.contactProfile.dateOfBirth)
+            .toISOString()
+            .split("T")[0]
         : "",
       relationship: member.relationship,
-      hasBleedingDisorder: member.hasBleedingDisorder || false,
-      condition: member.condition || "",
-      severity: member.severity || "",
+      hasBleedingDisorder: member.hasBleedingDisorder,
+      condition: member.disorderProfile?.condition || "",
+      severity: member.disorderProfile?.severity || "",
+      diagnosisDate: member.disorderProfile?.dateOfDiagnosis
+        ? new Date(member.disorderProfile.dateOfDiagnosis)
+            .toISOString()
+            .split("T")[0]
+        : "",
+      treatingPhysician: member.disorderProfile?.treatingPhysician || "",
+      specialtyPharmacy: member.disorderProfile?.specialtyPharmacy || "",
     });
     setShowAddMember(true);
   };
@@ -179,6 +229,9 @@ export default function ProfileEditForm({ patient }: Props) {
 
       if (response.ok) {
         router.refresh();
+        toast.success(
+          editingMember ? "Family member updated" : "Family member added",
+        );
         setShowAddMember(false);
         setEditingMember(null);
         setFamilyMemberForm({
@@ -189,6 +242,9 @@ export default function ProfileEditForm({ patient }: Props) {
           hasBleedingDisorder: false,
           condition: "",
           severity: "",
+          diagnosisDate: "",
+          treatingPhysician: "",
+          specialtyPharmacy: "",
         });
       } else {
         const data = await response.json();
@@ -222,6 +278,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
       if (response.ok) {
         router.refresh();
+        toast.success("Family member removed");
       } else {
         const data = await response.json();
         toast.error(data.error || "Failed to delete family member");
@@ -266,7 +323,7 @@ export default function ProfileEditForm({ patient }: Props) {
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
             }`}
           >
-            Personal Info
+            {t.tabPersonal}
           </button>
           <button
             type="button"
@@ -277,7 +334,7 @@ export default function ProfileEditForm({ patient }: Props) {
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
             }`}
           >
-            Medical Info
+            {t.tabMedical}
           </button>
           <button
             type="button"
@@ -288,7 +345,7 @@ export default function ProfileEditForm({ patient }: Props) {
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
             }`}
           >
-            Family Members ({patient.familyMembers.length})
+            {t.tabFamily} ({patient.familyMembers.length})
           </button>
           <button
             type="button"
@@ -299,18 +356,17 @@ export default function ProfileEditForm({ patient }: Props) {
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
             }`}
           >
-            Verification
+            {t.tabVerification}
           </button>
         </div>
 
         {/* Personal Info Tab */}
         {activeTab === "personal" && (
           <div className="space-y-6">
-            {/* ... keep existing personal info fields ... */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  First Name *
+                  {t.firstName}
                 </label>
                 <input
                   type="text"
@@ -325,7 +381,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Last Name *
+                  {t.lastName}
                 </label>
                 <input
                   type="text"
@@ -342,7 +398,7 @@ export default function ProfileEditForm({ patient }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Phone Number
+                  {t.phone}
                 </label>
                 <input
                   type="tel"
@@ -356,7 +412,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Date of Birth
+                  {t.dateOfBirth}
                 </label>
                 <input
                   type="date"
@@ -371,7 +427,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Address Line 1
+                {t.address1}
               </label>
               <input
                 type="text"
@@ -385,7 +441,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Address Line 2
+                {t.address2}
               </label>
               <input
                 type="text"
@@ -400,7 +456,7 @@ export default function ProfileEditForm({ patient }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  City
+                  {t.city}
                 </label>
                 <input
                   type="text"
@@ -414,7 +470,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  State
+                  {t.state}
                 </label>
                 <input
                   type="text"
@@ -428,7 +484,7 @@ export default function ProfileEditForm({ patient }: Props) {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  ZIP Code
+                  {t.zip}
                 </label>
                 <input
                   type="text"
@@ -440,17 +496,36 @@ export default function ProfileEditForm({ patient }: Props) {
                 />
               </div>
             </div>
+
+            {/* Language Preference */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                {t.languagePreference}
+              </label>
+              <select
+                value={formData.preferredLanguage}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    preferredLanguage: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="en">{t.english}</option>
+                <option value="es">{t.spanish}</option>
+              </select>
+            </div>
           </div>
         )}
 
         {/* Medical Info Tab */}
         {activeTab === "medical" && (
           <div className="space-y-6">
-            {/* ... keep existing medical info fields ... */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Primary Condition
+                  {t.primaryCondition}
                 </label>
                 <select
                   value={formData.primaryCondition}
@@ -462,17 +537,17 @@ export default function ProfileEditForm({ patient }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="">Select condition</option>
-                  <option value="hemophilia_a">Hemophilia A</option>
-                  <option value="hemophilia_b">Hemophilia B</option>
-                  <option value="von_willebrand">Von Willebrand Disease</option>
-                  <option value="other">Other</option>
+                  <option value="">{t.selectCondition}</option>
+                  <option value="Hemophilia_a">{t.hemophiliaA}</option>
+                  <option value="Hemophilia_b">{t.hemophiliaB}</option>
+                  <option value="Von_Willebrand">{t.vonWillebrand}</option>
+                  <option value="other">{t.other}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Severity
+                  {t.severity}
                 </label>
                 <select
                   value={formData.severity}
@@ -481,17 +556,17 @@ export default function ProfileEditForm({ patient }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="">Select severity</option>
-                  <option value="mild">Mild</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="severe">Severe</option>
+                  <option value="">{t.selectSeverity}</option>
+                  <option value="mild">{t.mild}</option>
+                  <option value="moderate">{t.moderate}</option>
+                  <option value="severe">{t.severe}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Date of Diagnosis
+                {t.diagnosisDate}
               </label>
               <input
                 type="date"
@@ -503,15 +578,53 @@ export default function ProfileEditForm({ patient }: Props) {
               />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Treating Physician
+                </label>
+                <input
+                  type="text"
+                  value={formData.treatingPhysician}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      treatingPhysician: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Dr. Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Specialty Pharmacy
+                </label>
+                <input
+                  type="text"
+                  value={formData.specialtyPharmacy}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      specialtyPharmacy: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Pharmacy name"
+                />
+              </div>
+            </div>
+
             <div className="pt-6 border-t border-neutral-200">
               <h3 className="font-semibold text-neutral-900 mb-4">
-                Emergency Contact
+                {t.emergencyContact}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Contact Name
+                    {t.contactName}
                   </label>
                   <input
                     type="text"
@@ -528,7 +641,31 @@ export default function ProfileEditForm({ patient }: Props) {
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Contact Phone
+                    Relationship
+                  </label>
+                  <select
+                    value={formData.emergencyContactRelationship}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        emergencyContactRelationship: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Select...</option>
+                    <option value="spouse">Spouse</option>
+                    <option value="parent">Parent</option>
+                    <option value="child">Child</option>
+                    <option value="sibling">Sibling</option>
+                    <option value="friend">Friend</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    {t.contactPhone}
                   </label>
                   <input
                     type="tel"
@@ -558,7 +695,7 @@ export default function ProfileEditForm({ patient }: Props) {
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary-50 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Add Family Member
+                {t.addFamilyMember}
               </button>
             )}
 
@@ -567,7 +704,7 @@ export default function ProfileEditForm({ patient }: Props) {
               <div className="p-6 border-2 border-primary-200 rounded-xl bg-primary-50">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-neutral-900">
-                    {editingMember ? "Edit Family Member" : "Add Family Member"}
+                    {editingMember ? t.editFamilyMember : t.addFamilyMember}
                   </h3>
                   <button
                     type="button"
@@ -585,7 +722,7 @@ export default function ProfileEditForm({ patient }: Props) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        First Name *
+                        {t.firstName}
                       </label>
                       <input
                         type="text"
@@ -601,7 +738,7 @@ export default function ProfileEditForm({ patient }: Props) {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Last Name *
+                        {t.lastName}
                       </label>
                       <input
                         type="text"
@@ -620,7 +757,7 @@ export default function ProfileEditForm({ patient }: Props) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Date of Birth
+                        {t.dateOfBirth}
                       </label>
                       <input
                         type="date"
@@ -650,10 +787,11 @@ export default function ProfileEditForm({ patient }: Props) {
                       >
                         <option value="">Select relationship</option>
                         <option value="spouse">Spouse</option>
-                        <option value="child">Child</option>
+                        <option value="son">Son</option>
+                        <option value="daughter">Daughter</option>
                         <option value="parent">Parent</option>
                         <option value="sibling">Sibling</option>
-                        <option value="other">Other</option>
+                        <option value="other">{t.other}</option>
                       </select>
                     </div>
                   </div>
@@ -667,70 +805,147 @@ export default function ProfileEditForm({ patient }: Props) {
                         setFamilyMemberForm({
                           ...familyMemberForm,
                           hasBleedingDisorder: e.target.checked,
-                          // Clear condition/severity if unchecked
                           ...(e.target.checked
-                            ? {}
-                            : { condition: "", severity: "" }),
+                            ? {
+                                treatingPhysician:
+                                  familyMemberForm.treatingPhysician ||
+                                  formData.treatingPhysician,
+                                specialtyPharmacy:
+                                  familyMemberForm.specialtyPharmacy ||
+                                  formData.specialtyPharmacy,
+                              }
+                            : {
+                                condition: "",
+                                severity: "",
+                                diagnosisDate: "",
+                                treatingPhysician: "",
+                                specialtyPharmacy: "",
+                              }),
                         })
                       }
                       className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary mt-0.5"
                     />
                     <div>
                       <p className="font-medium text-neutral-900 text-sm">
-                        Has a bleeding disorder
+                        {t.hasBleedingDisorder}
                       </p>
                       <p className="text-xs text-neutral-500">
-                        Check if this family member has been diagnosed
+                        {t.hasBleedingDisorderDesc}
                       </p>
                     </div>
                   </label>
 
                   {/* Conditional Diagnosis Fields */}
                   {familyMemberForm.hasBleedingDisorder && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
-                          Condition
-                        </label>
-                        <select
-                          value={familyMemberForm.condition}
-                          onChange={(e) =>
-                            setFamilyMemberForm({
-                              ...familyMemberForm,
-                              condition: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                        >
-                          <option value="">Select condition</option>
-                          <option value="hemophilia_a">Hemophilia A</option>
-                          <option value="hemophilia_b">Hemophilia B</option>
-                          <option value="von_willebrand">
-                            Von Willebrand Disease
-                          </option>
-                          <option value="other">Other</option>
-                        </select>
+                    <div className="space-y-4 pt-2 border-t border-neutral-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            {t.conditionLabel}
+                          </label>
+                          <select
+                            value={familyMemberForm.condition}
+                            onChange={(e) =>
+                              setFamilyMemberForm({
+                                ...familyMemberForm,
+                                condition: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          >
+                            <option value="">{t.selectCondition}</option>
+                            <option value="Hemophilia_a">
+                              {t.hemophiliaA}
+                            </option>
+                            <option value="Hemophilia_b">
+                              {t.hemophiliaB}
+                            </option>
+                            <option value="Von_Willebrand">
+                              {t.vonWillebrand}
+                            </option>
+                            <option value="other">{t.other}</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            {t.severityLabel}
+                          </label>
+                          <select
+                            value={familyMemberForm.severity}
+                            onChange={(e) =>
+                              setFamilyMemberForm({
+                                ...familyMemberForm,
+                                severity: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          >
+                            <option value="">{t.selectSeverity}</option>
+                            <option value="mild">{t.mild}</option>
+                            <option value="moderate">{t.moderate}</option>
+                            <option value="severe">{t.severe}</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-1">
-                          Severity
+                          Date of Diagnosis
                         </label>
-                        <select
-                          value={familyMemberForm.severity}
+                        <input
+                          type="date"
+                          value={familyMemberForm.diagnosisDate}
                           onChange={(e) =>
                             setFamilyMemberForm({
                               ...familyMemberForm,
-                              severity: e.target.value,
+                              diagnosisDate: e.target.value,
                             })
                           }
                           className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                        >
-                          <option value="">Select severity</option>
-                          <option value="mild">Mild</option>
-                          <option value="moderate">Moderate</option>
-                          <option value="severe">Severe</option>
-                        </select>
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Treating Physician
+                          </label>
+                          <input
+                            type="text"
+                            value={familyMemberForm.treatingPhysician}
+                            onChange={(e) =>
+                              setFamilyMemberForm({
+                                ...familyMemberForm,
+                                treatingPhysician: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                            placeholder={
+                              formData.treatingPhysician || "Dr. Smith"
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Specialty Pharmacy
+                          </label>
+                          <input
+                            type="text"
+                            value={familyMemberForm.specialtyPharmacy}
+                            onChange={(e) =>
+                              setFamilyMemberForm({
+                                ...familyMemberForm,
+                                specialtyPharmacy: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                            placeholder={
+                              formData.specialtyPharmacy || "Pharmacy name"
+                            }
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -744,7 +959,7 @@ export default function ProfileEditForm({ patient }: Props) {
                       }}
                       className="px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
                     >
-                      Cancel
+                      {t.cancelButton}
                     </button>
                     <button
                       type="button"
@@ -757,7 +972,7 @@ export default function ProfileEditForm({ patient }: Props) {
                       }
                       className="px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
                     >
-                      {loading ? "Saving..." : "Save Member"}
+                      {loading ? t.saving : t.saveMember}
                     </button>
                   </div>
                 </div>
@@ -778,22 +993,28 @@ export default function ProfileEditForm({ patient }: Props) {
                       </div>
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {member.firstName} {member.lastName}
+                          {member.contactProfile?.firstName}{" "}
+                          {member.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-500">
                           {member.relationship.charAt(0).toUpperCase() +
                             member.relationship.slice(1)}
-                          {member.dateOfBirth &&
-                            ` • Born ${new Date(member.dateOfBirth).toLocaleDateString()}`}
+                          {member.contactProfile?.dateOfBirth &&
+                            ` • Born ${new Date(member.contactProfile.dateOfBirth).toLocaleDateString()}`}
                           {member.hasBleedingDisorder &&
-                            ` • Has bleeding disorder`}
+                            ` • ${t.hasBleedingDisorder}`}
                         </p>
-                        {member.hasBleedingDisorder && member.condition && (
-                          <p className="text-xs text-neutral-400 mt-1">
-                            {member.condition.replace("_", " ")}{" "}
-                            {member.severity && `(${member.severity})`}
-                          </p>
-                        )}
+                        {member.hasBleedingDisorder &&
+                          member.disorderProfile?.condition && (
+                            <p className="text-xs text-neutral-400 mt-1">
+                              {member.disorderProfile.condition.replace(
+                                "_",
+                                " ",
+                              )}{" "}
+                              {member.disorderProfile.severity &&
+                                `(${member.disorderProfile.severity})`}
+                            </p>
+                          )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -820,32 +1041,37 @@ export default function ProfileEditForm({ patient }: Props) {
               </div>
             ) : (
               <div className="text-center py-8 text-neutral-500">
-                No family members added yet. Click "Add Family Member" to get
-                started.
+                {t.noFamilyMembers}
               </div>
             )}
           </div>
         )}
+
+        {/* Verification Tab */}
         {activeTab === "verification" && (
           <div className="space-y-6">
             {/* Patient's Diagnosis Letter */}
             <div>
               <h3 className="font-semibold text-neutral-900 mb-4">
-                Your Diagnosis Letter
+                {t.diagnosisLetter}
               </h3>
 
-              {patient.profile?.primaryCondition ? (
+              {patient.disorderProfile ? (
                 <DiagnosisUploadSection
                   patientId={patient.id}
-                  currentFileUrl={patient.diagnosisLetterUrl}
-                  diagnosisVerified={patient.diagnosisVerified}
-                  diagnosisVerifiedAt={patient.diagnosisVerifiedAt}
-                  diagnosisRejectedReason={patient.diagnosisRejectedReason}
+                  currentFileUrl={patient.disorderProfile.diagnosisLetterUrl}
+                  diagnosisVerified={patient.disorderProfile.diagnosisVerified}
+                  diagnosisVerifiedAt={
+                    patient.disorderProfile.diagnosisVerifiedAt
+                  }
+                  diagnosisRejectedReason={
+                    patient.disorderProfile.diagnosisRejectedReason
+                  }
                   gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
                 />
               ) : (
                 <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg text-sm text-neutral-600">
-                  No bleeding disorder indicated in medical information.
+                  {t.noConditionOnFile}
                 </div>
               )}
             </div>
@@ -855,7 +1081,7 @@ export default function ProfileEditForm({ patient }: Props) {
               0 && (
               <div className="pt-6 border-t border-neutral-200">
                 <h3 className="font-semibold text-neutral-900 mb-4">
-                  Family Member Diagnosis Letters
+                  {t.familyDiagnosisLetters}
                 </h3>
 
                 <div className="space-y-4">
@@ -867,19 +1093,32 @@ export default function ProfileEditForm({ patient }: Props) {
                         className="p-4 border border-neutral-200 rounded-lg"
                       >
                         <p className="font-medium text-neutral-900 mb-3">
-                          {member.firstName} {member.lastName}
+                          {member.contactProfile?.firstName}{" "}
+                          {member.contactProfile?.lastName}
                         </p>
 
-                        <DiagnosisUploadSection
-                          patientId={patient.id}
-                          familyMemberId={member.id}
-                          currentFileUrl={member.diagnosisLetterUrl}
-                          diagnosisVerified={member.diagnosisVerified}
-                          diagnosisVerifiedAt={member.diagnosisVerifiedAt}
-                          diagnosisRejectedReason={
-                            member.diagnosisRejectedReason
-                          }
-                        />
+                        {member.disorderProfile ? (
+                          <DiagnosisUploadSection
+                            patientId={patient.id}
+                            familyMemberId={member.id}
+                            currentFileUrl={
+                              member.disorderProfile.diagnosisLetterUrl
+                            }
+                            diagnosisVerified={
+                              member.disorderProfile.diagnosisVerified
+                            }
+                            diagnosisVerifiedAt={
+                              member.disorderProfile.diagnosisVerifiedAt
+                            }
+                            diagnosisRejectedReason={
+                              member.disorderProfile.diagnosisRejectedReason
+                            }
+                          />
+                        ) : (
+                          <div className="p-3 bg-neutral-50 border border-neutral-200 rounded text-sm text-neutral-600">
+                            No disorder profile on file
+                          </div>
+                        )}
                       </div>
                     ))}
                 </div>
@@ -890,7 +1129,7 @@ export default function ProfileEditForm({ patient }: Props) {
       </div>
 
       {/* Save Button - Only show for Personal and Medical tabs */}
-      {activeTab !== "family" && (
+      {activeTab !== "family" && activeTab !== "verification" && (
         <div className="flex justify-end">
           <button
             type="submit"
@@ -900,10 +1139,10 @@ export default function ProfileEditForm({ patient }: Props) {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
+                {t.saving}
               </>
             ) : (
-              "Save Changes"
+              t.saveChanges
             )}
           </button>
         </div>

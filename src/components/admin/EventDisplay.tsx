@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import {
   LayoutGrid,
   List,
@@ -14,6 +13,11 @@ import EventRowWithQr from "./EventRowWithQr";
 import { EventRowActions } from "./EventRowActions";
 import InviteSponsorButton from "./InviteSponsorButton";
 import ExportButton from "@/components/ui/ExportButton";
+import { adminEventsTranslation } from "@/translation/adminPages";
+import { useLanguage } from "@/context/LanguageContext";
+import { Select } from "../form/Select";
+import { EventFilterOptions } from "../events/EventFilterOptions";
+import { eventStatusEnum, eventTopicEnum } from "@/translation/enumConfig";
 
 interface Event {
   id: string;
@@ -36,6 +40,9 @@ interface Props {
 }
 
 export default function EventsDisplay({ events }: Props) {
+  const { locale } = useLanguage();
+  const t = adminEventsTranslation[locale];
+
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -77,14 +84,15 @@ export default function EventsDisplay({ events }: Props) {
   }, [events, searchQuery, statusFilter, categoryFilter]);
 
   const exportRows = [...upcomingEvents, ...pastEvents].map((event) => [
-    event.titleEn,
+    locale === "es" ? event.titleEs : event.titleEn,
     new Date(event.eventDate).toLocaleDateString(),
     event.location,
-    event.status,
-    event.category.replace(/_/g, " "),
+    t.statusLabels[event.status as keyof typeof t.statusLabels] ?? event.status,
+    t.categoryLabels[event.category as keyof typeof t.categoryLabels] ??
+      event.category.replace(/_/g, " "),
     event._count.rsvps,
-    event.maxCapacity ?? "Unlimited",
-    event.isPriority ? "Yes" : "No",
+    event.maxCapacity ?? t.unlimited,
+    event.isPriority ? t.yes : t.no,
   ]);
 
   return (
@@ -97,7 +105,7 @@ export default function EventsDisplay({ events }: Props) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -105,36 +113,43 @@ export default function EventsDisplay({ events }: Props) {
           </div>
 
           {/* Status Filter */}
-          <select
+          <Select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            classNames="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            <option value="all">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="completed">Completed</option>
-          </select>
+            <EventFilterOptions
+              lang={locale}
+              enumVals={eventStatusEnum}
+              allVal="status"
+            />
+          </Select>
 
           {/* Category Filter */}
-          <select
+          <Select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            classNames="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            <option value="all">All Categories</option>
-            <option value="EDUCATION">Education</option>
-            <option value="FAMILY_SUPPORT">Family Support</option>
-            <option value="YOUTH">Youth</option>
-            <option value="FUNDRAISING">Fundraising</option>
-            <option value="MEDICAL_UPDATE">Medical Update</option>
-            <option value="SOCIAL">Social</option>
-          </select>
+            <EventFilterOptions
+              lang={locale}
+              enumVals={eventTopicEnum}
+              allVal="topic"
+            />
+          </Select>
 
           {/* Export */}
           <ExportButton
-            headers={["Title", "Date", "Location", "Status", "Category", "RSVPs", "Capacity", "Priority"]}
+            headers={[
+              t.csvHeaders.title,
+              t.csvHeaders.date,
+              t.csvHeaders.location,
+              t.csvHeaders.status,
+              t.csvHeaders.category,
+              t.csvHeaders.rsvps,
+              t.csvHeaders.capacity,
+              t.csvHeaders.priority,
+            ]}
             rows={exportRows}
             filename={`events-${new Date().toISOString().split("T")[0]}.csv`}
           />
@@ -167,24 +182,23 @@ export default function EventsDisplay({ events }: Props) {
         </div>
 
         <p className="text-sm text-neutral-500 mt-4">
-          Showing{" "}
-          {upcomingEvents.length + (showPastEvents ? pastEvents.length : 0)} of{" "}
-          {events.length} events
+          {t.showing(
+            upcomingEvents.length + (showPastEvents ? pastEvents.length : 0),
+            events.length,
+          )}
         </p>
       </div>
 
       {/* Upcoming Events */}
       <div>
         <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-          Upcoming Events ({upcomingEvents.length})
+          {t.upcomingEvents(upcomingEvents.length)}
         </h2>
 
         {upcomingEvents.length === 0 ? (
           <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
             <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-400">
-              No upcoming events match your filters
-            </p>
+            <p className="text-neutral-400">{t.noUpcomingMatch}</p>
           </div>
         ) : viewMode === "grid" ? (
           <div className="space-y-3">
@@ -193,7 +207,7 @@ export default function EventsDisplay({ events }: Props) {
             ))}
           </div>
         ) : (
-          <EventsTable events={upcomingEvents} />
+          <EventsTable events={upcomingEvents} t={t} />
         )}
       </div>
 
@@ -204,7 +218,7 @@ export default function EventsDisplay({ events }: Props) {
             onClick={() => setShowPastEvents(!showPastEvents)}
             className="flex items-center gap-2 font-display font-bold text-neutral-900 text-xl mb-4 hover:text-primary transition-colors"
           >
-            Past Events ({pastEvents.length})
+            {t.pastEvents(pastEvents.length)}
             {showPastEvents ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
@@ -220,7 +234,7 @@ export default function EventsDisplay({ events }: Props) {
                 ))}
               </div>
             ) : (
-              <EventsTable events={pastEvents} isPast />
+              <EventsTable events={pastEvents} isPast t={t} />
             ))}
         </div>
       )}
@@ -228,12 +242,16 @@ export default function EventsDisplay({ events }: Props) {
   );
 }
 
+type TranslationType = (typeof adminEventsTranslation)["en"];
+
 function EventsTable({
   events,
   isPast,
+  t,
 }: {
   events: Event[];
   isPast?: boolean;
+  t: TranslationType;
 }) {
   return (
     <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
@@ -242,28 +260,33 @@ function EventsTable({
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                Date
+                {t.tableHeaders.date}
               </th>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                Event
+                {t.tableHeaders.event}
               </th>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                Location
+                {t.tableHeaders.location}
               </th>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                RSVPs
+                {t.tableHeaders.rsvps}
               </th>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                Status
+                {t.tableHeaders.status}
               </th>
               <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                Actions
+                {t.tableHeaders.actions}
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200">
             {events.map((event) => (
-              <EventTableRow key={event.id} event={event} isPast={isPast} />
+              <EventTableRow
+                key={event.id}
+                event={event}
+                isPast={isPast}
+                t={t}
+              />
             ))}
           </tbody>
         </table>
@@ -272,7 +295,15 @@ function EventsTable({
   );
 }
 
-function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
+function EventTableRow({
+  event,
+  isPast,
+  t,
+}: {
+  event: Event;
+  isPast?: boolean;
+  t: TranslationType;
+}) {
   const [showSponsorInvite, setShowSponsorInvite] = useState(false);
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
@@ -304,7 +335,9 @@ function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
             {event.isPriority && <span className="text-xs">⭐</span>}
           </div>
           <div className="text-xs text-neutral-500 mt-1">
-            {event.category.replace("_", " ")}
+            {t.categoryLabels[
+              event.category as keyof typeof t.categoryLabels
+            ] ?? event.category.replace("_", " ")}
           </div>
         </td>
         <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-neutral-600">
@@ -320,7 +353,8 @@ function EventTableRow({ event, isPast }: { event: Event; isPast?: boolean }) {
           <span
             className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[event.status]}`}
           >
-            {event.status}
+            {t.statusLabels[event.status as keyof typeof t.statusLabels] ??
+              event.status}
           </span>
         </td>
         <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">

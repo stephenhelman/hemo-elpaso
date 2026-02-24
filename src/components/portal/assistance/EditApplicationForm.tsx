@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, Loader2, FileText, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Lang } from "@/types";
+import { editApplicationFormTranslation } from "@/translation/portalAssistance";
 
 interface Document {
   id: string;
@@ -26,6 +28,7 @@ interface Application {
 
 interface Props {
   application: Application;
+  locale: Lang;
 }
 
 interface UploadedFile {
@@ -34,8 +37,9 @@ interface UploadedFile {
   description: string;
 }
 
-export default function EditApplicationForm({ application }: Props) {
+export default function EditApplicationForm({ application, locale }: Props) {
   const router = useRouter();
+  const t = editApplicationFormTranslation[locale];
   const [loading, setLoading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
@@ -51,15 +55,6 @@ export default function EditApplicationForm({ application }: Props) {
     application.documents,
   );
   const [newFiles, setNewFiles] = useState<UploadedFile[]>([]);
-
-  const assistanceTypes = [
-    { value: "EVENT_FEES", label: "Event Fees (Registration, Meals)" },
-    { value: "TRANSPORTATION", label: "Transportation (Gas, Parking, Travel)" },
-    { value: "MEDICATION", label: "Medication Copays" },
-    { value: "MEDICAL_EQUIPMENT", label: "Medical Equipment" },
-    { value: "EMERGENCY_SUPPORT", label: "Emergency Support" },
-    { value: "OTHER", label: "Other" },
-  ];
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -222,13 +217,13 @@ export default function EditApplicationForm({ application }: Props) {
       {/* Application Details */}
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">
         <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-          Application Details
+          {t.applicationDetails}
         </h2>
 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Type of Assistance Needed *
+              {t.typeNeeded}
             </label>
             <select
               required
@@ -238,17 +233,18 @@ export default function EditApplicationForm({ application }: Props) {
               }
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              {assistanceTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
+              <option value="EVENT_FEES">{locale === "es" ? "Cuotas de Evento" : "Event Fees"}</option>
+              <option value="TRANSPORTATION">{locale === "es" ? "Transporte" : "Transportation"}</option>
+              <option value="MEDICATION">{locale === "es" ? "Medicamento" : "Medication"}</option>
+              <option value="MEDICAL_EQUIPMENT">{locale === "es" ? "Equipo Médico" : "Medical Equipment"}</option>
+              <option value="EMERGENCY_SUPPORT">{locale === "es" ? "Apoyo de Emergencia" : "Emergency Support"}</option>
+              <option value="OTHER">{locale === "es" ? "Otro" : "Other"}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Amount Requested *
+              {t.amountRequested}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">
@@ -271,7 +267,7 @@ export default function EditApplicationForm({ application }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Purpose (Brief Summary) *
+              {t.purpose}
             </label>
             <input
               type="text"
@@ -282,16 +278,16 @@ export default function EditApplicationForm({ application }: Props) {
                 setFormData({ ...formData, purpose: e.target.value })
               }
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="e.g., Transportation to monthly clinic appointments"
+              placeholder={t.purposePlaceholder}
             />
             <p className="text-xs text-neutral-500 mt-1">
-              {formData.purpose.length}/200 characters
+              {t.charCount(200 - formData.purpose.length)}
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Additional Details
+              {t.additionalDetails}
             </label>
             <textarea
               rows={4}
@@ -300,7 +296,7 @@ export default function EditApplicationForm({ application }: Props) {
                 setFormData({ ...formData, description: e.target.value })
               }
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Provide any additional context that would help us understand your need..."
+              placeholder={t.additionalPlaceholder}
             />
           </div>
         </div>
@@ -309,18 +305,15 @@ export default function EditApplicationForm({ application }: Props) {
       {/* Documents */}
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">
         <h2 className="text-lg font-semibold text-neutral-900 mb-2">
-          Supporting Documents
+          {t.supportingDocuments}
         </h2>
-        <p className="text-sm text-neutral-600 mb-4">
-          Upload additional documents or remove existing ones (Max 10 files
-          total)
-        </p>
+        <p className="text-sm text-neutral-600 mb-4">{t.uploadAdditional}</p>
 
         {/* Existing Documents */}
         {existingDocuments.length > 0 && (
           <div className="mb-4">
             <h3 className="text-sm font-medium text-neutral-700 mb-2">
-              Current Documents
+              {t.currentDocuments}
             </h3>
             <div className="space-y-2">
               {existingDocuments.map((doc) => (
@@ -368,11 +361,9 @@ export default function EditApplicationForm({ application }: Props) {
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
               <Upload className="w-8 h-8 text-neutral-400 mb-2" />
               <span className="text-sm text-neutral-600">
-                Click to upload additional documents
+                {t.uploadInstructions}
               </span>
-              <span className="text-xs text-neutral-500">
-                PDF, JPG, PNG, or HEIC (max 10MB)
-              </span>
+              <span className="text-xs text-neutral-500">{t.uploadFormats}</span>
               <input
                 type="file"
                 multiple
@@ -388,7 +379,7 @@ export default function EditApplicationForm({ application }: Props) {
         {newFiles.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-neutral-700">
-              New Documents
+              {t.newDocuments}
             </h3>
             {newFiles.map((uploadedFile, index) => (
               <div
@@ -405,7 +396,7 @@ export default function EditApplicationForm({ application }: Props) {
                   </p>
                   <input
                     type="text"
-                    placeholder="Description (e.g., Receipt for medication)"
+                    placeholder={t.descriptionPlaceholder}
                     value={uploadedFile.description}
                     onChange={(e) =>
                       handleFileDescriptionChange(index, e.target.value)
@@ -433,7 +424,7 @@ export default function EditApplicationForm({ application }: Props) {
           onClick={() => router.back()}
           className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
         >
-          Cancel
+          {t.cancelButton}
         </button>
         <button
           type="button"
@@ -441,7 +432,7 @@ export default function EditApplicationForm({ application }: Props) {
           disabled={loading}
           className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors disabled:opacity-50"
         >
-          Save Draft
+          {t.saveDraft}
         </button>
         <button
           type="submit"
@@ -451,10 +442,10 @@ export default function EditApplicationForm({ application }: Props) {
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              {uploadingFiles ? "Uploading..." : "Updating..."}
+              {uploadingFiles ? t.uploading : t.updating}
             </>
           ) : (
-            "Update Application"
+            t.updateApplication
           )}
         </button>
       </div>

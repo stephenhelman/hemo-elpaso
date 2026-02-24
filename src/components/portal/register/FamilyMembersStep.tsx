@@ -26,7 +26,14 @@ export default function FamilyMembersStep({
     hasBleedingDisorder: false,
     condition: "",
     severity: "",
+    diagnosisDate: "",
+    treatingPhysician: "",
+    specialtyPharmacy: "",
   });
+
+  // Get default doctor/pharmacy from patient's data (if they have a condition)
+  const defaultDoctor = data.treatingPhysician || "";
+  const defaultPharmacy = data.specialtyPharmacy || "";
 
   const addMember = () => {
     if (editingIndex !== null) {
@@ -67,6 +74,9 @@ export default function FamilyMembersStep({
       hasBleedingDisorder: false,
       condition: "",
       severity: "",
+      diagnosisDate: "",
+      treatingPhysician: "",
+      specialtyPharmacy: "",
     });
     setShowForm(false);
   };
@@ -80,8 +90,8 @@ export default function FamilyMembersStep({
           Family Members
         </h2>
         <p className="text-neutral-500 text-sm">
-          Add family members who will attend events with you. This helps us plan
-          capacity and meals.
+          Add family members who will attend events with you or who have
+          bleeding disorders.
         </p>
       </div>
 
@@ -105,6 +115,11 @@ export default function FamilyMembersStep({
                     {member.relationship}
                     {member.hasBleedingDisorder && " • Has bleeding disorder"}
                   </p>
+                  {member.hasBleedingDisorder && member.condition && (
+                    <p className="text-xs text-neutral-400 mt-1">
+                      {member.condition.replace("_", " ")} ({member.severity})
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -197,9 +212,10 @@ export default function FamilyMembersStep({
                 className={inputClass}
               >
                 <option value="">Select relationship...</option>
-                <option value="parent">Parent</option>
-                <option value="child">Child</option>
                 <option value="spouse">Spouse/Partner</option>
+                <option value="son">Son</option>
+                <option value="daughter">Daughter</option>
+                <option value="parent">Parent</option>
                 <option value="sibling">Sibling</option>
                 <option value="other">Other Family</option>
               </select>
@@ -215,6 +231,13 @@ export default function FamilyMembersStep({
                 setCurrentMember({
                   ...currentMember,
                   hasBleedingDisorder: e.target.checked,
+                  // Auto-fill doctor/pharmacy if checking and they're empty
+                  ...(e.target.checked && {
+                    treatingPhysician:
+                      currentMember.treatingPhysician || defaultDoctor,
+                    specialtyPharmacy:
+                      currentMember.specialtyPharmacy || defaultPharmacy,
+                  }),
                 })
               }
               className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary mt-0.5"
@@ -231,42 +254,100 @@ export default function FamilyMembersStep({
 
           {/* Conditional Diagnosis Fields */}
           {currentMember.hasBleedingDisorder && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <FormField label="Condition">
-                <select
-                  value={currentMember.condition}
+            <div className="space-y-4 pt-2 border-t border-neutral-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label="Condition">
+                  <select
+                    value={currentMember.condition}
+                    onChange={(e) =>
+                      setCurrentMember({
+                        ...currentMember,
+                        condition: e.target.value,
+                      })
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Select condition...</option>
+                    <option value="Hemophilia_a">Hemophilia A</option>
+                    <option value="Hemophilia_b">Hemophilia B</option>
+                    <option value="Von_Willebrand">
+                      Von Willebrand Disease
+                    </option>
+                    <option value="other">Other</option>
+                  </select>
+                </FormField>
+
+                <FormField label="Severity">
+                  <select
+                    value={currentMember.severity}
+                    onChange={(e) =>
+                      setCurrentMember({
+                        ...currentMember,
+                        severity: e.target.value,
+                      })
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Select severity...</option>
+                    <option value="mild">Mild</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="severe">Severe</option>
+                  </select>
+                </FormField>
+              </div>
+
+              <FormField label="Date of Diagnosis">
+                <input
+                  type="date"
+                  value={currentMember.diagnosisDate}
                   onChange={(e) =>
                     setCurrentMember({
                       ...currentMember,
-                      condition: e.target.value,
+                      diagnosisDate: e.target.value,
                     })
                   }
                   className={inputClass}
-                >
-                  <option value="">Select condition...</option>
-                  <option value="hemophilia_a">Hemophilia A</option>
-                  <option value="hemophilia_b">Hemophilia B</option>
-                  <option value="von_willebrand">Von Willebrand Disease</option>
-                  <option value="other">Other</option>
-                </select>
+                />
               </FormField>
 
-              <FormField label="Severity">
-                <select
-                  value={currentMember.severity}
+              <FormField label="Treating Physician">
+                <input
+                  type="text"
+                  value={currentMember.treatingPhysician}
                   onChange={(e) =>
                     setCurrentMember({
                       ...currentMember,
-                      severity: e.target.value,
+                      treatingPhysician: e.target.value,
                     })
                   }
                   className={inputClass}
-                >
-                  <option value="">Select severity...</option>
-                  <option value="mild">Mild</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="severe">Severe</option>
-                </select>
+                  placeholder={defaultDoctor || "Dr. Smith"}
+                />
+                {defaultDoctor && !currentMember.treatingPhysician && (
+                  <p className="text-xs text-neutral-500 mt-1">
+                    💡 Will default to: {defaultDoctor}
+                  </p>
+                )}
+              </FormField>
+
+              <FormField label="Specialty Pharmacy">
+                <input
+                  type="text"
+                  value={currentMember.specialtyPharmacy}
+                  onChange={(e) =>
+                    setCurrentMember({
+                      ...currentMember,
+                      specialtyPharmacy: e.target.value,
+                    })
+                  }
+                  className={inputClass}
+                  placeholder={defaultPharmacy || "Pharmacy name"}
+                />
+                {defaultPharmacy && !currentMember.specialtyPharmacy && (
+                  <p className="text-xs text-neutral-500 mt-1">
+                    💡 Will default to: {defaultPharmacy}
+                  </p>
+                )}
               </FormField>
             </div>
           )}

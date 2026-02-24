@@ -3,68 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  X,
-  LayoutDashboard,
-  Calendar,
-  BarChart3,
-  CheckCircle,
-  DollarSign,
-  Users,
-  Settings,
-  LogOut,
-  Home,
-  FileCheck,
-} from "lucide-react";
+import { Menu, X, LogOut, Home, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  adminSidebarTranslation,
+  adminNavItemsTranslation,
+} from "@/translation/adminSidebar";
 
 export default function AdminMobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
-  const navItems = [
-    {
-      name: "Dashboard",
-      href: "/admin/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Events",
-      href: "/admin/events",
-      icon: Calendar,
-    },
-    {
-      name: "Reports",
-      href: "/admin/reports",
-      icon: BarChart3,
-    },
-    {
-      name: "Attendance",
-      href: "/admin/attendance",
-      icon: CheckCircle,
-    },
-    {
-      name: "Financial Assistance",
-      href: "/admin/assistance",
-      icon: DollarSign,
-    },
-    {
-      name: "Users",
-      href: "/admin/users",
-      icon: Users,
-    },
-    {
-      name: "Verification",
-      href: "/admin/verification",
-      icon: FileCheck,
-    },
-    {
-      name: "Settings",
-      href: "/admin/settings",
-      icon: Settings,
-    },
-  ];
+  const { locale } = useLanguage();
+  const t = adminSidebarTranslation[locale];
 
   return (
     <>
@@ -117,7 +68,7 @@ export default function AdminMobileNav() {
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
             <span className="font-display font-bold text-lg text-neutral-900">
-              Admin Menu
+              {t.menu}
             </span>
             <button
               onClick={() => setIsOpen(false)}
@@ -129,7 +80,7 @@ export default function AdminMobileNav() {
 
           {/* Navigation Links */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {navItems.map((item) => {
+            {adminNavItemsTranslation.map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
 
@@ -148,7 +99,7 @@ export default function AdminMobileNav() {
                   `}
                 >
                   <Icon className="w-5 h-5" />
-                  {item.name}
+                  {item[locale]}
                 </Link>
               );
             })}
@@ -161,21 +112,21 @@ export default function AdminMobileNav() {
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-700 hover:bg-neutral-100 font-medium transition-colors w-full"
             >
               <LayoutDashboard className="w-5 h-5" />
-              Patient Portal
+              {t.patientPortal}
             </Link>
             <Link
               href="/"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-700 hover:bg-neutral-100 font-medium transition-colors w-full"
             >
               <Home className="w-5 h-5" />
-              Back to Website
+              {t.backToWebsite}
             </Link>
             <a
               href="/api/auth/logout"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors w-full"
             >
               <LogOut className="w-5 h-5" />
-              Log Out
+              {t.logout}
             </a>
           </div>
         </div>

@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
 import { Calendar, Users, TrendingUp, CheckCircle } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminAttendanceTranslation } from "@/translation/adminPages";
 
 export default async function AllAttendeesPage() {
   const session = await getSession();
@@ -20,6 +23,9 @@ export default async function AllAttendeesPage() {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminAttendanceTranslation[locale];
 
   // Get all check-ins with related data
   const checkIns = await prisma.checkIn.findMany({
@@ -63,11 +69,9 @@ export default async function AllAttendeesPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          All Attendees
+          {t.heading}
         </h1>
-        <p className="text-neutral-500">
-          View and export attendance records across all events
-        </p>
+        <p className="text-neutral-500">{t.subtitle}</p>
       </div>
 
       {/* Table */}
@@ -76,25 +80,25 @@ export default async function AllAttendeesPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
             icon={<CheckCircle className="w-6 h-6" />}
-            label="Total Check-Ins"
+            label={t.totalCheckIns}
             value={totalCheckIns.toString()}
             color="primary"
           />
           <StatCard
             icon={<Users className="w-6 h-6" />}
-            label="Unique Families"
+            label={t.uniqueFamilies}
             value={uniqueAttendees.toString()}
             color="blue"
           />
           <StatCard
             icon={<Calendar className="w-6 h-6" />}
-            label="Events with Attendance"
+            label={t.eventsWithAttendance}
             value={eventsWithAttendance.toString()}
             color="green"
           />
           <StatCard
             icon={<TrendingUp className="w-6 h-6" />}
-            label="Avg per Event"
+            label={t.avgPerEvent}
             value={avgAttendance.toString()}
             color="purple"
           />

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { FileText, AlertCircle } from "lucide-react";
 import DiagnosisVerificationList from "@/components/admin/DiagnosisVerificationList";
 import { StatCard } from "@/components/ui/StatCard";
+import { cookies } from "next/headers";
+import { Lang } from "@/types";
+import { adminVerificationTranslation } from "@/translation/adminPages";
 
 export default async function DiagnosisVerificationPage() {
   const session = await getSession();
@@ -19,6 +22,9 @@ export default async function DiagnosisVerificationPage() {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const t = adminVerificationTranslation[locale];
 
   // Fetch patients with pending diagnosis letters (patient)
   const patientsWithPendingDiagnosis = await prisma.patient.findMany({
@@ -77,11 +83,9 @@ export default async function DiagnosisVerificationPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          Diagnosis Letter Verification
+          {t.heading}
         </h1>
-        <p className="text-neutral-600">
-          Review and verify patient diagnosis letters
-        </p>
+        <p className="text-neutral-600">{t.subtitle}</p>
       </div>
 
       {/* Verification List */}
@@ -94,13 +98,13 @@ export default async function DiagnosisVerificationPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <StatCard
             icon={<FileText className="w-6 h-6" />}
-            label="Pending Verification"
+            label={t.pendingVerification}
             value={totalPending.toString()}
             color="blue"
           />
           <StatCard
             icon={<AlertCircle className="w-6 h-6" />}
-            label="Grace Period Expiring Soon"
+            label={t.expiringGracePeriod}
             value={expiringSoon.toString()}
             color="amber"
           />

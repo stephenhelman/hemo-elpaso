@@ -1,29 +1,62 @@
 "use client";
 
-import { Bell, Calendar, User } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  User,
+  DollarSign,
+  FileText,
+  Users,
+  CheckCircle,
+} from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { activityItemTranslation } from "@/translation/portal";
+import { auditActionEnum } from "@/translation/enumConfig";
+import { translateEnum } from "@/translation/enumTranslation";
+import type { AuditAction } from "@prisma/client";
 
-export function ActivityItem({ log }: { log: any }) {
-  const getActivityIcon = (action: string) => {
-    if (action.includes("rsvp")) return <Calendar className="w-4 h-4" />;
-    if (action.includes("profile")) return <User className="w-4 h-4" />;
-    return <Bell className="w-4 h-4" />;
+const actionIconMap: Partial<Record<AuditAction, React.ReactNode>> = {
+  RSVP_CREATED: <Calendar className="w-4 h-4" />,
+  RSVP_CANCELLED: <Calendar className="w-4 h-4" />,
+  PROFILE_UPDATED: <User className="w-4 h-4" />,
+  REGISTRATION_COMPLETED: <User className="w-4 h-4" />,
+  FAMILY_MEMBER_ADDED: <Users className="w-4 h-4" />,
+  FAMILY_MEMBER_UPDATED: <Users className="w-4 h-4" />,
+  FAMILY_MEMBER_DELETED: <Users className="w-4 h-4" />,
+  ASSISTANCE_APPLICATION_CREATED: <DollarSign className="w-4 h-4" />,
+  ASSISTANCE_APPLICATION_UPDATED: <DollarSign className="w-4 h-4" />,
+  ASSISTANCE_APPLICATION_APPROVED: <DollarSign className="w-4 h-4" />,
+  ASSISTANCE_APPLICATION_DENIED: <DollarSign className="w-4 h-4" />,
+  ASSISTANCE_DOCUMENT_UPLOADED: <FileText className="w-4 h-4" />,
+  ASSISTANCE_DOCUMENT_DELETED: <FileText className="w-4 h-4" />,
+  CHECKIN_CREATED: <CheckCircle className="w-4 h-4" />,
+  DIAGNOSIS_APPROVED: <FileText className="w-4 h-4" />,
+  DIAGNOSIS_REJECTED: <FileText className="w-4 h-4" />,
+};
+
+export function ActivityItem({ log }: { log: { action: AuditAction; createdAt: Date } }) {
+  const { locale } = useLanguage();
+  const t = activityItemTranslation[locale];
+
+  const getActivityIcon = (action: AuditAction) => {
+    return actionIconMap[action] ?? <Bell className="w-4 h-4" />;
   };
 
-  const getActivityLabel = (action: string) => {
-    if (action === "patient_registration") return "Joined HOEP";
-    if (action === "rsvp_created") return "RSVP Created";
-    if (action === "rsvp_cancelled") return "RSVP Cancelled";
-    return action.replace(/_/g, " ");
+  const getActivityLabel = (action: AuditAction) => {
+    if (action in auditActionEnum) {
+      return translateEnum(auditActionEnum, action, locale);
+    }
+    return (action as string).replace(/_/g, " ");
   };
 
   const timeAgo = (date: Date) => {
     const seconds = Math.floor(
       (new Date().getTime() - new Date(date).getTime()) / 1000,
     );
-    if (seconds < 60) return "just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
+    if (seconds < 60) return t.justNow;
+    if (seconds < 3600) return t.minutesAgo(Math.floor(seconds / 60));
+    if (seconds < 86400) return t.hoursAgo(Math.floor(seconds / 3600));
+    return t.daysAgo(Math.floor(seconds / 86400));
   };
 
   return (

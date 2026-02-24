@@ -6,9 +6,6 @@ export async function seedRsvpsAndCheckIns() {
 
   const patients = await prisma.patient.findMany({
     where: { role: "patient" },
-    include: {
-      profile: true,
-    },
   });
 
   const events = await prisma.event.findMany({

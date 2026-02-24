@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import PortalSidebar from "@/components/portal/PortalSidebar";
 import { prisma } from "@/lib/db";
 import DiagnosisReminderBanner from "@/components/portal/DiagnosisReminderBanner";
+import { ensurePatientExists } from "@/lib/ensure-patient";
 
 export default async function PortalLayout({
   children,
@@ -15,21 +16,31 @@ export default async function PortalLayout({
     redirect("/api/auth/login?returnTo=/portal/dashboard");
   }
 
-  // Get patient to check role
+  // Ensure a Patient row exists (creates a stub for first-time Auth0 users)
+  await ensurePatientExists(session.user.sub, session.user.email);
+
+  // Get patient to check role and registration status
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
     include: {
-      profile: true,
+      contactProfile: true,
+      disorderProfile: true,
     },
   });
 
-  if (!patient) {
-    redirect("/api/auth/login");
+  // Redirect to registration if onboarding hasn't been completed.
+  // Allow through if the patient has a profile (legacy users pre-dating
+  // the registrationCompletedAt field).
+  if (
+    !patient ||
+    (!patient.registrationCompletedAt && !patient.contactProfile)
+  ) {
+    redirect("/register");
   }
 
   const needsDiagnosisLetter =
-    patient.profile?.primaryCondition && // Has a bleeding disorder
-    !patient.diagnosisVerified && // Not verified yet
+    patient.disorderProfile?.condition && // Has a bleeding disorder
+    !patient.disorderProfile.diagnosisVerified && // Not verified yet
     patient.diagnosisGracePeriodEndsAt; // Has grace period set
 
   const daysRemaining =

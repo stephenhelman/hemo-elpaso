@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
     include: {
-      profile: true,
+      contactProfile: true,
       preferences: true,
       rsvps: {
         include: {
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   });
 
   // If no patient record, redirect to registration
-  if (!patient || !patient.profile) {
+  if (!patient || !patient.contactProfile) {
     redirect("/register");
   }
 
@@ -75,7 +75,12 @@ export default async function DashboardPage() {
       recommendedMatches={recommendedMatches}
       recentActivity={recentActivity}
       recommendedEvents={recommendedEvents}
-      liveEventBanner={<LiveEventBanner patientId={patient.id} />}
+      liveEventBanner={
+        <LiveEventBanner
+          patientId={patient.id}
+          locale={(patient.preferredLanguage as "en" | "es") || "en"}
+        />
+      }
     />
   );
 }

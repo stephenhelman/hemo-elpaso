@@ -10,6 +10,8 @@ import {
 import Link from "next/link";
 import EmptyState from "@/components/ui/EmptyState";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { Lang } from "@/types";
+import { assistanceListTranslation } from "@/translation/portalAssistance";
 
 interface Application {
   id: string;
@@ -26,49 +28,80 @@ interface Application {
 
 interface Props {
   applications: Application[];
+  locale: Lang;
 }
 
-export default function ApplicationsList({ applications }: Props) {
+export default function ApplicationsList({ applications, locale }: Props) {
+  const t = assistanceListTranslation[locale];
+
   if (applications.length === 0) {
     return (
       <EmptyState
         icon={DollarSign}
-        title="No Applications Yet"
-        description="Start by creating your first financial assistance application"
-        action={{ label: "Create Application", href: "/portal/assistance/new" }}
+        title={t.noApplications}
+        description={t.noApplicationsDesc}
+        action={{ label: t.createApplication, href: "/portal/assistance/new" }}
       />
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 flex flex-col gap-1">
       {applications.map((app) => (
-        <ApplicationCard key={app.id} application={app} />
+        <ApplicationCard key={app.id} application={app} t={t} />
       ))}
     </div>
   );
 }
 
-const APPLICATION_STATUS_CONFIG = {
-  DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-800", icon: FileText },
-  SUBMITTED: { label: "Submitted", color: "bg-blue-100 text-blue-800", icon: Clock },
-  UNDER_REVIEW: { label: "Under Review", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  APPROVED: { label: "Approved", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  DENIED: { label: "Denied", color: "bg-red-100 text-red-800", icon: XCircle },
-  DISBURSED: { label: "Disbursed", color: "bg-purple-100 text-purple-800", icon: CheckCircle },
-  CLOSED: { label: "Closed", color: "bg-gray-100 text-gray-800", icon: FileText },
-};
-
-function ApplicationCard({ application }: { application: Application }) {
-
-  const typeLabels = {
-    EVENT_FEES: "Event Fees",
-    TRANSPORTATION: "Transportation",
-    MEDICATION: "Medication",
-    MEDICAL_EQUIPMENT: "Medical Equipment",
-    EMERGENCY_SUPPORT: "Emergency Support",
-    OTHER: "Other",
+function ApplicationCard({
+  application,
+  t,
+}: {
+  application: Application;
+  t: (typeof assistanceListTranslation)["en"];
+}) {
+  const statusConfig = {
+    DRAFT: {
+      label: t.statusLabels.DRAFT,
+      color: "bg-gray-100 text-gray-800",
+      icon: FileText,
+    },
+    SUBMITTED: {
+      label: t.statusLabels.SUBMITTED,
+      color: "bg-blue-100 text-blue-800",
+      icon: Clock,
+    },
+    UNDER_REVIEW: {
+      label: t.statusLabels.UNDER_REVIEW,
+      color: "bg-yellow-100 text-yellow-800",
+      icon: Clock,
+    },
+    APPROVED: {
+      label: t.statusLabels.APPROVED,
+      color: "bg-green-100 text-green-800",
+      icon: CheckCircle,
+    },
+    DENIED: {
+      label: t.statusLabels.DENIED,
+      color: "bg-red-100 text-red-800",
+      icon: XCircle,
+    },
+    DISBURSED: {
+      label: t.statusLabels.DISBURSED,
+      color: "bg-purple-100 text-purple-800",
+      icon: CheckCircle,
+    },
+    CLOSED: {
+      label: t.statusLabels.CLOSED,
+      color: "bg-gray-100 text-gray-800",
+      icon: FileText,
+    },
   };
+
+  const typeLabel =
+    t.typeLabels[application.assistanceType as keyof typeof t.typeLabels] ||
+    application.assistanceType;
 
   return (
     <Link href={`/portal/assistance/${application.id}`}>
@@ -77,15 +110,11 @@ function ApplicationCard({ application }: { application: Application }) {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-lg font-semibold text-neutral-900">
-                {
-                  typeLabels[
-                    application.assistanceType as keyof typeof typeLabels
-                  ]
-                }
+                {typeLabel}
               </h3>
               <StatusBadge
                 status={application.status}
-                config={APPLICATION_STATUS_CONFIG}
+                config={statusConfig}
                 showIcon
               />
             </div>
@@ -100,7 +129,7 @@ function ApplicationCard({ application }: { application: Application }) {
             </p>
             {application.approvedAmount && (
               <p className="text-sm text-green-600 font-semibold">
-                Approved: ${Number(application.approvedAmount).toFixed(2)}
+                {t.approved} ${Number(application.approvedAmount).toFixed(2)}
               </p>
             )}
           </div>
@@ -108,15 +137,19 @@ function ApplicationCard({ application }: { application: Application }) {
 
         <div className="flex items-center justify-between text-sm text-neutral-500">
           <div className="flex items-center gap-4">
-            <span>{application.documents.length} documents</span>
+            <span>
+              {application.documents.length} {t.documents}
+            </span>
             {application.disbursements.length > 0 && (
-              <span>{application.disbursements.length} disbursements</span>
+              <span>
+                {application.disbursements.length} {t.disbursements}
+              </span>
             )}
           </div>
           <span>
             {application.submittedAt
-              ? `Submitted ${new Date(application.submittedAt).toLocaleDateString()}`
-              : `Created ${new Date(application.createdAt).toLocaleDateString()}`}
+              ? `${t.submittedOn} ${new Date(application.submittedAt).toLocaleDateString()}`
+              : `${t.createdOn} ${new Date(application.createdAt).toLocaleDateString()}`}
           </span>
         </div>
       </div>

@@ -170,6 +170,7 @@ export const sponsorshipTiersTranslation = {
     heading: "Sponsorship Opportunities",
     sub: "Your sponsorship directly funds community programs, educational events, and family support services. All sponsors receive recognition at our events.",
     contact: "Interested in sponsoring? Contact us at",
+    mostPopular: "★ Most Popular",
     tiers: [
       {
         name: "Community Supporter",
@@ -227,6 +228,7 @@ export const sponsorshipTiersTranslation = {
     heading: "Oportunidades de Patrocinio",
     sub: "Su patrocinio financia directamente programas comunitarios, eventos educativos y servicios de apoyo familiar. Todos los patrocinadores reciben reconocimiento en nuestros eventos.",
     contact: "¿Interesado en patrocinar? Contáctenos en",
+    mostPopular: "★ Más Popular",
     tiers: [
       {
         name: "Colaborador Comunitario",

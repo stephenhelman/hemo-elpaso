@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import StepIndicator from "@/components/portal/register/StepIndicator";
 import BasicInfoStep from "@/components/portal/register/BasicInfoStep";
@@ -11,8 +11,10 @@ import EmergencyContactStep from "@/components/portal/register/EmergencyContactS
 import PreferencesStep from "@/components/portal/register/PreferencesStep";
 import ConsentStep from "@/components/portal/register/ConsentStep";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/portal/dashboard";
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
@@ -123,7 +125,7 @@ export default function RegisterPage() {
 
       if (response.ok) {
         toast.success("Registration complete! Welcome to HOEP!");
-        router.push("/portal/dashboard");
+        router.push(callbackUrl);
       } else {
         const data = await response.json();
         toast.error(data.error || "Registration failed. Please try again.");
@@ -209,5 +211,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

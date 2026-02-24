@@ -1,14 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import {
-  ArrowLeft,
-  Users,
-  CheckCircle,
-  MessageSquare,
-  BarChart3,
-  FileDown,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import EventStatsOverview from "@/components/admin/stats/EventStatsOverview";
 import PollResultsExport from "@/components/admin/stats/PollResultsExport";
@@ -142,90 +135,88 @@ export default async function EventStatsPage({ params }: Props) {
     0,
   );
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <Link
-          href={
-            cameFromEvents ? "/admin/events" : `/admin/events/${event.id}/edit`
-          }
-          className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {cameFromEvents ? "Back to Events" : "Back to Event"}
-        </Link>
+    <div className="p-4 md:p-8">
+      {/* Header */}
+      <Link
+        href={
+          cameFromEvents ? "/admin/events" : `/admin/events/${event.id}/edit`
+        }
+        className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {cameFromEvents ? "Back to Events" : "Back to Event"}
+      </Link>
 
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-              Event Statistics
-            </h1>
-            <p className="text-neutral-600">{event.titleEn}</p>
-            <p className="text-sm text-neutral-500 mt-1">
-              {new Date(event.eventDate).toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          </div>
-          <ExportAllButton
-            eventSlug={event.slug}
-            eventTitle={event.titleEn}
-            eventId={event.id}
-            totalRsvps={totalRsvps}
-            patientAttendance={patientCheckIns.length}
-            sponsorCount={sponsorCheckIns.length}
-            donorCount={donorCheckIns.length}
-            volunteerCount={volunteerCheckIns.length}
-            attendanceRate={attendanceRate}
-            polls={pollsWithCounts}
-            questions={event.questions}
-          />
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
+            Event Statistics
+          </h1>
+          <p className="text-neutral-600">{event.titleEn}</p>
+          <p className="text-sm text-neutral-500 mt-1">
+            {new Date(event.eventDate).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
         </div>
-
-        {/* Overview Stats */}
-        <EventStatsOverview
+        <ExportAllButton
+          eventSlug={event.slug}
+          eventTitle={event.titleEn}
+          eventId={event.id}
           totalRsvps={totalRsvps}
           patientAttendance={patientCheckIns.length}
-          attendanceRate={attendanceRate}
-          totalQuestions={totalQuestions}
-          answeredQuestions={answeredQuestions}
-          totalPollResponses={totalPollResponses}
-        />
-
-        {/* Attendance Breakdown by Role */}
-        <AttendanceBreakdown
-          patientCount={patientCheckIns.length}
           sponsorCount={sponsorCheckIns.length}
           donorCount={donorCheckIns.length}
           volunteerCount={volunteerCheckIns.length}
-        />
-
-        {/* Attendee Contact List */}
-        <AttendeeListExport
-          eventSlug={event.slug}
-          eventTitle={event.titleEn}
-          attendees={attendeesForExport}
-        />
-
-        {/* Poll Results - PHI Free */}
-        <PollResultsExport
-          eventId={event.id}
-          eventSlug={event.slug}
-          eventTitle={event.titleEn}
+          attendanceRate={attendanceRate}
           polls={pollsWithCounts}
-        />
-
-        {/* Q&A Export - PHI Free */}
-        <QandAExport
-          eventId={event.id}
-          eventSlug={event.slug}
-          eventTitle={event.titleEn}
           questions={event.questions}
         />
       </div>
+
+      {/* Overview Stats */}
+      <EventStatsOverview
+        totalRsvps={totalRsvps}
+        patientAttendance={patientCheckIns.length}
+        attendanceRate={attendanceRate}
+        totalQuestions={totalQuestions}
+        answeredQuestions={answeredQuestions}
+        totalPollResponses={totalPollResponses}
+      />
+
+      {/* Attendance Breakdown by Role */}
+      <AttendanceBreakdown
+        patientCount={patientCheckIns.length}
+        sponsorCount={sponsorCheckIns.length}
+        donorCount={donorCheckIns.length}
+        volunteerCount={volunteerCheckIns.length}
+      />
+
+      {/* Attendee Contact List */}
+      <AttendeeListExport
+        eventSlug={event.slug}
+        eventTitle={event.titleEn}
+        attendees={attendeesForExport}
+      />
+
+      {/* Poll Results - PHI Free */}
+      <PollResultsExport
+        eventId={event.id}
+        eventSlug={event.slug}
+        eventTitle={event.titleEn}
+        polls={pollsWithCounts}
+      />
+
+      {/* Q&A Export - PHI Free */}
+      <QandAExport
+        eventId={event.id}
+        eventSlug={event.slug}
+        eventTitle={event.titleEn}
+        questions={event.questions}
+      />
     </div>
   );
 }

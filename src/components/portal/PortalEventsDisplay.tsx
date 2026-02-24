@@ -17,6 +17,8 @@ import QrCodeDisplay from "./QrCodeDisplay";
 import EmptyState from "@/components/ui/EmptyState";
 import DateBadge from "@/components/ui/DateBadge";
 import InfoRow from "@/components/ui/InfoRow";
+import { Lang } from "@/types";
+import { portalEventsDisplayTranslation } from "@/translation/portalPages";
 
 interface Event {
   id: string;
@@ -37,8 +39,7 @@ interface Event {
 interface RSVP {
   id: string;
   eventId: string;
-  adultsAttending: number;
-  childrenAttending: number;
+  attendeeCount: number;
   event: Event;
 }
 
@@ -46,13 +47,16 @@ interface Props {
   myRsvps: RSVP[];
   recommendedEvents: Event[];
   allEvents: Event[];
+  locale: Lang;
 }
 
 export default function PortalEventsDisplay({
   myRsvps,
   recommendedEvents,
   allEvents,
+  locale,
 }: Props) {
+  const t = portalEventsDisplayTranslation[locale];
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -83,7 +87,7 @@ export default function PortalEventsDisplay({
       {myRsvps.length > 0 && (
         <div>
           <h2 className="font-display font-bold text-neutral-900 text-2xl mb-4">
-            My Upcoming Events ({myRsvps.length})
+            {t.myUpcoming} ({myRsvps.length})
           </h2>
           <div className="space-y-4">
             {myRsvps.map((rsvp) => (
@@ -94,6 +98,8 @@ export default function PortalEventsDisplay({
                 onToggleQr={() =>
                   setExpandedQr(expandedQr === rsvp.id ? null : rsvp.id)
                 }
+                t={t}
+                locale={locale}
               />
             ))}
           </div>
@@ -106,7 +112,7 @@ export default function PortalEventsDisplay({
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-6 h-6 text-primary" />
             <h2 className="font-display font-bold text-neutral-900 text-2xl">
-              Recommended for You ({recommendedEvents.length})
+              {t.recommendedForYou} ({recommendedEvents.length})
             </h2>
           </div>
           <div
@@ -118,9 +124,9 @@ export default function PortalEventsDisplay({
           >
             {recommendedEvents.map((event) =>
               viewMode === "grid" ? (
-                <EventCard key={event.id} event={event} />
+                <EventCard key={event.id} event={event} t={t} locale={locale} />
               ) : (
-                <EventTableRow key={event.id} event={event} />
+                <EventTableRow key={event.id} event={event} t={t} locale={locale} />
               ),
             )}
           </div>
@@ -135,7 +141,7 @@ export default function PortalEventsDisplay({
               onClick={() => setShowAllEvents(!showAllEvents)}
               className="flex items-center gap-2 font-display font-bold text-neutral-900 text-xl hover:text-primary transition-colors"
             >
-              Browse All Events ({filteredAllEvents.length})
+              {t.browseAll} ({filteredAllEvents.length})
               {showAllEvents ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (
@@ -177,7 +183,7 @@ export default function PortalEventsDisplay({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Search events..."
+                  placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -190,13 +196,13 @@ export default function PortalEventsDisplay({
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">All Categories</option>
-                <option value="EDUCATION">Education</option>
-                <option value="FAMILY_SUPPORT">Family Support</option>
-                <option value="YOUTH">Youth</option>
-                <option value="FUNDRAISING">Fundraising</option>
-                <option value="MEDICAL_UPDATE">Medical Update</option>
-                <option value="SOCIAL">Social</option>
+                <option value="all">{t.allCategories}</option>
+                <option value="EDUCATION">{t.education}</option>
+                <option value="FAMILY_SUPPORT">{t.familySupport}</option>
+                <option value="YOUTH">{t.youth}</option>
+                <option value="FUNDRAISING">{t.fundraising}</option>
+                <option value="MEDICAL_UPDATE">{t.medicalUpdate}</option>
+                <option value="SOCIAL">{t.social}</option>
               </select>
             </div>
           )}
@@ -206,37 +212,42 @@ export default function PortalEventsDisplay({
           (filteredAllEvents.length === 0 ? (
             <EmptyState
               icon={Calendar}
-              title="No Events Found"
-              description="No events match your filters"
+              title={t.noEventsFound}
+              description={t.noEventsMatch}
             />
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredAllEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <EventCard key={event.id} event={event} t={t} locale={locale} />
               ))}
             </div>
           ) : (
-            <EventsTable events={filteredAllEvents} />
+            <EventsTable events={filteredAllEvents} t={t} locale={locale} />
           ))}
       </div>
     </div>
   );
 }
 
+type DisplayT = ReturnType<typeof portalEventsDisplayTranslation[Lang]> extends never
+  ? (typeof portalEventsDisplayTranslation)["en"]
+  : (typeof portalEventsDisplayTranslation)["en"];
+
 function MyEventCard({
   rsvp,
   expanded,
   onToggleQr,
+  t,
+  locale,
 }: {
   rsvp: RSVP;
   expanded: boolean;
   onToggleQr: () => void;
+  t: (typeof portalEventsDisplayTranslation)["en"];
+  locale: Lang;
 }) {
   const event = rsvp.event;
   const eventDate = new Date(event.eventDate);
-  const spotsLeft = event.maxCapacity
-    ? event.maxCapacity - event._count.rsvps
-    : null;
 
   return (
     <div className="bg-white rounded-2xl border-2 border-primary-200 overflow-hidden">
@@ -248,11 +259,11 @@ function MyEventCard({
           {/* Event Info */}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-neutral-900 text-lg mb-2">
-              {event.titleEn}
+              {locale === "es" ? event.titleEs : event.titleEn}
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
               <InfoRow icon={Calendar}>
-                {eventDate.toLocaleDateString("en-US", {
+                {eventDate.toLocaleDateString(locale === "es" ? "es-MX" : "en-US", {
                   weekday: "long",
                   month: "long",
                   day: "numeric",
@@ -260,10 +271,7 @@ function MyEventCard({
               </InfoRow>
               <InfoRow icon={MapPin}>{event.location}</InfoRow>
               <InfoRow icon={Users}>
-                {rsvp.adultsAttending} adult
-                {rsvp.adultsAttending !== 1 ? "s" : ""},{" "}
-                {rsvp.childrenAttending} child
-                {rsvp.childrenAttending !== 1 ? "ren" : ""}
+                {rsvp.attendeeCount}
               </InfoRow>
             </div>
             <div className="flex gap-2">
@@ -271,13 +279,13 @@ function MyEventCard({
                 href={`/events/${event.slug}?from=portal`}
                 className="text-sm text-primary hover:underline"
               >
-                View Details
+                {t.viewDetails}
               </Link>
               <button
                 onClick={onToggleQr}
                 className="text-sm text-primary hover:underline"
               >
-                {expanded ? "Hide QR Code" : "Show QR Code"}
+                {expanded ? t.hideQr : t.showQr}
               </button>
             </div>
           </div>
@@ -295,7 +303,15 @@ function MyEventCard({
 }
 
 // Event Card for Recommended/Browse
-function EventCard({ event }: { event: Event }) {
+function EventCard({
+  event,
+  t,
+  locale,
+}: {
+  event: Event;
+  t: (typeof portalEventsDisplayTranslation)["en"];
+  locale: Lang;
+}) {
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -309,7 +325,7 @@ function EventCard({ event }: { event: Event }) {
 
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-neutral-900 mb-2">
-              {event.titleEn}
+              {locale === "es" ? event.titleEs : event.titleEn}
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
               <InfoRow icon={MapPin} iconClassName="w-3.5 h-3.5">
@@ -317,7 +333,7 @@ function EventCard({ event }: { event: Event }) {
               </InfoRow>
               {spotsLeft !== null && (
                 <InfoRow icon={Users} iconClassName="w-3.5 h-3.5">
-                  {spotsLeft} spots left
+                  {spotsLeft} {t.spotsLeft}
                 </InfoRow>
               )}
             </div>
@@ -325,7 +341,7 @@ function EventCard({ event }: { event: Event }) {
               href={`/events/${event.slug}?from=portal`}
               className="inline-block px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
             >
-              View & RSVP
+              {t.viewAndRsvp}
             </Link>
           </div>
         </div>
@@ -335,13 +351,21 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // Table Components (simplified versions of admin)
-function EventsTable({ events }: { events: Event[] }) {
+function EventsTable({
+  events,
+  t,
+  locale,
+}: {
+  events: Event[];
+  t: (typeof portalEventsDisplayTranslation)["en"];
+  locale: Lang;
+}) {
   return (
     <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       {/* Mobile: card list */}
       <div className="md:hidden divide-y divide-neutral-200">
         {events.map((event) => (
-          <EventMobileCard key={event.id} event={event} />
+          <EventMobileCard key={event.id} event={event} t={t} locale={locale} />
         ))}
       </div>
 
@@ -351,25 +375,25 @@ function EventsTable({ events }: { events: Event[] }) {
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                Date
+                {t.tableDate}
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                Event
+                {t.tableEvent}
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                Location
+                {t.tableLocation}
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                Availability
+                {t.tableAvailability}
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">
-                Action
+                {t.tableAction}
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200">
             {events.map((event) => (
-              <EventTableRow key={event.id} event={event} />
+              <EventTableRow key={event.id} event={event} t={t} locale={locale} />
             ))}
           </tbody>
         </table>
@@ -378,7 +402,15 @@ function EventsTable({ events }: { events: Event[] }) {
   );
 }
 
-function EventMobileCard({ event }: { event: Event }) {
+function EventMobileCard({
+  event,
+  t,
+  locale,
+}: {
+  event: Event;
+  t: (typeof portalEventsDisplayTranslation)["en"];
+  locale: Lang;
+}) {
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -389,14 +421,18 @@ function EventMobileCard({ event }: { event: Event }) {
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 rounded-lg bg-neutral-100 flex flex-col items-center justify-center flex-shrink-0">
           <span className="text-xs text-neutral-600 font-semibold leading-none">
-            {eventDate.toLocaleDateString("en-US", { month: "short" }).toUpperCase()}
+            {eventDate
+              .toLocaleDateString(locale === "es" ? "es-MX" : "en-US", { month: "short" })
+              .toUpperCase()}
           </span>
           <span className="text-lg font-bold text-neutral-900 leading-none">
             {eventDate.getDate()}
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-neutral-900 text-sm mb-1">{event.titleEn}</p>
+          <p className="font-semibold text-neutral-900 text-sm mb-1">
+            {locale === "es" ? event.titleEs : event.titleEn}
+          </p>
           <div className="flex items-center gap-1 text-xs text-neutral-500 mb-1">
             <MapPin className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{event.location}</span>
@@ -404,14 +440,16 @@ function EventMobileCard({ event }: { event: Event }) {
           {spotsLeft !== null && (
             <div className="flex items-center gap-1 text-xs text-neutral-500 mb-2">
               <Users className="w-3 h-3" />
-              <span>{spotsLeft} spots left</span>
+              <span>
+                {spotsLeft} {t.spotsLeft}
+              </span>
             </div>
           )}
           <Link
             href={`/events/${event.slug}?from=portal`}
             className="text-xs text-primary hover:underline font-medium"
           >
-            View Details
+            {t.viewDetails}
           </Link>
         </div>
       </div>
@@ -419,7 +457,15 @@ function EventMobileCard({ event }: { event: Event }) {
   );
 }
 
-function EventTableRow({ event }: { event: Event }) {
+function EventTableRow({
+  event,
+  t,
+  locale,
+}: {
+  event: Event;
+  t: (typeof portalEventsDisplayTranslation)["en"];
+  locale: Lang;
+}) {
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -428,26 +474,26 @@ function EventTableRow({ event }: { event: Event }) {
   return (
     <tr className="hover:bg-neutral-50 transition-colors">
       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-        {eventDate.toLocaleDateString("en-US", {
+        {eventDate.toLocaleDateString(locale === "es" ? "es-MX" : "en-US", {
           month: "short",
           day: "numeric",
         })}
       </td>
       <td className="px-6 py-4 text-sm font-medium text-neutral-900">
-        {event.titleEn}
+        {locale === "es" ? event.titleEs : event.titleEn}
       </td>
       <td className="px-6 py-4 text-sm text-neutral-600">
         <div className="max-w-xs truncate">{event.location}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
-        {spotsLeft !== null ? `${spotsLeft} spots` : "Unlimited"}
+        {spotsLeft !== null ? `${spotsLeft} ${t.spotsLeft}` : t.unlimited}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm">
         <Link
           href={`/events/${event.slug}?from=portal`}
           className="text-primary hover:underline font-medium"
         >
-          View Details
+          {t.viewDetails}
         </Link>
       </td>
     </tr>

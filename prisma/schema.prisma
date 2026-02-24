@@ -118,26 +118,20 @@ model EmailLog {
 
 
 model PatientPreferences {
-  id        String  @id @default(uuid())
-  patientId String  @unique
-  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  // Event preferences
-  interestedTopics    EventTopic[]
-  preferredEventTimes String[] // ["weekday_evening", "weekend_morning", "weekend_afternoon"]
-  maxTravelDistance   Int? // miles willing to travel
-
-  // Accessibility & dietary
-  dietaryRestrictions DietaryRestriction[]
-  accessibilityNeeds  String? // wheelchair, ASL interpreter, etc
-
-  // Communication preferences
-  emailNotifications Boolean @default(true)
-  smsNotifications   Boolean @default(false)
-  languagePreference String  @default("en") // en, es
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  patientId            String   @unique
+  patient              Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  interestedTopics     String[] 
+  preferredEventTimes  String[] 
+  maxTravelDistance    Int      @default(30)
+  dietaryRestrictions  String[] 
+  accessibilityNeeds   String?
+  emailNotifications   Boolean  @default(true)
+  smsNotifications     Boolean  @default(false)
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   @@map("patient_preferences")
 }
@@ -146,89 +140,113 @@ model Patient {
   id                String    @id @default(uuid())
   auth0Id           String    @unique
   email             String    @unique
-  role              String    @default("patient")
+  role              String    @default("patient") 
   preferredLanguage String    @default("en")
-  consentDate       DateTime?
-  consentToContact  Boolean   @default(false)
-  consentToPhotos   Boolean   @default(false)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  // Diagnosis verification
-  diagnosisLetterUrl       String?
-  diagnosisLetterKey       String?   // R2 storage key
-  diagnosisLetterUploadedAt DateTime?
-  diagnosisVerified        Boolean   @default(false)
-  diagnosisVerifiedBy      String?   // Admin email who verified
-  diagnosisVerifiedAt      DateTime?
-  diagnosisRejectedReason  String?   // If rejected, why
-  
-  // Grace period tracking
-  registrationCompletedAt  DateTime? // When they finished onboarding
-  diagnosisGracePeriodEndsAt DateTime? // registrationCompletedAt + 60 days
+  registrationCompletedAt DateTime?
+  consentDate             DateTime?
+  consentToContact        Boolean   @default(false)
+  consentToPhotos         Boolean   @default(false)
 
-  profile       PatientProfile?
-  preferences   PatientPreferences?
-  familyMembers FamilyMember[]
-  rsvps         Rsvp[]
-  checkIns      CheckIn[]
-  auditLogs     AuditLog[]
+  diagnosisGracePeriodEndsAt DateTime?
+  diagnosisGracePeriodSource String?  
+
+  emergencyContactName         String?
+  emergencyContactPhone        String?
+  emergencyContactRelationship String?
+
+  contactProfile    ContactProfile?
+  disorderProfile   DisorderProfile?
+  familyMembers     FamilyMember[]
+  preferences       PatientPreferences?
+  rsvps             Rsvp[]
+  checkIns          CheckIn[]
+  auditLogs         AuditLog[]
   financialAssistanceApplications FinancialAssistanceApplication[]
-  emailLogs EmailLog[]
+  emailLogs         EmailLog[]
 
   @@map("patients")
 }
 
-model PatientProfile {
-  id                           String   @id @default(uuid())
-  patientId                    String   @unique
-  patient                      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  firstName                    String
-  lastName                     String
-  dateOfBirth                  DateTime
-  phone                        String
-  address                      String
-  city                         String
-  state                        String
-  zipCode                      String
-  primaryCondition             String
-  severity                     String
-  diagnosisDate                DateTime
-  treatingPhysician            String?
-  specialtyPharmacy            String?
-  emergencyContactName         String
-  emergencyContactRelationship String
-  emergencyContactPhone        String
-  hipaaConsent                 Boolean
-  photoConsent                 Boolean
-  communicationConsent         Boolean
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
+model ContactProfile {
+  id           String    @id @default(uuid())
+  patientId    String?   @unique
+  familyMemberId String? @unique
+  
+  firstName    String
+  lastName     String
+  phone        String?
+  dateOfBirth  DateTime?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  zipCode      String?
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  @@map("patient_profiles")
+  
+  patient       Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  familyMember  FamilyMember?  @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+
+  @@map("contact_profiles")
 }
 
-model FamilyMember {
-  id                  String    @id @default(uuid())
-  patientId           String
-  patient             Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  firstName           String
-  lastName            String
-  dateOfBirth         DateTime?
-  relationship        String // parent, child, spouse, sibling, other
-  hasBleedingDisorder Boolean   @default(false)
-  condition           String? // if hasBleedingDisorder is true
-  severity            String? // mild, moderate, severe
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+model DisorderProfile {
+  id             String    @id @default(uuid())
+  patientId      String?   @unique
+  familyMemberId String?   @unique
+  
 
-  diagnosisLetterUrl       String?
-  diagnosisLetterKey       String?
+  condition      String    
+  severity       String    
+  dateOfDiagnosis DateTime?
+  
+
+  treatingPhysician String?
+  specialtyPharmacy String?
+  
+
+  diagnosisLetterUrl        String?
+  diagnosisLetterKey        String?   
   diagnosisLetterUploadedAt DateTime?
-  diagnosisVerified        Boolean   @default(false)
-  diagnosisVerifiedBy      String?
-  diagnosisVerifiedAt      DateTime?
-  diagnosisRejectedReason  String?
+  diagnosisVerified         Boolean   @default(false)
+  diagnosisVerifiedBy       String?   
+  diagnosisVerifiedAt       DateTime?
+  diagnosisRejectedReason   String?   
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  
+  patient       Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  familyMember  FamilyMember?  @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+
+  @@map("disorder_profiles")
+}
+
+
+model FamilyMember {
+  id               String    @id @default(uuid())
+  patientId        String
+  patient          Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  relationship     String    
+  hasBleedingDisorder Boolean @default(false)
+  
+  migratedToPatientId String?   @unique
+  migratedAt          DateTime?
+  migrationEligibleAt DateTime? // Calculated: dateOfBirth + 18 years
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  contactProfile   ContactProfile?
+  disorderProfile  DisorderProfile?
 
   @@map("family_members")
 }
@@ -559,18 +577,95 @@ model EventQuestion {
   updatedAt DateTime @updatedAt
 }
 
+enum AuditAction {
+  // Patient & Profile
+  REGISTRATION_COMPLETED
+  PROFILE_UPDATED
+  PATIENT_VIEWED
+
+  // RSVP
+  RSVP_CREATED
+  RSVP_CANCELLED
+
+  // Events (admin)
+  EVENT_CREATED
+  EVENT_UPDATED
+  EVENT_DELETED
+  EVENT_PHOTOS_UPLOADED
+  EVENT_PHOTO_DELETED
+  EVENT_FLYERS_UPDATED
+
+  // Announcements & Itinerary
+  ANNOUNCEMENT_CREATED
+  ANNOUNCEMENT_DELETED
+  ITINERARY_ITEM_CREATED
+  ITINERARY_ITEM_UPDATED
+  ITINERARY_ITEM_DELETED
+
+  // Financial Assistance (patient)
+  ASSISTANCE_APPLICATION_CREATED
+  ASSISTANCE_APPLICATION_UPDATED
+
+  // Financial Assistance (admin)
+  ASSISTANCE_APPLICATION_VIEWED
+  ASSISTANCE_APPLICATION_APPROVED
+  ASSISTANCE_APPLICATION_DENIED
+  ASSISTANCE_DISBURSEMENT_CREATED
+  ASSISTANCE_DOCUMENT_UPLOADED
+  ASSISTANCE_DOCUMENT_DELETED
+  DISBURSEMENT_PROOF_UPLOADED
+
+  // Check-in
+  CHECKIN_CREATED
+  MANUAL_CHECKIN
+  CHECKIN_REMOVED
+
+  // Family Members
+  FAMILY_MEMBER_ADDED
+  FAMILY_MEMBER_UPDATED
+  FAMILY_MEMBER_DELETED
+
+  // Diagnosis Verification
+  DIAGNOSIS_APPROVED
+  DIAGNOSIS_REJECTED
+  DIAGNOSIS_APPROVED_FAMILY
+  DIAGNOSIS_REJECTED_FAMILY
+
+  // User Management
+  USER_UPDATED
+  USER_DELETED
+  USERS_EXPORTED
+
+  // Polls & Questions
+  POLL_CREATED
+  POLL_DELETED
+  POLL_APPROVED
+  POLL_ACTIVATED
+  POLL_DEACTIVATED
+  POLL_INVITE_SENT
+  QUESTION_DELETED
+  QUESTION_ANSWERED
+
+  // Settings
+  EMAIL_TEMPLATE_UPDATED
+  TEST_EMAIL_SENT
+
+  // Sponsorship
+  SPONSOR_INVITE_SENT
+}
+
 model AuditLog {
-  id           String   @id @default(uuid())
-  patientId    String? // ADD THIS
-  patient      Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
-  action       String
+  id           String      @id @default(uuid())
+  patientId    String?
+  patient      Patient?    @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  action       AuditAction
   resourceType String?
   resourceId   String?
   ipAddress    String?
   userAgent    String?
-  details      String? // ADD THIS - simpler than Json for most cases
-  changes      Json? // Keep this for complex data
-  createdAt    DateTime @default(now())
+  details      String?
+  changes      Json?
+  createdAt    DateTime    @default(now())
 
   @@map("audit_logs")
 }

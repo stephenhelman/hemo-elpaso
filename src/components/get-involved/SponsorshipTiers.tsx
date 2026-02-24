@@ -74,7 +74,7 @@ export default function SponsorshipTiers({ locale }: Props) {
             >
               {isFeatured && (
                 <div className="absolute top-0 inset-x-0 text-center py-1 bg-primary text-white text-xs font-semibold">
-                  ★ Most Popular
+                  {t.mostPopular}
                 </div>
               )}
 

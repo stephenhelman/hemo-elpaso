@@ -16,7 +16,7 @@ const stepLabels = [
 
 export default function StepIndicator({ currentStep, totalSteps }: Props) {
   return (
-    <div className="flex items-center">
+    <div className="flex w-full">
       {Array.from({ length: totalSteps }).map((_, index) => {
         const stepNumber = index + 1;
         const isCompleted = stepNumber < currentStep;
@@ -45,15 +45,6 @@ export default function StepIndicator({ currentStep, totalSteps }: Props) {
                 {stepLabels[index]}
               </p>
             </div>
-
-            {/* Connecting line */}
-            {index < totalSteps - 1 && (
-              <div
-                className={`h-0.5 transition-colors ${
-                  stepNumber < currentStep ? "bg-primary" : "bg-neutral-200"
-                } flex-1 -mx-2`}
-              />
-            )}
           </div>
         );
       })}

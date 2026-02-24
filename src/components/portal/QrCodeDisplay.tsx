@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Download, Printer, QrCode, Loader2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { qrCodeDisplayTranslation } from "@/translation/rsvp";
 
 interface Props {
   rsvpId: string;
@@ -12,6 +14,8 @@ interface Props {
 export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { locale } = useLanguage();
+  const t = qrCodeDisplayTranslation[locale];
 
   useEffect(() => {
     fetch(`/api/rsvp/${rsvpId}/qr`)
@@ -59,7 +63,7 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
         </head>
         <body>
           <h1>${eventTitle}</h1>
-          <p>Show this QR code at check-in</p>
+          <p>${t.showAtCheckIn}</p>
           <img src="${qrCode}" alt="QR Code" />
         </body>
       </html>
@@ -80,7 +84,7 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
     return (
       <div className="text-center p-6">
         <QrCode className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-        <p className="text-sm text-neutral-400">Failed to load QR code</p>
+        <p className="text-sm text-neutral-400">{t.failedToLoad}</p>
       </div>
     );
   }
@@ -91,14 +95,12 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={qrCode}
-          alt="Check-in QR Code"
+          alt={t.checkInQr}
           className="w-16 h-16 rounded-lg border border-neutral-200"
         />
         <div className="flex-1">
-          <p className="text-sm font-medium text-neutral-900">
-            Check-in QR Code
-          </p>
-          <p className="text-xs text-neutral-500">Show at entrance</p>
+          <p className="text-sm font-medium text-neutral-900">{t.checkInQr}</p>
+          <p className="text-xs text-neutral-500">{t.showAtEntrance}</p>
         </div>
       </div>
     );
@@ -111,13 +113,11 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrCode}
-            alt="Check-in QR Code"
+            alt={t.checkInQr}
             className="w-48 h-48 mx-auto"
           />
         </div>
-        <p className="text-sm text-neutral-500 mt-3">
-          Show this QR code at check-in
-        </p>
+        <p className="text-sm text-neutral-500 mt-3">{t.showAtCheckIn}</p>
       </div>
 
       <div className="flex gap-2">
@@ -126,14 +126,14 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-sm font-medium hover:bg-neutral-50 transition-colors"
         >
           <Download className="w-4 h-4" />
-          Download
+          {t.download}
         </button>
         <button
           onClick={handlePrint}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-sm font-medium hover:bg-neutral-50 transition-colors"
         >
           <Printer className="w-4 h-4" />
-          Print
+          {t.print}
         </button>
       </div>
     </div>

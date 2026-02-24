@@ -3,48 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  X,
-  LayoutDashboard,
-  Calendar,
-  DollarSign,
-  User,
-  LogOut,
-  Shield,
-  Home,
-} from "lucide-react";
+import { Menu, X, LogOut, Shield, Home } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  portalSidebarTranslation,
+  portalNavItemsTranslation,
+} from "@/translation/portalSidebar";
 
 interface Props {
   isAdmin?: boolean;
 }
+
 export default function PortalMobileNav({ isAdmin = false }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
-  const navItems = [
-    {
-      name: "Dashboard",
-      href: "/portal/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Events",
-      href: "/portal/events",
-      icon: Calendar,
-    },
-    {
-      name: "Financial Assistance",
-      href: "/portal/assistance",
-      icon: DollarSign,
-    },
-    {
-      name: "My Profile",
-      href: "/portal/profile",
-      icon: User,
-    },
-  ];
+  const { locale } = useLanguage();
+  const t = portalSidebarTranslation[locale];
 
   return (
     <>
@@ -97,7 +72,7 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
             <span className="font-display font-bold text-lg text-neutral-900">
-              Menu
+              {t.menu}
             </span>
             <button
               onClick={() => setIsOpen(false)}
@@ -109,7 +84,7 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
 
           {/* Navigation Links */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {navItems.map((item) => {
+            {portalNavItemsTranslation.map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
 
@@ -128,7 +103,7 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
                   `}
                 >
                   <Icon className="w-5 h-5" />
-                  {item.name}
+                  {locale === "en" ? item.en : item.es}
                 </Link>
               );
             })}
@@ -152,10 +127,10 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
                   "
                 >
                   <Shield className="w-5 h-5" />
-                  <span>Admin Dashboard</span>
+                  <span>{t.adminDashboard}</span>
                   <div className="ml-auto">
                     <div className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-bold">
-                      ADMIN
+                      {t.adminBadge}
                     </div>
                   </div>
                 </Link>
@@ -163,21 +138,21 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
             )}
           </nav>
 
-          {/* Logout Button */}
+          {/* Bottom actions */}
           <div className="p-4 border-t border-neutral-200">
             <Link
               href="/"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-700 hover:bg-neutral-100 font-medium transition-colors w-full"
             >
               <Home className="w-5 h-5" />
-              Back to Website
+              {t.backToWebsite}
             </Link>
             <a
               href="/api/auth/logout"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors w-full"
             >
               <LogOut className="w-5 h-5" />
-              Log Out
+              {t.logout}
             </a>
           </div>
         </div>

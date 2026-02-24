@@ -13,6 +13,7 @@ import { Select } from "../form/Select";
 import { EventsShowingCaption } from "./EventsShowingCaption";
 import { EventsGrid } from "./EventsGrid";
 import { eventsActionTranslation } from "@/translation/eventsPage";
+import { eventTopicEnum } from "@/translation/enumConfig";
 
 export interface Event {
   id: string;
@@ -100,7 +101,11 @@ export default function PublicEventsDisplay({
             onChange={(e) => setCategoryFilter(e.target.value)}
             classNames="px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            <EventFilterOptions lang={lang} />
+            <EventFilterOptions
+              lang={lang}
+              enumVals={eventTopicEnum}
+              allVal="topic"
+            />
           </Select>
           {/* View Toggle */}
           <ViewToggle
