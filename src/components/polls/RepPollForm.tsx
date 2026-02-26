@@ -5,17 +5,26 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
+import { Lang } from "@/types";
+import { pollFormTranslation } from "@/translation/outsideRepTranslation";
 
 interface Props {
   token: string;
   eventId: string;
   repEmail: string;
+  locale: Lang;
 }
 
-export default function RepPollForm({ token, eventId, repEmail }: Props) {
+export default function RepPollForm({
+  token,
+  eventId,
+  repEmail,
+  locale,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const t = pollFormTranslation[locale];
 
   const [formData, setFormData] = useState({
     question: { en: "", es: "" }, // CHANGED
@@ -107,10 +116,10 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
 
   const resetForm = () => {
     setFormData({
-      question: { en: "", es: "" }, // CHANGED
+      question: { en: "", es: "" },
       options: [
-        { en: "", es: "" }, // CHANGED
-        { en: "", es: "" }, // CHANGED
+        { en: "", es: "" },
+        { en: "", es: "" },
       ],
     });
   };
@@ -122,11 +131,9 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
         <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-          Poll Submitted!
+          {t.submitComplete}
         </h3>
-        <p className="text-neutral-600">
-          Your poll will be reviewed by HOEP before going live.
-        </p>
+        <p className="text-neutral-600">{t.reviewBeforeLive}</p>
       </div>
     );
   }
@@ -134,11 +141,11 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <BilingualInput
-        label="Poll Question"
+        label={t.pollQuestion}
         name="question"
         value={formData.question}
         onChange={(value) => setFormData({ ...formData, question: value })}
-        placeholder="e.g., What topic interests you most?"
+        placeholder={t.pollQuestionPlaceholder}
         type="textarea"
         rows={2}
         required
@@ -147,18 +154,18 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
       {/* Answer Options */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-3">
-          Answer Options * (minimum 2, maximum 6)
+          {t.optionsHeader}
         </label>
         <div className="space-y-3">
           {formData.options.map((option, index) => (
             <div key={index} className="flex gap-2 items-start">
               <div className="flex-1">
                 <BilingualInput
-                  label={`Option ${index + 1}`}
+                  label={`${t.optionLabel} ${index + 1}`}
                   name={`option-${index}`}
                   value={option}
                   onChange={(value) => handleOptionChange(index, value)}
-                  placeholder={`Enter option ${index + 1}...`}
+                  placeholder={`${t.optionPlaceholder} ${index + 1}...`}
                   type="input"
                   required
                 />
@@ -169,7 +176,7 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
                   onClick={() => handleRemoveOption(index)}
                   className="mt-8 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-semibold"
                 >
-                  Remove
+                  {t.removeOption}
                 </button>
               )}
             </div>
@@ -183,7 +190,7 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
             className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline"
           >
             <Plus className="w-4 h-4" />
-            Add Option
+            {t.addOption}
           </button>
         )}
       </div>
@@ -198,15 +205,13 @@ export default function RepPollForm({ token, eventId, repEmail }: Props) {
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Submitting Poll...
+              {t.submitting}...
             </>
           ) : (
-            "Submit Poll for Review"
+            t.submit
           )}
         </button>
-        <p className="text-xs text-center text-neutral-500 mt-3">
-          Your poll will be reviewed by HOEP staff before being activated
-        </p>
+        <p className="text-xs text-center text-neutral-500 mt-3">{t.review}</p>
       </div>
     </form>
   );

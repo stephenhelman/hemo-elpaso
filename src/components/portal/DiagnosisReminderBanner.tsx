@@ -3,73 +3,33 @@
 import { AlertCircle, Upload, X } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
+import { diagnosisLetterTranslation } from "@/translation/portal";
 
 interface Props {
   daysRemaining: number;
   hasUploadedLetter: boolean;
   isVerified: boolean;
-  language: "en" | "es";
 }
 
 export default function DiagnosisReminderBanner({
   daysRemaining,
   hasUploadedLetter,
   isVerified,
-  language,
 }: Props) {
   const [dismissed, setDismissed] = useState(false);
+  const { locale } = useLanguage();
+
+  const messages = diagnosisLetterTranslation(daysRemaining);
 
   // Don't show if verified or dismissed
   if (isVerified || dismissed) return null;
 
-  const messages = {
-    en: {
-      pending: {
-        title: "Diagnosis Letter Pending Verification",
-        description:
-          "Your diagnosis letter has been uploaded and is awaiting admin review.",
-        action: "Pending Verification",
-      },
-      upload: {
-        title: `Upload Diagnosis Letter - ${daysRemaining} Days Remaining`,
-        description:
-          "Please upload your diagnosis letter to maintain access to financial assistance and event RSVPs.",
-        action: "Upload Now",
-      },
-      expired: {
-        title: "Diagnosis Letter Required",
-        description:
-          "Your grace period has expired. Please upload your diagnosis letter immediately to regain access.",
-        action: "Upload Now",
-      },
-    },
-    es: {
-      pending: {
-        title: "Carta de Diagnóstico Pendiente de Verificación",
-        description:
-          "Su carta de diagnóstico ha sido cargada y está esperando revisión del administrador.",
-        action: "Pendiente de Verificación",
-      },
-      upload: {
-        title: `Cargar Carta de Diagnóstico - ${daysRemaining} Días Restantes`,
-        description:
-          "Por favor cargue su carta de diagnóstico para mantener acceso a asistencia financiera y eventos.",
-        action: "Cargar Ahora",
-      },
-      expired: {
-        title: "Carta de Diagnóstico Requerida",
-        description:
-          "Su período de gracia ha expirado. Por favor cargue su carta de diagnóstico inmediatamente.",
-        action: "Cargar Ahora",
-      },
-    },
-  };
-
   const content = hasUploadedLetter
-    ? messages[language].pending
+    ? messages[locale].pending
     : daysRemaining > 0
-      ? messages[language].upload
-      : messages[language].expired;
+      ? messages[locale].upload
+      : messages[locale].expired;
 
   const colorClasses = hasUploadedLetter
     ? "bg-blue-50 border-blue-200 text-blue-900"
@@ -94,7 +54,7 @@ export default function DiagnosisReminderBanner({
 
           {!hasUploadedLetter && (
             <Link
-              href="/portal/profile#diagnosis"
+              href="/portal/profile?tab=verification"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white font-semibold hover:bg-opacity-90 transition-colors text-sm"
             >
               <Upload className="w-4 h-4" />

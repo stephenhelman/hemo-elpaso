@@ -24,12 +24,12 @@ export default function FilterBar({
       {children}
 
       {hasActionRow && (
-        <div className="flex flex-col items-center justify-between gap-3 mt-4 pt-4 border-t border-neutral-200">
-          <div className="flex items-center justify-between w-full gap-2">
+        <div className="grid grid-cols-6 gap-4 mt-4">
+          <div className="flex items-center justify-between col-span-6 lg:col-span-4 gap-4">
             {actions}
           </div>
           {exportButton && (
-            <div className="flex flex-col w-full lg:flex-row">
+            <div className="flex items-center col-span-6 lg:col-span-2 w-full">
               {exportButton}
             </div>
           )}

@@ -1,3 +1,48 @@
+export const diagnosisLetterTranslation = (daysRemaining: number) => {
+  return {
+    en: {
+      pending: {
+        title: "Diagnosis Letter Pending Verification",
+        description:
+          "Your diagnosis letter has been uploaded and is awaiting admin review.",
+        action: "Pending Verification",
+      },
+      upload: {
+        title: `Upload Diagnosis Letter - ${daysRemaining} Days Remaining`,
+        description:
+          "Please upload your diagnosis letter to maintain access to financial assistance and event RSVPs.",
+        action: "Upload Now",
+      },
+      expired: {
+        title: "Diagnosis Letter Required",
+        description:
+          "Your grace period has expired. Please upload your diagnosis letter immediately to regain access.",
+        action: "Upload Now",
+      },
+    },
+    es: {
+      pending: {
+        title: "Carta de Diagnóstico Pendiente de Verificación",
+        description:
+          "Su carta de diagnóstico ha sido cargada y está esperando revisión del administrador.",
+        action: "Pendiente de Verificación",
+      },
+      upload: {
+        title: `Cargar Carta de Diagnóstico - ${daysRemaining} Días Restantes`,
+        description:
+          "Por favor cargue su carta de diagnóstico para mantener acceso a asistencia financiera y eventos.",
+        action: "Cargar Ahora",
+      },
+      expired: {
+        title: "Carta de Diagnóstico Requerida",
+        description:
+          "Su período de gracia ha expirado. Por favor cargue su carta de diagnóstico inmediatamente.",
+        action: "Cargar Ahora",
+      },
+    },
+  };
+};
+
 export const portalDashboardTranslation = {
   en: {
     welcome: "Welcome back,",

@@ -13,12 +13,14 @@ interface EventsContextType {
   upcomingEvents: Event[];
   pastEvents: Event[];
   loading: boolean;
+  allEvents: Event[];
   refetch: () => void;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
 
 export function EventsProvider({ children }: { children: ReactNode }) {
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       setUpcomingEvents(data.upcoming || []);
       setPastEvents(data.past || []);
+      setAllEvents(data.events || []);
     } catch (error) {
       console.error("Failed to fetch events:", error);
     } finally {
@@ -47,7 +50,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
   return (
     <EventsContext.Provider
-      value={{ upcomingEvents, pastEvents, loading, refetch }}
+      value={{ upcomingEvents, pastEvents, loading, refetch, allEvents }}
     >
       {children}
     </EventsContext.Provider>

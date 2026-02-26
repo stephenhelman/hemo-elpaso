@@ -18,7 +18,7 @@ export async function GET() {
     const upcoming = events.filter((e) => new Date(e.eventDate) >= now);
     const past = events.filter((e) => new Date(e.eventDate) < now);
 
-    return NextResponse.json({ upcoming, past });
+    return NextResponse.json({ upcoming, past, events });
   } catch (error) {
     console.error("Events API error:", error);
     return NextResponse.json(

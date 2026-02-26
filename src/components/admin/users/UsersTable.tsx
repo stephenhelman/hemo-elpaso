@@ -109,6 +109,7 @@ export default function UsersTable({
             apiEndpoint="/api/admin/users/export"
             apiParams={{ search, role, condition }}
             filename={`users-${new Date().toISOString().split("T")[0]}.csv`}
+            className="flex-1"
           />
         }
         stats={<>{t.showing(filteredUsers.length, users.length)}</>}
@@ -218,7 +219,8 @@ export default function UsersTable({
                     <td className="px-3 py-3 md:px-6 md:py-4">
                       <div>
                         <p className="font-medium text-neutral-900">
-                          {user.contactProfile?.firstName} {user.contactProfile?.lastName}
+                          {user.contactProfile?.firstName}{" "}
+                          {user.contactProfile?.lastName}
                         </p>
                         <p className="text-sm text-neutral-600">{user.email}</p>
                       </div>

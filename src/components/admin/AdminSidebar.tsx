@@ -10,6 +10,7 @@ import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
 } from "@/translation/adminSidebar";
+import Image from "next/image";
 
 interface Props {
   user: {
@@ -30,11 +31,13 @@ export default function AdminSidebar({ user }: Props) {
         <div className="flex flex-col flex-1">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 py-5 border-b border-neutral-800">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-white font-display font-bold text-sm">
-                HO
-              </span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Hemophilia Outreach of El Paso"
+              width={40}
+              height={40}
+              className="rounded-full object-contain"
+            />
             <div>
               <p className="font-display font-bold text-white text-sm leading-tight">
                 {t.adminPortal}

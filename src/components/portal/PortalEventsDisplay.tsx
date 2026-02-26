@@ -126,7 +126,12 @@ export default function PortalEventsDisplay({
               viewMode === "grid" ? (
                 <EventCard key={event.id} event={event} t={t} locale={locale} />
               ) : (
-                <EventTableRow key={event.id} event={event} t={t} locale={locale} />
+                <EventTableRow
+                  key={event.id}
+                  event={event}
+                  t={t}
+                  locale={locale}
+                />
               ),
             )}
           </div>
@@ -229,9 +234,10 @@ export default function PortalEventsDisplay({
   );
 }
 
-type DisplayT = ReturnType<typeof portalEventsDisplayTranslation[Lang]> extends never
-  ? (typeof portalEventsDisplayTranslation)["en"]
-  : (typeof portalEventsDisplayTranslation)["en"];
+type DisplayT =
+  ReturnType<(typeof portalEventsDisplayTranslation)[Lang]> extends never
+    ? (typeof portalEventsDisplayTranslation)["en"]
+    : (typeof portalEventsDisplayTranslation)["en"];
 
 function MyEventCard({
   rsvp,
@@ -263,16 +269,17 @@ function MyEventCard({
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
               <InfoRow icon={Calendar}>
-                {eventDate.toLocaleDateString(locale === "es" ? "es-MX" : "en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {eventDate.toLocaleDateString(
+                  locale === "es" ? "es-MX" : "en-US",
+                  {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  },
+                )}
               </InfoRow>
               <InfoRow icon={MapPin}>{event.location}</InfoRow>
-              <InfoRow icon={Users}>
-                {rsvp.attendeeCount}
-              </InfoRow>
+              <InfoRow icon={Users}>{rsvp.attendeeCount}</InfoRow>
             </div>
             <div className="flex gap-2">
               <Link
@@ -329,7 +336,7 @@ function EventCard({
             </h3>
             <div className="space-y-1 text-sm text-neutral-600 mb-3">
               <InfoRow icon={MapPin} iconClassName="w-3.5 h-3.5">
-                <span className="truncate">{event.location}</span>
+                <span className="line-clamp-1">{event.location}</span>
               </InfoRow>
               {spotsLeft !== null && (
                 <InfoRow icon={Users} iconClassName="w-3.5 h-3.5">
@@ -393,7 +400,12 @@ function EventsTable({
           </thead>
           <tbody className="divide-y divide-neutral-200">
             {events.map((event) => (
-              <EventTableRow key={event.id} event={event} t={t} locale={locale} />
+              <EventTableRow
+                key={event.id}
+                event={event}
+                t={t}
+                locale={locale}
+              />
             ))}
           </tbody>
         </table>
@@ -422,7 +434,9 @@ function EventMobileCard({
         <div className="w-12 h-12 rounded-lg bg-neutral-100 flex flex-col items-center justify-center flex-shrink-0">
           <span className="text-xs text-neutral-600 font-semibold leading-none">
             {eventDate
-              .toLocaleDateString(locale === "es" ? "es-MX" : "en-US", { month: "short" })
+              .toLocaleDateString(locale === "es" ? "es-MX" : "en-US", {
+                month: "short",
+              })
               .toUpperCase()}
           </span>
           <span className="text-lg font-bold text-neutral-900 leading-none">

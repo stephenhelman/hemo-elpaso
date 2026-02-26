@@ -73,8 +73,6 @@ export default async function patientDetailPage({ params }: Props) {
 
   if (!patient) notFound();
 
-  console.log(patient);
-
   // ADD AUDIT LOG FOR VIEWING patient DETAILS
   await prisma.auditLog.create({
     data: {

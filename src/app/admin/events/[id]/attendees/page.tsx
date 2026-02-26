@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { ArrowLeft, Users, CheckCircle, XCircle, Calendar } from "lucide-react";
+import { ArrowLeft, Users, CheckCircle, XCircle } from "lucide-react";
 import ManualCheckInButton from "@/components/admin/ManualCheckInButton";
 import { StatCard } from "@/components/ui/StatCard";
 
@@ -17,7 +17,7 @@ export default async function EventAttendeesPage({ params }: Props) {
         include: {
           patient: {
             include: {
-              profile: true,
+              contactProfile: true,
             },
           },
         },
@@ -29,7 +29,7 @@ export default async function EventAttendeesPage({ params }: Props) {
         include: {
           patient: {
             include: {
-              profile: true,
+              contactProfile: true,
             },
           },
         },
@@ -45,14 +45,29 @@ export default async function EventAttendeesPage({ params }: Props) {
     (rsvp) => !event.checkIns.find((c) => c.patientId === rsvp.patientId),
   );
 
-  const totalAdults = event.rsvps.reduce(
-    (sum, rsvp) => sum + rsvp.adultsAttending,
-    0,
-  );
-  const totalChildren = event.rsvps.reduce(
-    (sum, rsvp) => sum + rsvp.childrenAttending,
-    0,
-  );
+  const ageGroups = {
+    "0-17": 0,
+    "18+": 0,
+  };
+
+  const now = new Date();
+
+  const allPatients = event.rsvps.map((rsvp) => rsvp.patient);
+
+  allPatients.forEach((patient) => {
+    if (!patient.contactProfile?.dateOfBirth) return;
+
+    const age = Math.floor(
+      (now.getTime() - new Date(patient.contactProfile.dateOfBirth).getTime()) /
+        (365.25 * 24 * 60 * 60 * 1000),
+    );
+
+    if (age <= 17) ageGroups["0-17"]++;
+    else ageGroups["18+"]++;
+  });
+
+  const totalAdults = ageGroups["18+"];
+  const totalChildren = ageGroups["0-17"];
 
   return (
     <div className="p-8">
@@ -197,7 +212,8 @@ function AttendeeRow({
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-neutral-900">
-              {rsvp.patient.profile.firstName} {rsvp.patient.profile.lastName}
+              {rsvp.patient.contactProfile.firstName}{" "}
+              {rsvp.patient.contactProfile.lastName}
             </p>
             <p className="text-sm text-neutral-500">
               {rsvp.adultsAttending} adult
@@ -219,7 +235,7 @@ function AttendeeRow({
           <ManualCheckInButton
             rsvpId={rsvp.id}
             eventId={eventId}
-            patientName={`${rsvp.patient.profile.firstName} ${rsvp.patient.profile.lastName}`}
+            patientName={`${rsvp.patient.contactProfile.firstName} ${rsvp.patient.contactProfile.lastName}`}
           />
         )}
       </div>
@@ -237,8 +253,8 @@ function CheckedInRow({ checkIn, rsvp }: { checkIn: any; rsvp: any }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-neutral-900">
-              {checkIn.patient.profile.firstName}{" "}
-              {checkIn.patient.profile.lastName}
+              {checkIn.patient.contactProfile.firstName}{" "}
+              {checkIn.patient.contactProfile.lastName}
             </p>
             {rsvp && (
               <p className="text-sm text-neutral-500">
@@ -261,7 +277,7 @@ function CheckedInRow({ checkIn, rsvp }: { checkIn: any; rsvp: any }) {
         <ManualCheckInButton
           checkInId={checkIn.id}
           eventId={checkIn.eventId}
-          patientName={`${checkIn.patient.profile.firstName} ${checkIn.patient.profile.lastName}`}
+          patientName={`${checkIn.patient.contactProfile.firstName} ${checkIn.patient.contactProfile.lastName}`}
           isCheckedIn={true}
         />
       </div>

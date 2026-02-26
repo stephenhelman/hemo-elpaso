@@ -68,8 +68,8 @@ export default async function PortalLayout({
           <div className="p-4 lg:p-6">
             <DiagnosisReminderBanner
               daysRemaining={daysRemaining}
-              hasUploadedLetter={!!patient.diagnosisLetterUrl}
-              isVerified={patient.diagnosisVerified}
+              hasUploadedLetter={!!patient.disorderProfile?.diagnosisLetterUrl}
+              isVerified={patient.disorderProfile.diagnosisVerified}
               language={(patient.preferredLanguage as "en" | "es") || "en"}
             />
           </div>

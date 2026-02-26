@@ -55,7 +55,11 @@ export default function EventEditForm({ event }: Props) {
       en: event.descriptionEn || "",
       es: event.descriptionEs || "",
     },
-    eventDate: new Date(event.eventDate).toISOString().slice(0, 16),
+    eventDate: new Date(
+      event.eventDate.getTime() - event.eventDate.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .slice(0, 16),
     location: event.location,
     maxCapacity: event.maxCapacity?.toString() || "",
     rsvpDeadline: event.rsvpDeadline
@@ -321,7 +325,7 @@ export default function EventEditForm({ event }: Props) {
               </label>
             </div>
           </div>
-          <div className="border-t border-neutral-200 pt-8">
+          <div className="border-t mt-4 border-neutral-200 pt-8">
             <h3 className="text-xl font-display font-bold text-neutral-900 mb-4">
               Event Flyers
             </h3>

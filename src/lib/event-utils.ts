@@ -2,6 +2,32 @@ import { format, isPast, isFuture, formatDistanceToNow } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { Lang } from "@/types";
 
+// Serializable event shape — all Date fields converted to ISO strings so this
+// can be safely passed from a Server Component to a Client Component.
+export interface SerializedEvent {
+  id: string;
+  slug: string;
+  titleEn: string;
+  titleEs: string;
+  descriptionEn: string | null;
+  descriptionEs: string | null;
+  flyerEnUrl: string | null;
+  flyerEsUrl: string | null;
+  eventDate: string;
+  location: string;
+  maxCapacity: number | null;
+  rsvpDeadline: string | null;
+  status: string;
+  category: string;
+  targetAudience: string;
+  language: string;
+  isPriority: boolean;
+  liveEnabled: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export function formatEventDate(dateString: string | Date, lang: Lang) {
   const date = new Date(dateString);
   const locale = lang === "es" ? es : enUS;

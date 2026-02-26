@@ -118,7 +118,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      ß{/* Bottom Bar */}
+      {/* Bottom Bar */}
       <div className="border-t border-neutral-800">
         <div className="container-max px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-neutral-500">

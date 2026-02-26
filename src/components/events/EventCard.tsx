@@ -44,7 +44,7 @@ export function EventCard({ event, lang, isPast }: Props) {
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
-            <span className="line-clamp-1">{event.location}</span>
+            <span className="line-clamp-1 text-wrap">{event.location}</span>
           </div>
           {!isPast &&
             (spotsLeft !== null ? (

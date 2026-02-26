@@ -18,7 +18,7 @@ export default async function NewApplicationPage() {
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
     include: {
-      profile: true,
+      contactProfile: true,
     },
   });
 
@@ -31,7 +31,7 @@ export default async function NewApplicationPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container-max px-4 sm:px-6 lg:px-8 py-12">
+      <div className="px-4 sm:px-6 lg:px-8 py-12">
         <Link
           href="/portal/assistance"
           className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"

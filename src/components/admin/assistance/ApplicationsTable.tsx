@@ -160,6 +160,7 @@ export default function ApplicationsTable({
             ]}
             rows={exportRows}
             filename={`assistance-applications-${new Date().toISOString().split("T")[0]}.csv`}
+            className="flex-1"
           />
         }
         stats={<>{t.showing(filteredApps.length, applications.length)}</>}

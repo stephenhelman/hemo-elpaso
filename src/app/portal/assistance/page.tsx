@@ -42,7 +42,7 @@ export default async function FinancialAssistancePage() {
     <div className="min-h-screen bg-neutral-50">
       <div className="px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-3">
           <div>
             <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
               {t.heading}
@@ -52,7 +52,7 @@ export default async function FinancialAssistancePage() {
 
           <Link
             href="/portal/assistance/new"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 w-full md:w-auto rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
           >
             <Plus className="w-5 h-5" />
             {t.newApplication}

@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    console.log(body.slug);
 
     // Create event with targeting
     const event = await prisma.event.create({

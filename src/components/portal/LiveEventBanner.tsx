@@ -9,7 +9,10 @@ interface Props {
   locale?: Lang;
 }
 
-export default async function LiveEventBanner({ patientId, locale = "en" }: Props) {
+export default async function LiveEventBanner({
+  patientId,
+  locale = "en",
+}: Props) {
   const t = liveEventBannerTranslation[locale];
   // Get events the patient is checked into that are live now
   const now = new Date();

@@ -10,6 +10,7 @@ import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
 } from "@/translation/adminSidebar";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 export default function AdminMobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,18 +35,20 @@ export default function AdminMobileNav() {
               HOEP Admin
             </span>
           </Link>
-
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6 text-neutral-900" />
-            ) : (
-              <Menu className="w-6 h-6 text-neutral-900" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? (
+                <X className="w-6 h-6 text-neutral-900" />
+              ) : (
+                <Menu className="w-6 h-6 text-neutral-900" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

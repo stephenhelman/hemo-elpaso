@@ -2,12 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { StatCard } from "@/components/ui/StatCard";
-import {
-  DollarSign,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { DollarSign, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import ApplicationsTable from "@/components/admin/assistance/ApplicationsTable";
 import { cookies } from "next/headers";
 import { Lang } from "@/types";
@@ -53,11 +48,7 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
   const applications = await prisma.financialAssistanceApplication.findMany({
     where,
     include: {
-      patient: {
-        include: {
-          profile: true,
-        },
-      },
+      patient: true,
       documents: true,
       disbursements: true,
       _count: {

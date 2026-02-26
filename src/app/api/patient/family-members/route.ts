@@ -35,7 +35,9 @@ export async function POST(request: NextRequest) {
         familyMemberId: familyMember.id,
         firstName: body.firstName,
         lastName: body.lastName,
-        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
+        dateOfBirth: body.dateOfBirth
+          ? new Date(body.dateOfBirth + "T00:00:00")
+          : null,
       },
     });
 

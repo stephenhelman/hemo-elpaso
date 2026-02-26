@@ -51,7 +51,9 @@ export async function PATCH(
       data: {
         firstName: body.firstName,
         lastName: body.lastName,
-        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : undefined,
+        dateOfBirth: body.dateOfBirth
+          ? new Date(body.dateOfBirth + "T00:00:00")
+          : undefined,
       },
     });
 

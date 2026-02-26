@@ -1,40 +1,104 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { CheckCircle } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { StatusBadge } from "@/components/event-polls/StatusBadge";
+import { InvalidToken } from "@/components/event-polls/InvalidToken";
+import { ExpiredToken } from "@/components/event-polls/ExpiredToken";
 import RepPollForm from "@/components/polls/RepPollForm";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { pollCreationTransaltion } from "@/translation/outsideRepTranslation";
+import type { Lang } from "@/types";
+
+interface TokenData {
+  id: string;
+  eventId: string;
+  repEmail: string;
+  repName: string | null;
+  expiresAt: string;
+  event: {
+    titleEn: string;
+    titleEs: string;
+  };
+}
+
+interface Poll {
+  id: string;
+  titleEn: string;
+  titleEs: string;
+  status: "draft" | "pending" | "approved" | "active";
+  options: { options: { id: string; text: string }[] } | null;
+}
+
+type PageStatus = "loading" | "invalid" | "expired" | "loaded";
 
 interface Props {
   params: { token: string };
 }
 
-export default async function RepPollCreationPage({ params }: Props) {
-  // Get token details
-  const tokenData = await prisma.pollCreationToken.findUnique({
-    where: { token: params.token },
-    include: {
-      event: true,
-    },
-  });
+export default function RepPollCreationPage({ params }: Props) {
+  const { locale } = useLanguage();
+  const [pageStatus, setPageStatus] = useState<PageStatus>("loading");
+  const [tokenData, setTokenData] = useState<TokenData | null>(null);
+  const [existingPolls, setExistingPolls] = useState<Poll[]>([]);
 
-  if (!tokenData) {
-    return <InvalidToken />;
+  useEffect(() => {
+    async function fetchPollData() {
+      try {
+        const response = await fetch(
+          `/api/sponsor/event-polls/${params.token}`,
+        );
+
+        if (response.status === 404) {
+          setPageStatus("invalid");
+          return;
+        }
+
+        if (response.status === 410) {
+          setPageStatus("expired");
+          return;
+        }
+
+        if (!response.ok) {
+          setPageStatus("invalid");
+          return;
+        }
+
+        const data = await response.json();
+        setTokenData(data.tokenData);
+        setExistingPolls(data.existingPolls);
+        setPageStatus("loaded");
+      } catch (error) {
+        console.error("Failed to fetch poll data:", error);
+        setPageStatus("invalid");
+      }
+    }
+
+    fetchPollData();
+  }, [params.token]);
+
+  if (pageStatus === "loading") {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
   }
 
-  // Check if expired
-  if (new Date() > tokenData.expiresAt) {
-    return <ExpiredToken />;
+  if (pageStatus === "invalid") {
+    return <InvalidToken locale={locale as Lang} />;
   }
 
-  // Get existing polls from this rep
-  const existingPolls = await prisma.eventInteraction.findMany({
-    where: {
-      eventId: tokenData.eventId,
-      createdBy: `rep:${tokenData.repEmail}`,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  if (pageStatus === "expired") {
+    return <ExpiredToken locale={locale as Lang} />;
+  }
+
+  const data = tokenData!;
+  const t = pollCreationTransaltion[locale as Lang];
+  const eventTitle = locale === "es" ? data.event.titleEs : data.event.titleEn;
+  const expiresFormatted = new Date(data.expiresAt).toLocaleDateString(
+    locale === "es" ? "es-MX" : "en-US",
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50 py-12 px-4">
@@ -45,26 +109,26 @@ export default async function RepPollCreationPage({ params }: Props) {
             <CheckCircle className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            Create Event Polls
+            {t.title}
           </h1>
           <p className="text-neutral-600">
-            for <strong>{tokenData.event.titleEn}</strong>
+            {t.for} <strong>{eventTitle}</strong>
           </p>
           <p className="text-sm text-neutral-500 mt-2">
-            Invited by HOEP • Expires {tokenData.expiresAt.toLocaleDateString()}
+            {t.invite} {expiresFormatted}
           </p>
         </div>
 
         {/* Info Card */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
           <h3 className="font-semibold text-blue-900 mb-2">
-            Welcome, {tokenData.repName || tokenData.repEmail}!
+            {t.welcome}, {data.repName || data.repEmail}!
           </h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Create polls to engage attendees during the event</li>
-            <li>• Questions should be in both English and Spanish</li>
-            <li>• Your polls will be reviewed by HOEP before going live</li>
-            <li>• You can create multiple polls using this link</li>
+            <li>• {t.listItemOne}</li>
+            <li>• {t.listItemTwo}</li>
+            <li>• {t.listItemThree}</li>
+            <li>• {t.listItemFour}</li>
           </ul>
         </div>
 
@@ -72,7 +136,7 @@ export default async function RepPollCreationPage({ params }: Props) {
         {existingPolls.length > 0 && (
           <div className="bg-white rounded-xl border border-neutral-200 p-6 mb-6">
             <h2 className="font-semibold text-neutral-900 mb-4">
-              Your Submitted Polls ({existingPolls.length})
+              {t.submitted} ({existingPolls.length})
             </h2>
             <div className="space-y-3">
               {existingPolls.map((poll) => (
@@ -80,13 +144,13 @@ export default async function RepPollCreationPage({ params }: Props) {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="font-medium text-neutral-900">
-                        {poll.titleEn}
+                        {locale === "es" ? poll.titleEs : poll.titleEn}
                       </p>
                       <p className="text-sm text-neutral-500 mt-1">
-                        {(poll.options as any).options.length} options
+                        {poll.options?.options?.length ?? 0} {t.options}
                       </p>
                     </div>
-                    <StatusBadge status={poll.status} />
+                    <StatusBadge status={poll.status} locale={locale as Lang} />
                   </div>
                 </div>
               ))}
@@ -97,78 +161,15 @@ export default async function RepPollCreationPage({ params }: Props) {
         {/* Poll Form */}
         <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6">
           <h2 className="font-semibold text-neutral-900 mb-6">
-            {existingPolls.length > 0
-              ? "Create Another Poll"
-              : "Create Your First Poll"}
+            {existingPolls.length > 0 ? t.createAnother : t.createFirst}
           </h2>
           <RepPollForm
             token={params.token}
-            eventId={tokenData.eventId}
-            repEmail={tokenData.repEmail}
+            eventId={data.eventId}
+            repEmail={data.repEmail}
+            locale={locale}
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const config = {
-    pending: {
-      bg: "bg-amber-100",
-      text: "text-amber-700",
-      label: "Pending Review",
-    },
-    approved: { bg: "bg-green-100", text: "text-green-700", label: "Approved" },
-    active: { bg: "bg-blue-100", text: "text-blue-700", label: "Live" },
-  }[status] || {
-    bg: "bg-neutral-100",
-    text: "text-neutral-600",
-    label: status,
-  };
-
-  return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}
-    >
-      {config.label}
-    </span>
-  );
-}
-
-function InvalidToken() {
-  return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <XCircle className="w-8 h-8 text-red-600" />
-        </div>
-        <h1 className="text-2xl font-display font-bold text-neutral-900 mb-2">
-          Invalid Link
-        </h1>
-        <p className="text-neutral-600">
-          This poll creation link is not valid. Please contact HOEP for a new
-          link.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ExpiredToken() {
-  return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-          <Clock className="w-8 h-8 text-amber-600" />
-        </div>
-        <h1 className="text-2xl font-display font-bold text-neutral-900 mb-2">
-          Link Expired
-        </h1>
-        <p className="text-neutral-600">
-          This poll creation link has expired. Please contact HOEP for a new
-          link.
-        </p>
       </div>
     </div>
   );

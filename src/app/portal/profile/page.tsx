@@ -1,12 +1,18 @@
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+
 import { prisma } from "@/lib/db";
 import ProfileEditForm from "@/components/portal/ProfileEditForm";
-import { Lang } from "@/types";
-import { portalProfilePageTranslation } from "@/translation/portalPages";
 
-export default async function ProfilePage() {
+type SearchParams = {
+  tab?: string;
+};
+
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const session = await getSession();
 
   if (!session?.user) {
@@ -16,12 +22,12 @@ export default async function ProfilePage() {
   const patient = await prisma.patient.findUnique({
     where: { auth0Id: session.user.sub },
     include: {
-      contactProfile: true, // Changed from profile
-      disorderProfile: true, // NEW: Patient's disorder info
+      contactProfile: true,
+      disorderProfile: true,
       familyMembers: {
         include: {
-          contactProfile: true, // NEW: Family member contact info
-          disorderProfile: true, // NEW: Family member disorder info
+          contactProfile: true,
+          disorderProfile: true,
         },
       },
     },
@@ -36,8 +42,12 @@ export default async function ProfilePage() {
     redirect("/portal/register");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = portalProfilePageTranslation[locale];
+  const activeTab = searchParams.tab as
+    | "personal"
+    | "medical"
+    | "family"
+    | "verification"
+    | undefined;
 
   // Format patient data for ProfileEditForm
   const formattedPatient = {
@@ -131,14 +141,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-          {t.heading}
-        </h1>
-        <p className="text-neutral-500">{t.subtitle}</p>
-      </div>
-
-      <ProfileEditForm patient={formattedPatient} locale={locale} />
+      <ProfileEditForm patient={formattedPatient} initialTab={activeTab} />
     </div>
   );
 }

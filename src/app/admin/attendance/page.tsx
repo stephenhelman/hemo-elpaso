@@ -31,11 +31,7 @@ export default async function AllAttendeesPage() {
   const checkIns = await prisma.checkIn.findMany({
     include: {
       event: true,
-      patient: {
-        include: {
-          profile: true,
-        },
-      },
+      patient: true,
     },
     orderBy: {
       checkInTime: "desc",

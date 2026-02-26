@@ -78,6 +78,7 @@ export default function ReportsFilters({
           ]}
           rows={attendanceExportRows}
           filename={`events-report-${new Date().toISOString().split("T")[0]}.csv`}
+          className="flex-1"
         />
       }
     >
