@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import "./globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
+import OrganizationSchema from "@/components/seo/OrganizationSchema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -142,6 +143,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <OrganizationSchema />
+      </head>
       <body className={`${inter.variable} ${poppins.variable}`}>
         <SiteLayout>{children}</SiteLayout>
       </body>

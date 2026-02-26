@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { ensurePatientExists } from "@/lib/ensure-patient";
 
@@ -6,6 +7,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
+import EventSchema from "@/components/seo/EventSchema";
 
 interface Props {
   params: { slug: string };
@@ -21,6 +23,8 @@ export async function generateStaticParams() {
 
 export default async function EventPage({ params, searchParams }: Props) {
   const referrer = searchParams.from;
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("locale")?.value || "en";
 
   // Get event from database
   const event = await prisma.event.findUnique({
@@ -110,14 +114,17 @@ export default async function EventPage({ params, searchParams }: Props) {
   }
 
   return (
-    <EventSlugPage
-      referrer={referrer}
-      event={serializedEvent}
-      hasRsvp={hasRsvp}
-      isCheckedIn={isCheckedIn}
-      rsvpId={rsvpId}
-      isLoggedIn={isLoggedIn}
-      rsvpCount={currentRsvpCount}
-    />
+    <>
+      <EventSchema event={event} locale={locale} />
+      <EventSlugPage
+        referrer={referrer}
+        event={serializedEvent}
+        hasRsvp={hasRsvp}
+        isCheckedIn={isCheckedIn}
+        rsvpId={rsvpId}
+        isLoggedIn={isLoggedIn}
+        rsvpCount={currentRsvpCount}
+      />
+    </>
   );
 }
