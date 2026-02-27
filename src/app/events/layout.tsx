@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     en: {
       title: "Events",
       description:
-        "Discover upcoming educational dinners, support groups, and community events hosted by Hemophilia Organization of El Paso (HOEP). Join us to connect with families, learn about bleeding disorders, and build community.",
+        "Discover upcoming educational dinners, support groups, and community events hosted by Hemophilia Outreach of El Paso (HOEP). Join us to connect with families, learn about bleeding disorders, and build community.",
       ogTitle: "HOEP Events - Educational Dinners & Support Groups",
       ogDescription:
         "Join our community events in El Paso. Educational dinners, support groups, family gatherings, and more for families affected by bleeding disorders.",
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     es: {
       title: "Eventos",
       description:
-        "Descubra las próximas cenas educativas, grupos de apoyo y eventos comunitarios organizados por la Organización de Hemofilia de El Paso (HOEP). Únase a nosotros para conectarse con familias, aprender sobre trastornos hemorrágicos y construir comunidad.",
+        "Descubra las próximas cenas educativas, grupos de apoyo y eventos comunitarios organizados por la Hemophilia Outreach of El Paso (HOEP). Únase a nosotros para conectarse con familias, aprender sobre trastornos hemorrágicos y construir comunidad.",
       ogTitle: "Eventos de HOEP - Cenas Educativas y Grupos de Apoyo",
       ogDescription:
         "Únase a nuestros eventos comunitarios en El Paso. Cenas educativas, grupos de apoyo, reuniones familiares y más para familias afectadas por trastornos hemorrágicos.",
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: c.ogTitle,
       description: c.ogDescription,
       url: "https://hemo-el-paso.org/events",
-      siteName: "Hemophilia Organization of El Paso",
+      siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [

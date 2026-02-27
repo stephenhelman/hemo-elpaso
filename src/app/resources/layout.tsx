@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: c.ogTitle,
       description: c.ogDescription,
       url: "https://hemo-el-paso.org/resources",
-      siteName: "Hemophilia Organization of El Paso",
+      siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [

@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     en: {
       title: "Contact Us",
       description:
-        "Get in touch with Hemophilia Organization of El Paso (HOEP). We are here to help families affected by bleeding disorders. Reach out for support, questions, or to get involved in our community.",
+        "Get in touch with Hemophilia Outreach of El Paso (HOEP). We are here to help families affected by bleeding disorders. Reach out for support, questions, or to get involved in our community.",
       ogTitle: "Contact HOEP - We're Here to Help",
       ogDescription:
         "Connect with our team for support, resources, or information about hemophilia and bleeding disorders in El Paso, Texas.",
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     es: {
       title: "Contáctenos",
       description:
-        "Comuníquese con la Organización de Hemofilia de El Paso (HOEP). Estamos aquí para ayudar a familias afectadas por trastornos hemorrágicos. Contáctenos para apoyo, preguntas o para involucrarse en nuestra comunidad.",
+        "Comuníquese con la Hemophilia Outreach of El Paso (HOEP). Estamos aquí para ayudar a familias afectadas por trastornos hemorrágicos. Contáctenos para apoyo, preguntas o para involucrarse en nuestra comunidad.",
       ogTitle: "Contacte a HOEP - Estamos Aquí para Ayudar",
       ogDescription:
         "Conéctese con nuestro equipo para apoyo, recursos o información sobre hemofilia y trastornos hemorrágicos en El Paso, Texas.",
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: c.ogTitle,
       description: c.ogDescription,
       url: "https://hemo-el-paso.org/contact",
-      siteName: "Hemophilia Organization of El Paso",
+      siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [

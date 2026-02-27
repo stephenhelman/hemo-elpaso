@@ -2,7 +2,7 @@ export default function OrganizationSchema() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "NonProfit",
-    name: "Hemophilia Organization of El Paso",
+    name: "Hemophilia Outreach of El Paso",
     alternateName: "HOEP",
     url: "https://hemo-el-paso.org",
     logo: "https://hemo-el-paso.org/logo.png",

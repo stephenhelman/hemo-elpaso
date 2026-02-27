@@ -19,7 +19,7 @@ export default function WelcomeEmail({ patientName, email }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>Welcome to Hemophilia Organization of El Paso!</Preview>
+      <Preview>Welcome to Hemophilia Outreach of El Paso!</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Header with gradient */}
@@ -33,10 +33,10 @@ export default function WelcomeEmail({ patientName, email }: Props) {
             <Text style={text}>Hi {patientName},</Text>
 
             <Text style={text}>
-              Welcome to the Hemophilia Organization of El Paso! We're thrilled
-              to have you as part of our community. You've just joined a
-              supportive network dedicated to improving the lives of individuals
-              and families affected by bleeding disorders.
+              Welcome to the Hemophilia Outreach of El Paso! We're thrilled to
+              have you as part of our community. You've just joined a supportive
+              network dedicated to improving the lives of individuals and
+              families affected by bleeding disorders.
             </Text>
 
             {/* Welcome box */}
@@ -149,7 +149,7 @@ export default function WelcomeEmail({ patientName, email }: Props) {
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              Hemophilia Organization of El Paso
+              Hemophilia Outreach of El Paso
               <br />
               El Paso, Texas
             </Text>

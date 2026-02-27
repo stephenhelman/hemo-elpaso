@@ -114,7 +114,7 @@ export default function EventPublished({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              Hemophilia Organization of El Paso
+              Hemophilia Outreach of El Paso
               <br />
               Building community, one event at a time
             </Text>

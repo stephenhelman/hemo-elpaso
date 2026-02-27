@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     en: {
       title: "About Us",
       description:
-        "Learn about Hemophilia Organization of El Paso (HOEP), founded in 1993 by Lou Anne Fetters to support families affected by bleeding disorders in the El Paso community.",
+        "Learn about Hemophilia Outreach of El Paso (HOEP), founded in 1993 by Lou Anne Fetters to support families affected by bleeding disorders in the El Paso community.",
       ogTitle: "About HOEP - Supporting Families Since 1993",
       ogDescription:
         "Discover our mission to provide support, education, and resources for families affected by hemophilia and bleeding disorders in El Paso, Texas.",
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     es: {
       title: "Sobre Nosotros",
       description:
-        "Conozca la Organización de Hemofilia de El Paso (HOEP), fundada en 1993 por Lou Anne Fetters para apoyar a familias afectadas por trastornos hemorrágicos en la comunidad de El Paso.",
+        "Conozca la Hemophilia Outreach of El Paso (HOEP), fundada en 1993 por Lou Anne Fetters para apoyar a familias afectadas por trastornos hemorrágicos en la comunidad de El Paso.",
       ogTitle: "Sobre HOEP - Apoyando Familias Desde 1993",
       ogDescription:
         "Descubra nuestra misión de brindar apoyo, educación y recursos para familias afectadas por hemofilia y trastornos hemorrágicos en El Paso, Texas.",
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: c.ogTitle,
       description: c.ogDescription,
       url: "https://hemo-el-paso.org/about",
-      siteName: "Hemophilia Organization of El Paso",
+      siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [

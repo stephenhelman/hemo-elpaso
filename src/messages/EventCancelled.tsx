@@ -110,7 +110,7 @@ export default function EventCancelled({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              Hemophilia Organization of El Paso
+              Hemophilia Outreach of El Paso
               <br />
               Supporting our community through every challenge
             </Text>

@@ -24,18 +24,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const content = {
     en: {
-      title: "Hemophilia Organization of El Paso",
+      title: "Hemophilia Outreach of El Paso",
       description:
         "Supporting individuals and families affected by bleeding disorders in the El Paso community since 1993. Educational events, financial assistance, and community support for hemophilia and bleeding disorders.",
-      ogTitle: "HOEP - Hemophilia Organization of El Paso",
+      ogTitle: "HOEP - Hemophilia Outreach of El Paso",
       ogDescription:
         "Building a stronger community for families affected by bleeding disorders in El Paso, Texas. Educational events, support groups, and financial assistance.",
     },
     es: {
-      title: "Organización de Hemofilia de El Paso",
+      title: "Hemophilia Outreach of El Paso",
       description:
         "Apoyando a individuos y familias afectadas por trastornos hemorrágicos en la comunidad de El Paso desde 1993. Eventos educativos, asistencia financiera y apoyo comunitario para hemofilia y trastornos hemorrágicos.",
-      ogTitle: "HOEP - Organización de Hemofilia de El Paso",
+      ogTitle: "HOEP - Hemophilia Outreach of El Paso",
       ogDescription:
         "Construyendo una comunidad más fuerte para familias afectadas por trastornos hemorrágicos en El Paso, Texas. Eventos educativos, grupos de apoyo y asistencia financiera.",
     },
@@ -50,8 +50,8 @@ export async function generateMetadata(): Promise<Metadata> {
       default: c.title,
       template:
         locale === "es"
-          ? "%s | Organización de Hemofilia de El Paso"
-          : "%s | Hemophilia Organization of El Paso",
+          ? "%s | Hemophilia Outreach of El Paso"
+          : "%s | Hemophilia Outreach of El Paso",
     },
 
     description: c.description,
@@ -77,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
             "financial assistance",
           ],
 
-    authors: [{ name: "Hemophilia Organization of El Paso" }],
+    authors: [{ name: "Hemophilia Outreach of El Paso" }],
 
     openGraph: {
       type: "website",
@@ -85,8 +85,8 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "https://hemo-el-paso.org",
       siteName:
         locale === "es"
-          ? "Organización de Hemofilia de El Paso"
-          : "Hemophilia Organization of El Paso",
+          ? "Hemophilia Outreach of El Paso"
+          : "Hemophilia Outreach of El Paso",
       title: c.ogTitle,
       description: c.ogDescription,
       images: [

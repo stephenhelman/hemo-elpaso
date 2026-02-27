@@ -160,7 +160,7 @@ export async function seedEmailTemplates() {
     {
       type: "WELCOME_EMAIL",
       name: "Welcome to HOEP",
-      subject: "Welcome to Hemophilia Organization of El Paso! 👋",
+      subject: "Welcome to Hemophilia Outreach of El Paso! 👋",
       description: "Sent when a new patient registers",
       enabled: true,
       variables: ["patientName", "portalUrl"],

@@ -37,7 +37,7 @@ export default function EventSchema({ event, locale }: EventSchemaProps) {
     image: event.imageUrl || "https://hemo-el-paso.org/og-default.jpg",
     organizer: {
       "@type": "Organization",
-      name: "Hemophilia Organization of El Paso",
+      name: "Hemophilia Outreach of El Paso",
       url: "https://hemo-el-paso.org",
     },
     offers: {

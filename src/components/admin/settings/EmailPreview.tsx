@@ -114,7 +114,7 @@ export default function EmailPreview({ template, adminEmail }: Props) {
                   From:
                 </span>
                 <span className="text-neutral-900">
-                  Hemophilia Organization of El Paso
+                  Hemophilia Outreach of El Paso
                 </span>
               </div>
               <div className="flex gap-2">

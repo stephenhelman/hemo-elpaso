@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     en: {
       title: "Scholarships",
       description:
-        "Apply for the Jesus M. Terrazas and Luis Ostos Memorial Scholarship, awarded by Hemophilia Organization of El Paso (HOEP) to students affected by bleeding disorders. Learn about eligibility, application requirements, and deadlines.",
+        "Apply for the Jesus M. Terrazas and Luis Ostos Memorial Scholarship, awarded by Hemophilia Outreach of El Paso (HOEP) to students affected by bleeding disorders. Learn about eligibility, application requirements, and deadlines.",
       ogTitle: "Memorial Scholarships for Students with Bleeding Disorders",
       ogDescription:
         "The Jesus M. Terrazas and Luis Ostos Memorial Scholarship supports students with hemophilia and bleeding disorders in El Paso, Texas. Apply today to receive financial assistance for your education.",
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     es: {
       title: "Becas",
       description:
-        "Solicite la Beca Conmemorativa Jesus M. Terrazas y Luis Ostos, otorgada por la Organización de Hemofilia de El Paso (HOEP) a estudiantes afectados por trastornos hemorrágicos. Conozca los requisitos de elegibilidad, solicitud y fechas límite.",
+        "Solicite la Beca Conmemorativa Jesus M. Terrazas y Luis Ostos, otorgada por la Hemophilia Outreach of El Paso (HOEP) a estudiantes afectados por trastornos hemorrágicos. Conozca los requisitos de elegibilidad, solicitud y fechas límite.",
       ogTitle:
         "Becas Conmemorativas para Estudiantes con Trastornos Hemorrágicos",
       ogDescription:
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: c.ogTitle,
       description: c.ogDescription,
       url: "https://hemo-el-paso.org/scholarships",
-      siteName: "Hemophilia Organization of El Paso",
+      siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [

@@ -107,7 +107,7 @@ export default function AssistanceDenied({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              Hemophilia Organization of El Paso
+              Hemophilia Outreach of El Paso
               <br />
               Supporting our community with care and compassion
             </Text>
