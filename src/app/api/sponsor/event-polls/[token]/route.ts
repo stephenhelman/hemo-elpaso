@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: { token: string } },
 ) {
   try {
     const { token } = params;
@@ -21,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: "Token expired" }, { status: 410 });
     }
 
-    const existingPolls = await prisma.eventInteraction.findMany({
+    const existingPolls = await prisma.poll.findMany({
       where: {
         eventId: tokenData.eventId,
         createdBy: `rep:${tokenData.repEmail}`,

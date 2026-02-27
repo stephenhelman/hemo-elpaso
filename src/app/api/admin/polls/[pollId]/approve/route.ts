@@ -22,7 +22,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const poll = await prisma.eventInteraction.update({
+    const poll = await prisma.poll.update({
       where: { id: params.pollId },
       data: { status: "approved" },
     });
@@ -32,9 +32,9 @@ export async function PATCH(
       data: {
         patientId: admin.id,
         action: AuditAction.POLL_APPROVED,
-        resourceType: "EventInteraction",
+        resourceType: "Poll",
         resourceId: params.pollId,
-        details: `Approved poll from rep: ${poll.titleEn}`,
+        details: `Approved poll from rep: ${poll.questionEn}`,
       },
     });
 

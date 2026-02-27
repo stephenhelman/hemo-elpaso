@@ -6,16 +6,17 @@ import { BarChart3, Trash2, CheckCircle, Clock, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import ConfirmModal from "../ui/ConfirmModal";
+import type { PollOption } from "@/types";
 
 interface Poll {
   id: string;
   titleEn: string;
   titleEs: string;
-  options: any;
+  options: PollOption[];
   status: string;
   active: boolean;
   sequenceOrder: number;
-  createdBy: string | null;
+  createdBy: string;
   createdAt: Date;
 }
 
@@ -219,7 +220,7 @@ function PollCard({
   onDelete: (id: string) => void;
   loading: boolean;
 }) {
-  const options = poll.options?.options || [];
+  const options = poll.options || [];
   const isFromRep = poll.createdBy?.startsWith("rep:");
   const repEmail = isFromRep ? poll.createdBy.replace("rep:", "") : null;
 
@@ -269,7 +270,7 @@ function PollCard({
                 className="flex items-center gap-2 text-sm text-neutral-600"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-                {opt.text}
+                {opt.textEn}
               </div>
             ))}
           </div>

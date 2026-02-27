@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
+import type { PollOption } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +21,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, titleEn, titleEs, options } = body;
+    const { eventId, questionEs, questionEn, options } = body;
+    console.log(options);
 
     // Validate options
     if (!options || options.length < 2) {
@@ -31,16 +33,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create poll
-    const poll = await prisma.eventInteraction.create({
+    const poll = await prisma.poll.create({
       data: {
         eventId,
-        type: "poll",
-        titleEn,
-        titleEs,
-        options: { options },
-        status: "approved", // Admin-created polls are auto-approved
+        questionEn,
+        questionEs,
+        options: {
+          create: options.map((opt: PollOption) => ({
+            textEn: opt.textEn,
+            textEs: opt.textEs,
+          })),
+        },
+        status: "approved",
         active: false,
-        sequenceOrder: 0,
         createdBy: admin.email,
       },
     });
@@ -50,9 +55,9 @@ export async function POST(request: NextRequest) {
       data: {
         patientId: admin.id,
         action: AuditAction.POLL_CREATED,
-        resourceType: "EventInteraction",
+        resourceType: "Poll",
         resourceId: poll.id,
-        details: `Created poll: ${titleEn}`,
+        details: `Created poll: ${questionEn}`,
       },
     });
 
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Poll creation error:", error);
     return NextResponse.json(
-      { error: "Failed to create poll" },
+      { error: "Failed to create poll", message: error },
       { status: 500 },
     );
   }

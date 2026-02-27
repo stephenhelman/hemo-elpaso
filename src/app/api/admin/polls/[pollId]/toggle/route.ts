@@ -25,7 +25,7 @@ export async function PATCH(
     const body = await request.json();
     const { active } = body;
 
-    const poll = await prisma.eventInteraction.update({
+    const poll = await prisma.poll.update({
       where: { id: params.pollId },
       data: {
         active,
@@ -40,9 +40,9 @@ export async function PATCH(
         action: active
           ? AuditAction.POLL_ACTIVATED
           : AuditAction.POLL_DEACTIVATED,
-        resourceType: "EventInteraction",
+        resourceType: "Poll",
         resourceId: params.pollId,
-        details: `${active ? "Activated" : "Deactivated"} poll: ${poll.titleEn}`,
+        details: `${active ? "Activated" : "Deactivated"} poll: ${poll.questionEs}`,
       },
     });
 

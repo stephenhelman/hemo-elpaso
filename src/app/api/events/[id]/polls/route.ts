@@ -35,63 +35,68 @@ export async function GET(
     }
 
     // Get active polls for this event
-    const interactions = await prisma.eventInteraction.findMany({
+    const activePolls = await prisma.poll.findMany({
       where: {
         eventId: params.id,
-        type: "poll",
         active: true,
       },
+      include: {
+        options: true, // Include poll options
+        responses: true, // Include all responses for vote counts
+      },
       orderBy: {
-        sequenceOrder: "asc",
+        createdAt: "asc",
       },
     });
 
-    // Get user's votes
-    const responses = await prisma.interactionResponse.findMany({
+    // Get user's votes (which polls they've already voted on)
+    const userResponses = await prisma.pollResponse.findMany({
       where: {
         sessionToken: checkIn.sessionToken,
-        interactionId: { in: interactions.map((i) => i.id) },
+        pollId: { in: activePolls.map((p) => p.id) },
       },
       select: {
-        interactionId: true,
+        pollId: true,
       },
     });
 
-    const votedPollIds = responses.map((r) => r.interactionId);
+    const votedPollIds = userResponses.map((r) => r.pollId);
 
     // Format polls with vote counts
-    const polls = await Promise.all(
-      interactions.map(async (interaction) => {
-        const allResponses = await prisma.interactionResponse.findMany({
-          where: { interactionId: interaction.id },
-        });
+    const formattedPolls = activePolls.map((poll) => {
+      // Count votes per option
+      const voteCounts = poll.responses.reduce(
+        (acc: Record<string, number>, response) => {
+          acc[response.selectedOptionId] =
+            (acc[response.selectedOptionId] || 0) + 1;
+          return acc;
+        },
+        {},
+      );
 
-        const options = (interaction.options as any).options || [];
-        const voteCounts = allResponses.reduce(
-          (acc: Record<string, number>, r: any) => {
-            const optionId = r.responseData.optionId;
-            acc[optionId] = (acc[optionId] || 0) + 1;
-            return acc;
-          },
-          {},
-        );
+      return {
+        id: poll.id,
+        questionEn: poll.questionEn,
+        questionEs: poll.questionEs,
+        active: poll.active,
+        hasVoted: votedPollIds.includes(poll.id), // Did user vote on this poll?
+        totalVotes: poll.responses.length,
+        options: poll.options.map((option) => ({
+          id: option.id,
+          textEn: option.textEn,
+          textEs: option.textEs,
+          votes: voteCounts[option.id] || 0,
+          percentage:
+            poll.responses.length > 0
+              ? Math.round(
+                  ((voteCounts[option.id] || 0) / poll.responses.length) * 100,
+                )
+              : 0,
+        })),
+      };
+    });
 
-        return {
-          id: interaction.id,
-          titleEn: interaction.titleEn,
-          titleEs: interaction.titleEs,
-          active: interaction.active,
-          totalVotes: allResponses.length,
-          options: options.map((opt: any) => ({
-            id: opt.id,
-            text: opt.text,
-            votes: voteCounts[opt.id] || 0,
-          })),
-        };
-      }),
-    );
-
-    return NextResponse.json({ polls, votedPollIds });
+    return NextResponse.json({ formattedPolls, votedPollIds });
   } catch (error) {
     console.error("Polls fetch error:", error);
     return NextResponse.json(

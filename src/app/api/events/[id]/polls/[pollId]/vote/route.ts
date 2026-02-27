@@ -29,9 +29,9 @@ export async function POST(
     }
 
     // Check if already voted
-    const existingVote = await prisma.interactionResponse.findFirst({
+    const existingVote = await prisma.pollResponse.findFirst({
       where: {
-        interactionId: params.pollId,
+        pollId: params.pollId,
         sessionToken,
       },
     });
@@ -41,11 +41,11 @@ export async function POST(
     }
 
     // Record vote
-    await prisma.interactionResponse.create({
+    await prisma.pollResponse.create({
       data: {
-        interactionId: params.pollId,
+        pollId: params.pollId,
         sessionToken,
-        responseData: { optionId },
+        selectedOptionId: optionId,
       },
     });
 

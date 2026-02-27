@@ -37,19 +37,21 @@ export default async function EventPollsPage({ params }: Props) {
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
-      interactions: {
-        where: { type: "poll" },
-        orderBy: { sequenceOrder: "asc" },
+      polls: {
+        include: {
+          options: true,
+        },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
 
   if (!event) notFound();
 
+  console.log(event.polls);
+
   // Count pending polls (from reps)
-  const pendingCount = event.interactions.filter(
-    (i) => i.status === "pending",
-  ).length;
+  const pendingCount = event.polls.filter((i) => i.status === "pending").length;
 
   return (
     <div className="p-8">
@@ -95,7 +97,7 @@ export default async function EventPollsPage({ params }: Props) {
         {/* Polls List */}
         <PollsList
           eventId={event.id}
-          polls={event.interactions}
+          polls={event.polls}
           adminEmail={admin.email}
         />
       </div>

@@ -22,7 +22,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const poll = await prisma.eventInteraction.findUnique({
+    const poll = await prisma.poll.findUnique({
       where: { id: params.pollId },
     });
 
@@ -33,11 +33,11 @@ export async function DELETE(
     // Delete in transaction: responses first, then poll
     await prisma.$transaction([
       // Delete all responses for this poll
-      prisma.interactionResponse.deleteMany({
-        where: { interactionId: params.pollId },
+      prisma.pollResponse.deleteMany({
+        where: { pollId: params.pollId },
       }),
       // Then delete the poll
-      prisma.eventInteraction.delete({
+      prisma.poll.delete({
         where: { id: params.pollId },
       }),
     ]);
@@ -47,9 +47,9 @@ export async function DELETE(
       data: {
         patientId: admin.id,
         action: AuditAction.POLL_DELETED,
-        resourceType: "EventInteraction",
+        resourceType: "Poll",
         resourceId: params.pollId,
-        details: `Deleted poll: ${poll.titleEn}`,
+        details: `Deleted poll: ${poll.questionEn}`,
       },
     });
 

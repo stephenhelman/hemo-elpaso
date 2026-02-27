@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import type { PollOption } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { token, eventId, repEmail, titleEn, titleEs, options } = body;
+    const { token, eventId, repEmail, questionEn, questionEs, options } = body;
 
     // Verify token
     const tokenData = await prisma.pollCreationToken.findUnique({
@@ -32,16 +33,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create poll in pending status
-    const poll = await prisma.eventInteraction.create({
+    const poll = await prisma.poll.create({
       data: {
         eventId,
-        type: "poll",
-        titleEn,
-        titleEs,
-        options: { options },
-        status: "pending", // Needs admin approval
+        questionEn,
+        questionEs,
+        options: options.map((opt: PollOption) => ({
+          textEn: opt.textEn,
+          textEs: opt.textEs,
+        })),
+        status: "pending",
         active: false,
-        sequenceOrder: 0,
         createdBy: `rep:${repEmail}`,
       },
     });

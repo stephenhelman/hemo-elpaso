@@ -77,3 +77,8 @@ export type StatColor =
   | "accent"
   | "indigo"
   | "teal";
+
+export type PollOption = {
+  textEn: string;
+  textEs: string;
+};
