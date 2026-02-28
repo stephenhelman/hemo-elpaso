@@ -13,6 +13,8 @@ import Link from "next/link";
 import ReviewActions from "@/components/admin/assistance/ReviewActions";
 import DisbursementManager from "@/components/admin/assistance/DisbursementManager";
 import { AuditAction } from "@prisma/client";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -20,6 +22,7 @@ interface Props {
 
 export default async function AdminApplicationDetailPage({ params }: Props) {
   const session = await getSession();
+  const locale = (await getLocaleCookie()) as Lang;
 
   if (!session?.user) {
     redirect("/api/auth/login");
@@ -375,6 +378,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
               applicationId={application.id}
               requestedAmount={Number(application.requestedAmount)}
               adminEmail={admin.email}
+              locale={locale}
             />
           )}
         </div>
@@ -388,6 +392,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
               approvedAmount={Number(application.approvedAmount || 0)}
               disbursements={disbursementsFormatted}
               adminEmail={admin.email}
+              locale={locale}
             />
           )}
 

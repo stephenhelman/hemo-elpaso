@@ -2,9 +2,12 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { PortalEventsContent } from "@/components/portal/events/PortalEventsContent";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 export default async function PortalEventsPage() {
   const session = await getSession();
+  const locale = (await getLocaleCookie()) as Lang;
 
   if (!session?.user) {
     redirect("/api/auth/login");
@@ -87,6 +90,7 @@ export default async function PortalEventsPage() {
       myRsvps={myRsvps}
       recommendedEvents={recommendedEvents}
       allEvents={allEvents}
+      locale={locale}
     />
   );
 }

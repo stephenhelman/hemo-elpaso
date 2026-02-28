@@ -38,10 +38,5 @@ export default async function ApplicationDetailPage({ params }: Props) {
 
   const locale = (await getLocaleCookie()) as Lang;
 
-  return (
-    <AssistanceDetailContent
-      application={application}
-      locale={locale as Lang}
-    />
-  );
+  return <AssistanceDetailContent application={application} locale={locale} />;
 }

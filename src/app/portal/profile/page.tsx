@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import ProfileEditForm from "@/components/portal/ProfileEditForm";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 type SearchParams = {
   tab?: string;
@@ -14,6 +16,7 @@ export default async function ProfilePage({
   searchParams: SearchParams;
 }) {
   const session = await getSession();
+  const locale = (await getLocaleCookie()) as Lang;
 
   if (!session?.user) {
     redirect("/api/auth/login");
@@ -141,7 +144,11 @@ export default async function ProfilePage({
 
   return (
     <div className="p-4 md:p-8">
-      <ProfileEditForm patient={formattedPatient} initialTab={activeTab} />
+      <ProfileEditForm
+        patient={formattedPatient}
+        initialTab={activeTab}
+        locale={locale}
+      />
     </div>
   );
 }

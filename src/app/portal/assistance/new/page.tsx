@@ -27,7 +27,7 @@ export default async function NewApplicationPage() {
   }
 
   const locale = (await getLocaleCookie()) as Lang;
-  const t = assistanceNewPageTranslation[locale as Lang];
+  const t = assistanceNewPageTranslation[locale];
 
   return (
     <div className="min-h-screen bg-neutral-50">

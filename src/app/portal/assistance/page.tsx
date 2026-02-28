@@ -24,7 +24,7 @@ export default async function FinancialAssistancePage() {
   }
 
   const locale = (await getLocaleCookie()) as Lang;
-  const t = assistancePageTranslation[locale as Lang];
+  const t = assistancePageTranslation[locale];
 
   // Fetch patient's applications
   const applications = await prisma.financialAssistanceApplication.findMany({

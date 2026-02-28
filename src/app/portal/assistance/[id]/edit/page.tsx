@@ -46,7 +46,7 @@ export default async function EditApplicationPage({ params }: Props) {
   }
 
   const locale = (await getLocaleCookie()) as Lang;
-  const t = assistanceEditPageTranslation[locale as Lang];
+  const t = assistanceEditPageTranslation[locale];
 
   return (
     <div className="min-h-screen bg-neutral-50">

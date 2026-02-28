@@ -25,7 +25,7 @@ export default async function AllAttendeesPage() {
   }
 
   const locale = (await getLocaleCookie()) as Lang;
-  const t = adminAttendanceTranslation[locale as Lang];
+  const t = adminAttendanceTranslation[locale];
 
   // Get all check-ins with related data
   const checkIns = await prisma.checkIn.findMany({
