@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ExportButton from "@/components/ui/ExportButton";
+import { adminReportsTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Event {
   id: string;
@@ -21,9 +23,11 @@ interface Event {
 
 interface Props {
   events: Event[];
+  locale: Lang;
 }
 
-export default function AttendanceReport({ events }: Props) {
+export default function AttendanceReport({ events, locale }: Props) {
+  const t = adminReportsTranslation[locale];
   const [expanded, setExpanded] = useState(true);
 
   const exportRows = events.map((event) => {
@@ -60,7 +64,7 @@ export default function AttendanceReport({ events }: Props) {
               )}
             </button>
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Event Attendance Report
+              {t.attendanceReportTitle}
             </h2>
           </div>
         </div>
@@ -71,15 +75,7 @@ export default function AttendanceReport({ events }: Props) {
         <>
           <div className="flex flex-col lg:flex-row gap-4 p-4">
             <ExportButton
-              headers={[
-                "Event",
-                "Date",
-                "Category",
-                "RSVPs",
-                "Patient Attendance",
-                "Attendance Rate",
-                "No-Shows",
-              ]}
+              headers={t.exportHeaders}
               rows={exportRows}
               filename={`attendance-report-${new Date().toISOString().split("T")[0]}.csv`}
             />
@@ -89,25 +85,25 @@ export default function AttendanceReport({ events }: Props) {
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr>
                   <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Event
+                    {t.attendanceHeaders.event}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Date
+                    {t.attendanceHeaders.date}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Category
+                    {t.attendanceHeaders.category}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    RSVPs
+                    {t.attendanceHeaders.rsvps}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Patient Attendance
+                    {t.attendanceHeaders.patientAttendance}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Rate
+                    {t.attendanceHeaders.rate}
                   </th>
                   <th className="px-3 py-3 md:px-6 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    No-Shows
+                    {t.attendanceHeaders.noShows}
                   </th>
                 </tr>
               </thead>
@@ -118,7 +114,7 @@ export default function AttendanceReport({ events }: Props) {
                       colSpan={7}
                       className="px-6 py-8 text-center text-neutral-500"
                     >
-                      No events found in selected date range
+                      {t.noEventsInRange}
                     </td>
                   </tr>
                 ) : (

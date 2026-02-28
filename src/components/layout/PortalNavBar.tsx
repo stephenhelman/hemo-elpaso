@@ -8,9 +8,12 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { useLanguage } from "@/context/LanguageContext";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
+import { Lang } from "@/types";
+
+interface Props {
+  locale: Lang;
+}
 
 const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
@@ -21,17 +24,13 @@ const navLinks = [
   { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
 ];
 
-export default function Navbar() {
+export default function PortalNavbar({ locale }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { locale } = useLanguage();
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  const isPortalOrAdmin =
-    pathname.startsWith("/portal") || pathname.startsWith("/admin");
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">
@@ -76,11 +75,7 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {isPortalOrAdmin ? (
-              <ServerLanguageSwitcher currentLocale={locale} />
-            ) : (
-              <LanguageSwitcher />
-            )}
+            <ServerLanguageSwitcher currentLocale={locale} />
 
             <UserMenu lang={locale} />
 

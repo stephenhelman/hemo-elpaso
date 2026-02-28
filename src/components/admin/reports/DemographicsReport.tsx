@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ExportButton from "@/components/ui/ExportButton";
+import { adminReportsTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Props {
   totalPatients: number;
@@ -10,6 +12,7 @@ interface Props {
   conditions: Record<string, number>;
   severities: Record<string, number>;
   cities: Record<string, number>;
+  locale: Lang;
 }
 
 export default function DemographicsReport({
@@ -18,7 +21,9 @@ export default function DemographicsReport({
   conditions,
   severities,
   cities,
+  locale,
 }: Props) {
+  const t = adminReportsTranslation[locale];
   const [expanded, setExpanded] = useState(true);
 
   const customCsv = [
@@ -74,7 +79,7 @@ export default function DemographicsReport({
               )}
             </button>
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Demographics Report
+              {t.demographicsTitle}
             </h2>
           </div>
         </div>
@@ -93,7 +98,7 @@ export default function DemographicsReport({
               {/* Age Groups */}
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Age Distribution
+                  {t.ageDistribution}
                 </h3>
                 <div className="space-y-3">
                   {Object.entries(ageGroups).map(([age, count]) => {
@@ -125,7 +130,7 @@ export default function DemographicsReport({
               {/* Conditions */}
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Primary Conditions
+                  {t.primaryConditions}
                 </h3>
                 <div className="space-y-3">
                   {Object.entries(conditions).map(([condition, count]) => {
@@ -157,7 +162,7 @@ export default function DemographicsReport({
               {/* Severity */}
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Severity Levels
+                  {t.severityLevels}
                 </h3>
                 <div className="space-y-3">
                   {Object.entries(severities).map(([severity, count]) => {
@@ -189,7 +194,7 @@ export default function DemographicsReport({
               {/* Cities */}
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Geographic Distribution
+                  {t.geographicDistribution}
                 </h3>
                 <div className="space-y-3">
                   {Object.entries(cities)

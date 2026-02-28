@@ -5,21 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LogOut, Shield, Home } from "lucide-react";
 import Image from "next/image";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   portalSidebarTranslation,
   portalNavItemsTranslation,
 } from "@/translation/portalSidebar";
-import LanguageSwitcher from "../LanguageSwitcher";
+import ServerLanguageSwitcher from "@/components/ServerLanguageSwitcher";
+import { Lang } from "@/types";
 
 interface Props {
   isAdmin?: boolean;
+  locale: Lang;
 }
 
-export default function PortalMobileNav({ isAdmin = false }: Props) {
+export default function PortalMobileNav({ isAdmin = false, locale }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { locale } = useLanguage();
   const t = portalSidebarTranslation[locale];
 
   return (
@@ -41,7 +41,7 @@ export default function PortalMobileNav({ isAdmin = false }: Props) {
           </Link>
 
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+            <ServerLanguageSwitcher currentLocale={locale} />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"

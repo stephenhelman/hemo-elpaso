@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import ApplicationsList from "@/components/portal/assistance/ApplicationsList";
 import { Lang } from "@/types";
 import { assistancePageTranslation } from "@/translation/portalAssistance";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function FinancialAssistancePage() {
   const session = await getSession();
@@ -23,8 +23,8 @@ export default async function FinancialAssistancePage() {
     redirect("/api/auth/login");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = assistancePageTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = assistancePageTranslation[locale as Lang];
 
   // Fetch patient's applications
   const applications = await prisma.financialAssistanceApplication.findMany({

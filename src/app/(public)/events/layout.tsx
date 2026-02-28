@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
+import { getLocaleCookie } from "@/lib/locale";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get("locale")?.value || "en";
+  const locale = (await getLocaleCookie()) as Lang;
 
   const content = {
     en: {

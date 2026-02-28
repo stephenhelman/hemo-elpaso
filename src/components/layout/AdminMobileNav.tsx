@@ -5,17 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LogOut, Home, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
 } from "@/translation/adminSidebar";
-import LanguageSwitcher from "../LanguageSwitcher";
+import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
+import { Lang } from "@/types";
 
-export default function AdminMobileNav() {
+interface Props {
+  locale: Lang;
+}
+
+export default function AdminMobileNav({ locale }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { locale } = useLanguage();
+
   const t = adminSidebarTranslation[locale];
 
   return (
@@ -36,7 +40,7 @@ export default function AdminMobileNav() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+            <ServerLanguageSwitcher currentLocale={locale} />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"

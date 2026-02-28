@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, ChevronRight, Eye, Edit, Power } from "lucide-react";
+import { Eye, Edit, Power } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { adminEmailTemplatesListTranslation } from "@/translation/adminSettings";
+import type { Lang } from "@/types";
 
 interface EmailTemplate {
   id: string;
@@ -19,10 +21,12 @@ interface EmailTemplate {
 interface Props {
   templates: EmailTemplate[];
   adminEmail: string;
+  locale: Lang;
 }
 
-export default function EmailTemplatesList({ templates, adminEmail }: Props) {
+export default function EmailTemplatesList({ templates, adminEmail, locale }: Props) {
   const router = useRouter();
+  const t = adminEmailTemplatesListTranslation[locale];
   const [toggling, setToggling] = useState<string | null>(null);
 
   const handleToggle = async (templateId: string, currentEnabled: boolean) => {
@@ -42,15 +46,15 @@ export default function EmailTemplatesList({ templates, adminEmail }: Props) {
 
       if (response.ok) {
         toast.success(
-          currentEnabled ? "Template disabled" : "Template enabled",
+          currentEnabled ? t.templateDisabled : t.templateEnabled,
         );
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to update template");
+        toast.error(data.error || t.errorUpdate);
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      toast.error(error.message || t.errorUpdate);
     } finally {
       setToggling(null);
     }
@@ -67,53 +71,56 @@ export default function EmailTemplatesList({ templates, adminEmail }: Props) {
 
   // Group templates by category
   const eventTemplates = templates.filter(
-    (t) =>
-      t.type.includes("RSVP") ||
-      t.type.includes("EVENT") ||
-      t.type.includes("CHECK_IN"),
+    (tmpl) =>
+      tmpl.type.includes("RSVP") ||
+      tmpl.type.includes("EVENT") ||
+      tmpl.type.includes("CHECK_IN"),
   );
   const assistanceTemplates = templates.filter(
-    (t) => t.type.includes("ASSISTANCE") || t.type.includes("DISBURSEMENT"),
+    (tmpl) => tmpl.type.includes("ASSISTANCE") || tmpl.type.includes("DISBURSEMENT"),
   );
   const otherTemplates = templates.filter(
-    (t) =>
-      !t.type.includes("RSVP") &&
-      !t.type.includes("EVENT") &&
-      !t.type.includes("CHECK_IN") &&
-      !t.type.includes("ASSISTANCE") &&
-      !t.type.includes("DISBURSEMENT"),
+    (tmpl) =>
+      !tmpl.type.includes("RSVP") &&
+      !tmpl.type.includes("EVENT") &&
+      !tmpl.type.includes("CHECK_IN") &&
+      !tmpl.type.includes("ASSISTANCE") &&
+      !tmpl.type.includes("DISBURSEMENT"),
   );
 
   return (
     <div className="space-y-6">
       {/* Event Templates */}
       <TemplateCategory
-        title="Event Notifications"
-        description="Emails related to event RSVPs and attendance"
+        title={t.categories.event.title}
+        description={t.categories.event.description}
         templates={eventTemplates}
         toggling={toggling}
         onToggle={handleToggle}
         getCategoryIcon={getCategoryIcon}
+        t={t}
       />
 
       {/* Assistance Templates */}
       <TemplateCategory
-        title="Financial Assistance"
-        description="Emails for financial assistance applications and disbursements"
+        title={t.categories.assistance.title}
+        description={t.categories.assistance.description}
         templates={assistanceTemplates}
         toggling={toggling}
         onToggle={handleToggle}
         getCategoryIcon={getCategoryIcon}
+        t={t}
       />
 
       {/* Other Templates */}
       <TemplateCategory
-        title="Other Notifications"
-        description="General system emails"
+        title={t.categories.other.title}
+        description={t.categories.other.description}
         templates={otherTemplates}
         toggling={toggling}
         onToggle={handleToggle}
         getCategoryIcon={getCategoryIcon}
+        t={t}
       />
     </div>
   );
@@ -126,6 +133,7 @@ function TemplateCategory({
   toggling,
   onToggle,
   getCategoryIcon,
+  t,
 }: {
   title: string;
   description: string;
@@ -133,6 +141,7 @@ function TemplateCategory({
   toggling: string | null;
   onToggle: (id: string, enabled: boolean) => void;
   getCategoryIcon: (type: string) => string;
+  t: typeof adminEmailTemplatesListTranslation["en"];
 }) {
   return (
     <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
@@ -149,6 +158,7 @@ function TemplateCategory({
             toggling={toggling}
             onToggle={onToggle}
             getCategoryIcon={getCategoryIcon}
+            t={t}
           />
         ))}
       </div>
@@ -161,11 +171,13 @@ function TemplateRow({
   toggling,
   onToggle,
   getCategoryIcon,
+  t,
 }: {
   template: EmailTemplate;
   toggling: string | null;
   onToggle: (id: string, enabled: boolean) => void;
   getCategoryIcon: (type: string) => string;
+  t: typeof adminEmailTemplatesListTranslation["en"];
 }) {
   return (
     <div className="p-4 md:p-6 hover:bg-neutral-50 transition-colors">
@@ -189,7 +201,7 @@ function TemplateRow({
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {template.enabled ? "Enabled" : "Disabled"}
+                {template.enabled ? t.enabled : t.disabled}
               </span>
             </div>
 
@@ -200,7 +212,7 @@ function TemplateRow({
             )}
 
             <p className="text-sm text-neutral-500 mb-2">
-              <strong>Subject:</strong> {template.subject}
+              <strong>{t.subject}</strong> {template.subject}
             </p>
 
             {/* Variables */}
@@ -215,7 +227,7 @@ function TemplateRow({
               ))}
               {template.variables.length > 5 && (
                 <span className="px-2 py-0.5 rounded bg-neutral-100 text-neutral-600 text-xs">
-                  +{template.variables.length - 5} more
+                  {t.more(template.variables.length - 5)}
                 </span>
               )}
             </div>
@@ -227,7 +239,6 @@ function TemplateRow({
           <Link
             href={`/admin/settings/email-templates/${template.id}`}
             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Edit Template"
           >
             <Edit className="w-5 h-5" />
           </Link>
@@ -235,7 +246,6 @@ function TemplateRow({
           <Link
             href={`/admin/settings/email-templates/${template.id}/preview`}
             className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-            title="Preview"
           >
             <Eye className="w-5 h-5" />
           </Link>
@@ -248,7 +258,6 @@ function TemplateRow({
                 ? "text-green-600 hover:bg-green-50"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
-            title={template.enabled ? "Disable" : "Enable"}
           >
             <Power className="w-5 h-5" />
           </button>
@@ -256,14 +265,4 @@ function TemplateRow({
       </div>
     </div>
   );
-}
-
-interface EmailTemplate {
-  id: string;
-  type: string;
-  name: string;
-  subject: string;
-  description: string | null;
-  enabled: boolean;
-  variables: string[];
 }

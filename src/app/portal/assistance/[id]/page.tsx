@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { Lang } from "@/types";
 import AssistanceDetailContent from "@/components/portal/assistance/AssistanceDetailContent";
+import { getLocaleCookie } from "@/lib/locale";
 
 interface Props {
   params: { id: string };
@@ -36,7 +36,12 @@ export default async function ApplicationDetailPage({ params }: Props) {
     notFound();
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const locale = (await getLocaleCookie()) as Lang;
 
-  return <AssistanceDetailContent application={application} locale={locale} />;
+  return (
+    <AssistanceDetailContent
+      application={application}
+      locale={locale as Lang}
+    />
+  );
 }

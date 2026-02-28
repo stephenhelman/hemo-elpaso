@@ -9,6 +9,8 @@ import {
   getPriorityConfig,
   AnnouncementPriority,
 } from "@/lib/announcement-priority";
+import { adminAnnouncementsTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface Announcement {
   id: string;
@@ -25,22 +27,25 @@ interface Props {
   eventId: string;
   announcements: Announcement[];
   adminEmail: string;
+  locale: Lang;
 }
 
 export default function AnnouncementsList({
   eventId,
   announcements,
   adminEmail,
+  locale,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
+  const t = adminAnnouncementsTranslation[locale];
 
   const handleDelete = async (announcementId: string) => {
     const confirmed = await confirm({
-      title: "Remove Announcement?",
-      message: "This will hide the announcement from attendees.",
-      confirmText: "Remove",
+      title: t.removeConfirmTitle,
+      message: t.removeConfirmMsg,
+      confirmText: t.removeConfirmBtn,
       variant: "warning",
     });
 
@@ -55,7 +60,7 @@ export default function AnnouncementsList({
       );
 
       if (response.ok) {
-        toast.success("Announcement removed");
+        toast.success(t.toastRemoved);
         router.refresh();
       } else {
         const data = await response.json();
@@ -72,7 +77,7 @@ export default function AnnouncementsList({
     return (
       <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
         <Megaphone className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-        <p className="text-neutral-500">No announcements yet</p>
+        <p className="text-neutral-500">{t.noAnnouncements}</p>
       </div>
     );
   }
@@ -90,7 +95,7 @@ export default function AnnouncementsList({
           <div>
             <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-green-600" />
-              Active Announcements ({activeAnnouncements.length})
+              {t.active(activeAnnouncements.length)}
             </h2>
             <div className="space-y-3">
               {activeAnnouncements.map((announcement) => (
@@ -99,6 +104,7 @@ export default function AnnouncementsList({
                   announcement={announcement}
                   onDelete={handleDelete}
                   loading={loading === announcement.id}
+                  t={t}
                 />
               ))}
             </div>
@@ -109,7 +115,7 @@ export default function AnnouncementsList({
         {inactiveAnnouncements.length > 0 && (
           <div>
             <h2 className="font-semibold text-neutral-500 mb-4">
-              Removed Announcements ({inactiveAnnouncements.length})
+              {t.removed(inactiveAnnouncements.length)}
             </h2>
             <div className="space-y-3 opacity-60">
               {inactiveAnnouncements.map((announcement) => (
@@ -118,6 +124,7 @@ export default function AnnouncementsList({
                   announcement={announcement}
                   onDelete={handleDelete}
                   loading={loading === announcement.id}
+                  t={t}
                 />
               ))}
             </div>
@@ -132,10 +139,12 @@ function AnnouncementCard({
   announcement,
   onDelete,
   loading,
+  t,
 }: {
   announcement: Announcement;
   onDelete: (id: string) => void;
   loading: boolean;
+  t: typeof adminAnnouncementsTranslation["en"];
 }) {
   const config = getPriorityConfig(announcement.priority);
   const now = new Date();
@@ -154,22 +163,22 @@ function AnnouncementCard({
             </span>
             {announcement.active && !isExpired && (
               <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
-                Live
+                {t.live}
               </span>
             )}
             {isExpired && (
               <span className="px-2 py-1 rounded-full bg-neutral-100 text-neutral-600 text-xs font-semibold">
-                Expired
+                {t.expired}
               </span>
             )}
           </div>
 
           <p className="text-sm text-neutral-500 mb-3">
-            Posted {new Date(announcement.createdAt).toLocaleString()}
+            {t.posted} {new Date(announcement.createdAt).toLocaleString()}
             {announcement.expiresAt && (
               <>
                 {" "}
-                • Expires {new Date(announcement.expiresAt).toLocaleString()}
+                • {t.expires} {new Date(announcement.expiresAt).toLocaleString()}
               </>
             )}
           </p>
@@ -180,7 +189,7 @@ function AnnouncementCard({
             onClick={() => onDelete(announcement.id)}
             disabled={loading}
             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-            title="Remove announcement"
+            title={t.removeConfirmBtn}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -190,13 +199,13 @@ function AnnouncementCard({
       <div className="space-y-3">
         <div>
           <p className="text-xs text-neutral-500 font-semibold mb-1">
-            English:
+            {t.english}
           </p>
           <p className="text-neutral-900">{announcement.messageEn}</p>
         </div>
         <div>
           <p className="text-xs text-neutral-500 font-semibold mb-1">
-            Spanish:
+            {t.spanish}
           </p>
           <p className="text-neutral-900">{announcement.messageEs}</p>
         </div>

@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import FlyerUpload from "./FlyerUpload";
 import BilingualInput from "@/components/form/BilingualInput";
+import { adminEventEditTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Event {
   id: string;
@@ -38,13 +40,15 @@ interface Event {
 
 interface Props {
   event: Event;
+  locale: Lang;
 }
 
-export default function EventEditForm({ event }: Props) {
+export default function EventEditForm({ event, locale }: Props) {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const t = adminEventEditTranslation[locale];
 
   const [formData, setFormData] = useState({
     title: {
@@ -111,11 +115,11 @@ export default function EventEditForm({ event }: Props) {
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to update event");
+        toast.error(data.error || t.errorUpdate);
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update event",
+        error instanceof Error ? error.message : t.errorUpdate,
       );
     } finally {
       setLoading(false);
@@ -124,10 +128,9 @@ export default function EventEditForm({ event }: Props) {
 
   const handleDelete = async () => {
     const confirmed = await confirm({
-      title: "Delete Event?",
-      message:
-        "Are you sure you want to delete this event? This action cannot be undone.",
-      confirmText: "Delete",
+      title: t.deleteConfirmTitle,
+      message: t.deleteConfirmMsg,
+      confirmText: t.deleteConfirmBtn,
       variant: "danger",
     });
     if (!confirmed) return;
@@ -144,11 +147,11 @@ export default function EventEditForm({ event }: Props) {
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to delete event");
+        toast.error(data.error || t.errorDelete);
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete event",
+        error instanceof Error ? error.message : t.errorDelete,
       );
     } finally {
       setDeleting(false);
@@ -163,29 +166,29 @@ export default function EventEditForm({ event }: Props) {
           {/* Basic Information */}
           <div className="space-y-6">
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Basic Information
+              {t.basicInfo}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <BilingualInput
-                label="Event Title"
+                label={t.eventTitle}
                 name="title"
                 value={formData.title}
                 onChange={(value) => setFormData({ ...formData, title: value })}
-                placeholder="Enter event title..."
+                placeholder={t.titlePlaceholder}
                 type="input"
                 required
               />
             </div>
 
             <BilingualInput
-              label="Event Description"
+              label={t.eventDescription}
               name="description"
               value={formData.description}
               onChange={(value) =>
                 setFormData({ ...formData, description: value })
               }
-              placeholder="Enter event description..."
+              placeholder={t.descriptionPlaceholder}
               type="textarea"
               rows={4}
               required
@@ -194,7 +197,7 @@ export default function EventEditForm({ event }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Event Date & Time *
+                  {t.dateTime}
                 </label>
                 <input
                   type="datetime-local"
@@ -209,7 +212,7 @@ export default function EventEditForm({ event }: Props) {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  RSVP Deadline
+                  {t.rsvpDeadline}
                 </label>
                 <input
                   type="datetime-local"
@@ -224,7 +227,7 @@ export default function EventEditForm({ event }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Location *
+                {t.location}
               </label>
               <input
                 type="text"
@@ -239,7 +242,7 @@ export default function EventEditForm({ event }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Max Capacity
+                {t.maxCapacity}
               </label>
               <input
                 type="number"
@@ -248,7 +251,7 @@ export default function EventEditForm({ event }: Props) {
                 onChange={(e) =>
                   setFormData({ ...formData, maxCapacity: e.target.value })
                 }
-                placeholder="Leave empty for unlimited"
+                placeholder={t.capacityPlaceholder}
                 className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -256,7 +259,7 @@ export default function EventEditForm({ event }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Status *
+                  {t.status}
                 </label>
                 <select
                   required
@@ -266,16 +269,16 @@ export default function EventEditForm({ event }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="completed">Completed</option>
+                  <option value="draft">{t.statusOptions.draft}</option>
+                  <option value="published">{t.statusOptions.published}</option>
+                  <option value="cancelled">{t.statusOptions.cancelled}</option>
+                  <option value="completed">{t.statusOptions.completed}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Category *
+                  {t.category}
                 </label>
                 <select
                   required
@@ -285,12 +288,12 @@ export default function EventEditForm({ event }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="EDUCATION">Education</option>
-                  <option value="FAMILY_SUPPORT">Family Support</option>
-                  <option value="YOUTH">Youth</option>
-                  <option value="FUNDRAISING">Fundraising</option>
-                  <option value="MEDICAL_UPDATE">Medical Update</option>
-                  <option value="SOCIAL">Social</option>
+                  <option value="EDUCATION">{t.categoryOptions.EDUCATION}</option>
+                  <option value="FAMILY_SUPPORT">{t.categoryOptions.FAMILY_SUPPORT}</option>
+                  <option value="YOUTH">{t.categoryOptions.YOUTH}</option>
+                  <option value="FUNDRAISING">{t.categoryOptions.FUNDRAISING}</option>
+                  <option value="MEDICAL_UPDATE">{t.categoryOptions.MEDICAL_UPDATE}</option>
+                  <option value="SOCIAL">{t.categoryOptions.SOCIAL}</option>
                 </select>
               </div>
             </div>
@@ -306,7 +309,7 @@ export default function EventEditForm({ event }: Props) {
                   className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
                 />
                 <span className="text-sm font-medium text-neutral-700">
-                  Priority Event
+                  {t.priorityEvent}
                 </span>
               </label>
 
@@ -320,18 +323,17 @@ export default function EventEditForm({ event }: Props) {
                   className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
                 />
                 <span className="text-sm font-medium text-neutral-700">
-                  Enable Live Features
+                  {t.liveFeatures}
                 </span>
               </label>
             </div>
           </div>
           <div className="border-t mt-4 border-neutral-200 pt-8">
             <h3 className="text-xl font-display font-bold text-neutral-900 mb-4">
-              Event Flyers
+              {t.flyersTitle}
             </h3>
             <p className="text-sm text-neutral-600 mb-4">
-              Upload PDF flyers in both English and Spanish for attendees to
-              view and download.
+              {t.flyersDesc}
             </p>
             <FlyerUpload
               eventId={event.id}
@@ -353,12 +355,12 @@ export default function EventEditForm({ event }: Props) {
             {deleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                {t.deleting}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete Event
+                {t.deleteEvent}
               </>
             )}
           </button>
@@ -371,10 +373,10 @@ export default function EventEditForm({ event }: Props) {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
+                {t.saving}
               </>
             ) : (
-              "Save Changes"
+              t.saveChanges
             )}
           </button>
         </div>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, UserCheck, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { adminCheckinSearchTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Patient {
   id: string;
@@ -17,9 +19,10 @@ interface Patient {
 
 interface Props {
   eventId: string;
+  locale: Lang;
 }
 
-export default function ManualCheckInSearch({ eventId }: Props) {
+export default function ManualCheckInSearch({ eventId, locale }: Props) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +30,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("patient");
+  const t = adminCheckinSearchTranslation[locale];
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -90,7 +94,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
       >
         <Search className="w-4 h-4" />
-        Search & Check In
+        {t.searchAndCheckIn}
       </button>
 
       {showModal && (
@@ -99,7 +103,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-display font-bold text-neutral-900">
-                  Search & Check In
+                  {t.searchAndCheckIn}
                 </h2>
                 <button
                   onClick={() => setShowModal(false)}
@@ -112,22 +116,21 @@ export default function ManualCheckInSearch({ eventId }: Props) {
               {/* Role Selector */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Attendee Type
+                  {t.attendeeType}
                 </label>
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="patient">Patient/Family</option>
-                  <option value="sponsor">Sponsor/Rep</option>
-                  <option value="donor">Donor</option>
-                  <option value="volunteer">Volunteer</option>
-                  <option value="admin">Admin/Staff</option>
+                  <option value="patient">{t.roleOptions.patient}</option>
+                  <option value="sponsor">{t.roleOptions.sponsor}</option>
+                  <option value="donor">{t.roleOptions.donor}</option>
+                  <option value="volunteer">{t.roleOptions.volunteer}</option>
+                  <option value="admin">{t.roleOptions.admin}</option>
                 </select>
                 <p className="text-xs text-neutral-500 mt-1">
-                  Select role for reporting (sponsors/donors excluded from
-                  patient metrics)
+                  {t.roleNote}
                 </p>
               </div>
 
@@ -136,7 +139,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder={t.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -160,7 +163,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
               {searchResults.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm text-neutral-600 mb-2">
-                    Found {searchResults.length} result(s)
+                    {t.found(searchResults.length)}
                   </p>
                   {searchResults.map((patient) => (
                     <div
@@ -196,7 +199,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
                         ) : (
                           <>
                             <UserCheck className="w-4 h-4" />
-                            Check In
+                            {t.checkIn}
                           </>
                         )}
                       </button>
@@ -207,7 +210,7 @@ export default function ManualCheckInSearch({ eventId }: Props) {
 
               {searchResults.length === 0 && searchQuery && !searching && (
                 <div className="text-center py-8 text-neutral-500">
-                  No patients found matching "{searchQuery}"
+                  {t.noFound(searchQuery)}
                 </div>
               )}
             </div>

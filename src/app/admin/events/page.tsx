@@ -2,12 +2,12 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import EventsDisplay from "@/components/admin/EventDisplay";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminEventsTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AdminEventsPage() {
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const locale = (await getLocaleCookie()) as Lang;
   const t = adminEventsTranslation[locale];
 
   const events = await prisma.event.findMany({
@@ -39,7 +39,7 @@ export default async function AdminEventsPage() {
         </Link>
       </div>
 
-      <EventsDisplay events={events} />
+      <EventsDisplay events={events} locale={locale} />
     </div>
   );
 }

@@ -7,6 +7,8 @@ import PollsList from "@/components/polls/PollsList";
 import CreatePollButton from "@/components/admin/polls/CreatePollButton";
 import InviteRepButton from "@/components/admin/polls/InviteRepbutton";
 import { headers } from "next/headers";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -27,6 +29,8 @@ export default async function EventPollsPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   const headersList = headers();
   const referer = headersList.get("referer") || "";
@@ -80,7 +84,7 @@ export default async function EventPollsPage({ params }: Props) {
 
           <div className="flex gap-3">
             <InviteRepButton eventId={event.id} />
-            <CreatePollButton eventId={event.id} />
+            <CreatePollButton eventId={event.id} locale={locale} />
           </div>
         </div>
 

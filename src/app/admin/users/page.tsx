@@ -4,9 +4,9 @@ import { prisma } from "@/lib/db";
 import { Users } from "lucide-react";
 import UsersTable from "@/components/admin/users/UsersTable";
 import { StatCard } from "@/components/ui/StatCard";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminUsersTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 interface Props {
   searchParams: {
@@ -31,8 +31,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = adminUsersTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = adminUsersTranslation[locale as Lang];
 
   // Build filter
   const where: any = {};
@@ -103,6 +103,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         currentSearch={searchParams.search}
         currentRole={searchParams.role}
         currentCondition={searchParams.condition}
+        locale={locale}
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard

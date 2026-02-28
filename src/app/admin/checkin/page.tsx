@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import QrScanner from "@/components/admin/QrScanner";
 import ManualCheckInSearch from "@/components/admin/ManualCheckInSearch";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminCheckinPage() {
   const searchParams = useSearchParams();
   const preselectedEventId = searchParams.get("event");
+  const { locale } = useLanguage();
 
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(
@@ -199,7 +201,7 @@ export default function AdminCheckinPage() {
                   Checked In ({checkIns.length})
                 </h2>
               </div>
-              <ManualCheckInSearch eventId={selectedEvent} />
+              <ManualCheckInSearch eventId={selectedEvent} locale={locale} />
             </div>
 
             <div className="bg-white rounded-xl border border-neutral-200 max-h-[600px] overflow-y-auto">

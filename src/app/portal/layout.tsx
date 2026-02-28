@@ -1,9 +1,14 @@
 import { getSession } from "@auth0/nextjs-auth0";
+import { getLocaleCookie } from "@/lib/locale";
 import { redirect } from "next/navigation";
 import PortalSidebar from "@/components/portal/PortalSidebar";
 import { prisma } from "@/lib/db";
 import DiagnosisReminderBanner from "@/components/portal/DiagnosisReminderBanner";
 import { ensurePatientExists } from "@/lib/ensure-patient";
+import { Lang } from "@/types";
+import { PortalLayout as Portal } from "@/components/layout/PortalLayout";
+import { inter, poppins } from "@/lib/fonts";
+import "@/app/globals.css";
 
 export default async function PortalLayout({
   children,
@@ -11,6 +16,7 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+  const locale = (await getLocaleCookie()) as Lang;
 
   if (!session) {
     redirect("/api/auth/login?returnTo=/portal/dashboard");
@@ -56,26 +62,35 @@ export default async function PortalLayout({
       : 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex">
-      <PortalSidebar
-        user={{
-          ...session.user,
-          role: patient?.role || "patient",
-        }}
-      />
-      <main className="flex-1 min-w-0 lg:ml-64">
-        {needsDiagnosisLetter && (
-          <div className="p-4 lg:p-6">
-            <DiagnosisReminderBanner
-              daysRemaining={daysRemaining}
-              hasUploadedLetter={!!patient.disorderProfile?.diagnosisLetterUrl}
-              isVerified={patient.disorderProfile.diagnosisVerified}
-              language={(patient.preferredLanguage as "en" | "es") || "en"}
-            />
-          </div>
-        )}
-        {children}
-      </main>
-    </div>
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${inter.variable} ${poppins.variable}`}>
+        <div className="min-h-screen bg-neutral-50 flex">
+          <PortalSidebar
+            user={{
+              ...session.user,
+              role: patient?.role || "patient",
+            }}
+            locale={locale as Lang}
+          />
+          <main className="flex-1 min-w-0 lg:ml-64">
+            <Portal locale={locale as Lang}>
+              {needsDiagnosisLetter && (
+                <div className="p-4 lg:p-6">
+                  <DiagnosisReminderBanner
+                    daysRemaining={daysRemaining}
+                    hasUploadedLetter={
+                      !!patient.disorderProfile?.diagnosisLetterUrl
+                    }
+                    isVerified={patient.disorderProfile?.diagnosisVerified}
+                    locale={locale as Lang}
+                  />
+                </div>
+              )}
+              {children}
+            </Portal>
+          </main>
+        </div>
+      </body>
+    </html>
   );
 }

@@ -1,21 +1,23 @@
 "use client";
-import { useLanguage } from "@/context/LanguageContext";
+
 import { portalEventsPageTranslation } from "@/translation/portalPages";
 import { Calendar } from "lucide-react";
 import PortalEventsDisplay from "../PortalEventsDisplay";
+import { Lang } from "@/types";
 
 interface Props {
   myRsvps: any[];
   recommendedEvents: any[];
   allEvents: any[];
+  locale: Lang;
 }
 
 export function PortalEventsContent({
   myRsvps,
   recommendedEvents,
   allEvents,
+  locale,
 }: Props) {
-  const { locale } = useLanguage();
   const t = portalEventsPageTranslation[locale];
   return (
     <div className="p-4 md:p-8">

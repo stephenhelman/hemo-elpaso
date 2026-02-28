@@ -10,7 +10,7 @@ import {
   profileFormTranslation,
   portalProfilePageTranslation,
 } from "@/translation/portalPages";
-import { useLanguage } from "@/context/LanguageContext";
+import { Lang } from "@/types";
 
 interface Patient {
   id: string;
@@ -87,14 +87,15 @@ interface FamilyMember {
 interface Props {
   patient: Patient;
   initialTab?: "personal" | "medical" | "family" | "verification";
+  locale: Lang;
 }
 
 export default function ProfileEditForm({
   patient,
   initialTab = "personal",
+  locale,
 }: Props) {
   const router = useRouter();
-  const { locale } = useLanguage();
   const { confirm, ConfirmDialog } = useConfirm();
   const f = profileFormTranslation[locale];
   const t = portalProfilePageTranslation[locale];

@@ -6,9 +6,9 @@ import ReportsFilters from "@/components/admin/reports/ReportsFilters";
 import AttendanceReport from "@/components/admin/reports/AttendanceReport";
 import EngagementReport from "@/components/admin/reports/EngagementReport";
 import DemographicsReport from "@/components/admin/reports/DemographicsReport";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminReportsTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 interface Props {
   searchParams: {
@@ -34,8 +34,8 @@ export default async function ReportsPage({ searchParams }: Props) {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = adminReportsTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = adminReportsTranslation[locale as Lang];
 
   // Parse filters
   const now = new Date();
@@ -203,6 +203,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         endDate={endDate}
         category={category}
         attendanceExportRows={attendanceExportRows}
+        locale={locale}
       />
 
       {/* Summary Stats */}
@@ -237,10 +238,10 @@ export default async function ReportsPage({ searchParams }: Props) {
       {/* Reports Sections */}
       <div className="space-y-8">
         {/* Attendance Report */}
-        <AttendanceReport events={events} />
+        <AttendanceReport events={events} locale={locale} />
 
         {/* Engagement Report */}
-        <EngagementReport events={events} uniquePatients={uniquePatients} />
+        <EngagementReport events={events} uniquePatients={uniquePatients} locale={locale} />
 
         {/* Demographics Report */}
         <DemographicsReport
@@ -249,6 +250,7 @@ export default async function ReportsPage({ searchParams }: Props) {
           conditions={conditions}
           severities={severities}
           cities={cities}
+          locale={locale}
         />
       </div>
     </div>

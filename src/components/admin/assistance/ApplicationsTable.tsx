@@ -8,7 +8,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import ExportButton from "@/components/ui/ExportButton";
 import FilterBar from "@/components/ui/FilterBar";
 import { adminAssistanceTableTranslation } from "@/translation/adminAssistance";
-import { useLanguage } from "@/context/LanguageContext";
+import type { Lang } from "@/types";
 
 interface Application {
   id: string;
@@ -37,6 +37,7 @@ interface Props {
   currentStatus?: string;
   currentType?: string;
   children: React.ReactNode;
+  locale: Lang;
 }
 
 export default function ApplicationsTable({
@@ -44,9 +45,9 @@ export default function ApplicationsTable({
   currentStatus = "all",
   currentType = "all",
   children,
+  locale,
 }: Props) {
   const router = useRouter();
-  const { locale } = useLanguage();
   const t = adminAssistanceTableTranslation[locale];
 
   const [search, setSearch] = useState("");

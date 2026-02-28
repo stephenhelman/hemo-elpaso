@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Users } from "lucide-react";
+import { adminAttendanceBreakdownTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Props {
   patientCount: number;
   sponsorCount: number;
   donorCount: number;
   volunteerCount: number;
+  locale: Lang;
 }
 
 export default function AttendanceBreakdown({
@@ -15,15 +18,17 @@ export default function AttendanceBreakdown({
   sponsorCount,
   donorCount,
   volunteerCount,
+  locale,
 }: Props) {
   const [expanded, setExpanded] = useState(true);
+  const t = adminAttendanceBreakdownTranslation[locale];
 
   const total = patientCount + sponsorCount + donorCount + volunteerCount;
   const roles = [
-    { label: "Patients", count: patientCount, color: "bg-blue-500" },
-    { label: "Sponsors", count: sponsorCount, color: "bg-purple-500" },
-    { label: "Donors", count: donorCount, color: "bg-green-500" },
-    { label: "Volunteers", count: volunteerCount, color: "bg-amber-500" },
+    { label: t.roleLabels.Patients, count: patientCount, color: "bg-blue-500" },
+    { label: t.roleLabels.Sponsors, count: sponsorCount, color: "bg-purple-500" },
+    { label: t.roleLabels.Donors, count: donorCount, color: "bg-green-500" },
+    { label: t.roleLabels.Volunteers, count: volunteerCount, color: "bg-amber-500" },
   ];
 
   return (
@@ -42,7 +47,7 @@ export default function AttendanceBreakdown({
               )}
             </button>
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Attendance Breakdown by Role
+              {t.title}
             </h2>
           </div>
         </div>
@@ -81,10 +86,10 @@ export default function AttendanceBreakdown({
 
           <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
             <p className="text-sm font-medium text-neutral-900">
-              Total Attendance: {total}
+              {t.totalAttendance} {total}
             </p>
             <p className="text-xs text-neutral-600 mt-1">
-              Breakdown includes all roles present at the event
+              {t.breakdownNote}
             </p>
           </div>
         </div>

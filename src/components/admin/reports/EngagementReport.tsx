@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Users, TrendingUp } from "lucide-react";
 import ExportButton from "@/components/ui/ExportButton";
+import { adminReportsTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Event {
   id: string;
@@ -22,9 +24,11 @@ interface Event {
 interface Props {
   events: Event[];
   uniquePatients: number;
+  locale: Lang;
 }
 
-export default function EngagementReport({ events, uniquePatients }: Props) {
+export default function EngagementReport({ events, uniquePatients, locale }: Props) {
+  const t = adminReportsTranslation[locale];
   const [expanded, setExpanded] = useState(true);
 
   // Calculate patient engagement (how many events each patient attended)
@@ -84,7 +88,7 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
               )}
             </button>
             <h2 className="text-xl font-display font-bold text-neutral-900">
-              Patient Engagement Report
+              {t.engagementTitle}
             </h2>
           </div>
         </div>
@@ -94,7 +98,7 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
         <div className="overflow-x-auto">
           <div className="flex flex-col lg:flex-row gap-4 p-4">
             <ExportButton
-              headers={["Patient Name", "Events Attended"]}
+              headers={t.engagementExportHeaders}
               rows={exportRows}
               filename={`engagement-report-${new Date().toISOString().split("T")[0]}.csv`}
             />
@@ -106,14 +110,14 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-5 h-5 text-blue-600" />
                   <p className="text-sm font-medium text-blue-900">
-                    Unique Patients
+                    {t.uniquePatients}
                   </p>
                 </div>
                 <p className="text-3xl font-bold text-blue-900">
                   {uniquePatients}
                 </p>
                 <p className="text-xs text-blue-700 mt-1">
-                  Attended at least one event
+                  {t.attendedAtLeastOne}
                 </p>
               </div>
 
@@ -121,14 +125,14 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
                 <div className="flex items-center gap-3 mb-2">
                   <TrendingUp className="w-5 h-5 text-green-600" />
                   <p className="text-sm font-medium text-green-900">
-                    Avg Events per Patient
+                    {t.avgEventsPerPatient}
                   </p>
                 </div>
                 <p className="text-3xl font-bold text-green-900">
                   {avgEventsPerPatient}
                 </p>
                 <p className="text-xs text-green-700 mt-1">
-                  In selected date range
+                  {t.inSelectedRange}
                 </p>
               </div>
             </div>
@@ -136,12 +140,12 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
             {/* Top 10 Most Engaged */}
             <div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                Top 10 Most Engaged Patients
+                {t.top10Title}
               </h3>
 
               {topEngaged.length === 0 ? (
                 <p className="text-neutral-500 text-sm">
-                  No engagement data available
+                  {t.noEngagement}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -162,7 +166,7 @@ export default function EngagementReport({ events, uniquePatients }: Props) {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-neutral-900">
-                          {patient.eventsAttended} events
+                          {t.eventsCount(patient.eventsAttended)}
                         </p>
                       </div>
                     </div>

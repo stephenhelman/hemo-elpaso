@@ -6,6 +6,8 @@ import Link from "next/link";
 import AnnouncementsList from "@/components/admin/announcements/AnnouncementsList";
 import CreateAnnouncementButton from "@/components/admin/announcements/CreateAnnouncementButton";
 import { headers } from "next/headers";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -25,6 +27,8 @@ export default async function EventAnnouncementsPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   const headersList = headers();
   const referer = headersList.get("referer") || "";
@@ -74,7 +78,7 @@ export default async function EventAnnouncementsPage({ params }: Props) {
                 {activeCount} active
               </div>
             )}
-            <CreateAnnouncementButton eventId={event.id} />
+            <CreateAnnouncementButton eventId={event.id} locale={locale} />
           </div>
         </div>
 
@@ -82,6 +86,7 @@ export default async function EventAnnouncementsPage({ params }: Props) {
           eventId={event.id}
           announcements={event.announcements}
           adminEmail={admin.email}
+          locale={locale}
         />
       </div>
     </div>

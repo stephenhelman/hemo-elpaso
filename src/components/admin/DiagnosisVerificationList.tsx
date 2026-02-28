@@ -15,6 +15,10 @@ import {
 import toast from "react-hot-toast";
 import FilterBar from "@/components/ui/FilterBar";
 import ExportButton from "@/components/ui/ExportButton";
+import {
+  adminVerificationListTranslation,
+} from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Patient {
   id: string;
@@ -56,6 +60,7 @@ interface Props {
   patients: Patient[];
   familyMembers: FamilyMember[];
   adminEmail: string;
+  locale: Lang;
   children: React.ReactNode;
 }
 
@@ -63,6 +68,7 @@ export default function DiagnosisVerificationList({
   patients,
   familyMembers,
   adminEmail,
+  locale,
   children,
 }: Props) {
   const router = useRouter();
@@ -77,6 +83,7 @@ export default function DiagnosisVerificationList({
   const [typeFilter, setTypeFilter] = useState<"all" | "patient" | "family">(
     "all",
   );
+  const t = adminVerificationListTranslation[locale];
 
   const filteredPatients = useMemo(() => {
     if (typeFilter === "family") return [];
@@ -105,7 +112,7 @@ export default function DiagnosisVerificationList({
   const exportRows = [
     ...filteredPatients.map((p) => [
       `${p.contactProfile?.firstName ?? ""} ${p.contactProfile?.lastName ?? ""}`.trim(),
-      "Patient",
+      t.exportHeaders[1],
       "",
       "",
       p.email,
@@ -119,7 +126,7 @@ export default function DiagnosisVerificationList({
     ]),
     ...filteredFamilyMembers.map((m) => [
       `${m.contactProfile?.firstName ?? ""} ${m.contactProfile?.lastName ?? ""}`.trim(),
-      "Family Member",
+      t.exportHeaders[1],
       m.relationship,
       `${m.patient.contactProfile?.firstName ?? ""} ${m.patient.contactProfile?.lastName ?? ""}`.trim(),
       m.patient.email,
@@ -185,25 +192,14 @@ export default function DiagnosisVerificationList({
       <FilterBar
         exportButton={
           <ExportButton
-            headers={[
-              "Name",
-              "Type",
-              "Relationship",
-              "Parent Patient",
-              "Email",
-              "Condition",
-              "Upload Date",
-              "Grace Period End",
-            ]}
+            headers={t.exportHeaders}
             rows={exportRows}
             filename={`diagnosis-verification-${new Date().toISOString().split("T")[0]}.csv`}
           />
         }
         stats={
           <>
-            Showing <span className="font-semibold">{totalFiltered}</span> of{" "}
-            <span className="font-semibold">{totalAll}</span> pending
-            verifications
+            {t.showing(totalFiltered, totalAll)}
           </>
         }
       >
@@ -213,7 +209,7 @@ export default function DiagnosisVerificationList({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -228,9 +224,9 @@ export default function DiagnosisVerificationList({
             }
             className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary whitespace-nowrap"
           >
-            <option value="all">All Types</option>
-            <option value="patient">Patient</option>
-            <option value="family">Family Member</option>
+            <option value="all">{t.allTypes}</option>
+            <option value="patient">{t.patientType}</option>
+            <option value="family">{t.familyType}</option>
           </select>
         </div>
       </FilterBar>
@@ -240,7 +236,7 @@ export default function DiagnosisVerificationList({
         <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-lg font-semibold text-neutral-900">
-              Patient Diagnosis Letters
+              {t.patientLetters}
             </h2>
           </div>
 
@@ -264,7 +260,7 @@ export default function DiagnosisVerificationList({
                         {patient.email}
                       </p>
                       <p className="text-sm text-neutral-500 mt-1">
-                        Uploaded:{" "}
+                        {t.uploaded}{" "}
                         {patient.disorderProfile?.diagnosisLetterUploadedAt
                           ? new Date(
                               patient.disorderProfile.diagnosisLetterUploadedAt,
@@ -274,7 +270,7 @@ export default function DiagnosisVerificationList({
 
                       {patient.diagnosisGracePeriodEndsAt && (
                         <p className="text-xs text-amber-600 mt-1">
-                          Grace period ends:{" "}
+                          {t.gracePeriodEnds}{" "}
                           {new Date(
                             patient.diagnosisGracePeriodEndsAt,
                           ).toLocaleDateString()}
@@ -302,7 +298,7 @@ export default function DiagnosisVerificationList({
                           type="text"
                           value={rejectReason}
                           onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder="Reason for rejection"
+                          placeholder={t.reasonPlaceholder}
                           className="px-3 py-1 border border-neutral-300 rounded text-sm"
                           autoFocus
                         />
@@ -316,7 +312,7 @@ export default function DiagnosisVerificationList({
                           {processing === patient.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            "Confirm"
+                            t.confirm
                           )}
                         </button>
                         <button
@@ -326,7 +322,7 @@ export default function DiagnosisVerificationList({
                           }}
                           className="px-3 py-1 border border-neutral-300 text-sm rounded hover:bg-neutral-50"
                         >
-                          Cancel
+                          {t.cancel}
                         </button>
                       </div>
                     ) : (
@@ -370,7 +366,7 @@ export default function DiagnosisVerificationList({
         <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-lg font-semibold text-neutral-900">
-              Family Member Diagnosis Letters
+              {t.familyLetters}
             </h2>
           </div>
 
@@ -399,7 +395,7 @@ export default function DiagnosisVerificationList({
                         {member.patient.email}
                       </p>
                       <p className="text-sm text-neutral-500 mt-1">
-                        Uploaded:{" "}
+                        {t.uploaded}{" "}
                         {member.disorderProfile?.diagnosisLetterUploadedAt
                           ? new Date(
                               member.disorderProfile.diagnosisLetterUploadedAt,
@@ -428,7 +424,7 @@ export default function DiagnosisVerificationList({
                           type="text"
                           value={rejectReason}
                           onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder="Reason for rejection"
+                          placeholder={t.reasonPlaceholder}
                           className="px-3 py-1 border border-neutral-300 rounded text-sm"
                           autoFocus
                         />
@@ -442,7 +438,7 @@ export default function DiagnosisVerificationList({
                           {processing === member.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            "Confirm"
+                            t.confirm
                           )}
                         </button>
                         <button
@@ -452,7 +448,7 @@ export default function DiagnosisVerificationList({
                           }}
                           className="px-3 py-1 border border-neutral-300 text-sm rounded hover:bg-neutral-50"
                         >
-                          Cancel
+                          {t.cancel}
                         </button>
                       </div>
                     ) : (
@@ -496,12 +492,10 @@ export default function DiagnosisVerificationList({
         <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
           <FileText className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-            {totalAll === 0 ? "No Pending Verifications" : "No Results Found"}
+            {totalAll === 0 ? t.noPending : t.noResults}
           </h3>
           <p className="text-neutral-600">
-            {totalAll === 0
-              ? "All diagnosis letters have been reviewed"
-              : "Try adjusting your search or filter"}
+            {totalAll === 0 ? t.allReviewed : t.tryAdjusting}
           </p>
         </div>
       )}

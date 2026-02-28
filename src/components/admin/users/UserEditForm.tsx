@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { adminUserEditTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface User {
   id: string;
@@ -21,11 +23,13 @@ interface User {
 
 interface Props {
   user: User;
+  locale: Lang;
 }
 
-export default function UserEditForm({ user }: Props) {
+export default function UserEditForm({ user, locale }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const t = adminUserEditTranslation[locale];
 
   const [formData, setFormData] = useState({
     role: user.role,
@@ -71,7 +75,7 @@ export default function UserEditForm({ user }: Props) {
       {/* Role */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Role *
+          {t.role}
         </label>
         <select
           required
@@ -79,20 +83,18 @@ export default function UserEditForm({ user }: Props) {
           onChange={(e) => setFormData({ ...formData, role: e.target.value })}
           className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <option value="patient">Patient</option>
-          <option value="admin">Admin</option>
-          <option value="board">Board Member</option>
+          <option value="patient">{t.roleOptions.patient}</option>
+          <option value="admin">{t.roleOptions.admin}</option>
+          <option value="board">{t.roleOptions.board}</option>
         </select>
-        <p className="text-xs text-neutral-500 mt-1">
-          Changing roles affects system access and permissions
-        </p>
+        <p className="text-xs text-neutral-500 mt-1">{t.roleNote}</p>
       </div>
 
       {/* Name */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            First Name *
+            {t.firstName}
           </label>
           <input
             type="text"
@@ -107,7 +109,7 @@ export default function UserEditForm({ user }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Last Name *
+            {t.lastName}
           </label>
           <input
             type="text"
@@ -124,7 +126,7 @@ export default function UserEditForm({ user }: Props) {
       {/* Phone */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Phone
+          {t.phone}
         </label>
         <input
           type="tel"
@@ -138,7 +140,7 @@ export default function UserEditForm({ user }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            City
+            {t.city}
           </label>
           <input
             type="text"
@@ -150,7 +152,7 @@ export default function UserEditForm({ user }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            State
+            {t.state}
           </label>
           <select
             value={formData.state}
@@ -159,18 +161,18 @@ export default function UserEditForm({ user }: Props) {
             }
             className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            <option value="">Select State</option>
-            <option value="TX">Texas</option>
-            <option value="NM">New Mexico</option>
-            <option value="AZ">Arizona</option>
-            <option value="CA">California</option>
+            <option value="">{t.stateOptions.selectState}</option>
+            <option value="TX">{t.stateOptions.TX}</option>
+            <option value="NM">{t.stateOptions.NM}</option>
+            <option value="AZ">{t.stateOptions.AZ}</option>
+            <option value="CA">{t.stateOptions.CA}</option>
           </select>
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
-          ZIP Code
+          {t.zipCode}
         </label>
         <input
           type="text"
@@ -185,7 +187,7 @@ export default function UserEditForm({ user }: Props) {
       {/* Email (read-only) */}
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Email (Read-Only)
+          {t.email}
         </label>
         <input
           type="email"
@@ -193,9 +195,7 @@ export default function UserEditForm({ user }: Props) {
           disabled
           className="w-full px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-100 text-neutral-600 cursor-not-allowed"
         />
-        <p className="text-xs text-neutral-500 mt-1">
-          Email cannot be changed through admin interface
-        </p>
+        <p className="text-xs text-neutral-500 mt-1">{t.emailNote}</p>
       </div>
 
       {/* Actions */}
@@ -205,7 +205,7 @@ export default function UserEditForm({ user }: Props) {
           onClick={() => router.back()}
           className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
         >
-          Cancel
+          {t.cancel}
         </button>
         <button
           type="submit"
@@ -215,10 +215,10 @@ export default function UserEditForm({ user }: Props) {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
+              {t.saving}
             </>
           ) : (
-            "Save Changes"
+            t.saveChanges
           )}
         </button>
       </div>

@@ -7,7 +7,7 @@ import Link from "next/link";
 import ExportButton from "@/components/ui/ExportButton";
 import FilterBar from "@/components/ui/FilterBar";
 import { adminUsersTranslation } from "@/translation/adminPages";
-import { useLanguage } from "@/context/LanguageContext";
+import type { Lang } from "@/types";
 
 interface User {
   id: string;
@@ -36,6 +36,7 @@ interface Props {
   currentRole?: string;
   currentCondition?: string;
   children: React.ReactNode;
+  locale: Lang;
 }
 
 export default function UsersTable({
@@ -45,9 +46,9 @@ export default function UsersTable({
   currentRole = "all",
   currentCondition = "all",
   children,
+  locale,
 }: Props) {
   const router = useRouter();
-  const { locale } = useLanguage();
   const t = adminUsersTranslation[locale];
 
   const [search, setSearch] = useState(currentSearch);

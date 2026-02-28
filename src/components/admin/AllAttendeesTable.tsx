@@ -4,6 +4,8 @@ import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import ExportButton from "@/components/ui/ExportButton";
 import FilterBar from "@/components/ui/FilterBar";
+import { adminAttendanceTableTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface CheckIn {
   id: string;
@@ -34,12 +36,14 @@ interface Props {
   checkIns: CheckIn[];
   events: Event[];
   children: React.ReactNode;
+  locale: Lang;
 }
 
 export default function AllAttendeesTable({
   checkIns,
   events,
   children,
+  locale,
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string>("all");
@@ -47,6 +51,7 @@ export default function AllAttendeesTable({
     start: "",
     end: "",
   });
+  const t = adminAttendanceTableTranslation[locale];
 
   // Filter check-ins
   const filteredCheckIns = useMemo(() => {
@@ -90,24 +95,13 @@ export default function AllAttendeesTable({
       <FilterBar
         exportButton={
           <ExportButton
-            headers={[
-              "Date",
-              "Event",
-              "Attendee Name",
-              "Email",
-              "Phone",
-              "Check-In Time",
-            ]}
+            headers={t.exportHeaders}
             rows={exportRows}
             filename={`attendance-report-${new Date().toISOString().split("T")[0]}.csv`}
           />
         }
         stats={
-          <>
-            Showing{" "}
-            <span className="font-semibold">{filteredCheckIns.length}</span> of{" "}
-            <span className="font-semibold">{checkIns.length}</span> check-ins
-          </>
+          <>{t.showing(filteredCheckIns.length, checkIns.length)}</>
         }
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -116,7 +110,7 @@ export default function AllAttendeesTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`pl-10 ${inputClasses}`}
@@ -129,7 +123,7 @@ export default function AllAttendeesTable({
             onChange={(e) => setSelectedEventId(e.target.value)}
             className={inputClasses}
           >
-            <option value="all">All Events</option>
+            <option value="all">{t.allEvents}</option>
             {events.map((event) => (
               <option key={event.id} value={event.id}>
                 {event.titleEn} (
@@ -143,7 +137,7 @@ export default function AllAttendeesTable({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              From Date
+              {t.fromDate}
             </label>
             <input
               type="date"
@@ -156,7 +150,7 @@ export default function AllAttendeesTable({
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              To Date
+              {t.toDate}
             </label>
             <input
               type="date"
@@ -179,19 +173,19 @@ export default function AllAttendeesTable({
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Date
+                  {t.tableHeaders.date}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Event
+                  {t.tableHeaders.event}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Attendee
+                  {t.tableHeaders.attendee}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Contact
+                  {t.tableHeaders.contact}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                  Check-In Time
+                  {t.tableHeaders.checkInTime}
                 </th>
               </tr>
             </thead>
@@ -202,7 +196,7 @@ export default function AllAttendeesTable({
                     colSpan={5}
                     className="px-6 py-12 text-center text-neutral-400"
                   >
-                    No check-ins found matching your filters
+                    {t.noCheckIns}
                   </td>
                 </tr>
               ) : (

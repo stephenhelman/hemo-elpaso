@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import EmailTemplatesList from "@/components/admin/settings/EmailTemplatesList";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 export default async function EmailTemplatesPage() {
   const session = await getSession();
@@ -17,6 +19,8 @@ export default async function EmailTemplatesPage() {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   // Fetch all email templates
   const templatesRaw = await prisma.emailTemplate.findMany({
@@ -45,7 +49,7 @@ export default async function EmailTemplatesPage() {
         </p>
       </div>
 
-      <EmailTemplatesList templates={templates} adminEmail={admin.email} />
+      <EmailTemplatesList templates={templates} adminEmail={admin.email} locale={locale} />
     </div>
   );
 }

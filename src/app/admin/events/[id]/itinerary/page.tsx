@@ -6,6 +6,8 @@ import Link from "next/link";
 import ItineraryList from "@/components/admin/itinerary/ItineraryList";
 import CreateItineraryItemButton from "@/components/admin/itinerary/CreateItineraryItemButton";
 import { headers } from "next/headers";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -25,6 +27,8 @@ export default async function EventItineraryPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   const headersList = headers();
   const referer = headersList.get("referer") || "";
@@ -68,13 +72,14 @@ export default async function EventItineraryPage({ params }: Props) {
             </p>
           </div>
 
-          <CreateItineraryItemButton eventId={event.id} />
+          <CreateItineraryItemButton eventId={event.id} locale={locale} />
         </div>
 
         <ItineraryList
           eventId={event.id}
           items={event.itineraryItems}
           adminEmail={admin.email}
+          locale={locale}
         />
       </div>
     </div>

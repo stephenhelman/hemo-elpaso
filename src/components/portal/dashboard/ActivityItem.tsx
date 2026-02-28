@@ -9,11 +9,16 @@ import {
   Users,
   CheckCircle,
 } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
 import { activityItemTranslation } from "@/translation/portal";
 import { auditActionEnum } from "@/translation/enumConfig";
 import { translateEnum } from "@/translation/enumTranslation";
 import type { AuditAction } from "@prisma/client";
+import { Lang } from "@/types";
+
+interface Props {
+  log: { action: AuditAction; createdAt: Date };
+  locale: Lang;
+}
 
 const actionIconMap: Partial<Record<AuditAction, React.ReactNode>> = {
   RSVP_CREATED: <Calendar className="w-4 h-4" />,
@@ -34,8 +39,7 @@ const actionIconMap: Partial<Record<AuditAction, React.ReactNode>> = {
   DIAGNOSIS_REJECTED: <FileText className="w-4 h-4" />,
 };
 
-export function ActivityItem({ log }: { log: { action: AuditAction; createdAt: Date } }) {
-  const { locale } = useLanguage();
+export function ActivityItem({ log, locale }: Props) {
   const t = activityItemTranslation[locale];
 
   const getActivityIcon = (action: AuditAction) => {

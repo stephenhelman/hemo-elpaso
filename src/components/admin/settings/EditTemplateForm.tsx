@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Loader2, Save, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { adminEditTemplateTranslation } from "@/translation/adminSettings";
+import type { Lang } from "@/types";
 
 interface EmailTemplate {
   id: string;
@@ -18,10 +20,12 @@ interface EmailTemplate {
 
 interface Props {
   template: EmailTemplate;
+  locale: Lang;
 }
 
-export default function EditTemplateForm({ template }: Props) {
+export default function EditTemplateForm({ template, locale }: Props) {
   const router = useRouter();
+  const t = adminEditTemplateTranslation[locale];
   const [loading, setLoading] = useState(false);
   const [subject, setSubject] = useState(template.subject);
 
@@ -29,7 +33,7 @@ export default function EditTemplateForm({ template }: Props) {
     e.preventDefault();
 
     if (!subject.trim()) {
-      toast.error("Subject line cannot be empty");
+      toast.error(t.errorEmpty);
       return;
     }
 
@@ -46,15 +50,15 @@ export default function EditTemplateForm({ template }: Props) {
       );
 
       if (response.ok) {
-        toast.success("Template updated successfully!");
+        toast.success(t.successUpdated);
         router.push("/admin/settings/email-templates");
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to update template");
+        toast.error(data.error || t.errorUpdate);
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      toast.error(error.message || t.errorUpdate);
     } finally {
       setLoading(false);
     }
@@ -87,17 +91,17 @@ export default function EditTemplateForm({ template }: Props) {
       {/* Template Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
         <h3 className="font-semibold text-blue-900 mb-2">
-          Template Information
+          {t.templateInfo}
         </h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-blue-700 font-medium">Template Type</p>
+            <p className="text-blue-700 font-medium">{t.templateType}</p>
             <p className="text-blue-900">{template.type}</p>
           </div>
           <div>
-            <p className="text-blue-700 font-medium">Status</p>
+            <p className="text-blue-700 font-medium">{t.status}</p>
             <p className="text-blue-900">
-              {template.enabled ? "Enabled" : "Disabled"}
+              {template.enabled ? t.enabled : t.disabled}
             </p>
           </div>
         </div>
@@ -109,12 +113,12 @@ export default function EditTemplateForm({ template }: Props) {
       {/* Subject Line Editor */}
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">
         <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-          Email Subject Line
+          {t.subjectLineSection}
         </h3>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Subject *
+            {t.subjectLabel}
           </label>
           <input
             id="subject-input"
@@ -123,29 +127,31 @@ export default function EditTemplateForm({ template }: Props) {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-lg"
-            placeholder="Enter subject line..."
+            placeholder={t.subjectPlaceholder}
           />
           <p className="text-xs text-neutral-500 mt-2">
-            Use variables like{" "}
+            {t.subjectHint}{" "}
             <code className="px-1 py-0.5 bg-neutral-100 rounded">
               {"{{patientName}}"}
             </code>{" "}
-            to personalize emails
+            {t.subjectHintSuffix}
           </p>
         </div>
 
         {/* Preview */}
         <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg mb-4">
-          <p className="text-xs font-medium text-neutral-600 mb-2">PREVIEW</p>
+          <p className="text-xs font-medium text-neutral-600 mb-2">
+            {t.previewLabel}
+          </p>
           <p className="text-neutral-900">
-            {subject || "Subject line will appear here..."}
+            {subject || t.previewPlaceholder}
           </p>
         </div>
 
         {/* Available Variables */}
         <div>
           <p className="text-sm font-medium text-neutral-700 mb-3">
-            Available Variables (click to insert)
+            {t.availableVariables}
           </p>
           <div className="flex flex-wrap gap-2">
             {template.variables.map((variable) => (
@@ -165,13 +171,9 @@ export default function EditTemplateForm({ template }: Props) {
       {/* Email Body Note */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
         <h3 className="font-semibold text-amber-900 mb-2">
-          📧 Email Body Template
+          📧 {t.bodyNoteTitle}
         </h3>
-        <p className="text-sm text-amber-800">
-          The email body design is managed through React Email components in the
-          codebase. Only the subject line can be customized here. To modify the
-          email body layout, contact your developer.
-        </p>
+        <p className="text-sm text-amber-800">{t.bodyNoteText}</p>
       </div>
 
       {/* Actions */}
@@ -180,7 +182,7 @@ export default function EditTemplateForm({ template }: Props) {
           href="/admin/settings/email-templates"
           className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
         >
-          Cancel
+          {t.cancel}
         </Link>
 
         <Link
@@ -188,7 +190,7 @@ export default function EditTemplateForm({ template }: Props) {
           className="flex items-center gap-2 px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
         >
           <Eye className="w-4 h-4" />
-          Preview
+          {t.preview}
         </Link>
 
         <button
@@ -199,12 +201,12 @@ export default function EditTemplateForm({ template }: Props) {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
+              {t.saving}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Changes
+              {t.saveChanges}
             </>
           )}
         </button>

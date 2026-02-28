@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
+import { adminCreateAnnouncementTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface Props {
   eventId: string;
+  locale: Lang;
 }
 
-export default function CreateAnnouncementButton({ eventId }: Props) {
+export default function CreateAnnouncementButton({ eventId, locale }: Props) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const t = adminCreateAnnouncementTranslation[locale];
 
   const [formData, setFormData] = useState({
     message: { en: "", es: "" },
@@ -40,7 +44,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
       });
 
       if (response.ok) {
-        toast.success("Announcement posted!");
+        toast.success(t.toastPosted);
         setShowModal(false);
         resetForm();
         router.refresh();
@@ -70,7 +74,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
       >
         <Plus className="w-4 h-4" />
-        New Announcement
+        {t.newAnnouncement}
       </button>
 
       {showModal && (
@@ -79,7 +83,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-display font-bold text-neutral-900">
-                  Post Announcement
+                  {t.modalTitle}
                 </h2>
                 <button
                   type="button"
@@ -94,7 +98,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                 {/* Priority */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Priority *
+                    {t.priority}
                   </label>
                   <select
                     required
@@ -104,23 +108,23 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                     }
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="info">Info (Gray)</option>
-                    <option value="normal">Normal (Blue)</option>
-                    <option value="urgent">Urgent (Red)</option>
+                    <option value="info">{t.priorityOptions.info}</option>
+                    <option value="normal">{t.priorityOptions.normal}</option>
+                    <option value="urgent">{t.priorityOptions.urgent}</option>
                   </select>
                   <p className="text-xs text-neutral-500 mt-1">
-                    Use urgent for critical updates only
+                    {t.urgentNote}
                   </p>
                 </div>
 
                 <BilingualInput
-                  label="Announcement Message"
+                  label={t.messageLabel}
                   name="message"
                   value={formData.message}
                   onChange={(value) =>
                     setFormData({ ...formData, message: value })
                   }
-                  placeholder="e.g., Dinner will be served in 15 minutes..."
+                  placeholder={t.messagePlaceholder}
                   type="textarea"
                   rows={3}
                   required
@@ -129,7 +133,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                 {/* Auto-expire */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Auto-Remove After (Optional)
+                    {t.autoRemove}
                   </label>
                   <select
                     value={formData.expiresInMinutes}
@@ -141,17 +145,15 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                     }
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="">
-                      Keep visible until manually removed
-                    </option>
-                    <option value="5">5 minutes</option>
-                    <option value="10">10 minutes</option>
-                    <option value="15">15 minutes</option>
-                    <option value="30">30 minutes</option>
-                    <option value="60">1 hour</option>
+                    <option value="">{t.expiryOptions.keep}</option>
+                    <option value="5">{t.expiryOptions["5"]}</option>
+                    <option value="10">{t.expiryOptions["10"]}</option>
+                    <option value="15">{t.expiryOptions["15"]}</option>
+                    <option value="30">{t.expiryOptions["30"]}</option>
+                    <option value="60">{t.expiryOptions["60"]}</option>
                   </select>
                   <p className="text-xs text-neutral-500 mt-1">
-                    Announcement will automatically disappear after this time
+                    {t.autoRemoveNote}
                   </p>
                 </div>
               </div>
@@ -162,7 +164,7 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
@@ -172,10 +174,10 @@ export default function CreateAnnouncementButton({ eventId }: Props) {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Posting...
+                      {t.posting}
                     </>
                   ) : (
-                    "Post Announcement"
+                    t.postAnnouncement
                   )}
                 </button>
               </div>

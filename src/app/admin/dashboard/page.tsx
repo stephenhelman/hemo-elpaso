@@ -4,9 +4,9 @@ import { prisma } from "@/lib/db";
 import { Users, Calendar, CheckCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { StatCard } from "@/components/ui/StatCard";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminDashboardTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -24,8 +24,8 @@ export default async function AdminDashboardPage() {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = adminDashboardTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = adminDashboardTranslation[locale as Lang];
 
   // Fetch dashboard data
   const now = new Date();

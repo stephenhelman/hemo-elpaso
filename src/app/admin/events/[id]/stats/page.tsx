@@ -10,6 +10,8 @@ import AttendanceBreakdown from "@/components/admin/stats/AttendanceBreakdown";
 import { headers } from "next/headers";
 import ExportAllButton from "@/components/admin/stats/ExportAllButton";
 import AttendeeListExport from "@/components/admin/stats/AttendeeListExport";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -29,6 +31,8 @@ export default async function EventStatsPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   // Fetch event with all engagement data
   const event = await prisma.event.findUnique({
@@ -185,6 +189,7 @@ export default async function EventStatsPage({ params }: Props) {
         totalQuestions={totalQuestions}
         answeredQuestions={answeredQuestions}
         totalPollResponses={totalPollResponses}
+        locale={locale}
       />
 
       {/* Attendance Breakdown by Role */}
@@ -193,6 +198,7 @@ export default async function EventStatsPage({ params }: Props) {
         sponsorCount={sponsorCheckIns.length}
         donorCount={donorCheckIns.length}
         volunteerCount={volunteerCheckIns.length}
+        locale={locale}
       />
 
       {/* Attendee Contact List */}

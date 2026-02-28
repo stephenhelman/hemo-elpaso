@@ -14,10 +14,10 @@ import { EventRowActions } from "./EventRowActions";
 import InviteSponsorButton from "./InviteSponsorButton";
 import ExportButton from "@/components/ui/ExportButton";
 import { adminEventsTranslation } from "@/translation/adminPages";
-import { useLanguage } from "@/context/LanguageContext";
 import { Select } from "../form/Select";
 import { EventFilterOptions } from "../events/EventFilterOptions";
 import { eventStatusEnum, eventTopicEnum } from "@/translation/enumConfig";
+import { Lang } from "@/types";
 
 interface Event {
   id: string;
@@ -37,10 +37,10 @@ interface Event {
 
 interface Props {
   events: Event[];
+  locale: Lang;
 }
 
-export default function EventsDisplay({ events }: Props) {
-  const { locale } = useLanguage();
+export default function EventsDisplay({ events, locale }: Props) {
   const t = adminEventsTranslation[locale];
 
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");

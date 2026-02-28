@@ -2,9 +2,11 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getRecommendedEvents } from "@/lib/event-matching";
+import { getLocaleCookie } from "@/lib/locale";
 
 import { PortalDashboardContent } from "@/components/portal/dashboard/DashboardContent";
 import LiveEventBanner from "@/components/portal/LiveEventBanner";
+import { Lang } from "@/types";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -70,6 +72,8 @@ export default async function DashboardPage() {
     take: 5,
   });
 
+  const locale = (await getLocaleCookie()) as Lang;
+
   return (
     <PortalDashboardContent
       patient={patient}
@@ -77,11 +81,9 @@ export default async function DashboardPage() {
       recentActivity={recentActivity}
       recommendedEvents={recommendedEvents}
       liveEventBanner={
-        <LiveEventBanner
-          patientId={patient.id}
-          locale={(patient.preferredLanguage as "en" | "es") || "en"}
-        />
+        <LiveEventBanner patientId={patient.id} locale={locale} />
       }
+      locale={locale}
     />
   );
 }

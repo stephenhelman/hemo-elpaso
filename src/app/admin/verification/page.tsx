@@ -4,9 +4,9 @@ import { prisma } from "@/lib/db";
 import { FileText, AlertCircle } from "lucide-react";
 import DiagnosisVerificationList from "@/components/admin/DiagnosisVerificationList";
 import { StatCard } from "@/components/ui/StatCard";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminVerificationTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function DiagnosisVerificationPage() {
   const session = await getSession();
@@ -23,8 +23,8 @@ export default async function DiagnosisVerificationPage() {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = adminVerificationTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = adminVerificationTranslation[locale as Lang];
 
   // Fetch patients with pending diagnosis letters (patient)
   const patientsWithPendingDiagnosis = await prisma.patient.findMany({

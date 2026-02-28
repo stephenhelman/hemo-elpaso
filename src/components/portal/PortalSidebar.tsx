@@ -6,11 +6,11 @@ import Image from "next/image";
 import { LogOut, Home, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PortalMobileNav from "../layout/PortalMobileNav";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   portalSidebarTranslation,
   portalNavItemsTranslation,
 } from "@/translation/portalSidebar";
+import { Lang } from "@/types";
 
 interface Props {
   user: {
@@ -19,17 +19,17 @@ interface Props {
     picture?: string;
     role?: string;
   };
+  locale: Lang;
 }
 
-export default function PortalSidebar({ user }: Props) {
+export default function PortalSidebar({ user, locale }: Props) {
   const pathname = usePathname();
   const isAdmin = user.role === "board" || user.role === "admin";
-  const { locale } = useLanguage();
   const t = portalSidebarTranslation[locale];
 
   return (
     <>
-      <PortalMobileNav isAdmin={isAdmin} />
+      <PortalMobileNav isAdmin={isAdmin} locale={locale} />
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-white border-r border-neutral-200">
         <div className="flex flex-col flex-1">

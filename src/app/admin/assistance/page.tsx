@@ -4,9 +4,9 @@ import { prisma } from "@/lib/db";
 import { StatCard } from "@/components/ui/StatCard";
 import { DollarSign, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import ApplicationsTable from "@/components/admin/assistance/ApplicationsTable";
-import { cookies } from "next/headers";
-import { Lang } from "@/types";
 import { adminAssistancePageTranslation } from "@/translation/adminAssistance";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 interface Props {
   searchParams: {
@@ -30,7 +30,7 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
+  const locale = (await getLocaleCookie()) as Lang;
   const t = adminAssistancePageTranslation[locale];
 
   // Build filter
@@ -102,6 +102,7 @@ export default async function AdminAssistancePage({ searchParams }: Props) {
         applications={applicationsFormatted}
         currentStatus={searchParams.status}
         currentType={searchParams.type}
+        locale={locale}
       >
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

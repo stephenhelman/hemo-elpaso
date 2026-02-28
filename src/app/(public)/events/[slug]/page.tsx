@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { cookies } from "next/headers";
-
+import { getLocaleCookie } from "@/lib/locale";
 import { ensurePatientExists } from "@/lib/ensure-patient";
 
 import { getSession } from "@auth0/nextjs-auth0";
@@ -23,8 +22,7 @@ export async function generateStaticParams() {
 
 export default async function EventPage({ params, searchParams }: Props) {
   const referrer = searchParams.from;
-  const cookieStore = await cookies();
-  const locale = cookieStore.get("locale")?.value || "en";
+  const locale = (await getLocaleCookie()) as Lang;
 
   // Get event from database
   const event = await prisma.event.findUnique({

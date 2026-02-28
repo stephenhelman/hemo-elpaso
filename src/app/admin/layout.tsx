@@ -1,7 +1,12 @@
 import { getSession } from "@auth0/nextjs-auth0";
+import { getLocaleCookie } from "@/lib/locale";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { Lang } from "@/types";
+import { PortalLayout } from "@/components/layout/PortalLayout";
+import { inter, poppins } from "@/lib/fonts";
+import "@/app/globals.css";
 
 export default async function AdminLayout({
   children,
@@ -9,6 +14,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   if (!session?.user) {
     redirect("/api/auth/login?returnTo=/admin/dashboard");
@@ -24,9 +31,15 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex">
-      <AdminSidebar user={session.user} />
-      <main className="flex-1 min-w-0 lg:ml-64">{children}</main>
-    </div>
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${inter.variable} ${poppins.variable}`}>
+        <div className="min-h-screen bg-neutral-50 flex">
+          <AdminSidebar user={session.user} locale={locale} />
+          <main className="flex-1 min-w-0 lg:ml-64">
+            <PortalLayout locale={locale}>{children}</PortalLayout>
+          </main>
+        </div>
+      </body>
+    </html>
   );
 }

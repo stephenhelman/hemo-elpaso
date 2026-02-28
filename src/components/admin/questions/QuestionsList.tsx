@@ -13,6 +13,8 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { adminQuestionsTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface Question {
   id: string;
@@ -33,18 +35,21 @@ interface Props {
   eventId: string;
   questions: Question[];
   adminEmail: string;
+  locale: Lang;
 }
 
 export default function QuestionsList({
   eventId,
   questions,
   adminEmail,
+  locale,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [answerForm, setAnswerForm] = useState({ answerEn: "", answerEs: "" });
   const { confirm, ConfirmDialog } = useConfirm();
+  const t = adminQuestionsTranslation[locale];
 
   const handleStartAnswer = (question: Question) => {
     setEditingId(question.id);
@@ -61,7 +66,7 @@ export default function QuestionsList({
 
   const handleSaveAnswer = async (questionId: string) => {
     if (!answerForm.answerEn.trim() || !answerForm.answerEs.trim()) {
-      toast.error("Please provide answers in both English and Spanish");
+      toast.error(t.provideAnswers);
       return;
     }
 
@@ -82,7 +87,7 @@ export default function QuestionsList({
       );
 
       if (response.ok) {
-        toast.success("Answer saved successfully");
+        toast.success(t.toastAnswerSaved);
         setEditingId(null);
         setAnswerForm({ answerEn: "", answerEs: "" });
         router.refresh();
@@ -99,10 +104,9 @@ export default function QuestionsList({
 
   const handleDelete = async (questionId: string) => {
     const confirmed = await confirm({
-      title: "Delete Question?",
-      message:
-        "This will permanently delete the question. This action cannot be undone.",
-      confirmText: "Delete",
+      title: t.deleteConfirmTitle,
+      message: t.deleteConfirmMsg,
+      confirmText: t.deleteConfirmBtn,
       variant: "danger",
     });
 
@@ -116,7 +120,7 @@ export default function QuestionsList({
       });
 
       if (response.ok) {
-        toast.success("Question deleted successfully");
+        toast.success(t.toastDeleted);
         router.refresh();
       } else {
         const data = await response.json();
@@ -133,7 +137,7 @@ export default function QuestionsList({
     return (
       <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
         <MessageSquare className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-        <p className="text-neutral-500">No questions submitted yet</p>
+        <p className="text-neutral-500">{t.noQuestions}</p>
       </div>
     );
   }
@@ -151,7 +155,7 @@ export default function QuestionsList({
           <div>
             <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-amber-600" />
-              Unanswered Questions ({unanswered.length})
+              {t.unanswered(unanswered.length)}
             </h2>
             <div className="space-y-4">
               {unanswered.map((question) => (
@@ -166,6 +170,7 @@ export default function QuestionsList({
                   onDelete={handleDelete}
                   onAnswerChange={setAnswerForm}
                   loading={loading === question.id}
+                  t={t}
                 />
               ))}
             </div>
@@ -177,7 +182,7 @@ export default function QuestionsList({
           <div>
             <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              Answered Questions ({answered.length})
+              {t.answered(answered.length)}
             </h2>
             <div className="space-y-4">
               {answered.map((question) => (
@@ -192,6 +197,7 @@ export default function QuestionsList({
                   onDelete={handleDelete}
                   onAnswerChange={setAnswerForm}
                   loading={loading === question.id}
+                  t={t}
                 />
               ))}
             </div>
@@ -212,6 +218,7 @@ function QuestionCard({
   onDelete,
   onAnswerChange,
   loading,
+  t,
 }: {
   question: Question;
   isEditing: boolean;
@@ -222,6 +229,7 @@ function QuestionCard({
   onDelete: (id: string) => void;
   onAnswerChange: (form: any) => void;
   loading: boolean;
+  t: typeof adminQuestionsTranslation["en"];
 }) {
   return (
     <div className="bg-white rounded-xl border border-neutral-200 p-6">
@@ -238,13 +246,13 @@ function QuestionCard({
             {question.answered && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
                 <CheckCircle className="w-3 h-3" />
-                Answered
+                {t.answeredBadge}
               </div>
             )}
           </div>
 
           <p className="text-sm text-neutral-500 mb-1">
-            {question.isAnonymous ? "Anonymous" : question.patientName} •{" "}
+            {question.isAnonymous ? t.anonymous : question.patientName} •{" "}
             {new Date(question.createdAt).toLocaleString()}
           </p>
         </div>
@@ -253,7 +261,7 @@ function QuestionCard({
           onClick={() => onDelete(question.id)}
           disabled={loading}
           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-          title="Delete question"
+          title={t.deleteConfirmBtn}
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -263,13 +271,13 @@ function QuestionCard({
       <div className="space-y-3 mb-4">
         <div>
           <p className="text-xs text-neutral-500 font-semibold mb-1">
-            English:
+            {t.english}
           </p>
           <p className="text-neutral-900">{question.questionEn}</p>
         </div>
         <div>
           <p className="text-xs text-neutral-500 font-semibold mb-1">
-            Spanish:
+            {t.spanish}
           </p>
           <p className="text-neutral-900">{question.questionEs}</p>
         </div>
@@ -280,7 +288,7 @@ function QuestionCard({
         <div className="space-y-4 p-4 bg-primary-50 rounded-lg">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Answer (English) *
+              {t.answerEnglish}
             </label>
             <textarea
               value={answerForm.answerEn}
@@ -294,7 +302,7 @@ function QuestionCard({
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Answer (Spanish) *
+              {t.answerSpanish}
             </label>
             <textarea
               value={answerForm.answerEs}
@@ -312,7 +320,7 @@ function QuestionCard({
               disabled={loading}
               className="px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t.cancel}
             </button>
             <button
               onClick={() => onSaveAnswer(question.id)}
@@ -320,7 +328,7 @@ function QuestionCard({
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              Save Answer
+              {t.saveAnswer}
             </button>
           </div>
         </div>
@@ -328,13 +336,13 @@ function QuestionCard({
         <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
           <div>
             <p className="text-xs text-green-700 font-semibold mb-1">
-              Answer (English):
+              {t.answerEnglish}
             </p>
             <p className="text-neutral-900">{question.answerEn}</p>
           </div>
           <div>
             <p className="text-xs text-green-700 font-semibold mb-1">
-              Answer (Spanish):
+              {t.answerSpanish}
             </p>
             <p className="text-neutral-900">{question.answerEs}</p>
           </div>
@@ -344,7 +352,7 @@ function QuestionCard({
               className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg text-primary hover:bg-primary-50 transition-colors"
             >
               <Edit3 className="w-3 h-3" />
-              Edit Answer
+              {t.editAnswer}
             </button>
           </div>
         </div>
@@ -354,7 +362,7 @@ function QuestionCard({
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
         >
           <Edit3 className="w-4 h-4" />
-          Answer Question
+          {t.answerQuestion}
         </button>
       )}
     </div>

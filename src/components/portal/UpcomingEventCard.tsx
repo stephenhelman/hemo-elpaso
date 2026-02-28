@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowRight, QrCode } from "lucide-react";
 import QrCodeDisplay from "./QrCodeDisplay";
 import DateBadge from "@/components/ui/DateBadge";
-import { useLanguage } from "@/context/LanguageContext";
 import { upcomingEventCardTranslation } from "@/translation/rsvp";
+import { Lang } from "@/types";
 
 interface Props {
   rsvp: {
@@ -18,11 +18,11 @@ interface Props {
       eventDate: Date | string;
     };
   };
+  locale: Lang;
 }
 
-export default function UpcomingEventCard({ rsvp }: Props) {
+export default function UpcomingEventCard({ rsvp, locale }: Props) {
   const [showQr, setShowQr] = useState(false);
-  const { locale } = useLanguage();
   const t = upcomingEventCardTranslation[locale];
   const eventDate = new Date(rsvp.event.eventDate);
 

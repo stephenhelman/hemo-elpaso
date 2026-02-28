@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
 import { Calendar, Users, TrendingUp, CheckCircle } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
-import { cookies } from "next/headers";
 import { Lang } from "@/types";
 import { adminAttendanceTranslation } from "@/translation/adminPages";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AllAttendeesPage() {
   const session = await getSession();
@@ -24,8 +24,8 @@ export default async function AllAttendeesPage() {
     redirect("/portal/dashboard");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = adminAttendanceTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = adminAttendanceTranslation[locale as Lang];
 
   // Get all check-ins with related data
   const checkIns = await prisma.checkIn.findMany({
@@ -71,7 +71,7 @@ export default async function AllAttendeesPage() {
       </div>
 
       {/* Table */}
-      <AllAttendeesTable checkIns={checkIns} events={events}>
+      <AllAttendeesTable checkIns={checkIns} events={events} locale={locale}>
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard

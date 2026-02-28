@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { getLocaleCookie } from "@/lib/locale";
 import {
   ArrowLeft,
   CheckCircle,
@@ -25,8 +25,7 @@ interface Props {
 export default async function LiveEventPage({ params, searchParams }: Props) {
   const session = await getSession();
   const sponsorSessionToken = searchParams.session;
-  const cookieStore = cookies();
-  const lang = (cookieStore.get("locale")?.value as "en" | "es") || "en";
+  const lang = await getLocaleCookie();
 
   // Must be logged in
   if (!session?.user && !sponsorSessionToken) {

@@ -5,12 +5,15 @@ import { useState } from "react";
 import { Filter } from "lucide-react";
 import FilterBar from "@/components/ui/FilterBar";
 import ExportButton from "@/components/ui/ExportButton";
+import { adminReportsTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Props {
   startDate: Date;
   endDate: Date;
   category: string;
   attendanceExportRows: (string | number)[][];
+  locale: Lang;
 }
 
 export default function ReportsFilters({
@@ -18,8 +21,10 @@ export default function ReportsFilters({
   endDate,
   category,
   attendanceExportRows,
+  locale,
 }: Props) {
   const router = useRouter();
+  const t = adminReportsTranslation[locale];
 
   const [filters, setFilters] = useState({
     startDate: startDate.toISOString().split("T")[0],
@@ -55,27 +60,19 @@ export default function ReportsFilters({
             onClick={handleApply}
             className={`${buttonClasses} bg-primary text-white hover:bg-primary-600 flex-1`}
           >
-            Apply
+            {t.apply}
           </button>
           <button
             onClick={handleReset}
             className={`${buttonClasses} border border-neutral-300 text-neutral-700 hover:bg-neutral-50 flex-1`}
           >
-            Reset
+            {t.reset}
           </button>
         </>
       }
       exportButton={
         <ExportButton
-          headers={[
-            "Event",
-            "Date",
-            "Category",
-            "RSVPs",
-            "Patient Attendance",
-            "Attendance Rate",
-            "No-Shows",
-          ]}
+          headers={t.exportHeaders}
           rows={attendanceExportRows}
           filename={`events-report-${new Date().toISOString().split("T")[0]}.csv`}
           className="flex-1"
@@ -85,7 +82,7 @@ export default function ReportsFilters({
       <div className="flex items-center gap-2 mb-4">
         <Filter className="w-5 h-5 text-neutral-600" />
         <h2 className="text-lg font-display font-bold text-neutral-900">
-          Filters
+          {t.filters}
         </h2>
       </div>
 
@@ -93,7 +90,7 @@ export default function ReportsFilters({
         {/* Start Date */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Start Date
+            {t.startDate}
           </label>
           <input
             type="date"
@@ -108,7 +105,7 @@ export default function ReportsFilters({
         {/* End Date */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            End Date
+            {t.endDate}
           </label>
           <input
             type="date"
@@ -123,7 +120,7 @@ export default function ReportsFilters({
         {/* Category */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Category
+            {t.category}
           </label>
           <select
             value={filters.category}
@@ -132,11 +129,11 @@ export default function ReportsFilters({
             }
             className={inputClasses}
           >
-            <option value="all">All Categories</option>
-            <option value="educational">Educational</option>
-            <option value="social">Social</option>
-            <option value="fundraiser">Fundraiser</option>
-            <option value="support">Support</option>
+            <option value="all">{t.allCategories}</option>
+            <option value="educational">{t.categoryOptions.educational}</option>
+            <option value="social">{t.categoryOptions.social}</option>
+            <option value="fundraiser">{t.categoryOptions.fundraiser}</option>
+            <option value="support">{t.categoryOptions.support}</option>
           </select>
         </div>
       </div>

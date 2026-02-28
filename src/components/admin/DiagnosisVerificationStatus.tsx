@@ -5,6 +5,8 @@ import {
   AlertTriangle,
   Download,
 } from "lucide-react";
+import { adminDiagnosisStatusTranslation } from "@/translation/adminPages";
+import type { Lang } from "@/types";
 
 interface Props {
   diagnosisLetterUrl?: string | null;
@@ -12,6 +14,7 @@ interface Props {
   diagnosisVerifiedAt?: Date | null;
   diagnosisRejectedReason?: string | null;
   gracePeriodEndsAt?: Date | null;
+  locale: Lang;
 }
 
 export default function DiagnosisVerificationStatus({
@@ -20,8 +23,10 @@ export default function DiagnosisVerificationStatus({
   diagnosisVerifiedAt,
   diagnosisRejectedReason,
   gracePeriodEndsAt,
+  locale,
 }: Props) {
-  // Calculate days remaining
+  const t = adminDiagnosisStatusTranslation[locale];
+
   const daysRemaining = gracePeriodEndsAt
     ? Math.max(
         0,
@@ -38,7 +43,7 @@ export default function DiagnosisVerificationStatus({
       <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
         <CheckCircle className="w-5 h-5 text-green-600" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-green-900">Verified</p>
+          <p className="text-sm font-medium text-green-900">{t.verified}</p>
           <p className="text-xs text-green-700">
             {new Date(diagnosisVerifiedAt).toLocaleDateString()}
           </p>
@@ -63,7 +68,7 @@ export default function DiagnosisVerificationStatus({
       <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
         <div className="flex items-center gap-3 mb-2">
           <XCircle className="w-5 h-5 text-red-600" />
-          <p className="text-sm font-medium text-red-900">Rejected</p>
+          <p className="text-sm font-medium text-red-900">{t.rejected}</p>
         </div>
         <p className="text-xs text-red-700">{diagnosisRejectedReason}</p>
       </div>
@@ -76,8 +81,8 @@ export default function DiagnosisVerificationStatus({
       <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <Clock className="w-5 h-5 text-blue-600" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-blue-900">Pending Review</p>
-          <p className="text-xs text-blue-700">Awaiting admin verification</p>
+          <p className="text-sm font-medium text-blue-900">{t.pendingReview}</p>
+          <p className="text-xs text-blue-700">{t.awaitingVerification}</p>
         </div>
         <a
           href={diagnosisLetterUrl}
@@ -97,12 +102,12 @@ export default function DiagnosisVerificationStatus({
       <div className="flex items-center gap-3">
         <AlertTriangle className="w-5 h-5 text-amber-600" />
         <div>
-          <p className="text-sm font-medium text-amber-900">Not Uploaded</p>
+          <p className="text-sm font-medium text-amber-900">{t.notUploaded}</p>
           {daysRemaining !== null && (
             <p className="text-xs text-amber-700">
               {daysRemaining === 0
-                ? "Grace period expired"
-                : `${daysRemaining} days remaining`}
+                ? t.gracePeriodExpired
+                : t.daysRemaining(daysRemaining)}
             </p>
           )}
         </div>

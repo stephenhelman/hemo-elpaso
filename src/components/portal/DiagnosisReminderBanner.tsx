@@ -3,22 +3,23 @@
 import { AlertCircle, Upload, X } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/context/LanguageContext";
 import { diagnosisLetterTranslation } from "@/translation/portal";
+import { Lang } from "@/types";
 
 interface Props {
   daysRemaining: number;
   hasUploadedLetter: boolean;
-  isVerified: boolean;
+  isVerified?: boolean;
+  locale: Lang;
 }
 
 export default function DiagnosisReminderBanner({
   daysRemaining,
   hasUploadedLetter,
   isVerified,
+  locale,
 }: Props) {
   const [dismissed, setDismissed] = useState(false);
-  const { locale } = useLanguage();
 
   const messages = diagnosisLetterTranslation(daysRemaining);
 

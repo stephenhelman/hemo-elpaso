@@ -11,8 +11,7 @@ import {
   Bell,
 } from "lucide-react";
 import Link from "next/link";
-import { PortalPatient } from "@/types";
-import { useLanguage } from "@/context/LanguageContext";
+import { Lang, PortalPatient } from "@/types";
 import { RecommendedEventCard } from "./RecommendedEventCard";
 import UpcomingEventCard from "../UpcomingEventCard";
 import { ActivityItem } from "./ActivityItem";
@@ -24,6 +23,7 @@ interface Props {
   recommendedMatches: any[];
   recentActivity: any[];
   liveEventBanner?: React.ReactNode;
+  locale: Lang;
 }
 
 export function PortalDashboardContent({
@@ -32,8 +32,8 @@ export function PortalDashboardContent({
   recommendedMatches,
   recentActivity,
   liveEventBanner,
+  locale,
 }: Props) {
-  const { locale } = useLanguage();
   const t = portalDashboardTranslation[locale];
   const recommendedWithScores = recommendedEvents
     .map((event) => {
@@ -130,7 +130,11 @@ export function PortalDashboardContent({
             {upcomingRsvps.length > 0 ? (
               <div className="space-y-3">
                 {upcomingRsvps.map((rsvp) => (
-                  <UpcomingEventCard key={rsvp.id} rsvp={rsvp} />
+                  <UpcomingEventCard
+                    key={rsvp.id}
+                    rsvp={rsvp}
+                    locale={locale}
+                  />
                 ))}
               </div>
             ) : (
@@ -217,7 +221,7 @@ export function PortalDashboardContent({
             {recentActivity.length > 0 ? (
               <div className="space-y-3">
                 {recentActivity.map((log) => (
-                  <ActivityItem key={log.id} log={log} />
+                  <ActivityItem key={log.id} log={log} locale={locale} />
                 ))}
               </div>
             ) : (

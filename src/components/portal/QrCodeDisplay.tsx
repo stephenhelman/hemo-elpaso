@@ -2,19 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { Download, Printer, QrCode, Loader2 } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
 import { qrCodeDisplayTranslation } from "@/translation/rsvp";
+import { Lang } from "@/types";
 
 interface Props {
   rsvpId: string;
   eventTitle: string;
   compact?: boolean;
+  locale: Lang;
 }
 
-export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
+export default function QrCodeDisplay({
+  rsvpId,
+  eventTitle,
+  compact,
+  locale,
+}: Props) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { locale } = useLanguage();
   const t = qrCodeDisplayTranslation[locale];
 
   useEffect(() => {
@@ -111,11 +116,7 @@ export default function QrCodeDisplay({ rsvpId, eventTitle, compact }: Props) {
       <div className="text-center">
         <div className="inline-block p-4 bg-white rounded-2xl border-2 border-neutral-200">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrCode}
-            alt={t.checkInQr}
-            className="w-48 h-48 mx-auto"
-          />
+          <img src={qrCode} alt={t.checkInQr} className="w-48 h-48 mx-auto" />
         </div>
         <p className="text-sm text-neutral-500 mt-3">{t.showAtCheckIn}</p>
       </div>

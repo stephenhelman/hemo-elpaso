@@ -5,6 +5,8 @@ import { ArrowLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import QuestionsList from "@/components/admin/questions/QuestionsList";
 import { headers } from "next/headers";
+import { getLocaleCookie } from "@/lib/locale";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -24,6 +26,8 @@ export default async function EventQuestionsPage({ params }: Props) {
   if (!admin || !["board", "admin"].includes(admin.role)) {
     redirect("/portal/dashboard");
   }
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   const headersList = headers();
   const referer = headersList.get("referer") || "";
@@ -78,6 +82,7 @@ export default async function EventQuestionsPage({ params }: Props) {
           eventId={event.id}
           questions={event.questions}
           adminEmail={admin.email}
+          locale={locale}
         />
       </div>
     </div>

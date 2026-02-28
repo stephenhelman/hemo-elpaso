@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { LogOut, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminMobileNav from "../layout/AdminMobileNav";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
@@ -17,16 +16,16 @@ interface Props {
     name?: string;
     email?: string;
   };
+  locale: "en" | "es";
 }
 
-export default function AdminSidebar({ user }: Props) {
+export default function AdminSidebar({ user, locale }: Props) {
   const pathname = usePathname();
-  const { locale } = useLanguage();
   const t = adminSidebarTranslation[locale];
 
   return (
     <>
-      <AdminMobileNav />
+      <AdminMobileNav locale={locale} />
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-neutral-900 border-r border-neutral-800">
         <div className="flex flex-col flex-1">
           {/* Logo */}

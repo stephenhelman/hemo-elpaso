@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
+import { adminCreateItineraryTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface Props {
   eventId: string;
+  locale: Lang;
 }
 
-export default function CreateItineraryItemButton({ eventId }: Props) {
+export default function CreateItineraryItemButton({ eventId, locale }: Props) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const t = adminCreateItineraryTranslation[locale];
 
   const [formData, setFormData] = useState({
     title: { en: "", es: "" },
@@ -39,12 +43,12 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
           startTime: formData.startTime,
           duration: formData.duration ? parseInt(formData.duration) : null,
           location: formData.location || null,
-          sequenceOrder: 0, // Could make this dynamic
+          sequenceOrder: 0,
         }),
       });
 
       if (response.ok) {
-        toast.success("Itinerary item added!");
+        toast.success(t.toastAdded);
         setShowModal(false);
         resetForm();
         router.refresh();
@@ -76,7 +80,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
       >
         <Plus className="w-4 h-4" />
-        Add Item
+        {t.addItem}
       </button>
 
       {showModal && (
@@ -85,7 +89,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-display font-bold text-neutral-900">
-                  Add Schedule Item
+                  {t.modalTitle}
                 </h2>
                 <button
                   type="button"
@@ -98,13 +102,13 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
 
               <div className="space-y-4">
                 <BilingualInput
-                  label="Activity Title"
+                  label={t.activityTitle}
                   name="title"
                   value={formData.title}
                   onChange={(value) =>
                     setFormData({ ...formData, title: value })
                   }
-                  placeholder="e.g., Registration & Welcome"
+                  placeholder={t.titlePlaceholder}
                   type="input"
                   required
                 />
@@ -114,7 +118,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Start Time *
+                    {t.startTime}
                   </label>
                   <input
                     type="datetime-local"
@@ -129,7 +133,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Duration (minutes)
+                    {t.duration}
                   </label>
                   <input
                     type="number"
@@ -138,7 +142,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                     onChange={(e) =>
                       setFormData({ ...formData, duration: e.target.value })
                     }
-                    placeholder="e.g., 30"
+                    placeholder={t.durationPlaceholder}
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
@@ -147,7 +151,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
               {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Location (Optional)
+                  {t.location}
                 </label>
                 <input
                   type="text"
@@ -155,19 +159,19 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
                   }
-                  placeholder="e.g., Main Hall, Room B"
+                  placeholder={t.locationPlaceholder}
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               <BilingualInput
-                label="Description (Optional)"
+                label={t.descriptionLabel}
                 name="description"
                 value={formData.description}
                 onChange={(value) =>
                   setFormData({ ...formData, description: value })
                 }
-                placeholder="Optional details about this activity..."
+                placeholder={t.descriptionPlaceholder}
                 type="textarea"
                 rows={2}
               />
@@ -178,7 +182,7 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
@@ -188,10 +192,10 @@ export default function CreateItineraryItemButton({ eventId }: Props) {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Adding...
+                      {t.adding}
                     </>
                   ) : (
-                    "Add to Schedule"
+                    t.addToSchedule
                   )}
                 </button>
               </div>

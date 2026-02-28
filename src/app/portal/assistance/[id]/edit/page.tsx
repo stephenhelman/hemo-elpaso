@@ -1,12 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import EditApplicationForm from "@/components/portal/assistance/EditApplicationForm";
 import { Lang } from "@/types";
 import { assistanceEditPageTranslation } from "@/translation/portalAssistance";
+import { getLocaleCookie } from "@/lib/locale";
 
 interface Props {
   params: { id: string };
@@ -45,8 +45,8 @@ export default async function EditApplicationPage({ params }: Props) {
     redirect(`/portal/assistance/${application.id}`);
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = assistanceEditPageTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = assistanceEditPageTranslation[locale as Lang];
 
   return (
     <div className="min-h-screen bg-neutral-50">

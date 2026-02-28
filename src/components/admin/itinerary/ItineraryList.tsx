@@ -13,6 +13,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { getStatusConfig, ItineraryStatus } from "@/lib/itinerary-status";
+import { adminItineraryTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface ItineraryItem {
   id: string;
@@ -34,12 +36,14 @@ interface Props {
   eventId: string;
   items: ItineraryItem[];
   adminEmail: string;
+  locale: Lang;
 }
 
-export default function ItineraryList({ eventId, items, adminEmail }: Props) {
+export default function ItineraryList({ eventId, items, adminEmail, locale }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
+  const t = adminItineraryTranslation[locale];
 
   const handleUpdateStatus = async (
     itemId: string,
@@ -58,7 +62,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
       );
 
       if (response.ok) {
-        toast.success("Status updated");
+        toast.success(t.toastStatusUpdated);
         router.refresh();
       } else {
         const data = await response.json();
@@ -73,9 +77,9 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
 
   const handleDelete = async (itemId: string) => {
     const confirmed = await confirm({
-      title: "Delete Itinerary Item?",
-      message: "This will permanently remove this item from the schedule.",
-      confirmText: "Delete",
+      title: t.deleteConfirmTitle,
+      message: t.deleteConfirmMsg,
+      confirmText: t.deleteConfirmBtn,
       variant: "danger",
     });
 
@@ -92,7 +96,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
       );
 
       if (response.ok) {
-        toast.success("Item deleted");
+        toast.success(t.toastDeleted);
         router.refresh();
       } else {
         const data = await response.json();
@@ -109,7 +113,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
     return (
       <div className="bg-white rounded-2xl border border-neutral-200 p-12 text-center">
         <Clock className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-        <p className="text-neutral-500">No itinerary items yet</p>
+        <p className="text-neutral-500">{t.noItems}</p>
       </div>
     );
   }
@@ -151,7 +155,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                           minute: "2-digit",
                         })}
                       </span>
-                      {item.duration && <span>• {item.duration} min</span>}
+                      {item.duration && <span>• {t.min(item.duration)}</span>}
                       {item.location && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -169,7 +173,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                     {/* Spanish */}
                     <details className="text-xs text-neutral-500">
                       <summary className="cursor-pointer hover:text-neutral-700">
-                        Spanish version
+                        {t.spanishVersion}
                       </summary>
                       <p className="mt-2">
                         <strong>{item.titleEs}</strong>
@@ -188,7 +192,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                       onClick={() => handleUpdateStatus(item.id, "current")}
                       disabled={loading === item.id}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Mark as current"
+                      title={t.markCurrent}
                     >
                       <Play className="w-4 h-4" />
                     </button>
@@ -201,7 +205,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                         onClick={() => handleUpdateStatus(item.id, "completed")}
                         disabled={loading === item.id}
                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
-                        title="Mark as completed"
+                        title={t.markCompleted}
                       >
                         <CheckCircle className="w-4 h-4" />
                       </button>
@@ -210,7 +214,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                         onClick={() => handleUpdateStatus(item.id, "skipped")}
                         disabled={loading === item.id}
                         className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
-                        title="Skip this item"
+                        title={t.skipItem}
                       >
                         <SkipForward className="w-4 h-4" />
                       </button>
@@ -221,7 +225,7 @@ export default function ItineraryList({ eventId, items, adminEmail }: Props) {
                     onClick={() => handleDelete(item.id)}
                     disabled={loading === item.id}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete"
+                    title={t.deleteItem}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

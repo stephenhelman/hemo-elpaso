@@ -1,26 +1,13 @@
-import { Inter, Poppins } from "next/font/google";
-import { cookies } from "next/headers";
+import { getLocaleCookie } from "../../lib/locale";
 import type { Metadata } from "next";
-import "./globals.css";
+import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
-  display: "swap",
-});
+import { inter, poppins } from "@/lib/fonts";
+import { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get("locale")?.value || "en";
+  const locale = (await getLocaleCookie()) as Lang;
 
   const content = {
     en: {
@@ -138,8 +125,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   // Get locale for dynamic lang attribute
-  const cookieStore = await cookies();
-  const locale = cookieStore.get("locale")?.value || "en";
+  const locale = (await getLocaleCookie()) as Lang;
 
   return (
     <html lang={locale} suppressHydrationWarning>

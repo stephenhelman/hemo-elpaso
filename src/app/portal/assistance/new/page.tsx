@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@auth0/nextjs-auth0";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import ApplicationForm from "@/components/portal/assistance/ApplicationForm";
 import { Lang } from "@/types";
 import { assistanceNewPageTranslation } from "@/translation/portalAssistance";
+import { getLocaleCookie } from "@/lib/locale";
 
 export default async function NewApplicationPage() {
   const session = await getSession();
@@ -26,8 +26,8 @@ export default async function NewApplicationPage() {
     redirect("/api/auth/login");
   }
 
-  const locale = ((await cookies()).get("locale")?.value as Lang) || "en";
-  const t = assistanceNewPageTranslation[locale];
+  const locale = (await getLocaleCookie()) as Lang;
+  const t = assistanceNewPageTranslation[locale as Lang];
 
   return (
     <div className="min-h-screen bg-neutral-50">

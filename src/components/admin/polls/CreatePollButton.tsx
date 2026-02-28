@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
+import { adminPollsTranslation } from "@/translation/adminEvents";
+import type { Lang } from "@/types";
 
 interface Props {
   eventId: string;
+  locale: Lang;
 }
 
-export default function CreatePollButton({ eventId }: Props) {
+export default function CreatePollButton({ eventId, locale }: Props) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const t = adminPollsTranslation[locale];
 
   const [formData, setFormData] = useState({
     question: { en: "", es: "" },
@@ -25,7 +29,7 @@ export default function CreatePollButton({ eventId }: Props) {
 
   const handleAddOption = () => {
     if (formData.options.length >= 6) {
-      toast.error("Maximum 6 options allowed");
+      toast.error(t.maxOptions);
       return;
     }
     setFormData({
@@ -36,7 +40,7 @@ export default function CreatePollButton({ eventId }: Props) {
 
   const handleRemoveOption = (index: number) => {
     if (formData.options.length <= 2) {
-      toast.error("Minimum 2 options required");
+      toast.error(t.minOptions);
       return;
     }
     setFormData({
@@ -61,7 +65,7 @@ export default function CreatePollButton({ eventId }: Props) {
       (opt) => opt.en.trim() && opt.es.trim(),
     );
     if (!allOptionsFilled) {
-      toast.error("Please translate all poll options");
+      toast.error(t.translateAll);
       return;
     }
 
@@ -116,7 +120,7 @@ export default function CreatePollButton({ eventId }: Props) {
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
       >
         <Plus className="w-4 h-4" />
-        Create Poll
+        {t.createPoll}
       </button>
 
       {/* Modal */}
@@ -127,7 +131,7 @@ export default function CreatePollButton({ eventId }: Props) {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-display font-bold text-neutral-900">
-                  Create Poll
+                  {t.modalTitle}
                 </h2>
                 <button
                   type="button"
@@ -141,13 +145,13 @@ export default function CreatePollButton({ eventId }: Props) {
               {/* Poll Questions */}
               <div className="space-y-4 mb-6">
                 <BilingualInput
-                  label="Poll Question"
+                  label={t.pollQuestion}
                   name="question"
                   value={formData.question}
                   onChange={(value) =>
                     setFormData({ ...formData, question: value })
                   }
-                  placeholder="e.g., What topic would you like to learn about?"
+                  placeholder={t.questionPlaceholder}
                   type="textarea"
                   rows={2}
                   required
@@ -157,7 +161,7 @@ export default function CreatePollButton({ eventId }: Props) {
               {/* Options */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-neutral-700 mb-3">
-                  Answer Options * (minimum 2)
+                  {t.answerOptions}
                 </label>
                 <div className="space-y-3">
                   {formData.options.map((option, index) => (
@@ -166,11 +170,11 @@ export default function CreatePollButton({ eventId }: Props) {
                         {index + 1}.
                       </span>
                       <BilingualInput
-                        label={`Option ${index + 1}`}
+                        label={t.optionLabel(index + 1)}
                         name={`option-${index}`}
                         value={option}
                         onChange={(value) => handleOptionChange(index, value)}
-                        placeholder={`Enter option ${index + 1}...`}
+                        placeholder={t.optionPlaceholder(index + 1)}
                         type="input"
                         required
                       />
@@ -193,7 +197,7 @@ export default function CreatePollButton({ eventId }: Props) {
                     onClick={handleAddOption}
                     className="mt-3 text-sm text-primary hover:underline"
                   >
-                    + Add Option
+                    {t.addOption}
                   </button>
                 )}
               </div>
@@ -205,7 +209,7 @@ export default function CreatePollButton({ eventId }: Props) {
                   onClick={() => setShowModal(false)}
                   className="px-6 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
@@ -215,10 +219,10 @@ export default function CreatePollButton({ eventId }: Props) {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t.creating}
                     </>
                   ) : (
-                    "Create Poll"
+                    t.createPoll
                   )}
                 </button>
               </div>

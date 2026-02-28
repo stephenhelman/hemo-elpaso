@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DollarSign, Loader2, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { adminDisbursementTranslation } from "@/translation/adminAssistance";
+import type { Lang } from "@/types";
 
 interface Disbursement {
   id: string;
@@ -19,6 +21,7 @@ interface Props {
   approvedAmount: number;
   disbursements: Disbursement[];
   adminEmail: string;
+  locale: Lang;
 }
 
 export default function DisbursementManager({
@@ -26,11 +29,13 @@ export default function DisbursementManager({
   approvedAmount,
   disbursements,
   adminEmail,
+  locale,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [uploadingProof, setUploadingProof] = useState(false);
+  const t = adminDisbursementTranslation[locale];
 
   const [formData, setFormData] = useState({
     amount: approvedAmount.toString(),
@@ -52,26 +57,23 @@ export default function DisbursementManager({
     e.preventDefault();
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error(t.validAmount);
       return;
     }
 
     if (parseFloat(formData.amount) > remaining) {
-      toast.error(
-        `Amount exceeds remaining balance ($${remaining.toFixed(2)})`,
-      );
+      toast.error(t.exceedsBalance(remaining.toFixed(2)));
       return;
     }
 
     if (formData.paymentMethod === "CHECK" && !formData.checkNumber) {
-      toast.error("Please enter check number");
+      toast.error(t.enterCheckNumber);
       return;
     }
 
     setLoading(true);
 
     try {
-      // Create disbursement
       const response = await fetch(
         `/api/admin/assistance/${applicationId}/disbursement`,
         {
@@ -92,7 +94,6 @@ export default function DisbursementManager({
 
       const { disbursementId } = await response.json();
 
-      // Upload proof of payment if provided
       if (proofFile) {
         setUploadingProof(true);
 
@@ -113,7 +114,7 @@ export default function DisbursementManager({
         }
       }
 
-      toast.success("Disbursement recorded!");
+      toast.success(t.disbursementRecorded);
       setShowForm(false);
       setFormData({
         amount: remaining.toString(),
@@ -136,7 +137,7 @@ export default function DisbursementManager({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        toast.error("File too large (max 10MB)");
+        toast.error(t.fileTooLarge);
         return;
       }
       setProofFile(file);
@@ -146,28 +147,26 @@ export default function DisbursementManager({
   return (
     <div className="bg-white rounded-2xl border border-neutral-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Create Disbursement
-        </h2>
+        <h2 className="text-lg font-semibold text-neutral-900">{t.title}</h2>
         <DollarSign className="w-5 h-5 text-green-600" />
       </div>
 
       {/* Summary */}
       <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-green-900">Approved Amount:</span>
+          <span className="text-green-900">{t.approvedAmount}</span>
           <span className="font-semibold text-green-900">
             ${approvedAmount.toFixed(2)}
           </span>
         </div>
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-green-900">Disbursed:</span>
+          <span className="text-green-900">{t.disbursed}</span>
           <span className="font-semibold text-green-900">
             ${totalDisbursed.toFixed(2)}
           </span>
         </div>
         <div className="flex justify-between text-sm pt-2 border-t border-green-300">
-          <span className="text-green-900 font-semibold">Remaining:</span>
+          <span className="text-green-900 font-semibold">{t.remaining}</span>
           <span className="font-bold text-green-900">
             ${remaining.toFixed(2)}
           </span>
@@ -176,21 +175,21 @@ export default function DisbursementManager({
 
       {remaining <= 0 ? (
         <p className="text-sm text-neutral-600 text-center py-4">
-          Full amount has been disbursed
+          {t.fullDisbursed}
         </p>
       ) : !showForm ? (
         <button
           onClick={() => setShowForm(true)}
           className="w-full px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors"
         >
-          Record Disbursement
+          {t.recordDisbursement}
         </button>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Amount */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Amount *
+              {t.amount}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">
@@ -215,7 +214,7 @@ export default function DisbursementManager({
           {/* Payment Method */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Payment Method *
+              {t.paymentMethod}
             </label>
             <select
               required
@@ -225,9 +224,9 @@ export default function DisbursementManager({
               }
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="CHECK">Check</option>
-              <option value="CASH">Cash</option>
-              <option value="REIMBURSEMENT">Reimbursement</option>
+              <option value="CHECK">{t.paymentOptions.CHECK}</option>
+              <option value="CASH">{t.paymentOptions.CASH}</option>
+              <option value="REIMBURSEMENT">{t.paymentOptions.REIMBURSEMENT}</option>
             </select>
           </div>
 
@@ -235,7 +234,7 @@ export default function DisbursementManager({
           {formData.paymentMethod === "CHECK" && (
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Check Number *
+                {t.checkNumber}
               </label>
               <input
                 type="text"
@@ -245,7 +244,7 @@ export default function DisbursementManager({
                   setFormData({ ...formData, checkNumber: e.target.value })
                 }
                 className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Check #"
+                placeholder={t.checkPlaceholder}
               />
             </div>
           )}
@@ -253,7 +252,7 @@ export default function DisbursementManager({
           {/* Issue Date */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Issue Date *
+              {t.issueDate}
             </label>
             <input
               type="date"
@@ -269,7 +268,7 @@ export default function DisbursementManager({
           {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Notes
+              {t.notes}
             </label>
             <textarea
               rows={2}
@@ -278,21 +277,19 @@ export default function DisbursementManager({
                 setFormData({ ...formData, notes: e.target.value })
               }
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Internal notes..."
+              placeholder={t.notesPlaceholder}
             />
           </div>
 
           {/* Proof of Payment Upload */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Proof of Payment (Optional)
+              {t.proofOfPayment}
             </label>
             {!proofFile ? (
               <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
                 <Upload className="w-6 h-6 text-neutral-400 mb-1" />
-                <span className="text-xs text-neutral-600">
-                  Upload check scan or receipt
-                </span>
+                <span className="text-xs text-neutral-600">{t.uploadProof}</span>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
@@ -327,7 +324,7 @@ export default function DisbursementManager({
               disabled={loading}
               className="flex-1 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t.cancel}
             </button>
             <button
               type="submit"
@@ -337,10 +334,10 @@ export default function DisbursementManager({
               {loading || uploadingProof ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  {uploadingProof ? "Uploading..." : "Saving..."}
+                  {uploadingProof ? t.uploading : t.saving}
                 </>
               ) : (
-                "Record Disbursement"
+                t.recordDisbursement
               )}
             </button>
           </div>
