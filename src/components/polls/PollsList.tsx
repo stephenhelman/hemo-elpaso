@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, Trash2, CheckCircle, Clock, Pencil } from "lucide-react";
+import {
+  BarChart3,
+  Trash2,
+  CheckCircle,
+  Clock,
+  Pencil,
+  Newspaper,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import ConfirmModal from "../ui/ConfirmModal";
@@ -12,9 +19,12 @@ interface Poll {
   id: string;
   titleEn: string;
   titleEs: string;
+  questionEn: string;
+  questionEs: string;
   options: PollOption[];
   status: string;
   active: boolean;
+  selectedForNewsletter: boolean;
   sequenceOrder: number;
   createdBy: string;
   createdAt: Date;
@@ -24,14 +34,22 @@ interface Props {
   eventId: string;
   polls: Poll[];
   adminEmail: string;
+  newsletterMode?: boolean;
 }
 
-export default function PollsList({ eventId, polls, adminEmail }: Props) {
+export default function PollsList({
+  eventId,
+  polls,
+  adminEmail,
+  newsletterMode = false,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
+  const [newsletterLoading, setNewsletterLoading] = useState<string | null>(
+    null,
+  );
   const { confirm, ConfirmDialog } = useConfirm();
 
-  // Group polls by status
   const pendingPolls = polls.filter((p) => p.status === "pending");
   const approvedPolls = polls.filter(
     (p) => p.status === "approved" || p.status === "active",
@@ -40,14 +58,12 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
 
   const handleToggleActive = async (pollId: string, currentActive: boolean) => {
     setLoading(pollId);
-
     try {
       const response = await fetch(`/api/admin/polls/${pollId}/toggle`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active: !currentActive }),
       });
-
       if (response.ok) {
         toast.success(
           currentActive
@@ -68,21 +84,19 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
 
   const handleApprove = async (pollId: string) => {
     setLoading(pollId);
-
     try {
       const response = await fetch(`/api/admin/polls/${pollId}/approve`, {
         method: "PATCH",
       });
-
       if (response.ok) {
-        toast.success("Poll approved successfully"); // CHANGED
+        toast.success("Poll approved successfully");
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to approve poll"); // CHANGED
+        toast.error(data.error || "Failed to approve poll");
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred"); // CHANGED
+      toast.error(error.message || "An error occurred");
     } finally {
       setLoading(null);
     }
@@ -97,27 +111,53 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
       cancelText: "Cancel",
       variant: "danger",
     });
-
     if (!confirmed) return;
-
     setLoading(pollId);
-
     try {
       const response = await fetch(`/api/admin/polls/${pollId}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
-        toast.success("Poll deleted successfully"); // CHANGED
+        toast.success("Poll deleted successfully");
         router.refresh();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to delete poll"); // CHANGED
+        toast.error(data.error || "Failed to delete poll");
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred"); // CHANGED
+      toast.error(error.message || "An error occurred");
     } finally {
       setLoading(null);
+    }
+  };
+
+  const handleToggleNewsletter = async (
+    pollId: string,
+    currentSelected: boolean,
+  ) => {
+    setNewsletterLoading(pollId);
+    try {
+      const response = await fetch(
+        `/api/admin/events/${eventId}/polls/${pollId}/newsletter`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ selected: !currentSelected }),
+        },
+      );
+      if (response.ok) {
+        toast.success(
+          currentSelected ? "Removed from newsletter" : "Added to newsletter",
+        );
+        router.refresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to update newsletter selection");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setNewsletterLoading(null);
     }
   };
 
@@ -133,74 +173,63 @@ export default function PollsList({ eventId, polls, adminEmail }: Props) {
     );
   }
 
+  const renderGroup = (group: Poll[], title: string, icon: React.ReactNode) => {
+    if (group.length === 0) return null;
+    return (
+      <div>
+        <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+          {icon}
+          {title} ({group.length})
+        </h2>
+        <div className="space-y-3">
+          {group.map((poll) => (
+            <PollCard
+              key={poll.id}
+              poll={poll}
+              onToggleActive={handleToggleActive}
+              onApprove={handleApprove}
+              onDelete={handleDelete}
+              onToggleNewsletter={handleToggleNewsletter}
+              loading={loading === poll.id}
+              newsletterLoading={newsletterLoading === poll.id}
+              newsletterMode={newsletterMode}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <ConfirmDialog />
+
+      {/* Newsletter mode banner */}
+      {newsletterMode && (
+        <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
+          <Newspaper className="w-5 h-5 text-emerald-600 shrink-0" />
+          <p className="text-sm text-emerald-800">
+            <strong>Newsletter Mode:</strong> Click the bookmark icon on any
+            poll to include it in the next newsletter.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-6">
-        {/* Pending Polls - Need Approval */}
-        {pendingPolls.length > 0 && (
-          <div>
-            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-600" />
-              Pending Approval ({pendingPolls.length})
-            </h2>
-            <div className="space-y-3">
-              {pendingPolls.map((poll) => (
-                <PollCard
-                  key={poll.id}
-                  poll={poll}
-                  onToggleActive={handleToggleActive}
-                  onApprove={handleApprove}
-                  onDelete={handleDelete}
-                  loading={loading === poll.id}
-                />
-              ))}
-            </div>
-          </div>
+        {renderGroup(
+          pendingPolls,
+          "Pending Approval",
+          <Clock className="w-5 h-5 text-amber-600" />,
         )}
-
-        {/* Active/Approved Polls */}
-        {approvedPolls.length > 0 && (
-          <div>
-            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              Active & Approved ({approvedPolls.length})
-            </h2>
-            <div className="space-y-3">
-              {approvedPolls.map((poll) => (
-                <PollCard
-                  key={poll.id}
-                  poll={poll}
-                  onToggleActive={handleToggleActive}
-                  onApprove={handleApprove}
-                  onDelete={handleDelete}
-                  loading={loading === poll.id}
-                />
-              ))}
-            </div>
-          </div>
+        {renderGroup(
+          approvedPolls,
+          "Active & Approved",
+          <CheckCircle className="w-5 h-5 text-green-600" />,
         )}
-
-        {/* Draft Polls */}
-        {draftPolls.length > 0 && (
-          <div>
-            <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-neutral-600" />
-              Drafts ({draftPolls.length})
-            </h2>
-            <div className="space-y-3">
-              {draftPolls.map((poll) => (
-                <PollCard
-                  key={poll.id}
-                  poll={poll}
-                  onToggleActive={handleToggleActive}
-                  onApprove={handleApprove}
-                  onDelete={handleDelete}
-                  loading={loading === poll.id}
-                />
-              ))}
-            </div>
-          </div>
+        {renderGroup(
+          draftPolls,
+          "Drafts",
+          <Pencil className="w-5 h-5 text-neutral-600" />,
         )}
       </div>
     </>
@@ -212,37 +241,48 @@ function PollCard({
   onToggleActive,
   onApprove,
   onDelete,
+  onToggleNewsletter,
   loading,
+  newsletterLoading,
+  newsletterMode,
 }: {
   poll: Poll;
   onToggleActive: (id: string, active: boolean) => void;
   onApprove: (id: string) => void;
   onDelete: (id: string) => void;
+  onToggleNewsletter: (id: string, selected: boolean) => void;
   loading: boolean;
+  newsletterLoading: boolean;
+  newsletterMode: boolean;
 }) {
   const options = poll.options || [];
   const isFromRep = poll.createdBy?.startsWith("rep:");
   const repEmail = isFromRep ? poll.createdBy.replace("rep:", "") : null;
 
-  const statusConfig =
-    {
-      draft: { bg: "bg-neutral-100", text: "text-neutral-600", label: "Draft" },
-      pending: { bg: "bg-amber-100", text: "text-amber-700", label: "Pending" },
-      approved: {
-        bg: "bg-green-100",
-        text: "text-green-700",
-        label: "Approved",
-      },
-      active: { bg: "bg-blue-100", text: "text-blue-700", label: "Live" },
-    }[poll.status] || statusConfig.draft;
+  const statusConfig = {
+    draft: { bg: "bg-neutral-100", text: "text-neutral-600", label: "Draft" },
+    pending: { bg: "bg-amber-100", text: "text-amber-700", label: "Pending" },
+    approved: { bg: "bg-green-100", text: "text-green-700", label: "Approved" },
+    active: { bg: "bg-blue-100", text: "text-blue-700", label: "Live" },
+  }[poll.status] || {
+    bg: "bg-neutral-100",
+    text: "text-neutral-600",
+    label: "Draft",
+  };
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-6">
+    <div
+      className={`bg-white rounded-xl border p-6 transition-all ${
+        poll.selectedForNewsletter
+          ? "border-emerald-400 ring-1 ring-emerald-200"
+          : "border-neutral-200"
+      }`}
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="font-semibold text-neutral-900 text-lg">
-              {poll.titleEn}
+              {poll.questionEn}
             </h3>
             <span
               className={`px-2 py-1 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}
@@ -253,6 +293,12 @@ function PollCard({
               <div className="flex items-center gap-1 text-green-600 text-xs font-semibold">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 LIVE
+              </div>
+            )}
+            {poll.selectedForNewsletter && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                <Newspaper className="w-3 h-3" />
+                Newsletter
               </div>
             )}
           </div>
@@ -278,6 +324,28 @@ function PollCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Newsletter toggle */}
+          {newsletterMode && (
+            <button
+              onClick={() =>
+                onToggleNewsletter(poll.id, poll.selectedForNewsletter)
+              }
+              disabled={newsletterLoading}
+              className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                poll.selectedForNewsletter
+                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                  : "text-neutral-400 hover:bg-neutral-100 hover:text-emerald-600"
+              }`}
+              title={
+                poll.selectedForNewsletter
+                  ? "Remove from newsletter"
+                  : "Add to newsletter"
+              }
+            >
+              <Newspaper className="w-5 h-5" />
+            </button>
+          )}
+
           {poll.status === "pending" && (
             <button
               onClick={() => onApprove(poll.id)}
@@ -298,7 +366,6 @@ function PollCard({
                   ? "bg-red-100 text-red-700 hover:bg-red-200"
                   : "bg-green-100 text-green-700 hover:bg-green-200"
               }`}
-              title={poll.active ? "Remove from live feed" : "Add to live feed"}
             >
               {poll.active ? "Remove from Live" : "Add to Live"}
             </button>

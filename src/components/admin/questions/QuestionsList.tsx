@@ -12,6 +12,7 @@ import {
   Edit3,
   Save,
   X,
+  Newspaper,
 } from "lucide-react";
 import { adminQuestionsTranslation } from "@/translation/adminEvents";
 import type { Lang } from "@/types";
@@ -28,6 +29,7 @@ interface Question {
   answerEn: string | null;
   answerEs: string | null;
   answeredAt: Date | null;
+  selectedForNewsletter: boolean;
   createdAt: Date;
 }
 
@@ -36,6 +38,7 @@ interface Props {
   questions: Question[];
   adminEmail: string;
   locale: Lang;
+  newsletterMode?: boolean;
 }
 
 export default function QuestionsList({
@@ -43,9 +46,13 @@ export default function QuestionsList({
   questions,
   adminEmail,
   locale,
+  newsletterMode = false,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
+  const [newsletterLoading, setNewsletterLoading] = useState<string | null>(
+    null,
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [answerForm, setAnswerForm] = useState({ answerEn: "", answerEs: "" });
   const { confirm, ConfirmDialog } = useConfirm();
@@ -69,9 +76,7 @@ export default function QuestionsList({
       toast.error(t.provideAnswers);
       return;
     }
-
     setLoading(questionId);
-
     try {
       const response = await fetch(
         `/api/admin/questions/${questionId}/answer`,
@@ -85,7 +90,6 @@ export default function QuestionsList({
           }),
         },
       );
-
       if (response.ok) {
         toast.success(t.toastAnswerSaved);
         setEditingId(null);
@@ -109,16 +113,12 @@ export default function QuestionsList({
       confirmText: t.deleteConfirmBtn,
       variant: "danger",
     });
-
     if (!confirmed) return;
-
     setLoading(questionId);
-
     try {
       const response = await fetch(`/api/admin/questions/${questionId}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
         toast.success(t.toastDeleted);
         router.refresh();
@@ -130,6 +130,36 @@ export default function QuestionsList({
       toast.error(error.message || "An error occurred");
     } finally {
       setLoading(null);
+    }
+  };
+
+  const handleToggleNewsletter = async (
+    questionId: string,
+    currentSelected: boolean,
+  ) => {
+    setNewsletterLoading(questionId);
+    try {
+      const response = await fetch(
+        `/api/admin/events/${eventId}/questions/${questionId}/newsletter`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ selected: !currentSelected }),
+        },
+      );
+      if (response.ok) {
+        toast.success(
+          currentSelected ? "Removed from newsletter" : "Added to newsletter",
+        );
+        router.refresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Failed to update newsletter selection");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setNewsletterLoading(null);
     }
   };
 
@@ -149,8 +179,18 @@ export default function QuestionsList({
     <>
       <ConfirmDialog />
 
+      {/* Newsletter mode banner */}
+      {newsletterMode && (
+        <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
+          <Newspaper className="w-5 h-5 text-emerald-600 shrink-0" />
+          <p className="text-sm text-emerald-800">
+            <strong>Newsletter Mode:</strong> Click the bookmark icon on any
+            question to include it in the next newsletter.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-6">
-        {/* Unanswered Questions */}
         {unanswered.length > 0 && (
           <div>
             <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -169,7 +209,10 @@ export default function QuestionsList({
                   onSaveAnswer={handleSaveAnswer}
                   onDelete={handleDelete}
                   onAnswerChange={setAnswerForm}
+                  onToggleNewsletter={handleToggleNewsletter}
                   loading={loading === question.id}
+                  newsletterLoading={newsletterLoading === question.id}
+                  newsletterMode={newsletterMode}
                   t={t}
                 />
               ))}
@@ -177,7 +220,6 @@ export default function QuestionsList({
           </div>
         )}
 
-        {/* Answered Questions */}
         {answered.length > 0 && (
           <div>
             <h2 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
@@ -196,7 +238,10 @@ export default function QuestionsList({
                   onSaveAnswer={handleSaveAnswer}
                   onDelete={handleDelete}
                   onAnswerChange={setAnswerForm}
+                  onToggleNewsletter={handleToggleNewsletter}
                   loading={loading === question.id}
+                  newsletterLoading={newsletterLoading === question.id}
+                  newsletterMode={newsletterMode}
                   t={t}
                 />
               ))}
@@ -217,7 +262,10 @@ function QuestionCard({
   onSaveAnswer,
   onDelete,
   onAnswerChange,
+  onToggleNewsletter,
   loading,
+  newsletterLoading,
+  newsletterMode,
   t,
 }: {
   question: Question;
@@ -228,12 +276,20 @@ function QuestionCard({
   onSaveAnswer: (id: string) => void;
   onDelete: (id: string) => void;
   onAnswerChange: (form: any) => void;
+  onToggleNewsletter: (id: string, selected: boolean) => void;
   loading: boolean;
-  t: typeof adminQuestionsTranslation["en"];
+  newsletterLoading: boolean;
+  newsletterMode: boolean;
+  t: (typeof adminQuestionsTranslation)["en"];
 }) {
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-6">
-      {/* Question Header */}
+    <div
+      className={`bg-white rounded-xl border p-6 transition-all ${
+        question.selectedForNewsletter
+          ? "border-emerald-400 ring-1 ring-emerald-200"
+          : "border-neutral-200"
+      }`}
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -249,22 +305,48 @@ function QuestionCard({
                 {t.answeredBadge}
               </div>
             )}
+            {question.selectedForNewsletter && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                <Newspaper className="w-3 h-3" />
+                Newsletter
+              </div>
+            )}
           </div>
-
           <p className="text-sm text-neutral-500 mb-1">
             {question.isAnonymous ? t.anonymous : question.patientName} •{" "}
             {new Date(question.createdAt).toLocaleString()}
           </p>
         </div>
 
-        <button
-          onClick={() => onDelete(question.id)}
-          disabled={loading}
-          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-          title={t.deleteConfirmBtn}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {newsletterMode && (
+            <button
+              onClick={() =>
+                onToggleNewsletter(question.id, question.selectedForNewsletter)
+              }
+              disabled={newsletterLoading}
+              className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                question.selectedForNewsletter
+                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                  : "text-neutral-400 hover:bg-neutral-100 hover:text-emerald-600"
+              }`}
+              title={
+                question.selectedForNewsletter
+                  ? "Remove from newsletter"
+                  : "Add to newsletter"
+              }
+            >
+              <Newspaper className="w-5 h-5" />
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(question.id)}
+            disabled={loading}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Question Content */}
@@ -299,7 +381,6 @@ function QuestionCard({
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               {t.answerSpanish}
@@ -313,7 +394,6 @@ function QuestionCard({
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           <div className="flex gap-3 justify-end">
             <button
               onClick={onCancelAnswer}

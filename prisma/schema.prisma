@@ -77,6 +77,78 @@ enum EmailTemplateType {
   WELCOME_EMAIL
 }
 
+enum BoardRoleType {
+  PRESIDENT
+  VICE_PRESIDENT
+  TREASURER
+  SECRETARY
+  EVENTS_COORDINATOR  
+  SPONSOR_LIAISON
+  COMMUNICATIONS_LEAD
+  YOUTH_COORDINATOR
+  VOLUNTEER_COORDINATOR
+  FUNDRAISING_COORDINATOR
+  BOARD_MEMBER_AT_LARGE
+}
+
+enum NewsletterStatus {
+  DRAFT
+  PENDING_APPROVAL
+  CHANGES_REQUESTED
+  APPROVED
+  SENT
+}
+
+model BoardRole {
+  id          String        @id @default(uuid())
+  patientId   String
+  patient     Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  role        BoardRoleType
+  fromEmail   String?       // e.g. president@hemo-el-paso.org — used by Resend
+  assignedBy  String        // admin email who assigned the role
+  assignedAt  DateTime      @default(now())
+  active      Boolean       @default(true)
+  @@unique([patientId, role])
+  @@index([patientId])
+  @@index([role])
+  @@index([active])
+  @@map("board_roles")
+}
+
+model Newsletter {
+  id                   String           @id @default(uuid())
+  month                Int
+  year                 Int
+  status               NewsletterStatus @default(DRAFT)
+  presidentMessageEn   String?
+  presidentMessageEs   String?
+  generatedContentJson Json
+  revisionNotes        String?
+  sentAt               DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  @@unique([month, year])
+  @@index([status])
+  @@index([year, month])
+  @@map("newsletters")
+}
+
+model BoardMinutes {
+  id              String   @id @default(uuid())
+  meetingDate     DateTime
+  title           String
+  content         Json
+  isPublic        Boolean  @default(false)
+  markedPublicBy  String?
+  markedPublicAt  DateTime?
+  uploadedBy      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([isPublic])
+  @@index([meetingDate])
+  @@map("board_minutes")
+}
+
 model EmailTemplate {
   id          String            @id @default(uuid())
   type        EmailTemplateType @unique
@@ -167,6 +239,7 @@ model Patient {
   auditLogs         AuditLog[]
   financialAssistanceApplications FinancialAssistanceApplication[]
   emailLogs         EmailLog[]
+  boardRoles  BoardRole[]
 
   @@map("patients")
 }
@@ -384,6 +457,9 @@ model EventPhoto {
   key     String // R2 key for deletion
   caption String?
 
+  approved               Boolean @default(false)
+  selectedForNewsletter  Boolean @default(false)
+
   uploadedBy String // Admin email
   uploadedAt DateTime @default(now())
 
@@ -478,6 +554,7 @@ model Poll {
   questionEs String
   status     String  @default("draft") // draft, pending, approved, active
   active     Boolean @default(false)
+  selectedForNewsletter  Boolean @default(false)
 
   createdBy String
   createdAt DateTime @default(now())
@@ -538,6 +615,8 @@ model EventQuestion {
   answerEs   String?
   answeredBy String?
   answeredAt DateTime?
+
+  selectedForNewsletter  Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -618,6 +697,15 @@ enum AuditAction {
 
   // Sponsorship
   SPONSOR_INVITE_SENT
+
+  NEWSLETTER_GENERATED
+  NEWSLETTER_APPROVED
+  NEWSLETTER_REJECTED
+  NEWSLETTER_SENT
+  BOARD_MINUTES_UPLOADED
+  BOARD_MINUTES_VISIBILITY_CHANGED
+  BOARD_ROLE_ASSIGNED
+  BOARD_ROLE_REMOVED 
 }
 
 model AuditLog {
