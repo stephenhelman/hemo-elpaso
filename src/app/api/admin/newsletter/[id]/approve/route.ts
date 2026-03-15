@@ -4,9 +4,8 @@ import { prisma } from "@/lib/db";
 import { resend } from "@/lib/resend";
 import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
-
-// We'll build the full member newsletter email template in Sprint 4
-// For now this route handles the approve + send flow
+import MemberNewsletter from "@/messages/MemberNewsletter";
+import type { NewsletterContent } from "@/lib/newsletter-generator";
 
 const MONTH_NAMES = [
   "January",
@@ -79,7 +78,7 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       );
     }
 
-    // Update newsletter to SENT
+    // Mark as SENT immediately so we don't risk double-sending
     const updated = await prisma.newsletter.update({
       where: { id: params.id },
       data: {
@@ -90,8 +89,88 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       },
     });
 
-    // TODO Sprint 4: Send to all patients based on preferredLanguage
-    // For now, just mark as sent and log
+    // Fetch all patients who have consented to contact
+    // and have completed registration
+    const patients = await prisma.patient.findMany({
+      where: {
+        consentToContact: true,
+        registrationCompletedAt: { not: null },
+      },
+      select: {
+        id: true,
+        email: true,
+        preferredLanguage: true,
+        contactProfile: {
+          select: { firstName: true },
+        },
+      },
+    });
+
+    const content =
+      newsletter.generatedContentJson as unknown as NewsletterContent;
+    const monthName = MONTH_NAMES[newsletter.month - 1];
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+
+    // Split patients by language
+    const enPatients = patients.filter((p) => p.preferredLanguage !== "es");
+    const esPatients = patients.filter((p) => p.preferredLanguage === "es");
+
+    // Pre-render both language versions of the email body
+    // (personalized only by name — we send in batches via Resend)
+    let sentCount = 0;
+    let failedCount = 0;
+
+    // Send in batches of 50 to stay within Resend rate limits
+    const BATCH_SIZE = 50;
+
+    const sendBatch = async (batch: typeof patients, lang: "en" | "es") => {
+      for (const patient of batch) {
+        const firstName = patient.contactProfile?.firstName || "Friend";
+        try {
+          const html = render(
+            MemberNewsletter({
+              patientName: firstName,
+              lang,
+              month: monthName,
+              monthEs: monthName,
+              year: newsletter.year,
+              presidentMessageEn,
+              presidentMessageEs,
+              eventRecaps: content.eventRecaps,
+              upcomingEvents: content.upcomingEvents,
+              unsubscribeUrl: `${baseUrl}/portal/profile`,
+            }),
+          );
+
+          const subject =
+            lang === "es"
+              ? `📰 Boletín de HOEP — ${monthName} ${newsletter.year}`
+              : `📰 HOEP Newsletter — ${monthName} ${newsletter.year}`;
+
+          await resend.emails.send({
+            from: process.env.EMAIL_FROM || "HOEP <noreply@hemo-el-paso.org>",
+            to: patient.email,
+            subject,
+            html,
+          });
+
+          sentCount++;
+        } catch (err) {
+          console.error(`Failed to send newsletter to ${patient.email}:`, err);
+          failedCount++;
+        }
+      }
+    };
+
+    // Process English patients in batches
+    for (let i = 0; i < enPatients.length; i += BATCH_SIZE) {
+      await sendBatch(enPatients.slice(i, i + BATCH_SIZE), "en");
+    }
+
+    // Process Spanish patients in batches
+    for (let i = 0; i < esPatients.length; i += BATCH_SIZE) {
+      await sendBatch(esPatients.slice(i, i + BATCH_SIZE), "es");
+    }
 
     await prisma.auditLog.create({
       data: {
@@ -99,11 +178,16 @@ export async function PATCH(req: NextRequest, { params }: Props) {
         action: AuditAction.NEWSLETTER_SENT,
         resourceType: "Newsletter",
         resourceId: params.id,
-        details: `Newsletter ${MONTH_NAMES[newsletter.month - 1]} ${newsletter.year} approved and sent by President`,
+        details: `Newsletter ${monthName} ${newsletter.year} sent. ${sentCount} sent, ${failedCount} failed.`,
       },
     });
 
-    return NextResponse.json({ success: true, newsletter: updated });
+    return NextResponse.json({
+      success: true,
+      newsletter: updated,
+      sentCount,
+      failedCount,
+    });
   } catch (error: any) {
     console.error("Newsletter approve error:", error);
     return NextResponse.json(

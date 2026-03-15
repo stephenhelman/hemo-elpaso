@@ -7,6 +7,7 @@ import {
   CheckCircle,
   DollarSign,
   FileCheck,
+  Newspaper,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -40,6 +41,12 @@ export const adminNavItemsTranslation = [
     en: "Events",
     es: "Eventos",
     icon: Calendar,
+  },
+  {
+    href: "/admin/newsletter",
+    en: "Newsletter",
+    es: "Boletín",
+    icon: Newspaper,
   },
   {
     href: "/admin/reports",
