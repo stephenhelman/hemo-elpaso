@@ -14,6 +14,8 @@ import {
   Save,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { getPusherClient, eventChannel } from "@/lib/pusher-client";
+import { PUSHER_EVENTS } from "@/lib/pusher-server";
 
 import SlidesControl from "./SlidesControl";
 
@@ -104,37 +106,55 @@ export default function PresenterControlPanel({
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("agenda");
   const [state, setState] = useState(event);
-  const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Poll for live state every 5 seconds
   useEffect(() => {
-    const fetchState = async () => {
+    const pusher = getPusherClient();
+    const channel = pusher.subscribe(eventChannel(event.id));
+
+    // New question submitted by an attendee — show instantly in Q&A tab
+    channel.bind(PUSHER_EVENTS.QUESTION_ADDED, (data: { question: any }) => {
+      setState((prev) => ({
+        ...prev,
+        questions: prev.questions.find((q) => q.id === data.question.id)
+          ? prev.questions
+          : [...prev.questions, data.question],
+      }));
+    });
+
+    // New vote on a poll — update counts in control panel
+    channel.bind(
+      PUSHER_EVENTS.POLL_VOTE,
+      (data: { pollId: string; options: any[]; totalResponses: number }) => {
+        setState((prev) => ({
+          ...prev,
+          polls: prev.polls.map((p) =>
+            p.id === data.pollId
+              ? { ...p, responseCount: data.totalResponses }
+              : p,
+          ),
+        }));
+      },
+    );
+    const photoPoll = setInterval(async () => {
       try {
         const res = await fetch(`/api/presenter/${token}`);
         if (res.ok) {
           const data = await res.json();
-          const e = data.presenterToken.event;
-          setState((prev) => ({
-            ...prev,
-            itinerary: e.itineraryItems,
-            questions: e.questions,
-            pendingPhotos: e.photos,
-            polls: e.polls.map((p: any) => ({
-              ...p,
-              responseCount: p.responses?.length ?? 0,
-            })),
-          }));
+          const pendingPhotos = data.presenterToken.event.photos ?? [];
+          setState((prev) => ({ ...prev, pendingPhotos }));
         }
       } catch {
         // silently fail
       }
-    };
+    }, 10000); // 10 seconds — only needed for pending photo count badge
 
-    pollInterval.current = setInterval(fetchState, 5000);
     return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
+      channel.unbind_all();
+      pusher.unsubscribe(eventChannel(event.id));
+      clearInterval(photoPoll);
     };
-  }, [token]);
+  }, [event.id, token]);
 
   const tabs: { id: TabId; label: string; badge?: number }[] = [
     { id: "agenda", label: "Agenda" },

@@ -1,57 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { AuditAction } from "@prisma/client";
+import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
-export async function POST(
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string; pollId: string } },
+  { params }: { params: { pollId: string } },
 ) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { admin, error } = await import("@/lib/permissions").then((m) =>
+      m.requirePermission("canManageEvents"),
+    );
+    if (error) return error;
 
     const body = await request.json();
-    const { sessionToken, optionId } = body;
+    const { active } = body;
 
-    // Verify session token is valid for this event
-    const checkIn = await prisma.checkIn.findFirst({
-      where: {
-        eventId: params.id,
-        sessionToken,
-      },
-    });
-
-    if (!checkIn) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 403 });
-    }
-
-    // Check if already voted
-    const existingVote = await prisma.pollResponse.findFirst({
-      where: {
-        pollId: params.pollId,
-        sessionToken,
-      },
-    });
-
-    if (existingVote) {
-      return NextResponse.json({ error: "Already voted" }, { status: 409 });
-    }
-
-    // Record vote
-    await prisma.pollResponse.create({
+    const poll = await prisma.poll.update({
+      where: { id: params.pollId },
       data: {
-        pollId: params.pollId,
-        sessionToken,
-        selectedOptionId: optionId,
+        active,
+        status: active ? "active" : "approved",
+      },
+      include: {
+        options: true,
+        responses: true,
       },
     });
 
-    return NextResponse.json({ success: true });
+    await prisma.auditLog.create({
+      data: {
+        patientId: admin!.id,
+        action: active
+          ? AuditAction.POLL_ACTIVATED
+          : AuditAction.POLL_DEACTIVATED,
+        resourceType: "Poll",
+        resourceId: params.pollId,
+        details: `Poll ${active ? "activated" : "deactivated"}: ${poll.questionEn}`,
+      },
+    });
+
+    // Trigger Pusher — Polls tab appears/disappears instantly for all attendees
+    await pusherServer.trigger(
+      eventChannel(poll.eventId),
+      active ? PUSHER_EVENTS.POLL_ACTIVATED : PUSHER_EVENTS.POLL_DEACTIVATED,
+      {
+        poll: {
+          id: poll.id,
+          questionEn: poll.questionEn,
+          questionEs: poll.questionEs,
+          options: poll.options.map((opt) => ({
+            id: opt.id,
+            textEn: opt.textEn,
+            textEs: opt.textEs,
+            voteCount: poll.responses.filter(
+              (r) => r.selectedOptionId === opt.id,
+            ).length,
+          })),
+          totalResponses: poll.responses.length,
+        },
+      },
+    );
+
+    return NextResponse.json({ poll });
   } catch (error) {
-    console.error("Vote error:", error);
-    return NextResponse.json({ error: "Failed to vote" }, { status: 500 });
+    console.error("Poll toggle error:", error);
+    return NextResponse.json(
+      { error: "Failed to toggle poll" },
+      { status: 500 },
+    );
   }
 }

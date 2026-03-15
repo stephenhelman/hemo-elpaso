@@ -1,129 +1,102 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { translateText, detectLanguage } from "@/lib/translate";
+import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+interface Props {
+  params: { id: string; pollId: string };
+}
+
+export async function POST(req: NextRequest, { params }: Props) {
   try {
-    const { searchParams } = new URL(request.url);
-    const sessionToken = searchParams.get("sessionToken");
-    const filter = searchParams.get("filter") || "all";
+    const { optionId, sessionToken } = await req.json();
 
-    if (!sessionToken) {
+    if (!optionId || !sessionToken) {
       return NextResponse.json(
-        { error: "Session token required" },
+        { error: "optionId and sessionToken are required" },
+        { status: 400 },
+      );
+    }
+
+    // Verify session is valid for this event
+    const checkIn = await prisma.checkIn.findFirst({
+      where: {
+        eventId: params.id,
+        sessionToken,
+        sessionExpiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!checkIn) {
+      return NextResponse.json(
+        { error: "Invalid or expired session" },
         { status: 401 },
       );
     }
 
-    // Verify session token is valid
-    const checkIn = await prisma.checkIn.findFirst({
-      where: {
-        eventId: params.id,
-        sessionToken,
-      },
+    // Check poll is active
+    const poll = await prisma.poll.findFirst({
+      where: { id: params.pollId, eventId: params.id, active: true },
+      include: { options: true },
     });
 
-    if (!checkIn) {
-      return NextResponse.json({ error: "Not checked in" }, { status: 403 });
+    if (!poll) {
+      return NextResponse.json(
+        { error: "Poll not found or not active" },
+        { status: 404 },
+      );
     }
 
-    // Build filter
-    const where: any = { eventId: params.id };
-    if (filter === "answered") {
-      where.answered = true;
-    } else if (filter === "unanswered") {
-      where.answered = false;
+    // Check option belongs to this poll
+    const optionExists = poll.options.some((o) => o.id === optionId);
+    if (!optionExists) {
+      return NextResponse.json({ error: "Invalid option" }, { status: 400 });
     }
 
-    // Get questions
-    const questions = await prisma.eventQuestion.findMany({
-      where,
-      orderBy: [{ upvotes: "desc" }, { createdAt: "desc" }],
+    // Record vote (unique per session per poll)
+    try {
+      await prisma.pollResponse.create({
+        data: {
+          pollId: params.pollId,
+          sessionToken,
+          selectedOptionId: optionId,
+        },
+      });
+    } catch {
+      return NextResponse.json(
+        { error: "You have already voted on this poll" },
+        { status: 409 },
+      );
+    }
+
+    // Get updated vote counts
+    const updatedResponses = await prisma.pollResponse.findMany({
+      where: { pollId: params.pollId },
     });
 
-    // Check which questions this user has upvoted
-    const questionsWithVotes = questions.map((q) => ({
-      ...q,
-      hasUpvoted: q.upvotedBy.includes(sessionToken),
+    const updatedOptions = poll.options.map((opt) => ({
+      id: opt.id,
+      textEn: opt.textEn,
+      textEs: opt.textEs,
+      voteCount: updatedResponses.filter((r) => r.selectedOptionId === opt.id)
+        .length,
     }));
 
-    return NextResponse.json({ questions: questionsWithVotes });
-  } catch (error) {
-    console.error("Questions fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch questions" },
-      { status: 500 },
+    // Trigger Pusher — all attendees see updated vote counts instantly
+    await pusherServer.trigger(
+      eventChannel(params.id),
+      PUSHER_EVENTS.POLL_VOTE,
+      {
+        pollId: params.pollId,
+        options: updatedOptions,
+        totalResponses: updatedResponses.length,
+      },
     );
-  }
-}
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { sessionToken, patientId, patientName, isAnonymous, question } =
-      body;
-
-    // Verify session token
-    const checkIn = await prisma.checkIn.findFirst({
-      where: {
-        eventId: params.id,
-        sessionToken,
-      },
-    });
-
-    if (!checkIn) {
-      return NextResponse.json({ error: "Not checked in" }, { status: 403 });
-    }
-
-    // Detect language and translate
-    const detectedLang = await detectLanguage(question);
-    let questionEn = question;
-    let questionEs = question;
-
-    if (detectedLang === "es") {
-      // Original is Spanish, translate to English
-      const translation = await translateText(question, "en");
-      questionEn = translation.translatedText;
-    } else {
-      // Original is English, translate to Spanish
-      const translation = await translateText(question, "es");
-      questionEs = translation.translatedText;
-    }
-
-    // Create question
-    const newQuestion = await prisma.eventQuestion.create({
-      data: {
-        eventId: params.id,
-        questionEn,
-        questionEs,
-        originalLang: detectedLang,
-        patientId: isAnonymous ? null : patientId,
-        patientName: isAnonymous ? null : patientName,
-        isAnonymous,
-        sessionToken,
-        upvotes: 0,
-        upvotedBy: [],
-      },
-    });
-
-    return NextResponse.json({ success: true, question: newQuestion });
+    return NextResponse.json({ success: true, options: updatedOptions });
   } catch (error) {
-    console.error("Question submission error:", error);
+    console.error("Vote error:", error);
     return NextResponse.json(
-      { error: "Failed to submit question" },
+      { error: "Failed to record vote" },
       { status: 500 },
     );
   }

@@ -1,55 +1,92 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string; questionId: string } },
-) {
+interface Props {
+  params: { id: string };
+}
+
+export async function POST(req: NextRequest, { params }: Props) {
   try {
-    const body = await request.json();
-    const { sessionToken } = body;
+    const body = await req.json();
+    const {
+      question,
+      sessionToken,
+      patientId,
+      patientName,
+      isAnonymous,
+      lang,
+    } = body;
 
-    // Verify session token
+    if (!question?.trim() || !sessionToken) {
+      return NextResponse.json(
+        { error: "question and sessionToken are required" },
+        { status: 400 },
+      );
+    }
+
+    // Verify session
     const checkIn = await prisma.checkIn.findFirst({
       where: {
         eventId: params.id,
         sessionToken,
+        sessionExpiresAt: { gt: new Date() },
       },
     });
 
     if (!checkIn) {
-      return NextResponse.json({ error: "Not checked in" }, { status: 403 });
-    }
-
-    // Get question
-    const question = await prisma.eventQuestion.findUnique({
-      where: { id: params.questionId },
-    });
-
-    if (!question) {
       return NextResponse.json(
-        { error: "Question not found" },
-        { status: 404 },
+        { error: "Invalid or expired session" },
+        { status: 401 },
       );
     }
 
-    // Check if already upvoted
-    if (question.upvotedBy.includes(sessionToken)) {
-      return NextResponse.json({ error: "Already upvoted" }, { status: 409 });
-    }
+    // Auto-translate to the other language
+    // For now store same text in both — translation can be added later
+    const questionEn = lang === "es" ? question : question;
+    const questionEs = lang === "es" ? question : question;
 
-    // Add upvote
-    await prisma.eventQuestion.update({
-      where: { id: params.questionId },
+    const eventQuestion = await prisma.eventQuestion.create({
       data: {
-        upvotes: { increment: 1 },
-        upvotedBy: { push: sessionToken },
+        eventId: params.id,
+        questionEn,
+        questionEs,
+        originalLang: lang ?? "en",
+        patientId: patientId ?? null,
+        patientName: isAnonymous ? null : (patientName ?? null),
+        isAnonymous: isAnonymous ?? false,
+        sessionToken,
       },
     });
 
-    return NextResponse.json({ success: true });
+    // Trigger Pusher — Q&A tab appears for all attendees instantly
+    // Presenter panel also gets the new question immediately
+    await pusherServer.trigger(
+      eventChannel(params.id),
+      PUSHER_EVENTS.QUESTION_ADDED,
+      {
+        question: {
+          id: eventQuestion.id,
+          questionEn: eventQuestion.questionEn,
+          questionEs: eventQuestion.questionEs,
+          upvotes: 0,
+          answered: false,
+          answerEn: null,
+          answerEs: null,
+          isAnonymous: eventQuestion.isAnonymous,
+          patientName: eventQuestion.isAnonymous
+            ? null
+            : eventQuestion.patientName,
+        },
+      },
+    );
+
+    return NextResponse.json({ question: eventQuestion });
   } catch (error) {
-    console.error("Upvote error:", error);
-    return NextResponse.json({ error: "Failed to upvote" }, { status: 500 });
+    console.error("Question submit error:", error);
+    return NextResponse.json(
+      { error: "Failed to submit question" },
+      { status: 500 },
+    );
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   ClipboardList,
   MonitorPlay,
@@ -12,14 +12,16 @@ import {
   Wifi,
 } from "lucide-react";
 import Link from "next/link";
+import { getPusherClient, eventChannel } from "@/lib/pusher-client";
+import { PUSHER_EVENTS } from "@/lib/pusher-server";
 
-// Tab imports
 import AgendaTab from "./tabs/AgendaTab";
 import PresenterTab from "./tabs/PresenterTab";
 import PhotosTab from "./tabs/PhotosTab";
 import PollsTab from "./tabs/PollsTab";
 import QandATab from "./tabs/QandATab";
 
+// ── Types (same as before) ────────────────────────────────────────────────────
 interface ItineraryItem {
   id: string;
   titleEn: string;
@@ -32,7 +34,6 @@ interface ItineraryItem {
   sequenceOrder: number;
   location: string | null;
 }
-
 interface Announcement {
   id: string;
   messageEn: string;
@@ -40,14 +41,12 @@ interface Announcement {
   priority: string;
   createdAt: string;
 }
-
 interface PollOption {
   id: string;
   textEn: string;
   textEs: string;
   voteCount: number;
 }
-
 interface ActivePoll {
   id: string;
   questionEn: string;
@@ -55,7 +54,6 @@ interface ActivePoll {
   options: PollOption[];
   totalResponses: number;
 }
-
 interface Question {
   id: string;
   questionEn: string;
@@ -67,39 +65,38 @@ interface Question {
   isAnonymous: boolean;
   patientName: string | null;
 }
-
 interface Photo {
   id: string;
   url: string;
   caption: string | null;
   uploadedAt: string;
 }
-
+interface Presentation {
+  currentSlide: number;
+  isLive: boolean;
+  slideUrlsEn: string[];
+  slideUrlsEs: string[];
+  totalSlidesEn: number;
+  totalSlidesEs: number;
+}
 interface EventData {
   id: string;
   slug: string;
   titleEn: string;
   titleEs: string;
-  presentation: {
-    currentSlide: number;
-    totalSlides: number;
-    slideUrls: string[];
-    isLive: boolean;
-  } | null;
+  presentation: Presentation | null;
   itinerary: ItineraryItem[];
   announcements: Announcement[];
   activePolls: ActivePoll[];
   questions: Question[];
   photos: Photo[];
 }
-
 interface AttendeeData {
   patientId: string | null;
   patientName: string | undefined;
   sessionToken: string;
   attendeeRole: string;
 }
-
 interface Props {
   event: EventData;
   attendee: AttendeeData;
@@ -108,108 +105,222 @@ interface Props {
 
 type TabId = "agenda" | "presenter" | "photos" | "polls" | "qa";
 
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function LiveEventTabs({ event, attendee, lang }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("agenda");
-  const [liveState, setLiveState] = useState(event);
+  const [presentation, setPresentation] = useState(event.presentation);
+  const [itinerary, setItinerary] = useState(event.itinerary);
+  const [announcements, setAnnouncements] = useState(event.announcements);
+  const [activePolls, setActivePolls] = useState(event.activePolls);
+  const [questions, setQuestions] = useState(event.questions);
+  const [photos, setPhotos] = useState(event.photos);
   const [votedPolls, setVotedPolls] = useState<Record<string, string>>({});
-  const pollInterval = useRef<NodeJS.Timeout | null>(null);
-  const isEs = lang === "es";
 
+  const isEs = lang === "es";
   const title = isEs ? event.titleEs : event.titleEn;
 
-  // Poll for live state every 3 seconds
+  // ── Pusher subscriptions ────────────────────────────────────────────────────
   useEffect(() => {
-    const fetchLiveState = async () => {
-      try {
-        const res = await fetch(`/api/events/${event.id}/live-state`);
-        if (res.ok) {
-          const data = await res.json();
-          setLiveState((prev) => ({
-            ...prev,
-            presentation: data.presentation,
-            itinerary: data.itinerary,
-            announcements: data.announcements,
-            activePolls: data.activePolls,
-            questions: data.questions,
-            photos: data.photos,
-          }));
-        }
-      } catch {
-        // Silently fail — stale data is better than error state
-      }
-    };
+    const pusher = getPusherClient();
+    const channel = pusher.subscribe(eventChannel(event.id));
 
-    pollInterval.current = setInterval(fetchLiveState, 3000);
+    // Slide advanced by presenter
+    channel.bind(
+      PUSHER_EVENTS.SLIDE_CHANGED,
+      (data: { currentSlide: number }) => {
+        setPresentation((prev) =>
+          prev ? { ...prev, currentSlide: data.currentSlide } : prev,
+        );
+      },
+    );
+
+    // Presentation went live / hidden
+    channel.bind(
+      PUSHER_EVENTS.PRESENTATION_LIVE,
+      (data: { isLive: boolean }) => {
+        setPresentation((prev) =>
+          prev ? { ...prev, isLive: data.isLive } : prev,
+        );
+      },
+    );
+
+    // Poll activated — add to activePolls, switch tab
+    channel.bind(PUSHER_EVENTS.POLL_ACTIVATED, (data: { poll: ActivePoll }) => {
+      setActivePolls((prev) => {
+        if (prev.find((p) => p.id === data.poll.id)) return prev;
+        return [...prev, data.poll];
+      });
+      setActiveTab("polls");
+    });
+
+    // Poll deactivated — remove from activePolls
+    channel.bind(
+      PUSHER_EVENTS.POLL_DEACTIVATED,
+      (data: { poll: { id: string } }) => {
+        setActivePolls((prev) => prev.filter((p) => p.id !== data.poll.id));
+      },
+    );
+
+    // Vote cast — update counts in real time
+    channel.bind(
+      PUSHER_EVENTS.POLL_VOTE,
+      (data: {
+        pollId: string;
+        options: PollOption[];
+        totalResponses: number;
+      }) => {
+        setActivePolls((prev) =>
+          prev.map((p) =>
+            p.id === data.pollId
+              ? {
+                  ...p,
+                  options: data.options,
+                  totalResponses: data.totalResponses,
+                }
+              : p,
+          ),
+        );
+      },
+    );
+
+    // New question submitted — Q&A tab appears
+    channel.bind(
+      PUSHER_EVENTS.QUESTION_ADDED,
+      (data: { question: Question }) => {
+        setQuestions((prev) => {
+          if (prev.find((q) => q.id === data.question.id)) return prev;
+          return [...prev, data.question];
+        });
+      },
+    );
+
+    // Question answered by presenter
+    channel.bind(
+      PUSHER_EVENTS.QUESTION_ANSWERED,
+      (data: { questionId: string; answerEn: string; answerEs: string }) => {
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === data.questionId
+              ? {
+                  ...q,
+                  answered: true,
+                  answerEn: data.answerEn,
+                  answerEs: data.answerEs,
+                }
+              : q,
+          ),
+        );
+      },
+    );
+
+    // Question upvoted
+    channel.bind(
+      PUSHER_EVENTS.QUESTION_UPVOTED,
+      (data: { questionId: string; upvotes: number }) => {
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === data.questionId ? { ...q, upvotes: data.upvotes } : q,
+          ),
+        );
+      },
+    );
+
+    // Photo approved — appears in gallery
+    channel.bind(PUSHER_EVENTS.PHOTO_APPROVED, (data: { photo: Photo }) => {
+      setPhotos((prev) => {
+        if (prev.find((p) => p.id === data.photo.id)) return prev;
+        return [data.photo, ...prev];
+      });
+    });
+
+    // Itinerary item status changed
+    channel.bind(
+      PUSHER_EVENTS.ITINERARY_UPDATED,
+      (data: { itemId: string; status: string }) => {
+        setItinerary((prev) =>
+          prev.map((item) => {
+            if (item.id === data.itemId)
+              return { ...item, status: data.status };
+            // If new item is "current", clear previous "current"
+            if (data.status === "current" && item.status === "current") {
+              return { ...item, status: "completed" };
+            }
+            return item;
+          }),
+        );
+      },
+    );
+
+    // Announcement added
+    channel.bind(
+      PUSHER_EVENTS.ANNOUNCEMENT_ADDED,
+      (data: { announcement: Announcement }) => {
+        setAnnouncements((prev) => [data.announcement, ...prev]);
+      },
+    );
+
     return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
+      channel.unbind_all();
+      pusher.unsubscribe(eventChannel(event.id));
     };
   }, [event.id]);
 
-  // Dynamic tabs
-  const hasActivePolls = liveState.activePolls.length > 0;
-  const hasQuestions = liveState.questions.length > 0;
+  // Auto-switch to polls tab when first poll activates
+  useEffect(() => {
+    if (activePolls.length > 0 && activeTab === "agenda") {
+      setActiveTab("polls");
+    }
+  }, [activePolls.length]);
 
-  const tabs: {
-    id: TabId;
-    labelEn: string;
-    labelEs: string;
-    icon: React.ReactNode;
-    badge?: number;
-    always: boolean;
-  }[] = [
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  const hasPolls = activePolls.length > 0;
+  const hasQuestions = questions.length > 0;
+
+  const tabs = [
     {
-      id: "agenda",
+      id: "agenda" as TabId,
       labelEn: "Agenda",
       labelEs: "Agenda",
       icon: <ClipboardList className="w-4 h-4" />,
       always: true,
     },
     {
-      id: "presenter",
+      id: "presenter" as TabId,
       labelEn: "Presenter",
       labelEs: "Presentador",
       icon: <MonitorPlay className="w-4 h-4" />,
       always: true,
     },
     {
-      id: "photos",
+      id: "photos" as TabId,
       labelEn: "Photos",
       labelEs: "Fotos",
       icon: <Camera className="w-4 h-4" />,
-      badge: liveState.photos.length || undefined,
       always: true,
+      badge: photos.length || undefined,
     },
     {
-      id: "polls",
+      id: "polls" as TabId,
       labelEn: "Polls",
       labelEs: "Encuestas",
       icon: <BarChart3 className="w-4 h-4" />,
-      badge: hasActivePolls ? liveState.activePolls.length : undefined,
       always: false,
+      badge: hasPolls ? activePolls.length : undefined,
     },
     {
-      id: "qa",
+      id: "qa" as TabId,
       labelEn: "Q&A",
       labelEs: "Preguntas",
       icon: <MessageSquare className="w-4 h-4" />,
-      badge: liveState.questions.filter((q) => !q.answered).length || undefined,
       always: false,
+      badge: questions.filter((q) => !q.answered).length || undefined,
     },
-  ];
-
-  const visibleTabs = tabs.filter(
+  ].filter(
     (t) =>
       t.always ||
-      (t.id === "polls" && hasActivePolls) ||
+      (t.id === "polls" && hasPolls) ||
       (t.id === "qa" && hasQuestions),
   );
-
-  // Auto-switch to polls tab when first poll activates
-  useEffect(() => {
-    if (hasActivePolls && activeTab === "agenda") {
-      setActiveTab("polls");
-    }
-  }, [hasActivePolls]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-primary-950 to-neutral-900">
@@ -224,7 +335,6 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
               <ArrowLeft className="w-4 h-4" />
               {isEs ? "Evento" : "Event"}
             </Link>
-
             <div className="flex items-center gap-2">
               <Wifi className="w-3.5 h-3.5 text-green-400" />
               <span className="text-green-400 text-xs font-semibold">LIVE</span>
@@ -234,7 +344,6 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
           <h1 className="text-white font-display font-bold text-lg mb-1 truncate">
             {title}
           </h1>
-
           <div className="flex items-center gap-2 text-xs text-neutral-400">
             <CheckCircle className="w-3.5 h-3.5 text-green-400" />
             <span>
@@ -247,11 +356,11 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
         {/* Tabs */}
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto pb-0 scrollbar-hide">
-            {visibleTabs.map((tab) => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors relative ${
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-primary text-primary"
                     : "border-transparent text-neutral-400 hover:text-neutral-200"
@@ -260,7 +369,7 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
                 {tab.icon}
                 {isEs ? tab.labelEs : tab.labelEn}
                 {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="ml-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-xs flex items-center justify-center">
                     {tab.badge}
                   </span>
                 )}
@@ -274,30 +383,26 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {activeTab === "agenda" && (
           <AgendaTab
-            itinerary={liveState.itinerary}
-            announcements={liveState.announcements}
+            itinerary={itinerary}
+            announcements={announcements}
             lang={lang}
           />
         )}
         {activeTab === "presenter" && (
-          <PresenterTab
-            presentation={liveState.presentation}
-            announcements={liveState.announcements}
-            lang={lang}
-          />
+          <PresenterTab presentation={presentation} lang={lang} />
         )}
         {activeTab === "photos" && (
           <PhotosTab
             eventId={event.id}
-            photos={liveState.photos}
+            photos={photos}
             sessionToken={attendee.sessionToken}
             lang={lang}
           />
         )}
-        {activeTab === "polls" && hasActivePolls && (
+        {activeTab === "polls" && hasPolls && (
           <PollsTab
             eventId={event.id}
-            polls={liveState.activePolls}
+            polls={activePolls}
             sessionToken={attendee.sessionToken}
             votedPolls={votedPolls}
             onVote={(pollId, optionId) =>
@@ -309,7 +414,7 @@ export default function LiveEventTabs({ event, attendee, lang }: Props) {
         {activeTab === "qa" && hasQuestions && (
           <QandATab
             eventId={event.id}
-            questions={liveState.questions}
+            questions={questions}
             sessionToken={attendee.sessionToken}
             patientId={attendee.patientId}
             patientName={attendee.patientName}
