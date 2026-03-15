@@ -8,6 +8,7 @@ import {
   DollarSign,
   FileCheck,
   Newspaper,
+  FileText,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -47,6 +48,12 @@ export const adminNavItemsTranslation = [
     en: "Newsletter",
     es: "Boletín",
     icon: Newspaper,
+  },
+  {
+    href: "/admin/minutes",
+    en: "Board Minutes",
+    es: "Actas",
+    icon: FileText,
   },
   {
     href: "/admin/reports",
