@@ -364,6 +364,8 @@ model Event {
   itineraryItems      EventItineraryItem[]
   polls               Poll[]
   emailLogs EmailLog[]
+  presenterTokens  PresenterAccessToken[]
+  presentation     EventPresentation?
 
   @@map("events")
 }
@@ -460,6 +462,8 @@ model EventPhoto {
 
   approved               Boolean @default(false)
   selectedForNewsletter  Boolean @default(false)
+  sessionToken  String?   
+  source        String    @default("admin")   
 
   uploadedBy String // Admin email
   uploadedAt DateTime @default(now())
@@ -715,6 +719,10 @@ enum AuditAction {
   TAX_FILING_DELETED
   ANNUAL_REPORT_CREATED
   ANNUAL_REPORT_UPDATED
+
+  PRESENTER_TOKEN_CREATED
+  PRESENTATION_UPDATED
+  ITINERARY_ITEM_STATUS_CHANGED
 }
 
 model AuditLog {
@@ -818,4 +826,29 @@ model TaxFiling {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   @@map("tax_filings")
+}
+
+model PresenterAccessToken {
+  id            String   @id @default(uuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  token         String   @unique
+  presenterName String?
+  expiresAt     DateTime
+  createdBy     String
+  createdAt     DateTime @default(now())
+  @@index([eventId])
+  @@map("presenter_access_tokens")
+}
+model EventPresentation {
+  id           String   @id @default(uuid())
+  eventId      String   @unique
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  currentSlide Int      @default(0)
+  totalSlides  Int      @default(0)
+  slideUrls    String[] // R2 URLs, one per converted slide image
+  isLive       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@map("event_presentations")
 }
