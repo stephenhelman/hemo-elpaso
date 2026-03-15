@@ -1,24 +1,14 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import AdminArchiveClient from "./AdminArchiveClient";
 
 export default async function AdminArchivePage() {
-  const session = await getSession();
-  if (!session?.user) redirect("/api/auth/login");
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewFinancials")) redirect("/admin/dashboard");
 
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
-
-  const isTreasurer =
-    admin.boardRoles.some((r) => r.role === "TREASURER" && r.active) ||
-    admin.role === "admin";
+  const isTreasurer = admin.can("canManageFinancials");
 
   const [scholarships, annualReports, taxFilings] = await Promise.all([
     prisma.scholarship.findMany({ orderBy: { awardedAt: "desc" } }),

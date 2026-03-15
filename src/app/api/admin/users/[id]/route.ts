@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
 
@@ -55,7 +55,7 @@ export async function PATCH(
     // Audit log
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.USER_UPDATED,
         resourceType: "Patient",
         resourceId: params.id,
@@ -78,23 +78,8 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    // Only board members can delete users
-    if (!admin || admin.role !== "board") {
-      return NextResponse.json(
-        { error: "Forbidden - Board access required" },
-        { status: 403 },
-      );
-    }
+    const { admin, error } = await requirePermission("canManageUsers");
+    if (error) return error;
 
     // Find user
     const user = await prisma.patient.findUnique({
@@ -107,7 +92,7 @@ export async function DELETE(
     }
 
     // Prevent self-deletion
-    if (user.id === admin.id) {
+    if (user.id === admin!.id) {
       return NextResponse.json(
         { error: "Cannot delete your own account" },
         { status: 400 },
@@ -122,7 +107,7 @@ export async function DELETE(
     // Audit log
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.USER_DELETED,
         resourceType: "Patient",
         resourceId: params.id,

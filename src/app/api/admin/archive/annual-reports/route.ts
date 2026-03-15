@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
 
@@ -61,26 +61,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  const isTreasurer =
-    admin?.boardRoles.some((r) => r.role === "TREASURER" && r.active) ||
-    admin?.role === "admin";
-
-  if (!admin || !isTreasurer) {
-    return NextResponse.json(
-      { error: "Only the Treasurer can manage annual reports" },
-      { status: 403 },
-    );
-  }
+  const { admin, error } = await requirePermission("canManageFinancials");
+  if (error) return error;
 
   const { year, totalSponsorIncome, notes, overrides } = await req.json();
 
@@ -118,13 +100,13 @@ export async function POST(req: NextRequest) {
         overrides?.totalScholarshipsPaid ?? calculated.totalScholarshipsPaid,
       totalSponsorIncome: totalSponsorIncome ?? null,
       notes: notes ?? null,
-      createdBy: admin.email,
+      createdBy: admin!.email,
     },
   });
 
   await prisma.auditLog.create({
     data: {
-      patientId: admin.id,
+      patientId: admin!.id,
       action: AuditAction.ANNUAL_REPORT_CREATED,
       resourceType: "AnnualReport",
       resourceId: report.id,

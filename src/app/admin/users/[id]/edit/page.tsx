@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -10,19 +10,9 @@ interface Props {
 }
 
 export default async function UserEditPage({ params }: Props) {
-  const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canManageUsers")) redirect("/admin/dashboard");
 
   const user = await prisma.patient.findUnique({
     where: { id: params.id },

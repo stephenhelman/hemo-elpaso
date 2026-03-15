@@ -1,28 +1,18 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import NewsletterIndexClient from "./NewsletterIndexClient";
 
 export default async function NewsletterIndexPage() {
-  const session = await getSession();
-  if (!session?.user) redirect("/api/auth/login");
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
 
   const newsletters = await prisma.newsletter.findMany({
     orderBy: [{ year: "desc" }, { month: "desc" }],
   });
 
-  const isPresident = admin.boardRoles.some(
-    (r) => r.role === "PRESIDENT" && r.active,
-  );
+  const isPresident = admin.can("canApproveNewsletter");
 
   return (
     <NewsletterIndexClient

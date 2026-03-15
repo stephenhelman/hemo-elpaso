@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { FileText, AlertCircle } from "lucide-react";
 import DiagnosisVerificationList from "@/components/admin/DiagnosisVerificationList";
@@ -9,19 +9,9 @@ import { adminVerificationTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
 
 export default async function DiagnosisVerificationPage() {
-  const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewPHI")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminVerificationTranslation[locale as Lang];
@@ -98,7 +88,7 @@ export default async function DiagnosisVerificationPage() {
       <DiagnosisVerificationList
         patients={patientsWithPendingDiagnosis}
         familyMembers={familyMembersWithPendingDiagnosis}
-        adminEmail={admin.email}
+        adminEmail={admin!.email}
       >
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

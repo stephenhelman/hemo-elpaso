@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import NewsletterDraftClient from "./NewsletterDraftClient";
 
@@ -23,17 +23,9 @@ const MONTH_NAMES = [
 ];
 
 export default async function NewsletterDraftPage({ params }: Props) {
-  const session = await getSession();
-  if (!session?.user) redirect("/api/auth/login");
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
 
   const newsletter = await prisma.newsletter.findUnique({
     where: { id: params.id },
@@ -41,9 +33,7 @@ export default async function NewsletterDraftPage({ params }: Props) {
 
   if (!newsletter) notFound();
 
-  const isPresident = admin.boardRoles.some(
-    (r) => r.role === "PRESIDENT" && r.active,
-  );
+  const isPresident = admin.can("canApproveNewsletter");
 
   return (
     <NewsletterDraftClient
@@ -57,7 +47,7 @@ export default async function NewsletterDraftPage({ params }: Props) {
         generatedContentJson: newsletter.generatedContentJson as any,
       }}
       isPresident={isPresident}
-      adminEmail={admin.email}
+      adminEmail={admin!.email}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { Users, Calendar, CheckCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -9,20 +9,14 @@ import { adminDashboardTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AdminDashboardPage() {
-  const session = await getSession();
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
 
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { contactProfile: true },
+  const adminProfile = await prisma.patient.findUnique({
+    where: { id: admin.id },
+    select: { contactProfile: { select: { firstName: true } } },
   });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminDashboardTranslation[locale as Lang];
@@ -161,7 +155,7 @@ export default async function AdminDashboardPage() {
           {t.heading}
         </h1>
         <p className="text-neutral-600">
-          {t.welcome(admin.contactProfile?.firstName || "Admin")}
+          {t.welcome(adminProfile?.contactProfile?.firstName || "Admin")}
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { uploadToR2, deleteFromR2 } from "@/lib/r2";
 import { AuditAction } from "@prisma/client";
@@ -12,26 +12,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  const isTreasurer =
-    admin?.boardRoles.some((r) => r.role === "TREASURER" && r.active) ||
-    admin?.role === "admin";
-
-  if (!admin || !isTreasurer) {
-    return NextResponse.json(
-      { error: "Only the Treasurer can upload tax filings" },
-      { status: 403 },
-    );
-  }
+  const { admin, error } = await requirePermission("canManageFinancials");
+  if (error) return error;
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -76,13 +58,13 @@ export async function POST(req: NextRequest) {
       year: parseInt(year),
       fileUrl: url,
       fileKey: key,
-      uploadedBy: admin.email,
+      uploadedBy: admin!.email,
     },
   });
 
   await prisma.auditLog.create({
     data: {
-      patientId: admin.id,
+      patientId: admin!.id,
       action: AuditAction.TAX_FILING_UPLOADED,
       resourceType: "TaxFiling",
       resourceId: filing.id,

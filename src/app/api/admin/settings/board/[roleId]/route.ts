@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
 
@@ -8,25 +8,8 @@ interface Props {
 }
 
 export async function PATCH(req: NextRequest, { params }: Props) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  const canManage =
-    admin?.role === "admin" ||
-    admin?.boardRoles.some(
-      (r) => r.active && ["PRESIDENT", "VICE_PRESIDENT"].includes(r.role),
-    );
-
-  if (!admin || !canManage) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const { error } = await requirePermission("canAssignBoardRoles");
+  if (error) return error;
 
   const body = await req.json();
   const { fromEmail } = body;
@@ -43,25 +26,8 @@ export async function PATCH(req: NextRequest, { params }: Props) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Props) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  const canManage =
-    admin?.role === "admin" ||
-    admin?.boardRoles.some(
-      (r) => r.active && ["PRESIDENT", "VICE_PRESIDENT"].includes(r.role),
-    );
-
-  if (!admin || !canManage) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const { admin, error } = await requirePermission("canAssignBoardRoles");
+  if (error) return error;
 
   const boardRole = await prisma.boardRole.findUnique({
     where: { id: params.roleId },
@@ -80,11 +46,11 @@ export async function DELETE(req: NextRequest, { params }: Props) {
 
   await prisma.auditLog.create({
     data: {
-      patientId: admin.id,
+      patientId: admin!.id,
       action: AuditAction.BOARD_ROLE_REMOVED,
       resourceType: "BoardRole",
       resourceId: params.roleId,
-      details: `Role ${boardRole.role} removed from patient ${boardRole.patientId} by ${admin.email}`,
+      details: `Role ${boardRole.role} removed from patient ${boardRole.patientId} by ${admin!.email}`,
     },
   });
 

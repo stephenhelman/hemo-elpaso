@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
 import type { PollOption } from "@/types";

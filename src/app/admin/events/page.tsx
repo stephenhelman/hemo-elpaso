@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -7,6 +9,10 @@ import { adminEventsTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AdminEventsPage() {
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
+
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminEventsTranslation[locale];
 

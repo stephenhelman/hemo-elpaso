@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
 import { Calendar, Users, TrendingUp, CheckCircle } from "lucide-react";
@@ -9,20 +9,9 @@ import { adminAttendanceTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AllAttendeesPage() {
-  const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  // Check if user is admin/board
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewEventStats")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminAttendanceTranslation[locale];

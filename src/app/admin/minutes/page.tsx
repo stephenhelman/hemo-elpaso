@@ -1,28 +1,18 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import MinutesIndexClient from "./MinutesIndexClient";
 
 export default async function AdminMinutesPage() {
-  const session = await getSession();
-  if (!session?.user) redirect("/api/auth/login");
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canManageMinutes")) redirect("/admin/dashboard");
 
   const minutes = await prisma.boardMinutes.findMany({
     orderBy: { meetingDate: "desc" },
   });
 
-  const isSecretary =
-    admin.boardRoles.some((r) => r.role === "SECRETARY" && r.active) ||
-    admin.role === "admin";
+  const isSecretary = admin.can("canManageMinutes");
 
   return (
     <MinutesIndexClient

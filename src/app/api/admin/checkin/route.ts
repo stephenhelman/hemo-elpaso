@@ -1,28 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
 import { AuditAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is board/admin
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    if (!admin || !["board", "admin"].includes(admin.role)) {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 },
-      );
-    }
+    const { admin, error } = await requirePermission("canManageEvents");
+    if (error) return error;
 
     const body = await request.json();
     const { qrCode, eventId } = body;
@@ -87,7 +72,7 @@ export async function POST(request: NextRequest) {
       data: {
         eventId,
         patientId: rsvp.patientId,
-        checkedInBy: admin.email,
+        checkedInBy: admin!.email,
         sessionToken: crypto.randomUUID(),
         sessionExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
@@ -96,7 +81,7 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.CHECKIN_CREATED,
         resourceType: "CheckIn",
         resourceId: checkIn.id,

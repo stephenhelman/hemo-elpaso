@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { ArrowLeft, Users, CheckCircle, XCircle } from "lucide-react";
@@ -10,6 +11,10 @@ interface Props {
 }
 
 export default async function EventAttendeesPage({ params }: Props) {
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canViewPHI")) redirect("/admin/dashboard");
+
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {

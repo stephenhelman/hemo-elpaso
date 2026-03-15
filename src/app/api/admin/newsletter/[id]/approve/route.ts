@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { resend } from "@/lib/resend";
 import { render } from "@react-email/render";
@@ -28,26 +28,8 @@ interface Props {
 
 export async function PATCH(req: NextRequest, { params }: Props) {
   try {
-    const session = await getSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-      include: { boardRoles: true },
-    });
-
-    const isPresident = admin?.boardRoles.some(
-      (r) => r.role === "PRESIDENT" && r.active,
-    );
-
-    if (!admin || (!isPresident && admin.role !== "admin")) {
-      return NextResponse.json(
-        { error: "Only the President can approve newsletters" },
-        { status: 403 },
-      );
-    }
+    const { admin, error } = await requirePermission("canApproveNewsletter");
+    if (error) return error;
 
     const newsletter = await prisma.newsletter.findUnique({
       where: { id: params.id },
@@ -174,7 +156,7 @@ export async function PATCH(req: NextRequest, { params }: Props) {
 
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.NEWSLETTER_SENT,
         resourceType: "Newsletter",
         resourceId: params.id,

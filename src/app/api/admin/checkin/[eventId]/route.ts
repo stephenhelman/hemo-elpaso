@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 
 export async function GET(
@@ -7,20 +7,8 @@ export async function GET(
   { params }: { params: { eventId: string } },
 ) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is board/admin
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    if (!admin || !["board", "admin"].includes(admin.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { error } = await requirePermission("canViewEventStats");
+    if (error) return error;
 
     // Get all check-ins for this event
     const checkIns = await prisma.checkIn.findMany({

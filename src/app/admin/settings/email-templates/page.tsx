@@ -1,24 +1,14 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import EmailTemplatesList from "@/components/admin/settings/EmailTemplatesList";
 import { getLocaleCookie } from "@/lib/locale";
 import type { Lang } from "@/types";
 
 export default async function EmailTemplatesPage() {
-  const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canManageEmailTemplates")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;
 

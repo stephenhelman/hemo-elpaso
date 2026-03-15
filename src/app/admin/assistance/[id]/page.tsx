@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import {
   ArrowLeft,
@@ -21,20 +21,11 @@ interface Props {
 }
 
 export default async function AdminApplicationDetailPage({ params }: Props) {
-  const session = await getSession();
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canApproveAssistance")) redirect("/admin/dashboard");
+
   const locale = (await getLocaleCookie()) as Lang;
-
-  if (!session?.user) {
-    redirect("/api/auth/login");
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
 
   const application = await prisma.financialAssistanceApplication.findUnique({
     where: { id: params.id },
@@ -63,7 +54,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
   // Audit log for viewing
   await prisma.auditLog.create({
     data: {
-      patientId: admin.id,
+      patientId: admin!.id,
       action: AuditAction.ASSISTANCE_APPLICATION_VIEWED,
       resourceType: "FinancialAssistanceApplication",
       resourceId: application.id,
@@ -377,7 +368,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
             <ReviewActions
               applicationId={application.id}
               requestedAmount={Number(application.requestedAmount)}
-              adminEmail={admin.email}
+              adminEmail={admin!.email}
               locale={locale}
             />
           )}
@@ -391,7 +382,7 @@ export default async function AdminApplicationDetailPage({ params }: Props) {
               applicationId={application.id}
               approvedAmount={Number(application.approvedAmount || 0)}
               disbursements={disbursementsFormatted}
-              adminEmail={admin.email}
+              adminEmail={admin!.email}
               locale={locale}
             />
           )}

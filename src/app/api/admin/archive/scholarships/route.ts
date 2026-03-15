@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
 
@@ -11,18 +11,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const { admin, error } = await requirePermission("canManageFinancials");
+  if (error) return error;
 
   const { recipientName, amount, academicYear, description, awardedAt } =
     await req.json();
@@ -49,13 +39,13 @@ export async function POST(req: NextRequest) {
       academicYear,
       description,
       awardedAt: new Date(awardedAt),
-      createdBy: admin.email,
+      createdBy: admin!.email,
     },
   });
 
   await prisma.auditLog.create({
     data: {
-      patientId: admin.id,
+      patientId: admin!.id,
       action: AuditAction.SCHOLARSHIP_CREATED,
       resourceType: "Scholarship",
       resourceId: scholarship.id,

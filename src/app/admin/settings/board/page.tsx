@@ -1,26 +1,14 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import BoardManagementClient from "./BoardManagementClient";
 
 export default async function BoardManagementPage() {
-  const session = await getSession();
-  if (!session?.user) redirect("/api/auth/login");
+  const admin = await getAdminWithPermissions();
+  if (!admin) redirect("/portal/dashboard");
+  if (!admin.can("canAssignBoardRoles")) redirect("/admin/dashboard");
 
-  const admin = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: { boardRoles: true },
-  });
-
-  if (!admin || !["board", "admin"].includes(admin.role)) {
-    redirect("/portal/dashboard");
-  }
-
-  const canAssign =
-    admin.role === "admin" ||
-    admin.boardRoles.some(
-      (r) => r.active && ["PRESIDENT", "VICE_PRESIDENT"].includes(r.role),
-    );
+  const canAssign = admin.can("canAssignBoardRoles");
 
   const boardRoles = await prisma.boardRole.findMany({
     include: {
