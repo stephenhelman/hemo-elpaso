@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 
 export async function PATCH(
@@ -8,19 +8,8 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    if (!admin || !["board", "admin"].includes(admin.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { admin, error } = await requirePermission("canManageEvents");
+    if (error) return error;
 
     const body = await request.json();
 
@@ -41,13 +30,13 @@ export async function PATCH(
         language: body.language,
         isPriority: body.isPriority,
         liveEnabled: body.liveEnabled,
+        ...(body.eventCost !== undefined && { eventCost: body.eventCost }),
       },
     });
 
-    // Create audit log
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.EVENT_UPDATED,
         resourceType: "Event",
         resourceId: updatedEvent.id,
@@ -70,38 +59,19 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   try {
-    const session = await getSession();
+    const { admin, error } = await requirePermission("canManageEvents");
+    if (error) return error;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    if (!admin || !["board", "admin"].includes(admin.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Get event details for audit log
-    const event = await prisma.event.findUnique({
-      where: { id: params.id },
-    });
-
+    const event = await prisma.event.findUnique({ where: { id: params.id } });
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Delete event (cascades to related records via Prisma schema)
-    await prisma.event.delete({
-      where: { id: params.id },
-    });
+    await prisma.event.delete({ where: { id: params.id } });
 
-    // Create audit log
     await prisma.auditLog.create({
       data: {
-        patientId: admin.id,
+        patientId: admin!.id,
         action: AuditAction.EVENT_DELETED,
         resourceType: "Event",
         resourceId: params.id,

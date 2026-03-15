@@ -1,72 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getSession();
+export async function GET() {
+  const { admin, error } = await requirePermission("canViewAdminDashboard");
+  if (error) return error;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const events = await prisma.event.findMany({
+    orderBy: { eventDate: "desc" },
+    include: { targeting: true },
+  });
 
-    // Check if user is board/admin
-    const patient = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
+  return NextResponse.json(events);
+}
 
-    if (!patient || !["board", "admin"].includes(patient.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+export async function POST(req: NextRequest) {
+  const { admin, error } = await requirePermission("canManageEvents");
+  if (error) return error;
 
-    const body = await request.json();
+  const body = await req.json();
 
-    // Create event with targeting
-    const event = await prisma.event.create({
-      data: {
-        slug: body.slug,
-        titleEn: body.titleEn,
-        titleEs: body.titleEs,
-        descriptionEn: body.descriptionEn,
-        descriptionEs: body.descriptionEs,
-        eventDate: new Date(body.eventDate),
-        location: body.location,
-        maxCapacity: body.maxCapacity,
-        rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,
-        status: body.status,
-        category: body.category,
-        targetAudience: body.targetAudience,
-        language: body.language,
-        isPriority: body.isPriority,
-        targeting: {
-          create: {
-            targetConditions: body.targetConditions || [],
-            targetSeverity: body.targetSeverity || [],
-            targetAgeGroups: body.targetAgeGroups || [],
-            targetInterests: [],
-          },
-        },
-      },
-    });
+  const event = await prisma.event.create({
+    data: {
+      slug: body.slug,
+      titleEn: body.titleEn,
+      titleEs: body.titleEs,
+      descriptionEn: body.descriptionEn || null,
+      descriptionEs: body.descriptionEs || null,
+      eventDate: new Date(body.eventDate),
+      location: body.location,
+      maxCapacity: body.maxCapacity || null,
+      rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,
+      status: body.status || "draft",
+      category: body.category || "FAMILY_SUPPORT",
+      targetAudience: body.targetAudience || "all",
+      language: body.language || "both",
+      isPriority: body.isPriority || false,
+      liveEnabled: body.liveEnabled || false,
+      createdBy: admin!.email,
+    },
+  });
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        patientId: patient.id,
-        action: AuditAction.EVENT_CREATED,
-        resourceType: "Event",
-        resourceId: event.id,
-        details: `Created event: ${event.titleEn}`,
-      },
-    });
+  await prisma.auditLog.create({
+    data: {
+      patientId: admin!.id,
+      action: AuditAction.EVENT_CREATED,
+      resourceType: "Event",
+      resourceId: event.id,
+      details: `Created event: ${event.titleEn}`,
+    },
+  });
 
-    return NextResponse.json({ success: true, event });
-  } catch (error) {
-    console.error("Event creation error:", error);
-    return NextResponse.json(
-      { error: "Failed to create event" },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json(event, { status: 201 });
 }

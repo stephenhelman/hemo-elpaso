@@ -10,6 +10,7 @@ import {
   adminNavItemsTranslation,
 } from "@/translation/adminSidebar";
 import Image from "next/image";
+import type { Permission } from "@/lib/permissions";
 
 interface Props {
   user: {
@@ -17,11 +18,41 @@ interface Props {
     email?: string;
   };
   locale: "en" | "es";
+  permissions: Permission[];
+  isSuperAdmin: boolean;
 }
 
-export default function AdminSidebar({ user, locale }: Props) {
+// Map nav items to the permission needed to see them
+const NAV_PERMISSIONS: Record<string, Permission> = {
+  "/admin/newsletter": "canSelectForNewsletter",
+  "/admin/minutes": "canManageMinutes",
+  "/admin/archive": "canViewFinancials",
+  "/admin/reports": "canViewEventStats",
+  "/admin/attendance": "canViewEventStats",
+  "/admin/assistance": "canApproveAssistance",
+  "/admin/users": "canManageUsers",
+  "/admin/verification": "canViewPHI",
+};
+
+export default function AdminSidebar({
+  user,
+  locale,
+  permissions,
+  isSuperAdmin,
+}: Props) {
   const pathname = usePathname();
   const t = adminSidebarTranslation[locale];
+
+  const permSet = new Set(permissions);
+  const can = (permission: Permission) =>
+    isSuperAdmin || permSet.has(permission);
+
+  const visibleItems = adminNavItemsTranslation.filter((item) => {
+    const required = NAV_PERMISSIONS[item.href];
+    // No permission required = always visible (dashboard, events, settings)
+    if (!required) return true;
+    return can(required);
+  });
 
   return (
     <>
@@ -65,7 +96,7 @@ export default function AdminSidebar({ user, locale }: Props) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1">
-            {adminNavItemsTranslation.map((item) => {
+            {visibleItems.map((item) => {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href || pathname.startsWith(item.href + "/");

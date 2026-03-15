@@ -8,19 +8,8 @@ export async function PATCH(
   { params }: { params: { questionId: string } },
 ) {
   try {
-    const session = await getSession();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-    });
-
-    if (!admin || !["board", "admin"].includes(admin.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { admin, error } = await requirePermission("canManageEvents");
+    if (error) return error;
 
     const body = await request.json();
     const { answerEn, answerEs, answeredBy } = body;
