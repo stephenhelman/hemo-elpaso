@@ -9,6 +9,7 @@ import {
   FileCheck,
   Newspaper,
   FileText,
+  Archive,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -54,6 +55,12 @@ export const adminNavItemsTranslation = [
     en: "Board Minutes",
     es: "Actas",
     icon: FileText,
+  },
+  {
+    href: "/admin/archive",
+    en: "Archive",
+    es: "Archivo",
+    icon: Archive,
   },
   {
     href: "/admin/reports",

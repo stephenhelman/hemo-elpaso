@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Mail, Phone, Heart } from "lucide-react";
+import { Facebook, Mail, Phone, Heart, Archive } from "lucide-react";
 import { footerTranslation } from "@/translation/layoutPage";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
   const { locale } = useLanguage();
   const t = footerTranslation[locale];
+  const archiveLabel =
+    locale === "es" ? "Archivo de Transparencia" : "Transparency Archive";
 
   return (
     <footer className="bg-neutral-900 text-neutral-300">
@@ -118,6 +120,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
       {/* Bottom Bar */}
       <div className="border-t border-neutral-800">
         <div className="container-max px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
@@ -125,6 +128,16 @@ export default function Footer() {
             © {new Date().getFullYear()} Hemophilia Outreach of El Paso.{" "}
             {t.rights}
           </p>
+
+          {/* Transparency Archive link — nestled but visible */}
+          <Link
+            href="/archive"
+            className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
+          >
+            <Archive className="w-3 h-3" />
+            {archiveLabel}
+          </Link>
+
           <p className="text-xs text-neutral-500 flex items-center gap-1">
             {t.madeWith}{" "}
             <Heart className="w-3 h-3 text-primary-500 fill-primary-500" />{" "}

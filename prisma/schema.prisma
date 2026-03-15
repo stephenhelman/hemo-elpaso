@@ -347,6 +347,7 @@ model Event {
   language       String  @default("both")
   isPriority     Boolean @default(false)
   liveEnabled    Boolean @default(false)
+  eventCost  Decimal? @db.Decimal(10, 2)
 
   createdBy String?
   createdAt DateTime @default(now())
@@ -706,6 +707,14 @@ enum AuditAction {
   BOARD_MINUTES_VISIBILITY_CHANGED
   BOARD_ROLE_ASSIGNED
   BOARD_ROLE_REMOVED 
+
+  SCHOLARSHIP_CREATED
+  SCHOLARSHIP_UPDATED
+  SCHOLARSHIP_DELETED
+  TAX_FILING_UPLOADED
+  TAX_FILING_DELETED
+  ANNUAL_REPORT_CREATED
+  ANNUAL_REPORT_UPDATED
 }
 
 model AuditLog {
@@ -766,4 +775,47 @@ model EventItineraryItem {
   updatedAt DateTime @updatedAt
 
   @@map("event_itinerary_items")
+}
+
+model Scholarship {
+  id            String   @id @default(uuid())
+  recipientName String
+  amount        Decimal  @db.Decimal(10, 2)
+  academicYear  String   // e.g. "2025-2026"
+  description   String?
+  awardedAt     DateTime
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([academicYear])
+  @@index([awardedAt])
+  @@map("scholarships")
+}
+
+model AnnualReport {
+  id                    String   @id @default(uuid())
+  year                  Int      @unique
+  // Auto-calculated fields (can be overridden by Treasurer)
+  totalEventsHeld       Int      @default(0)
+  totalAttendance       Int      @default(0)
+  totalAssistancePaid   Decimal  @default(0) @db.Decimal(10, 2)
+  totalScholarshipsPaid Decimal  @default(0) @db.Decimal(10, 2)
+  // Treasurer manual entry
+  totalSponsorIncome    Decimal? @db.Decimal(10, 2)
+  notes                 String?
+  createdBy             String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  @@index([year])
+  @@map("annual_reports")
+}
+model TaxFiling {
+  id         String   @id @default(uuid())
+  year       Int      @unique
+  fileUrl    String
+  fileKey    String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@map("tax_filings")
 }
