@@ -1,7 +1,9 @@
 import { notFound, redirect } from "next/navigation";
+import { getLocaleCookie } from "@/lib/locale";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import EventEditForm from "@/components/admin/EventEditForm";
+import type { Lang } from "@/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import EventQuickActions from "@/components/admin/EventQuickActions";
@@ -14,6 +16,7 @@ export default async function EditEventPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/portal/dashboard");
   if (!admin.can("canManageEvents")) redirect("/admin/dashboard");
+  const locale = (await getLocaleCookie()) as Lang;
 
   // Get event with targeting
   const event = await prisma.event.findUnique({
@@ -47,7 +50,7 @@ export default async function EditEventPage({ params }: Props) {
         <EventQuickActions eventId={event.id} />
       </div>
 
-      <EventEditForm event={event} />
+      <EventEditForm event={event} locale={locale} />
     </div>
   );
 }

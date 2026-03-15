@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
 import { AuditAction } from "@prisma/client";
+import { requirePermission } from "@/lib/permissions";
 
 export async function POST(request: NextRequest) {
   try {

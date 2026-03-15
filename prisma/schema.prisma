@@ -469,6 +469,9 @@ model EventPhoto {
   uploadedAt DateTime @default(now())
 
   @@map("event_photos")
+  @@index([approved])
+  @@index([selectedForNewsletter])
+  @@index([source])
 }
 
 model EventTargeting {
@@ -488,8 +491,8 @@ model Rsvp {
   id                  String   @id @default(uuid())
   eventId             String
   patientId           String
-  event               Event    @relation(fields: [eventId], references: [id])
-  patient             Patient  @relation(fields: [patientId], references: [id])
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patient Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   status              String   @default("confirmed")
   attendeeCount       Int
   dietaryRestrictions String?
@@ -548,6 +551,7 @@ model PollCreationToken {
   createdAt DateTime @default(now())
 
   @@map("poll_creation_tokens")
+  
 }
 
 model Poll {
@@ -568,6 +572,7 @@ model Poll {
   options   PollOption[]
   responses PollResponse[]
 
+@@index([selectedForNewsletter])
   @@map("polls")
 }
 
@@ -597,7 +602,7 @@ model PollResponse {
 model EventQuestion {
   id      String @id @default(uuid())
   eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   // Question Content
   questionEn   String
@@ -625,6 +630,7 @@ model EventQuestion {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([selectedForNewsletter])
 }
 
 enum AuditAction {
@@ -844,10 +850,25 @@ model EventPresentation {
   id           String   @id @default(uuid())
   eventId      String   @unique
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   currentSlide Int      @default(0)
-  totalSlides  Int      @default(0)
-  slideUrls    String[] // R2 URLs, one per converted slide image
   isLive       Boolean  @default(false)
+
+  slideUrlsEn        String[]
+  totalSlidesEn      Int      @default(0)
+  originalFileUrlEn  String?
+  originalFileKeyEn  String?
+  originalFileNameEn String?
+  conversionJobIdEn  String?
+  conversionStatusEn String   @default("done")
+
+  slideUrlsEs        String[]
+  totalSlidesEs      Int      @default(0)
+  originalFileUrlEs  String?
+  originalFileKeyEs  String?
+  originalFileNameEs String?
+  conversionJobIdEs  String?
+  conversionStatusEs String   @default("done")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   @@map("event_presentations")

@@ -50,6 +50,8 @@ export default function EventEditForm({ event, locale }: Props) {
   const [deleting, setDeleting] = useState(false);
   const t = adminEventEditTranslation[locale];
 
+  console.log(locale);
+
   const [formData, setFormData] = useState({
     title: {
       en: event?.titleEn,
@@ -118,9 +120,7 @@ export default function EventEditForm({ event, locale }: Props) {
         toast.error(data.error || t.errorUpdate);
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t.errorUpdate,
-      );
+      toast.error(error instanceof Error ? error.message : t.errorUpdate);
     } finally {
       setLoading(false);
     }
@@ -150,9 +150,7 @@ export default function EventEditForm({ event, locale }: Props) {
         toast.error(data.error || t.errorDelete);
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t.errorDelete,
-      );
+      toast.error(error instanceof Error ? error.message : t.errorDelete);
     } finally {
       setDeleting(false);
     }
@@ -288,11 +286,19 @@ export default function EventEditForm({ event, locale }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="EDUCATION">{t.categoryOptions.EDUCATION}</option>
-                  <option value="FAMILY_SUPPORT">{t.categoryOptions.FAMILY_SUPPORT}</option>
+                  <option value="EDUCATION">
+                    {t.categoryOptions.EDUCATION}
+                  </option>
+                  <option value="FAMILY_SUPPORT">
+                    {t.categoryOptions.FAMILY_SUPPORT}
+                  </option>
                   <option value="YOUTH">{t.categoryOptions.YOUTH}</option>
-                  <option value="FUNDRAISING">{t.categoryOptions.FUNDRAISING}</option>
-                  <option value="MEDICAL_UPDATE">{t.categoryOptions.MEDICAL_UPDATE}</option>
+                  <option value="FUNDRAISING">
+                    {t.categoryOptions.FUNDRAISING}
+                  </option>
+                  <option value="MEDICAL_UPDATE">
+                    {t.categoryOptions.MEDICAL_UPDATE}
+                  </option>
                   <option value="SOCIAL">{t.categoryOptions.SOCIAL}</option>
                 </select>
               </div>
@@ -332,9 +338,7 @@ export default function EventEditForm({ event, locale }: Props) {
             <h3 className="text-xl font-display font-bold text-neutral-900 mb-4">
               {t.flyersTitle}
             </h3>
-            <p className="text-sm text-neutral-600 mb-4">
-              {t.flyersDesc}
-            </p>
+            <p className="text-sm text-neutral-600 mb-4">{t.flyersDesc}</p>
             <FlyerUpload
               eventId={event.id}
               currentFlyerEn={event.flyerEnUrl}

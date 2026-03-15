@@ -5,25 +5,19 @@ interface Props {
   params: { id: string };
 }
 
-// Attendees poll this endpoint every 3 seconds to get current live state
 export async function GET(req: NextRequest, { params }: Props) {
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
       presentation: true,
-      itineraryItems: {
-        orderBy: { sequenceOrder: "asc" },
-      },
+      itineraryItems: { orderBy: { sequenceOrder: "asc" } },
       announcements: {
         where: { active: true },
         orderBy: { createdAt: "desc" },
       },
       polls: {
         where: { active: true },
-        include: {
-          options: true,
-          responses: true,
-        },
+        include: { options: true, responses: true },
       },
       questions: {
         orderBy: [{ upvotes: "desc" }, { createdAt: "asc" }],
@@ -41,14 +35,16 @@ export async function GET(req: NextRequest, { params }: Props) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  // Build minimal payload — only what the client needs
   return NextResponse.json({
+    // Bilingual presentation fields
     presentation: event.presentation
       ? {
           currentSlide: event.presentation.currentSlide,
-          totalSlides: event.presentation.totalSlides,
-          slideUrls: event.presentation.slideUrls,
           isLive: event.presentation.isLive,
+          slideUrlsEn: event.presentation.slideUrlsEn,
+          slideUrlsEs: event.presentation.slideUrlsEs,
+          totalSlidesEn: event.presentation.totalSlidesEn,
+          totalSlidesEs: event.presentation.totalSlidesEs,
         }
       : null,
 
@@ -87,11 +83,9 @@ export async function GET(req: NextRequest, { params }: Props) {
       totalResponses: poll.responses.length,
     })),
 
-    // Just counts for tab badge — full data loads when tab is opened
     questionCount: event.questions.length,
     approvedPhotoCount: event.photos.length,
 
-    // For Q&A tab — top questions
     questions: event.questions.map((q) => ({
       id: q.id,
       questionEn: q.questionEn,
@@ -104,7 +98,6 @@ export async function GET(req: NextRequest, { params }: Props) {
       patientName: q.isAnonymous ? null : q.patientName,
     })),
 
-    // Approved photos for gallery
     photos: event.photos.map((p) => ({
       id: p.id,
       url: p.url,

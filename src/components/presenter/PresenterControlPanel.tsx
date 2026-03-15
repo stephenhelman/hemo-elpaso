@@ -2,14 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  ClipboardList,
-  MonitorPlay,
-  BarChart3,
-  MessageSquare,
-  Camera,
-  ChevronLeft,
-  ChevronRight,
-  Upload,
   Loader2,
   Check,
   X,
@@ -17,13 +9,13 @@ import {
   Pause,
   CheckCircle,
   SkipForward,
-  Eye,
-  EyeOff,
   ThumbsUp,
   Edit3,
   Save,
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+import SlidesControl from "./SlidesControl";
 
 // -------------------------------------------------------
 // Types
@@ -124,15 +116,6 @@ export default function PresenterControlPanel({
           const e = data.presenterToken.event;
           setState((prev) => ({
             ...prev,
-            presentation: e.presentation
-              ? {
-                  id: e.presentation.id,
-                  currentSlide: e.presentation.currentSlide,
-                  totalSlides: e.presentation.totalSlides,
-                  slideUrls: e.presentation.slideUrls,
-                  isLive: e.presentation.isLive,
-                }
-              : null,
             itinerary: e.itineraryItems,
             questions: e.questions,
             pendingPhotos: e.photos,
@@ -410,242 +393,6 @@ function AgendaControl({
       {itinerary.length === 0 && (
         <div className="text-center py-12 text-neutral-500">
           No agenda items. Add them in the event editor first.
-        </div>
-      )}
-    </div>
-  );
-}
-
-// -------------------------------------------------------
-// SlidesControl
-// -------------------------------------------------------
-function SlidesControl({
-  token,
-  presentation,
-  onUpdate,
-}: {
-  token: string;
-  presentation: Presentation | null;
-  onUpdate: (p: Presentation) => void;
-}) {
-  const [uploading, setUploading] = useState(false);
-  const [advancing, setAdvancing] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleToggleLive = async () => {
-    try {
-      const res = await fetch(`/api/presenter/${token}/slides`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "toggle-live" }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        onUpdate(data.presentation);
-      }
-    } catch {
-      toast.error("Failed to toggle live");
-    }
-  };
-
-  const handleSlideAction = async (action: "next" | "prev") => {
-    if (!presentation) return;
-    setAdvancing(true);
-    try {
-      const res = await fetch(`/api/presenter/${token}/slides`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        onUpdate(data.presentation);
-      }
-    } catch {
-      toast.error("Failed to advance slide");
-    } finally {
-      setAdvancing(false);
-    }
-  };
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      files.forEach((f) => formData.append("slides", f));
-      const res = await fetch(`/api/presenter/${token}/slides`, {
-        method: "POST",
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        onUpdate(data.presentation);
-        toast.success(`${data.slideCount} slides uploaded`);
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Upload failed");
-      }
-    } catch {
-      toast.error("Upload failed");
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Upload */}
-      <div className="bg-neutral-800/60 rounded-2xl p-5">
-        <h3 className="font-semibold text-white mb-3">Upload Slides</h3>
-        <p className="text-sm text-neutral-400 mb-4">
-          Upload JPG/PNG images (one per slide). PDF support coming soon.
-        </p>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleUpload}
-          className="hidden"
-          id="slide-upload"
-        />
-        <label
-          htmlFor="slide-upload"
-          className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
-            uploading
-              ? "border-neutral-600 opacity-50 cursor-not-allowed"
-              : "border-neutral-600 hover:border-primary hover:bg-neutral-700/30"
-          }`}
-        >
-          {uploading ? (
-            <>
-              <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />
-              <span className="text-neutral-400 text-sm">Uploading...</span>
-            </>
-          ) : (
-            <>
-              <Upload className="w-5 h-5 text-neutral-500" />
-              <span className="text-neutral-400 text-sm">
-                Select slide images
-              </span>
-            </>
-          )}
-        </label>
-      </div>
-
-      {/* Controls */}
-      {presentation && presentation.totalSlides > 0 ? (
-        <div className="bg-neutral-800/60 rounded-2xl p-5 space-y-5">
-          {/* Live toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-white">Presentation Live</p>
-              <p className="text-xs text-neutral-400">
-                {presentation.isLive
-                  ? "Attendees can see your slides"
-                  : "Slides hidden from attendees"}
-              </p>
-            </div>
-            <button
-              onClick={handleToggleLive}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-colors ${
-                presentation.isLive
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-            >
-              {presentation.isLive ? (
-                <>
-                  <Pause className="w-4 h-4" /> Hide
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" /> Go Live
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Current slide preview */}
-          <div className="relative bg-black rounded-xl overflow-hidden aspect-video">
-            {presentation.slideUrls[presentation.currentSlide] ? (
-              <img
-                src={presentation.slideUrls[presentation.currentSlide]}
-                alt={`Slide ${presentation.currentSlide + 1}`}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-neutral-600">
-                No slide
-              </div>
-            )}
-            <div className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-black/70 text-white text-xs font-semibold">
-              {presentation.currentSlide + 1} / {presentation.totalSlides}
-            </div>
-          </div>
-
-          {/* Prev / Next */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleSlideAction("prev")}
-              disabled={advancing || presentation.currentSlide === 0}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-neutral-700 text-white font-semibold hover:bg-neutral-600 transition-colors disabled:opacity-40"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Previous
-            </button>
-            <button
-              onClick={() => handleSlideAction("next")}
-              disabled={
-                advancing ||
-                presentation.currentSlide === presentation.totalSlides - 1
-              }
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-40"
-            >
-              Next
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Thumbnail strip */}
-          {presentation.totalSlides > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {presentation.slideUrls.map((url, idx) => (
-                <button
-                  key={idx}
-                  onClick={async () => {
-                    const res = await fetch(`/api/presenter/${token}/slides`, {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ action: "goto", slideIndex: idx }),
-                    });
-                    if (res.ok) {
-                      const data = await res.json();
-                      onUpdate(data.presentation);
-                    }
-                  }}
-                  className={`shrink-0 w-16 h-10 rounded-lg overflow-hidden border-2 transition-all ${
-                    idx === presentation.currentSlide
-                      ? "border-primary"
-                      : "border-neutral-700 hover:border-neutral-500"
-                  }`}
-                >
-                  <img
-                    src={url}
-                    alt={`Slide ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="text-center py-8 text-neutral-500 text-sm">
-          No slides uploaded yet. Upload images above to get started.
         </div>
       )}
     </div>
