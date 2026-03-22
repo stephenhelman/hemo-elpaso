@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Download, Printer, QrCode, Loader2 } from "lucide-react";
+import { Download, Printer, QrCode } from "lucide-react";
 import { qrCodeDisplayTranslation } from "@/translation/rsvp";
 import { Lang } from "@/types";
 
@@ -18,32 +17,24 @@ export default function QrCodeDisplay({
   compact,
   locale,
 }: Props) {
-  const [qrCode, setQrCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const t = qrCodeDisplayTranslation[locale];
 
-  useEffect(() => {
-    fetch(`/api/rsvp/${rsvpId}/qr`)
-      .then((res) => res.json())
-      .then((data) => {
-        setQrCode(data.qrCode);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [rsvpId]);
+  // QR code is generated on the fly by /api/qr/[data]
+  // No fetch needed — just use it as an img src directly
+  const qrUrl = `/api/qr/RSVP-${rsvpId}`;
 
-  const handleDownload = () => {
-    if (!qrCode) return;
-
+  const handleDownload = async () => {
+    const res = await fetch(qrUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = qrCode;
+    link.href = url;
     link.download = `qr-code-${eventTitle.replace(/\s+/g, "-").toLowerCase()}.png`;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handlePrint = () => {
-    if (!qrCode) return;
-
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
@@ -69,7 +60,7 @@ export default function QrCodeDisplay({
         <body>
           <h1>${eventTitle}</h1>
           <p>${t.showAtCheckIn}</p>
-          <img src="${qrCode}" alt="QR Code" />
+          <img src="${window.location.origin}${qrUrl}" alt="QR Code" />
         </body>
       </html>
     `);
@@ -77,29 +68,12 @@ export default function QrCodeDisplay({
     printWindow.print();
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-6">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!qrCode) {
-    return (
-      <div className="text-center p-6">
-        <QrCode className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-        <p className="text-sm text-neutral-400">{t.failedToLoad}</p>
-      </div>
-    );
-  }
-
   if (compact) {
     return (
       <div className="flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={qrCode}
+          src={qrUrl}
           alt={t.checkInQr}
           className="w-16 h-16 rounded-lg border border-neutral-200"
         />
@@ -116,7 +90,7 @@ export default function QrCodeDisplay({
       <div className="text-center">
         <div className="inline-block p-4 bg-white rounded-2xl border-2 border-neutral-200">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrCode} alt={t.checkInQr} className="w-48 h-48 mx-auto" />
+          <img src={qrUrl} alt={t.checkInQr} className="w-48 h-48 mx-auto" />
         </div>
         <p className="text-sm text-neutral-500 mt-3">{t.showAtCheckIn}</p>
       </div>

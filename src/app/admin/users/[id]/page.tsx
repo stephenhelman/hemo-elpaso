@@ -15,6 +15,8 @@ import Link from "next/link";
 import DiagnosisVerificationStatus from "@/components/admin/DiagnosisVerificationStatus";
 import { StatCard } from "@/components/ui/StatCard";
 import { AuditAction } from "@prisma/client";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -24,6 +26,8 @@ export default async function patientDetailPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/portal/dashboard");
   if (!admin.can("canManageUsers")) redirect("/admin/dashboard");
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   // Fetch patient with full details
   const patient = await prisma.patient.findUnique({
@@ -499,6 +503,7 @@ export default async function patientDetailPage({ params }: Props) {
                     patient.disorderProfile?.diagnosisRejectedReason ?? null
                   }
                   gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
+                  locale={locale}
                 />
               </div>
             )}
@@ -528,6 +533,7 @@ export default async function patientDetailPage({ params }: Props) {
                     diagnosisRejectedReason={
                       member.disorderProfile?.diagnosisRejectedReason ?? null
                     }
+                    locale={locale}
                   />
                 </div>
               ))}

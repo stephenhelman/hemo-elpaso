@@ -89,6 +89,7 @@ export default async function DiagnosisVerificationPage() {
         patients={patientsWithPendingDiagnosis}
         familyMembers={familyMembersWithPendingDiagnosis}
         adminEmail={admin!.email}
+        locale={locale}
       >
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

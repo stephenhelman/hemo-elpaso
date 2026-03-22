@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import UserEditForm from "@/components/admin/users/UserEditForm";
+import { getLocaleCookie } from "@/lib/locale";
+import { Lang } from "@/types";
 
 interface Props {
   params: { id: string };
@@ -13,6 +15,8 @@ export default async function UserEditPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/portal/dashboard");
   if (!admin.can("canManageUsers")) redirect("/admin/dashboard");
+
+  const locale = (await getLocaleCookie()) as Lang;
 
   const user = await prisma.patient.findUnique({
     where: { id: params.id },
@@ -42,7 +46,7 @@ export default async function UserEditPage({ params }: Props) {
         </p>
       </div>
 
-      <UserEditForm user={user} />
+      <UserEditForm user={user} locale={locale} />
     </div>
   );
 }

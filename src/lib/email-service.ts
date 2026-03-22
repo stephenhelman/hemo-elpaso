@@ -122,8 +122,8 @@ async function renderEmailTemplate(
             location: String(data.location),
             adultsCount: Number(data.adultsCount) || 1,
             childrenCount: Number(data.childrenCount) || 0,
-            qrCodeDataUrl: String(data.qrCodeDataUrl),
             eventSlug: String(data.eventSlug),
+            // qrCodeDataUrl removed
           }),
         );
 
@@ -166,7 +166,6 @@ async function renderEmailTemplate(
           }),
         );
 
-      // ADD NEW CASES
       case "ASSISTANCE_SUBMITTED":
         return render(
           AssistanceSubmitted({
@@ -266,7 +265,6 @@ export async function sendRsvpConfirmation(params: {
   location: string;
   adultsCount: number;
   childrenCount: number;
-  qrCodeDataUrl: string;
   eventSlug: string;
   patientId: string;
   eventId: string;
@@ -282,7 +280,6 @@ export async function sendRsvpConfirmation(params: {
       location: params.location,
       adultsCount: params.adultsCount,
       childrenCount: params.childrenCount,
-      qrCodeDataUrl: params.qrCodeDataUrl,
       eventSlug: params.eventSlug,
     },
     patientId: params.patientId,

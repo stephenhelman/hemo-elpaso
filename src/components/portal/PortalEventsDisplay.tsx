@@ -301,7 +301,12 @@ function MyEventCard({
         {/* QR Code Section */}
         {expanded && (
           <div className="mt-6 pt-6 border-t border-neutral-200">
-            <QrCodeDisplay rsvpId={rsvp.id} mode="full" />
+            <QrCodeDisplay
+              rsvpId={rsvp.id}
+              eventTitle={{ en: event.titleEn, es: event.titleEs }}
+              compact={true}
+              locale={locale}
+            />
           </div>
         )}
       </div>

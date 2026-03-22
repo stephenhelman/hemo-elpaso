@@ -15,6 +15,7 @@ interface Props {
     event: {
       slug: string;
       titleEn: string;
+      titleEs: string;
       eventDate: Date | string;
     };
   };
@@ -24,6 +25,7 @@ interface Props {
 export default function UpcomingEventCard({ rsvp, locale }: Props) {
   const [showQr, setShowQr] = useState(false);
   const t = upcomingEventCardTranslation[locale];
+  const eventTitle = locale === "en" ? rsvp.event.titleEn : rsvp.event.titleEs;
   const eventDate = new Date(rsvp.event.eventDate);
 
   return (
@@ -36,7 +38,7 @@ export default function UpcomingEventCard({ rsvp, locale }: Props) {
           <DateBadge date={eventDate} variant="primary" size="sm" />
           <div>
             <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
-              {rsvp.event.titleEn}
+              {eventTitle}
             </h3>
             <p className="text-sm text-neutral-500">
               {rsvp.attendeeCount} {t.attendees}
@@ -58,7 +60,11 @@ export default function UpcomingEventCard({ rsvp, locale }: Props) {
 
         {showQr && (
           <div className="p-4 bg-neutral-50 border-t border-neutral-200">
-            <QrCodeDisplay rsvpId={rsvp.id} eventTitle={rsvp.event.titleEn} />
+            <QrCodeDisplay
+              rsvpId={rsvp.id}
+              eventTitle={{ en: rsvp.event.titleEn, es: rsvp.event.titleEs }}
+              locale={locale}
+            />
           </div>
         )}
       </div>

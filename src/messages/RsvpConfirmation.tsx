@@ -5,7 +5,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Preview,
   Section,
   Text,
@@ -19,8 +18,8 @@ interface Props {
   location: string;
   adultsCount: number;
   childrenCount: number;
-  qrCodeDataUrl: string;
   eventSlug: string;
+  // qrCodeDataUrl removed — QR is in the portal, not the email
 }
 
 export default function RsvpConfirmation({
@@ -31,11 +30,12 @@ export default function RsvpConfirmation({
   location = "UMC El Paso Conference Center",
   adultsCount = 2,
   childrenCount = 1,
-  qrCodeDataUrl = "",
   eventSlug = "spring-dinner-2026",
 }: Props) {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+
+  const portalUrl = `${baseUrl}/portal/dashboard`;
 
   return (
     <Html>
@@ -76,38 +76,34 @@ export default function RsvpConfirmation({
               <tr>
                 <td style={detailLabel}>👥 Attendees:</td>
                 <td style={detailValue}>
-                  {adultsCount} adult{adultsCount !== 1 ? "s" : ""},{" "}
-                  {childrenCount} child
-                  {childrenCount !== 1 ? "ren" : ""}
+                  {adultsCount} adult{adultsCount !== 1 ? "s" : ""}
+                  {childrenCount > 0 &&
+                    `, ${childrenCount} child${childrenCount !== 1 ? "ren" : ""}`}
                 </td>
               </tr>
             </table>
           </Section>
 
-          {/* QR Code */}
+          {/* QR Code — portal CTA */}
           <Section style={qrSection}>
             <Heading as="h2" style={h2}>
               Your Check-In QR Code
             </Heading>
             <Text style={text}>
-              Show this QR code at the event entrance for quick check-in:
+              Your QR code is ready in your member portal. Show it at the event
+              entrance for quick check-in — no printing needed.
             </Text>
-            <div style={qrCodeBox}>
-              <Img
-                src={qrCodeDataUrl}
-                alt="Check-in QR Code"
-                width="250"
-                height="250"
-                style={qrCodeImage}
-              />
-            </div>
+            <Button style={qrButton} href={portalUrl}>
+              View My QR Code →
+            </Button>
             <Text style={smallText}>
-              💡 <strong>Tip:</strong> Save this email or take a screenshot to
-              have your QR code ready.
+              💡 <strong>Tip:</strong> Open your portal on your phone before
+              arriving so your QR code is ready to scan. No internet required
+              once the page loads.
             </Text>
           </Section>
 
-          {/* CTA Button */}
+          {/* View event CTA */}
           <Section style={buttonSection}>
             <Button style={button} href={`${baseUrl}/events/${eventSlug}`}>
               View Event Details
@@ -124,9 +120,10 @@ export default function RsvpConfirmation({
             </Text>
             <Text style={footerText}>
               Can't make it?{" "}
-              <a href={`${baseUrl}/portal/dashboard`} style={link}>
+              <a href={portalUrl} style={link}>
                 Cancel your RSVP
-              </a>
+              </a>{" "}
+              from your portal.
             </Text>
           </Section>
         </Container>
@@ -183,6 +180,7 @@ const smallText = {
   fontSize: "14px",
   lineHeight: "20px",
   padding: "0 20px",
+  marginTop: "12px",
 };
 
 const detailsBox = {
@@ -215,21 +213,24 @@ const detailValue = {
 
 const qrSection = {
   margin: "24px 20px",
+  padding: "24px",
+  backgroundColor: "#f0fdf4",
+  borderRadius: "12px",
+  border: "1px solid #bbf7d0",
   textAlign: "center" as const,
 };
 
-const qrCodeBox = {
-  margin: "24px auto",
-  padding: "24px",
-  backgroundColor: "#ffffff",
-  border: "2px solid #8B1538",
-  borderRadius: "12px",
+const qrButton = {
+  backgroundColor: "#16a34a",
+  borderRadius: "8px",
+  color: "#ffffff",
+  fontSize: "16px",
+  fontWeight: "bold",
+  textDecoration: "none",
+  textAlign: "center" as const,
   display: "inline-block",
-};
-
-const qrCodeImage = {
-  display: "block",
-  margin: "0 auto",
+  padding: "12px 32px",
+  margin: "16px 0",
 };
 
 const buttonSection = {

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import QRCode from "qrcode";
 import { sendRsvpConfirmation, sendEmail } from "@/lib/email-service";
 import { AuditAction } from "@prisma/client";
 
@@ -97,14 +96,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate QR code
-    const qrData = JSON.stringify({
-      rsvpId: rsvp.id,
-      patientId: patient.id,
-      eventId: event.id,
-    });
-    const qrCodeDataUrl = await QRCode.toDataURL(qrData);
-
     // Audit log
     await prisma.auditLog.create({
       data: {
@@ -135,7 +126,6 @@ export async function POST(request: NextRequest) {
         location: event.location || "TBD",
         adultsCount: attendeeCount || 1,
         childrenCount: 0,
-        qrCodeDataUrl,
         eventSlug: event.slug,
         patientId: patient.id,
         eventId: event.id,
@@ -148,7 +138,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       rsvpId: rsvp.id,
-      qrCodeDataUrl,
     });
   } catch (error) {
     console.error("RSVP error:", error);
