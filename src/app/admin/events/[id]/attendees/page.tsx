@@ -269,6 +269,9 @@ function CheckedInRow({ checkIn, rsvp }: { checkIn: any; rsvp: any }) {
                 {rsvp.childrenAttending !== 1 ? "ren" : ""}
               </p>
             )}
+            <p className="text-xs text-neutral-500 capitalize">
+              {checkIn.attendeeRole}
+            </p>
             <p className="text-xs text-neutral-400 mt-1">
               Checked in{" "}
               {new Date(checkIn.checkInTime).toLocaleTimeString("en-US", {

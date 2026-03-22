@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
@@ -52,5 +53,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  revalidatePath("/admin/events");
   return NextResponse.json(event, { status: 201 });
 }

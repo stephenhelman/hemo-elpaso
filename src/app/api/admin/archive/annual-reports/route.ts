@@ -36,10 +36,13 @@ async function calculateYearStats(year: number) {
 
   const totalEventsHeld = events.length;
   const totalAttendance = events.reduce((sum, e) => sum + e.checkIns.length, 0);
-  const totalAssistancePaid = assistanceDisbursements.reduce(
-    (sum, d) => sum + Number(d.amount),
+  const totalEventCosts = events.reduce(
+    (sum, e) => sum + Number(e.eventCost ?? 0),
     0,
   );
+  const totalAssistancePaid =
+    assistanceDisbursements.reduce((sum, d) => sum + Number(d.amount), 0) +
+    totalEventCosts;
   const totalScholarshipsPaid = scholarships.reduce(
     (sum, s) => sum + Number(s.amount),
     0,

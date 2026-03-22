@@ -9,6 +9,7 @@ import {
   Clock,
   FileImage,
   Sparkles,
+  QrCode,
 } from "lucide-react";
 import RsvpButton from "@/components/events/RsvpButton";
 import FlyerPreview from "@/components/events/FlyerPreview";
@@ -40,6 +41,8 @@ export function EventPageContent({
   const t = eventSlugPageTranslation[locale];
   const isUpcoming = event.status === "published";
   const isPast = event.status === "completed";
+  const deadlinePassed =
+    !!event.rsvpDeadline && new Date(event.rsvpDeadline) < new Date();
   const title = locale === "en" ? event.titleEn : event.titleEs;
   const description =
     locale === "en" ? event.descriptionEn : event.descriptionEs;
@@ -138,6 +141,38 @@ export function EventPageContent({
             lang={locale}
           />
 
+          {isUpcoming && hasRsvp && !isCheckedIn && (
+            <div className="bg-white rounded-2xl border-2 border-primary/20 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <QrCode className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-primary font-semibold text-sm">
+                  {locale === "es"
+                    ? "¡Tienes una reservación!"
+                    : "You're registered!"}
+                </span>
+              </div>
+              <p className="text-neutral-600 text-sm mb-4">
+                {locale === "es"
+                  ? "Muestra tu código QR al llegar para registrarte rápidamente."
+                  : "Show your QR code at the entrance for quick check-in."}
+              </p>
+              <Link
+                href="/portal/dashboard"
+                className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+              >
+                <QrCode className="w-4 h-4" />
+                {locale === "es" ? "Ver mi código QR" : "View My QR Code"}
+              </Link>
+              <p className="text-xs text-neutral-400 text-center mt-2">
+                {locale === "es"
+                  ? "Disponible en tu portal de miembro"
+                  : "Available in your member portal"}
+              </p>
+            </div>
+          )}
+
           {/* Join Live Event Button - Only if checked in and live enabled */}
           {isCheckedIn && event.liveEnabled && (
             <div className="bg-white rounded-2xl border-2 border-green-200 p-6">
@@ -163,14 +198,22 @@ export function EventPageContent({
           {/* RSVP Button */}
           {isUpcoming && isLoggedIn && !isCheckedIn && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              <RsvpButton
-                eventId={event.id}
-                eventTitle={title}
-                hasRsvp={hasRsvp}
-                rsvpId={rsvpId}
-                maxCapacity={event.maxCapacity || undefined}
-                currentRsvps={rsvpCount}
-              />
+              {deadlinePassed && !hasRsvp ? (
+                <div className="px-4 py-2 rounded-full bg-neutral-100 text-neutral-500 border border-neutral-200 text-sm font-semibold text-center">
+                  {locale === "es"
+                    ? "Registro cerrado"
+                    : "Registration closed"}
+                </div>
+              ) : (
+                <RsvpButton
+                  eventId={event.id}
+                  eventTitle={title}
+                  hasRsvp={hasRsvp}
+                  rsvpId={rsvpId}
+                  maxCapacity={event.maxCapacity || undefined}
+                  currentRsvps={rsvpCount}
+                />
+              )}
             </div>
           )}
 

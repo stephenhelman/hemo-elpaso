@@ -83,7 +83,6 @@ export default function AttendeeListExport({
           attendee.email,
           phone,
           role,
-          attendee.attendeeRole,
           checkInTime,
         ].join(","),
       );

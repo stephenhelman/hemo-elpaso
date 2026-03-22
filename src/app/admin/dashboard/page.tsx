@@ -11,7 +11,7 @@ import { getLocaleCookie } from "@/lib/locale";
 export default async function AdminDashboardPage() {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/portal/dashboard");
-  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
+  if (!admin.can("canViewAdminDashboard")) redirect("/portal/dashboard");
 
   const adminProfile = await prisma.patient.findUnique({
     where: { id: admin.id },

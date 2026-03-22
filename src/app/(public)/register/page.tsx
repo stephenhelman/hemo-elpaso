@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import StepIndicator from "@/components/portal/register/StepIndicator";
@@ -68,6 +68,44 @@ function RegisterPageContent() {
   });
 
   const totalSteps = 6;
+  const STORAGE_KEY = "hoep_registration";
+  const STEP_KEY = "hoep_registration_step";
+
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const savedData = sessionStorage.getItem(STORAGE_KEY);
+      const savedStep = sessionStorage.getItem(STEP_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        // diagnosisLetterFile is a File — cannot be serialized, omit on restore
+        setFormData((prev) => ({ ...prev, ...parsed, diagnosisLetterFile: null }));
+      }
+      if (savedStep) {
+        setCurrentStep(parseInt(savedStep, 10));
+      }
+    } catch {
+      // Ignore parse errors — start fresh
+    }
+  }, []);
+
+  // Persist to sessionStorage whenever formData or step changes
+  useEffect(() => {
+    try {
+      const { diagnosisLetterFile, ...saveable } = formData;
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(saveable));
+    } catch {
+      // Ignore storage errors (private browsing, quota)
+    }
+  }, [formData]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STEP_KEY, String(currentStep));
+    } catch {
+      // Ignore
+    }
+  }, [currentStep]);
 
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -124,6 +162,8 @@ function RegisterPageContent() {
       });
 
       if (response.ok) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STEP_KEY);
         toast.success("Registration complete! Welcome to HOEP!");
         router.push(callbackUrl);
       } else {
