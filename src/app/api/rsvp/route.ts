@@ -40,8 +40,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, attendeeCount, dietaryRestrictions, accessibilityNeeds } =
-      body;
+    const {
+      eventId,
+      attendeeCount,
+      familyMembershipIds,
+      dietaryRestrictions,
+      accessibilityNeeds,
+    } = body;
 
     // Validate
     if (!eventId) {
@@ -83,13 +88,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Derive attendee count: selected family members + patient themselves
+    const selectedMemberIds: string[] = Array.isArray(familyMembershipIds)
+      ? familyMembershipIds
+      : [];
+    const finalAttendeeCount =
+      attendeeCount ?? selectedMemberIds.length + 1;
+
     // Create RSVP
     const rsvp = await prisma.rsvp.create({
       data: {
         patientId: patient.id,
         eventId: event.id,
         status: "confirmed",
-        attendeeCount: attendeeCount || 1,
+        attendeeCount: finalAttendeeCount,
+        familyMembershipIds: selectedMemberIds,
         dietaryRestrictions,
         specialNeeds: accessibilityNeeds,
         rsvpDate: new Date(),
@@ -124,7 +137,7 @@ export async function POST(request: NextRequest) {
           minute: "2-digit",
         }),
         location: event.location || "TBD",
-        adultsCount: attendeeCount || 1,
+        adultsCount: finalAttendeeCount,
         childrenCount: 0,
         eventSlug: event.slug,
         patientId: patient.id,

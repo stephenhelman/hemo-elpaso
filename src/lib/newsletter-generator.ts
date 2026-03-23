@@ -28,6 +28,7 @@ export interface NewsletterEventRecap {
     url: string;
     caption: string | null;
   }[];
+  sponsors: { id: string; name: string; website: string | null }[];
 }
 
 export interface NewsletterUpcomingEvent {
@@ -84,6 +85,7 @@ export async function generateNewsletterContent(
         where: { selectedForNewsletter: true, approved: true },
       },
       checkIns: true,
+      sponsors: { include: { sponsor: { select: { id: true, name: true, website: true } } } },
     },
     orderBy: { eventDate: "asc" },
   });
@@ -129,6 +131,11 @@ export async function generateNewsletterContent(
       id: p.id,
       url: p.url,
       caption: p.caption,
+    })),
+    sponsors: event.sponsors.map((es) => ({
+      id: es.sponsor.id,
+      name: es.sponsor.name,
+      website: es.sponsor.website,
     })),
   }));
 

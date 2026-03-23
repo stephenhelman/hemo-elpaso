@@ -50,6 +50,12 @@ export const portalEventsDisplayTranslation = {
     viewAndRsvp: "View & RSVP",
     showQr: "Show QR Code",
     hideQr: "Hide QR Code",
+    quickRsvp: "Quick RSVP",
+    confirmPrompt: "RSVP as 1 attendee?",
+    confirm: "Confirm",
+    cancel: "Cancel",
+    rsvped: "RSVP'd!",
+    rsvpFailed: "Failed — try again",
   },
   es: {
     myUpcoming: "Mis Próximos Eventos",
@@ -76,6 +82,12 @@ export const portalEventsDisplayTranslation = {
     viewAndRsvp: "Ver y RSVP",
     showQr: "Mostrar Código QR",
     hideQr: "Ocultar Código QR",
+    quickRsvp: "RSVP Rápido",
+    confirmPrompt: "¿RSVP para 1 asistente?",
+    confirm: "Confirmar",
+    cancel: "Cancelar",
+    rsvped: "¡RSVP Confirmado!",
+    rsvpFailed: "Error — intenta de nuevo",
   },
 };
 

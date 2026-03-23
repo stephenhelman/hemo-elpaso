@@ -8,6 +8,12 @@ export async function seedRsvpsAndCheckIns() {
     where: { role: "patient" },
   });
 
+  // Build a lookup: patientId -> familyId (primary patients only)
+  const families = await prisma.family.findMany({
+    select: { id: true, primaryPatientId: true },
+  });
+  const familyByPatient = new Map(families.map((f: { primaryPatientId: string; id: string }) => [f.primaryPatientId, f.id]));
+
   const events = await prisma.event.findMany({
     where: {
       status: "published",
@@ -40,6 +46,10 @@ export async function seedRsvpsAndCheckIns() {
     const rsvpedPatients = shuffledPatients.slice(0, numRsvps);
 
     for (const patient of rsvpedPatients) {
+      // Attach familyId if this patient is the primary of a family (25% chance)
+      const familyId = familyByPatient.get(patient.id);
+      const attachFamily = !!familyId && randomBoolean(0.25);
+
       // Create RSVP
       const rsvp = await prisma.rsvp.create({
         data: {
@@ -47,6 +57,7 @@ export async function seedRsvpsAndCheckIns() {
           patientId: patient.id,
           status: "confirmed",
           attendeeCount: randomInt(1, 4),
+          ...(attachFamily && { familyId }),
         },
       });
       rsvpCount++;

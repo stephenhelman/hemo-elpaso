@@ -2,13 +2,15 @@
 
 import React from "react";
 import type { Lang } from "@/types";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, CalendarDays } from "lucide-react";
 import { eventsActionTranslation } from "@/translation/eventsPage";
+
+export type ViewMode = "grid" | "table" | "calendar";
 
 interface Props {
   lang: Lang;
-  setViewMode: React.Dispatch<React.SetStateAction<"grid" | "table">>;
-  viewMode: string;
+  setViewMode: (mode: ViewMode) => void;
+  viewMode: ViewMode;
 }
 
 export function ViewToggle({ lang, setViewMode, viewMode }: Props) {
@@ -36,6 +38,17 @@ export function ViewToggle({ lang, setViewMode, viewMode }: Props) {
         title={t.list}
       >
         <List className="w-5 h-5" />
+      </button>
+      <button
+        onClick={() => setViewMode("calendar")}
+        className={`p-2 rounded transition-colors ${
+          viewMode === "calendar"
+            ? "bg-white text-primary shadow-sm"
+            : "text-neutral-600 hover:text-neutral-900"
+        }`}
+        title={t.calendar}
+      >
+        <CalendarDays className="w-5 h-5" />
       </button>
     </div>
   );

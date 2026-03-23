@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import FlyerUpload from "./FlyerUpload";
 import BilingualInput from "@/components/form/BilingualInput";
+import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { adminEventEditTranslation } from "@/translation/adminPages";
 import type { Lang } from "@/types";
 
@@ -227,13 +228,10 @@ export default function EventEditForm({ event, locale }: Props) {
               <label className="block text-sm font-medium text-neutral-700 mb-2">
                 {t.location}
               </label>
-              <input
-                type="text"
-                required
+              <PlacesAutocompleteInput
                 value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
+                onChange={(v) => setFormData({ ...formData, location: v })}
+                required
                 className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

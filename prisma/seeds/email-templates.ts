@@ -165,10 +165,43 @@ export async function seedEmailTemplates() {
       enabled: true,
       variables: ["patientName", "portalUrl"],
     },
+    {
+      type: "VOLUNTEER_REQUEST_RECEIVED",
+      name: "Volunteer Request - Received",
+      subject: "We Received Your Volunteer Request!",
+      description: "Sent to the patient when they submit a volunteer request",
+      enabled: true,
+      variables: ["patientName", "submittedAt"],
+    },
+    {
+      type: "VOLUNTEER_REQUEST_NOTIFY",
+      name: "Volunteer Request - Admin Notification",
+      subject: "New Volunteer Request from {{patientName}}",
+      description: "Sent to admins when a new volunteer request is submitted",
+      enabled: true,
+      variables: ["patientName", "patientEmail", "submittedAt", "reviewUrl"],
+    },
+    {
+      type: "VOLUNTEER_APPROVED",
+      name: "Volunteer - Approved",
+      subject: "You're Approved as a HOEP Volunteer! 🎉",
+      description: "Sent to the patient when their volunteer request is approved",
+      enabled: true,
+      variables: ["patientName"],
+    },
+    {
+      type: "VOLUNTEER_ASSIGNED",
+      name: "Volunteer - Event Assignment",
+      subject: "You've Been Assigned to {{eventTitle}}",
+      description: "Sent when a volunteer is assigned to a specific event",
+      enabled: true,
+      variables: ["patientName", "eventTitle", "eventDate", "eventTime", "location", "role", "accessToken"],
+    },
   ];
 
   for (const template of templates) {
-    await prisma.emailTemplate.upsert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (prisma.emailTemplate.upsert as any)({
       where: { type: template.type },
       update: template,
       create: template,

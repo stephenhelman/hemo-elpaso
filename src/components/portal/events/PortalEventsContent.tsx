@@ -4,11 +4,13 @@ import { portalEventsPageTranslation } from "@/translation/portalPages";
 import { Calendar } from "lucide-react";
 import PortalEventsDisplay from "../PortalEventsDisplay";
 import { Lang } from "@/types";
+import type { FamilyMember } from "@/types/family";
 
 interface Props {
   myRsvps: any[];
   recommendedEvents: any[];
   allEvents: any[];
+  familyMemberships: FamilyMember[];
   locale: Lang;
 }
 
@@ -16,6 +18,7 @@ export function PortalEventsContent({
   myRsvps,
   recommendedEvents,
   allEvents,
+  familyMemberships,
   locale,
 }: Props) {
   const t = portalEventsPageTranslation[locale];
@@ -43,6 +46,7 @@ export function PortalEventsContent({
           myRsvps={myRsvps}
           recommendedEvents={recommendedEvents}
           allEvents={allEvents}
+          familyMemberships={familyMemberships}
           locale={locale}
         />
       )}

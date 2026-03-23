@@ -7,8 +7,7 @@ import {
   FileText,
   GraduationCap,
   BarChart3,
-  Calendar,
-  Users,
+  Building2,
   ArrowRight,
 } from "lucide-react";
 
@@ -25,6 +24,7 @@ export default async function TransparencyArchivePage() {
     taxFilings,
     latestNewsletter,
     latestMinutes,
+    sponsorCount,
   ] = await Promise.all([
     prisma.newsletter.count({ where: { status: "SENT" } }),
     prisma.boardMinutes.count({ where: { isPublic: true } }),
@@ -39,6 +39,7 @@ export default async function TransparencyArchivePage() {
       where: { isPublic: true },
       orderBy: { meetingDate: "desc" },
     }),
+    prisma.sponsor.count({ where: { isActive: true } }),
   ]);
 
   const MONTH_NAMES = [
@@ -95,6 +96,10 @@ export default async function TransparencyArchivePage() {
     filingsDesc: isEs
       ? "Declaraciones fiscales anuales ante el IRS"
       : "Annual IRS tax filings for our nonprofit",
+    sponsors: isEs ? "Patrocinadores" : "Sponsors",
+    sponsorsDesc: isEs
+      ? "Organizaciones que apoyan nuestra misión"
+      : "Organizations that support our mission",
     view: isEs ? "Ver todo" : "View all",
     records: isEs ? "registros" : "records",
     latest: isEs ? "Más reciente:" : "Latest:",
@@ -158,6 +163,15 @@ export default async function TransparencyArchivePage() {
       count: taxFilings.length,
       latest: taxFilings[0] ? String(taxFilings[0].year) : null,
       color: "bg-blue-50 text-blue-600",
+    },
+    {
+      icon: Building2,
+      title: t.sponsors,
+      desc: t.sponsorsDesc,
+      href: "/archive/sponsors",
+      count: sponsorCount,
+      latest: null,
+      color: "bg-indigo-50 text-indigo-600",
     },
   ];
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Upload, FileText, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
+import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 
 const categoryOptions = [
   { value: "EDUCATION", label: "Educational Seminar" },
@@ -21,6 +22,10 @@ const categoryOptions = [
 export default function NewEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [flyerEn, setFlyerEn] = useState<File | null>(null);
+  const [flyerEs, setFlyerEs] = useState<File | null>(null);
+  const flyerEnRef = useRef<HTMLInputElement>(null);
+  const flyerEsRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     // Basic Info
     titleEn: "",
@@ -106,6 +111,22 @@ export default function NewEventPage() {
       });
 
       if (response.ok) {
+        const event = await response.json();
+
+        // Upload flyers if selected
+        if (flyerEn || flyerEs) {
+          const fd = new FormData();
+          if (flyerEn) fd.append("flyerEn", flyerEn);
+          if (flyerEs) fd.append("flyerEs", flyerEs);
+          const flyerRes = await fetch(`/api/admin/events/${event.id}/flyers`, {
+            method: "POST",
+            body: fd,
+          });
+          if (!flyerRes.ok) {
+            toast.error("Event created, but flyer upload failed. Add flyers from the edit page.");
+          }
+        }
+
         router.push("/admin/events");
       } else {
         const data = await response.json();
@@ -203,13 +224,12 @@ export default function NewEventPage() {
           </div>
 
           <FormField label="Location" required>
-            <input
-              type="text"
-              required
+            <PlacesAutocompleteInput
               value={formData.location}
-              onChange={(e) => updateFormData({ location: e.target.value })}
-              className={inputClass}
+              onChange={(v) => updateFormData({ location: v })}
+              required
               placeholder="UMC El Paso Conference Center, 4815 Alameda Ave"
+              className={inputClass}
             />
           </FormField>
 
@@ -384,6 +404,86 @@ export default function NewEventPage() {
           </FormField>
         </Section>
 
+        {/* Flyers */}
+        <Section title="Event Flyers (Optional)">
+          <p className="text-sm text-neutral-500 -mt-2">
+            You can also upload flyers after creation from the event edit page.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* English Flyer */}
+            <FormField label="English Flyer (PDF, JPG, PNG)">
+              <div className="relative">
+                <input
+                  ref={flyerEnRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="hidden"
+                  id="newFlyerEn"
+                  onChange={(e) => setFlyerEn(e.target.files?.[0] ?? null)}
+                />
+                <label
+                  htmlFor="newFlyerEn"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors"
+                >
+                  {flyerEn ? (
+                    <FileText className="w-5 h-5 text-primary" />
+                  ) : (
+                    <Upload className="w-5 h-5" />
+                  )}
+                  <span className="text-sm truncate max-w-[180px]">
+                    {flyerEn ? flyerEn.name : "Select English Flyer"}
+                  </span>
+                </label>
+                {flyerEn && (
+                  <button
+                    type="button"
+                    onClick={() => { setFlyerEn(null); if (flyerEnRef.current) flyerEnRef.current.value = ""; }}
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </FormField>
+
+            {/* Spanish Flyer */}
+            <FormField label="Spanish Flyer (PDF, JPG, PNG)">
+              <div className="relative">
+                <input
+                  ref={flyerEsRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="hidden"
+                  id="newFlyerEs"
+                  onChange={(e) => setFlyerEs(e.target.files?.[0] ?? null)}
+                />
+                <label
+                  htmlFor="newFlyerEs"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors"
+                >
+                  {flyerEs ? (
+                    <FileText className="w-5 h-5 text-primary" />
+                  ) : (
+                    <Upload className="w-5 h-5" />
+                  )}
+                  <span className="text-sm truncate max-w-[180px]">
+                    {flyerEs ? flyerEs.name : "Select Spanish Flyer"}
+                  </span>
+                </label>
+                {flyerEs && (
+                  <button
+                    type="button"
+                    onClick={() => { setFlyerEs(null); if (flyerEsRef.current) flyerEsRef.current.value = ""; }}
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </FormField>
+          </div>
+        </Section>
+
         {/* Submit */}
         <div className="flex gap-4 pt-4">
           <button
@@ -394,7 +494,7 @@ export default function NewEventPage() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Creating...
+                {flyerEn || flyerEs ? "Creating & Uploading..." : "Creating..."}
               </>
             ) : (
               "Create Event"

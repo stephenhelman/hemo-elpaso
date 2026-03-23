@@ -75,6 +75,52 @@ enum EmailTemplateType {
   ASSISTANCE_DENIED
   DISBURSEMENT_ISSUED
   WELCOME_EMAIL
+  VOLUNTEER_REQUEST_RECEIVED
+  VOLUNTEER_REQUEST_NOTIFY
+  VOLUNTEER_APPROVED
+  VOLUNTEER_ASSIGNED
+}
+
+enum AgeTier {
+  RECORD_ONLY
+  YOUTH
+  ADULT
+}
+
+enum FamilyMembershipStatus {
+  ACTIVE
+  PENDING_INVITE
+  DETACHED
+}
+
+enum BoardApprovalType {
+  FAMILY_DETACHMENT
+  VOLUNTEER_APPROVAL
+  ROLE_ASSIGNMENT
+}
+
+enum BoardApprovalStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum VolunteerStatus {
+  PENDING_REVIEW
+  APPROVED
+  INACTIVE
+  REJECTED
+}
+
+enum VolunteerEventRole {
+  CHECK_IN_STAFF
+  REGISTRATION_TABLE
+  SETUP_CREW
+  TEARDOWN_CREW
+  HOSPITALITY
+  ACTIVITIES
+  GENERAL_SUPPORT
+  OTHER
 }
 
 enum BoardRoleType {
@@ -224,11 +270,14 @@ model Patient {
   consentToPhotos         Boolean   @default(false)
 
   diagnosisGracePeriodEndsAt DateTime?
-  diagnosisGracePeriodSource String?  
+  diagnosisGracePeriodSource String?
 
   emergencyContactName         String?
   emergencyContactPhone        String?
   emergencyContactRelationship String?
+
+  wantsToVolunteer     Boolean   @default(false)
+  volunteerRequestedAt DateTime?
 
   contactProfile    ContactProfile?
   disorderProfile   DisorderProfile?
@@ -239,7 +288,10 @@ model Patient {
   auditLogs         AuditLog[]
   financialAssistanceApplications FinancialAssistanceApplication[]
   emailLogs         EmailLog[]
-  boardRoles  BoardRole[]
+  boardRoles        BoardRole[]
+  primaryOfFamily   Family?           @relation("FamilyPrimary")
+  familyMemberships FamilyMembership[]
+  volunteerProfile  VolunteerProfile?
 
   @@map("patients")
 }
@@ -275,8 +327,8 @@ model DisorderProfile {
   familyMemberId String?   @unique
   
 
-  condition      String    
-  severity       String    
+  condition      String
+  severity       String?
   dateOfDiagnosis DateTime?
   
 
@@ -349,6 +401,14 @@ model Event {
   liveEnabled    Boolean @default(false)
   eventCost  Decimal? @db.Decimal(10, 2)
 
+  // Recap (post-event)
+  recapTitleEn         String?
+  recapTitleEs         String?
+  recapBodyEn          String?
+  recapBodyEs          String?
+  recapGalleryEmbedUrl String?
+  recapPublishedAt     DateTime?
+
   createdBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -364,10 +424,42 @@ model Event {
   itineraryItems      EventItineraryItem[]
   polls               Poll[]
   emailLogs EmailLog[]
-  presenterTokens  PresenterAccessToken[]
-  presentation     EventPresentation?
+  presenterTokens       PresenterAccessToken[]
+  presentation          EventPresentation?
+  volunteerAssignments  VolunteerEventAssignment[]
+  timecards             VolunteerTimecard[]
+  sponsors              EventSponsor[]
 
   @@map("events")
+}
+
+model Sponsor {
+  id        String   @id @default(uuid())
+  name      String
+  logoUrl   String?
+  logoKey   String?
+  tier      String   @default("PARTNER") // PLATINUM | GOLD | SILVER | BRONZE | PARTNER
+  website   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events EventSponsor[]
+
+  @@map("sponsors")
+}
+
+model EventSponsor {
+  id         String  @id @default(uuid())
+  eventId    String
+  event      Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sponsorId  String
+  sponsor    Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, sponsorId])
+  @@index([eventId])
+  @@index([sponsorId])
+  @@map("event_sponsors")
 }
 
 model FinancialAssistanceApplication {
@@ -491,8 +583,10 @@ model Rsvp {
   id                  String   @id @default(uuid())
   eventId             String
   patientId           String
-  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  patient Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  familyId            String?
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  family              Family?  @relation(fields: [familyId], references: [id], onDelete: SetNull)
   status              String   @default("confirmed")
   attendeeCount       Int
   dietaryRestrictions String?
@@ -500,21 +594,25 @@ model Rsvp {
   rsvpDate            DateTime @default(now())
   updatedAt           DateTime @updatedAt
   reminderSent        Boolean  @default(false)
+  familyMembershipIds String[] @default([])
 
   @@unique([eventId, patientId])
 }
 
 model CheckIn {
-  id               String   @id @default(uuid())
-  eventId          String
-  patientId        String
-  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  patient          Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  checkInTime      DateTime @default(now())
-  checkedInBy      String?
-  sessionToken     String   @unique
-  sessionExpiresAt DateTime
-  attendeeRole     String   @default("patient") // patient, sponsor, donor, admin, volunteer
+  id                  String   @id @default(uuid())
+  eventId             String
+  patientId           String
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  checkInTime         DateTime @default(now())
+  checkOutTime        DateTime?
+  checkedInBy         String?
+  sessionToken        String   @unique
+  sessionExpiresAt    DateTime
+  attendeeRole        String   @default("patient") // patient, sponsor, donor, admin, volunteer
+  familyMembershipIds String[] @default([])
+  timecardId          String?  // no FK — set after VolunteerTimecard created
 
   @@unique([eventId, patientId])
   @@map("check_ins")
@@ -729,6 +827,32 @@ enum AuditAction {
   PRESENTER_TOKEN_CREATED
   PRESENTATION_UPDATED
   ITINERARY_ITEM_STATUS_CHANGED
+
+  // RSVP / Check-in updates
+  RSVP_UPDATED
+  CHECKIN_UPDATED
+  CHECKOUT_RECORDED
+
+  // Family system
+  FAMILY_CREATED
+  FAMILY_MEMBER_INVITED
+  FAMILY_MEMBER_JOINED
+  FAMILY_MEMBER_DETACHED
+  FAMILY_DETACHMENT_REQUESTED
+  FAMILY_DETACHMENT_APPROVED
+  BOARD_APPROVAL_REQUESTED
+  BOARD_APPROVAL_GRANTED
+  BOARD_APPROVAL_DENIED
+
+  // Volunteer system
+  VOLUNTEER_REQUEST_SUBMITTED
+  VOLUNTEER_APPROVED
+  VOLUNTEER_REJECTED
+  VOLUNTEER_ASSIGNED_TO_EVENT
+  VOLUNTEER_ROLE_CHANGED
+  VOLUNTEER_CHECKED_IN
+  VOLUNTEER_CHECKED_OUT
+  TIMECARD_ADJUSTED
 }
 
 model AuditLog {
@@ -816,6 +940,7 @@ model AnnualReport {
   totalScholarshipsPaid Decimal  @default(0) @db.Decimal(10, 2)
   // Treasurer manual entry
   totalSponsorIncome    Decimal? @db.Decimal(10, 2)
+  totalVolunteerHours   Decimal  @default(0) @db.Decimal(8, 2)
   notes                 String?
   createdBy             String
   createdAt             DateTime @default(now())
@@ -872,4 +997,170 @@ model EventPresentation {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   @@map("event_presentations")
+}
+
+// ============================================================
+// SCHEMA-001: Family system
+// ============================================================
+
+model Family {
+  id               String             @id @default(uuid())
+  name             String
+  primaryPatientId String             @unique
+  primaryPatient   Patient            @relation("FamilyPrimary", fields: [primaryPatientId], references: [id])
+  memberships      FamilyMembership[]
+  rsvps            Rsvp[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  @@map("families")
+}
+
+model FamilyMembership {
+  id                   String                 @id @default(uuid())
+  familyId             String
+  family               Family                 @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  patientId            String?
+  patient              Patient?               @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  firstName            String
+  lastName             String
+  dateOfBirth          DateTime?
+  relationship         String
+  ageTier              AgeTier                @default(RECORD_ONLY)
+  status               FamilyMembershipStatus @default(ACTIVE)
+  inviteEmail          String?
+  inviteSentAt         DateTime?
+  inviteAcceptedAt     DateTime?
+  parentalConsentGiven Boolean                @default(false)
+  parentalConsentAt    DateTime?
+  parentalConsentBy    String?
+  hasBleedingDisorder  Boolean                @default(false)
+  disorderCondition    String?
+  disorderSeverity     String?
+  diagnosisLetterUrl   String?
+  diagnosisLetterKey   String?
+  diagnosisVerified    Boolean                @default(false)
+  diagnosisVerifiedBy  String?
+  diagnosisVerifiedAt  DateTime?
+  detachedAt           DateTime?
+  detachedBy           String?
+  detachReason         String?
+  boardApprovalId      String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@index([familyId])
+  @@index([patientId])
+  @@index([status])
+  @@map("family_memberships")
+}
+
+model BoardApproval {
+  id           String              @id @default(uuid())
+  type         BoardApprovalType
+  status       BoardApprovalStatus @default(PENDING)
+  requestedBy  String
+  requestedAt  DateTime            @default(now())
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  notes        String?
+  resourceType String?
+  resourceId   String?
+
+  @@index([status])
+  @@index([type])
+  @@map("board_approvals")
+}
+
+// ============================================================
+// SCHEMA-002: Volunteer system
+// ============================================================
+
+model VolunteerProfile {
+  id                  String                     @id @default(uuid())
+  patientId           String                     @unique
+  patient             Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status              VolunteerStatus            @default(PENDING_REVIEW)
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectedBy          String?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  internalNotes       String?
+  generalAvailability Json?
+  skills              Json?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  applications        VolunteerApplication[]
+  eventAssignments    VolunteerEventAssignment[]
+  timecards           VolunteerTimecard[]
+
+  @@index([status])
+  @@map("volunteer_profiles")
+}
+
+model VolunteerApplication {
+  id                 String           @id @default(uuid())
+  volunteerProfileId String
+  volunteerProfile   VolunteerProfile @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
+  whyVolunteering    String?
+  skills             String?
+  availability       String?
+  priorExperience    String?
+  references         Json?
+  submittedAt        DateTime?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  reviewNotes        String?
+
+  @@map("volunteer_applications")
+}
+
+model VolunteerEventAssignment {
+  id                   String           @id @default(uuid())
+  volunteerProfileId   String
+  volunteerProfile     VolunteerProfile @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
+  eventId              String
+  event                Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  role                 VolunteerEventRole @default(GENERAL_SUPPORT)
+  assignedBy           String
+  assignedAt           DateTime         @default(now())
+  accessToken          String           @unique @default(uuid())
+  accessTokenExpiresAt DateTime?
+  notes                String?
+
+  @@unique([volunteerProfileId, eventId])
+  @@map("volunteer_event_assignments")
+}
+
+model VolunteerTimecard {
+  id                 String                  @id @default(uuid())
+  volunteerProfileId String
+  volunteerProfile   VolunteerProfile        @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
+  eventId            String
+  event              Event                   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  checkInTime        DateTime                @default(now())
+  checkOutTime       DateTime?
+  totalHours         Decimal?                @db.Decimal(5, 2)
+  status             String                  @default("active")
+  adjustedBy         String?
+  adjustedAt         DateTime?
+  adjustmentNotes    String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  roles              VolunteerTimecardRole[]
+
+  @@map("volunteer_timecards")
+}
+
+model VolunteerTimecardRole {
+  id         String             @id @default(uuid())
+  timecardId String
+  timecard   VolunteerTimecard  @relation(fields: [timecardId], references: [id], onDelete: Cascade)
+  role       VolunteerEventRole
+  startTime  DateTime
+  endTime    DateTime?
+  assignedBy String?
+  notes      String?
+
+  @@map("volunteer_timecard_roles")
 }

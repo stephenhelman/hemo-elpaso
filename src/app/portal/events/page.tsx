@@ -23,6 +23,19 @@ export default async function PortalEventsPage() {
 
   const now = new Date();
 
+  // Get patient's active family memberships (for RSVP family picker)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const family = await (prisma as any).family.findUnique({
+    where: { primaryPatientId: patient.id },
+    include: {
+      memberships: {
+        where: { status: "ACTIVE" },
+        orderBy: { firstName: "asc" },
+      },
+    },
+  }).catch(() => null);
+  const familyMemberships = family?.memberships ?? [];
+
   // Get patient's RSVPs
   const myRsvps = await prisma.rsvp.findMany({
     where: {
@@ -90,6 +103,7 @@ export default async function PortalEventsPage() {
       myRsvps={myRsvps}
       recommendedEvents={recommendedEvents}
       allEvents={allEvents}
+      familyMemberships={familyMemberships}
       locale={locale}
     />
   );

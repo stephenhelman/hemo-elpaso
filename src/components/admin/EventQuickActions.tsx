@@ -14,6 +14,8 @@ import {
   X,
   Loader2,
   Send,
+  FileText,
+  Building2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -78,6 +80,22 @@ export default function EventQuickActions({ eventId }: Props) {
             <MonitorPlay className="w-4 h-4" />
             Presenter Link
           </button>
+
+          <Link
+            href={`/admin/events/${eventId}/recap`}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-orange-300 hover:text-orange-600 transition-colors"
+          >
+            <FileText className="w-4 h-4" />
+            Recap
+          </Link>
+
+          <Link
+            href={`/admin/events/${eventId}/sponsors`}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+          >
+            <Building2 className="w-4 h-4" />
+            Sponsors
+          </Link>
         </div>
       </div>
 

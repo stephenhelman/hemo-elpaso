@@ -28,8 +28,14 @@ export default async function EventPage({ params, searchParams }: Props) {
   const event = await prisma.event.findUnique({
     where: { slug: params.slug },
     include: {
-      _count: {
-        select: { rsvps: true },
+      _count: { select: { rsvps: true } },
+      sponsors: {
+        include: {
+          sponsor: {
+            select: { id: true, name: true, logoUrl: true, tier: true, website: true },
+          },
+        },
+        orderBy: { sponsor: { tier: "asc" } },
       },
     },
   });
@@ -60,6 +66,8 @@ export default async function EventPage({ params, searchParams }: Props) {
     createdBy: event.createdBy,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
+    recapPublishedAt: event.recapPublishedAt?.toISOString() ?? null,
+    sponsors: event.sponsors.map((es) => es.sponsor),
   };
 
   const session = await getSession();
