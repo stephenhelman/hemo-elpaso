@@ -16,6 +16,8 @@ import {
   Edit2,
   Check,
   X,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -30,6 +32,7 @@ interface BoardRoleRecord {
   active: boolean;
   assignedBy: string;
   assignedAt: string;
+  gmailSendAsConfigured: boolean;
   patient: {
     id: string;
     email: string;
@@ -82,6 +85,14 @@ const COMMUNITY_ROLES = [
   "FUNDRAISING_COORDINATOR",
   "BOARD_MEMBER_AT_LARGE",
 ];
+
+// Roles that can send individual emails and thus need Gmail connected
+const ROLES_WITH_GMAIL = new Set([
+  "PRESIDENT",
+  "VICE_PRESIDENT",
+  "SECRETARY",
+  "COMMUNICATIONS_LEAD",
+]);
 
 const ROLE_FROM_EMAILS: Record<string, string> = {
   PRESIDENT: "president@hemo-el-paso.org",
@@ -293,6 +304,23 @@ export default function BoardManagementClient({
 // -------------------------------------------------------
 // BoardRoleCard
 // -------------------------------------------------------
+function GmailStatusBadge({ configured }: { configured: boolean }) {
+  if (configured) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-200">
+        <CheckCircle className="w-3 h-3" />
+        Gmail connected
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium border border-amber-200">
+      <AlertCircle className="w-3 h-3" />
+      Gmail not connected
+    </span>
+  );
+}
+
 function BoardRoleCard({
   roleKey,
   record,
@@ -434,6 +462,13 @@ function BoardRoleCard({
             })}{" "}
             by {record.assignedBy}
           </p>
+
+          {/* Gmail connection status — only for roles that can send individual emails */}
+          {ROLES_WITH_GMAIL.has(record.role) && (
+            <div className="mt-3">
+              <GmailStatusBadge configured={record.gmailSendAsConfigured} />
+            </div>
+          )}
         </div>
 
         {canAssign && (

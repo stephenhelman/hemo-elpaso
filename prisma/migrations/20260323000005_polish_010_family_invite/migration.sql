@@ -1,0 +1,2 @@
+-- Add FAMILY_MEMBER_INVITE to EmailTemplateType enum
+ALTER TYPE "EmailTemplateType" ADD VALUE IF NOT EXISTS 'FAMILY_MEMBER_INVITE';

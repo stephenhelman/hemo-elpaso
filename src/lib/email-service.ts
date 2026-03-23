@@ -12,10 +12,12 @@ import DisbursementIssued from "@/messages/DisbursementIssued";
 import EventPublished from "@/messages/EventPublished";
 import EventCancelled from "@/messages/EventCancelled";
 import WelcomeEmail from "@/messages/WelcomeEmail";
+import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
+import FamilyMemberInvite from "@/messages/FamilyMemberInvite";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const EMAIL_FROM =
-  process.env.EMAIL_FROM || "HOEP Events <events@events.hemo-el-paso.org>";
+const DEFAULT_FROM =
+  process.env.EMAIL_FROM || "HOEP (DO NOT REPLY) <noreply@hemo-el-paso.org>";
 
 interface EmailData {
   [key: string]: string | number;
@@ -27,6 +29,8 @@ interface SendEmailParams {
   data: EmailData;
   patientId?: string;
   eventId?: string;
+  fromEmail?: string; // override sender (e.g. president@hemo-el-paso.org)
+  replyTo?: string; // board member's personal Gmail
 }
 
 export async function sendEmail({
@@ -35,6 +39,8 @@ export async function sendEmail({
   data,
   patientId,
   eventId,
+  fromEmail,
+  replyTo,
 }: SendEmailParams) {
   try {
     // Get template from database
@@ -67,10 +73,11 @@ export async function sendEmail({
 
     // Send via Resend
     const result = await resend.emails.send({
-      from: EMAIL_FROM,
+      from: fromEmail ?? DEFAULT_FROM,
       to: recipient,
       subject,
       html: emailHtml,
+      ...(replyTo ? { replyTo } : {}),
     });
 
     // Log email
@@ -242,6 +249,27 @@ async function renderEmailTemplate(
           WelcomeEmail({
             patientName: String(data.patientName),
             email: String(data.email),
+          }),
+        );
+
+      case "BOARD_ROLE_ASSIGNED":
+        return render(
+          BoardRoleAssigned({
+            patientName: String(data.patientName),
+            roleTitle: String(data.roleTitle),
+            roleEmail: String(data.roleEmail),
+            dashboardUrl: String(data.dashboardUrl),
+            lang: String(data.lang) as "en" | "es",
+          }),
+        );
+
+      case "FAMILY_MEMBER_INVITE":
+        return render(
+          FamilyMemberInvite({
+            inviteeName: String(data.inviteeName),
+            inviterName: String(data.inviterName),
+            familyName: String(data.familyName),
+            inviteUrl: String(data.inviteUrl),
           }),
         );
 

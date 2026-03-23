@@ -3,6 +3,7 @@ import {
   Calendar,
   User,
   DollarSign,
+  Users,
 } from "lucide-react";
 
 export const portalSidebarTranslation = {
@@ -48,5 +49,11 @@ export const portalNavItemsTranslation = [
     en: "Financial Assistance",
     es: "Asistencia Financiera",
     icon: DollarSign,
+  },
+  {
+    href: "/portal/family",
+    en: "My Family",
+    es: "Mi Familia",
+    icon: Users,
   },
 ];

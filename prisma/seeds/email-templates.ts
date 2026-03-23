@@ -197,6 +197,22 @@ export async function seedEmailTemplates() {
       enabled: true,
       variables: ["patientName", "eventTitle", "eventDate", "eventTime", "location", "role", "accessToken"],
     },
+    {
+      type: "BOARD_ROLE_ASSIGNED",
+      name: "Board Role - Onboarding",
+      subject: "Your Board Role at HOEP: {{roleTitle}}",
+      description: "Sent to a new board member when they are assigned a role. Bilingual — respects patient.preferredLanguage.",
+      enabled: true,
+      variables: ["patientName", "roleTitle", "roleEmail", "dashboardUrl", "lang"],
+    },
+    {
+      type: "FAMILY_MEMBER_INVITE",
+      name: "Family Member Invitation",
+      subject: "You've been invited to join HOEP",
+      description: "Sent to a family member when they are invited to join the portal",
+      enabled: true,
+      variables: ["inviteeName", "inviterName", "familyName", "inviteUrl"],
+    },
   ];
 
   for (const template of templates) {

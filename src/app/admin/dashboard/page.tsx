@@ -7,6 +7,9 @@ import { StatCard } from "@/components/ui/StatCard";
 import { Lang } from "@/types";
 import { adminDashboardTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
+import GmailSetupBanner from "@/components/admin/GmailSetupBanner";
+import { ROLE_PERMISSIONS } from "@/lib/permissions";
+import { BoardRoleType } from "@prisma/client";
 
 export default async function AdminDashboardPage() {
   const admin = await getAdminWithPermissions();
@@ -17,6 +20,42 @@ export default async function AdminDashboardPage() {
     where: { id: admin.id },
     select: { contactProfile: { select: { firstName: true } } },
   });
+
+  // Gmail setup banner: only for roles with canSendIndividualEmails
+  const gmailBannerRoles = admin.can("canSendIndividualEmails")
+    ? await prisma.boardRole.findMany({
+        where: {
+          patientId: admin.id,
+          active: true,
+          role: {
+            in: (Object.entries(ROLE_PERMISSIONS) as [BoardRoleType, string[]][])
+              .filter(([, perms]) => perms.includes("canSendIndividualEmails"))
+              .map(([role]) => role),
+          },
+        },
+        select: {
+          id: true,
+          role: true,
+          fromEmail: true,
+          gmailSendAsConfigured: true,
+        },
+      })
+    : [];
+
+  const ROLE_LABEL: Record<string, string> = {
+    PRESIDENT: "President",
+    VICE_PRESIDENT: "Vice President",
+    SECRETARY: "Secretary",
+    COMMUNICATIONS_LEAD: "Communications Lead",
+  };
+
+  const gmailBannerData = gmailBannerRoles.map((r) => ({
+    id: r.id,
+    role: r.role,
+    roleLabel: ROLE_LABEL[r.role] ?? r.role,
+    fromEmail: r.fromEmail ?? `${r.role.toLowerCase().replace(/_/g, "")}@hemo-el-paso.org`,
+    gmailSendAsConfigured: r.gmailSendAsConfigured,
+  }));
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminDashboardTranslation[locale as Lang];
@@ -149,6 +188,11 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-4 md:p-8">
+      {/* Gmail setup banner for board members with canSendIndividualEmails */}
+      {gmailBannerData.length > 0 && (
+        <GmailSetupBanner roles={gmailBannerData} />
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">

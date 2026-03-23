@@ -5,9 +5,9 @@ import {
   ensurePatientExists,
   calculateGracePeriodEnd,
   getGracePeriodSource,
-  calculateMigrationEligibility,
 } from "@/lib/ensure-patient";
 import { AuditAction } from "@prisma/client";
+import { calculateAgeTier } from "@/lib/family-utils";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
       primaryCondition &&
       primaryCondition !== "" &&
       primaryCondition !== "none";
+
+    // ── Invite param (optional) ───────────────────────────────────────────────
+    const inviteMembershipId = formData.get("inviteMembershipId") as string | null;
 
     // ── Step 3: Family Members ────────────────────────────────────────────────
     const familyMembersRaw = formData.get("familyMembers") as string;
@@ -220,48 +223,48 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // ── Create Family Members ─────────────────────────────────────────────────
-    for (const member of familyMembers) {
-      const memberDOB = member.dateOfBirth
-        ? new Date(member.dateOfBirth)
-        : null;
+    // ── Create Family + FamilyMemberships (if family members provided) ────────
+    if (familyMembers.length > 0) {
+      // Derive family name from primary patient's last name
+      const familyName = `${lastName} Family`;
 
-      const familyMember = await prisma.familyMember.create({
+      const family = await prisma.family.create({
         data: {
-          patientId,
-          relationship: member.relationship,
-          hasBleedingDisorder: member.hasBleedingDisorder,
-          migrationEligibleAt: memberDOB
-            ? calculateMigrationEligibility(memberDOB)
-            : null,
+          name: familyName,
+          primaryPatientId: patientId,
         },
       });
 
-      // Create ContactProfile for family member
-      await prisma.contactProfile.create({
-        data: {
-          familyMemberId: familyMember.id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          dateOfBirth: memberDOB,
-        },
-      });
+      for (const member of familyMembers) {
+        const memberDOB = member.dateOfBirth
+          ? new Date(member.dateOfBirth)
+          : null;
+        const ageTier = calculateAgeTier(memberDOB);
 
-      // Create DisorderProfile for family member (if they have condition)
-      if (member.hasBleedingDisorder && member.condition) {
-        await prisma.disorderProfile.create({
+        await prisma.familyMembership.create({
           data: {
-            familyMemberId: familyMember.id,
-            condition: member.condition,
-            severity: member.severity || null,
-            dateOfDiagnosis: member.diagnosisDate
-              ? new Date(member.diagnosisDate)
-              : null,
-            treatingPhysician:
-              member.treatingPhysician || treatingPhysician || null, // Default to patient's doctor
-            specialtyPharmacy:
-              member.specialtyPharmacy || specialtyPharmacy || null, // Default to patient's pharmacy
+            familyId: family.id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            dateOfBirth: memberDOB,
+            relationship: member.relationship,
+            ageTier,
+            hasBleedingDisorder: member.hasBleedingDisorder,
+            status: "ACTIVE",
           },
+        });
+      }
+    }
+
+    // ── Link invite membership if present ────────────────────────────────────
+    if (inviteMembershipId) {
+      const membership = await prisma.familyMembership.findUnique({
+        where: { id: inviteMembershipId },
+      });
+      if (membership && membership.status === "PENDING_INVITE") {
+        await prisma.familyMembership.update({
+          where: { id: inviteMembershipId },
+          data: { patientId, status: "ACTIVE" },
         });
       }
     }

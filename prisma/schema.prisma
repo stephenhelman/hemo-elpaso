@@ -79,6 +79,8 @@ enum EmailTemplateType {
   VOLUNTEER_REQUEST_NOTIFY
   VOLUNTEER_APPROVED
   VOLUNTEER_ASSIGNED
+  BOARD_ROLE_ASSIGNED
+  FAMILY_MEMBER_INVITE
 }
 
 enum AgeTier {
@@ -154,6 +156,18 @@ model BoardRole {
   assignedBy  String        // admin email who assigned the role
   assignedAt  DateTime      @default(now())
   active      Boolean       @default(true)
+
+  // Gmail OAuth (POLISH-014)
+  gmailSendAsConfigured Boolean   @default(false)
+  gmailConnectedAt      DateTime?
+  gmailConnectedBy      String?   // patientId of person who authorized
+  gmailAccessToken      String?   // encrypted at rest
+  gmailRefreshToken     String?   // encrypted at rest
+  gmailTokenExpiry      DateTime?
+
+  onboarding       BoardOnboarding?
+  communicationLogs CommunicationLog[]
+
   @@unique([patientId, role])
   @@index([patientId])
   @@index([role])
@@ -853,6 +867,11 @@ enum AuditAction {
   VOLUNTEER_CHECKED_IN
   VOLUNTEER_CHECKED_OUT
   TIMECARD_ADJUSTED
+
+  // Board email system
+  BOARD_ROLE_ONBOARDING_SENT
+  GMAIL_CONNECTED
+  GMAIL_DISCONNECTED
 }
 
 model AuditLog {
@@ -1163,4 +1182,41 @@ model VolunteerTimecardRole {
   notes      String?
 
   @@map("volunteer_timecard_roles")
+}
+
+// ============================================================
+// SCHEMA-003: Board email system
+// ============================================================
+
+model BoardOnboarding {
+  id               String    @id @default(uuid())
+  boardRoleId      String    @unique
+  boardRole        BoardRole @relation(fields: [boardRoleId], references: [id], onDelete: Cascade)
+  emailSentAt      DateTime?
+  gmailConnected   Boolean   @default(false)
+  gmailConnectedAt DateTime?
+  sendAsSetUp      Boolean   @default(false)
+  sendAsConfirmedAt DateTime?
+  completedAt      DateTime?
+
+  @@map("board_onboardings")
+}
+
+model CommunicationLog {
+  id             String    @id @default(uuid())
+  boardRoleId    String
+  boardRole      BoardRole @relation(fields: [boardRoleId], references: [id])
+  patientId      String?
+  sponsorId      String?
+  direction      String    @default("outbound")
+  subject        String
+  bodyPreview    String    // first 200 chars
+  sentAt         DateTime  @default(now())
+  gmailMessageId String?
+  fromEmail      String
+  toEmail        String
+
+  @@index([boardRoleId])
+  @@index([patientId])
+  @@map("communication_logs")
 }

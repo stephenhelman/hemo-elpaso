@@ -15,6 +15,7 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/portal/dashboard";
+  const inviteMembershipId = searchParams.get("invite") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
@@ -155,6 +156,11 @@ function RegisterPageContent() {
         formDataToSend.append("diagnosisLetter", formData.diagnosisLetterFile);
       }
 
+      // Pass invite membership id if present
+      if (inviteMembershipId) {
+        formDataToSend.append("inviteMembershipId", inviteMembershipId);
+      }
+
       const response = await fetch("/api/patient/register", {
         method: "POST",
         // DON'T set Content-Type - browser will set it with proper boundary
@@ -203,7 +209,7 @@ function RegisterPageContent() {
             />
           )}
           {currentStep === 2 && (
-            <DiagnosisStep
+            <FamilyMembersStep
               data={formData}
               updateData={updateFormData}
               onNext={nextStep}
@@ -211,7 +217,7 @@ function RegisterPageContent() {
             />
           )}
           {currentStep === 3 && (
-            <FamilyMembersStep
+            <DiagnosisStep
               data={formData}
               updateData={updateFormData}
               onNext={nextStep}

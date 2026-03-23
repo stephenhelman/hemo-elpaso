@@ -7,8 +7,8 @@ interface Props {
 
 const stepLabels = [
   "Basic Info",
-  "Diagnosis",
   "Family",
+  "Diagnosis",
   "Emergency",
   "Preferences",
   "Consent",

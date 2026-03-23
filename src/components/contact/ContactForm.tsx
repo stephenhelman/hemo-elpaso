@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Send, CheckCircle } from "lucide-react";
+import { Send, CheckCircle, AlertCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
-
 import { contactFormTranslation } from "@/translation/contactPage";
 import { Lang } from "@/types";
 
@@ -16,6 +15,7 @@ export default function ContactForm({ locale }: Props) {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -30,15 +30,42 @@ export default function ContactForm({ locale }: Props) {
     >,
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: wire to API route + Resend
-    await new Promise((r) => setTimeout(r, 1000));
-    setSubmitted(true);
-    setLoading(false);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, locale }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError(
+          data.error ||
+            (locale === "es"
+              ? "Error al enviar. Por favor intente de nuevo."
+              : "Failed to send. Please try again."),
+        );
+      }
+    } catch {
+      setError(
+        locale === "es"
+          ? "Error de conexión. Por favor intente de nuevo."
+          : "Connection error. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -130,6 +157,14 @@ export default function ContactForm({ locale }: Props) {
             className={`${inputClass} resize-none`}
           />
         </FormField>
+
+        {/* Error message */}
+        {error && (
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
 
         <button
           type="submit"
