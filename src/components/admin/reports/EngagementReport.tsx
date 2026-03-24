@@ -13,7 +13,7 @@ interface Event {
   checkIns: Array<{
     patientId: string;
     patient: {
-      profile: {
+      contactProfile: {
         firstName: string;
         lastName: string;
       } | null;
@@ -46,8 +46,8 @@ export default function EngagementReport({ events, uniquePatients, locale }: Pro
       if (!patientEngagement[checkIn.patientId]) {
         patientEngagement[checkIn.patientId] = {
           patientId: checkIn.patientId,
-          name: checkIn.patient.profile
-            ? `${checkIn.patient.profile.firstName} ${checkIn.patient.profile.lastName}`
+          name: checkIn.patient.contactProfile
+            ? `${checkIn.patient.contactProfile.firstName} ${checkIn.patient.contactProfile.lastName}`
             : "Unknown",
           eventsAttended: 0,
         };

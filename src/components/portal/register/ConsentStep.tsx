@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Camera, Mail } from "lucide-react";
+import { Shield, Camera, Mail, Heart } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Props {
@@ -70,6 +70,16 @@ export default function ConsentStep({
         description="I consent to receive event notifications, newsletters, and community updates via email and SMS. You can unsubscribe at any time."
         checked={data.communicationConsent}
         onChange={(checked) => updateData({ communicationConsent: checked })}
+      />
+
+      {/* Volunteer Interest */}
+      <ConsentCard
+        icon={<Heart className="w-5 h-5" />}
+        title="Volunteer with HOEP"
+        description="I'm interested in volunteering at HOEP events. I understand my application will be reviewed by staff before I'm approved."
+        required={false}
+        checked={data.wantsToVolunteer}
+        onChange={(checked) => updateData({ wantsToVolunteer: checked })}
       />
 
       {/* Privacy Notice */}

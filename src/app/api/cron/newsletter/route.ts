@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Notify the President
     const presidentRole = await prisma.boardRole.findFirst({
       where: { role: "PRESIDENT", active: true },
-      include: { patient: true },
+      include: { patient: { include: { contactProfile: true } } },
     });
 
     if (presidentRole) {

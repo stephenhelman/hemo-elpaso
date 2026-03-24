@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { Calendar, Users, TrendingUp } from "lucide-react";
+import { Calendar, Users, TrendingUp, Clock } from "lucide-react";
 import ReportsFilters from "@/components/admin/reports/ReportsFilters";
 import AttendanceReport from "@/components/admin/reports/AttendanceReport";
 import EngagementReport from "@/components/admin/reports/EngagementReport";
@@ -102,6 +102,20 @@ export default async function ReportsPage({ searchParams }: Props) {
   );
   const uniquePatients = uniquePatientIds.size;
 
+  // Total volunteer hours for the date range
+  const volunteerTimecards = await prisma.volunteerTimecard.findMany({
+    where: {
+      checkOutTime: { not: null },
+      checkInTime: { gte: startDate, lte: endDate },
+    },
+    select: { totalHours: true },
+  });
+  const totalVolunteerHours = volunteerTimecards.reduce(
+    (sum, tc) => sum + (Number(tc.totalHours) || 0),
+    0,
+  );
+  const activeVolunteers = await prisma.volunteerProfile.count({ where: { status: "APPROVED" } });
+
   // Demographics data (all patients, not filtered by events)
   const allPatients = await prisma.patient.findMany({
     where: {
@@ -197,7 +211,7 @@ export default async function ReportsPage({ searchParams }: Props) {
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
         <SummaryCard
           title={t.totalEvents}
           value={totalEvents.toString()}
@@ -222,6 +236,19 @@ export default async function ReportsPage({ searchParams }: Props) {
           value={`${avgAttendanceRate}%`}
           icon={<TrendingUp className="w-6 h-6" />}
           color="amber"
+        />
+        <SummaryCard
+          title={t.volunteerHours}
+          value={totalVolunteerHours.toFixed(1)}
+          subtitle={t.inPeriod}
+          icon={<Clock className="w-6 h-6" />}
+          color="teal"
+        />
+        <SummaryCard
+          title={t.activeVolunteers}
+          value={activeVolunteers.toString()}
+          icon={<Users className="w-6 h-6" />}
+          color="rose"
         />
       </div>
 
@@ -258,13 +285,15 @@ function SummaryCard({
   value: string;
   subtitle?: string;
   icon: React.ReactNode;
-  color: "blue" | "purple" | "green" | "amber";
+  color: "blue" | "purple" | "green" | "amber" | "teal" | "rose";
 }) {
   const colorClasses = {
     blue: "bg-blue-100 text-blue-600",
     purple: "bg-purple-100 text-purple-600",
     green: "bg-green-100 text-green-600",
     amber: "bg-amber-100 text-amber-600",
+    teal: "bg-teal-100 text-teal-600",
+    rose: "bg-rose-100 text-rose-600",
   }[color];
 
   return (

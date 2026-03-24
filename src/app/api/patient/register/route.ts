@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email-service";
 import {
   ensurePatientExists,
   calculateGracePeriodEnd,
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Check if patient has a disorder
     const patientHasCondition =
-      primaryCondition &&
+      !!primaryCondition &&
       primaryCondition !== "" &&
       primaryCondition !== "none";
 
@@ -108,6 +109,7 @@ export async function POST(request: NextRequest) {
 
     // ── Step 6: Consent ───────────────────────────────────────────────────────
     const hipaaConsent = formData.get("hipaaConsent") === "true";
+    const wantsToVolunteer = formData.get("wantsToVolunteer") === "true";
     const photoConsent = formData.get("photoConsent") === "true";
     const communicationConsent =
       formData.get("communicationConsent") === "true";
@@ -296,6 +298,68 @@ export async function POST(request: NextRequest) {
         details: `Completed registration${diagnosisLetterUrl ? " with diagnosis letter" : ""}${familyHasCondition ? ` with ${familyMembers.filter((m) => m.hasBleedingDisorder).length} family member(s) with condition` : ""}`,
       },
     });
+
+    // ── Create VolunteerProfile if requested ─────────────────────────────────
+    if (wantsToVolunteer) {
+      const volunteerProfile = await prisma.volunteerProfile.create({
+        data: {
+          patientId,
+          status: "PENDING_REVIEW",
+        },
+      });
+
+      await prisma.volunteerApplication.create({
+        data: {
+          volunteerProfileId: volunteerProfile.id,
+          submittedAt: new Date(),
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          patientId,
+          action: AuditAction.VOLUNTEER_REQUEST_SUBMITTED,
+          resourceType: "VolunteerProfile",
+          resourceId: volunteerProfile.id,
+          details: "Volunteer application submitted during registration",
+        },
+      });
+
+      const patientName = `${firstName} ${lastName}`;
+      const submittedAt = new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      // Notify applicant
+      try {
+        await sendEmail({
+          templateType: "VOLUNTEER_REQUEST_RECEIVED",
+          recipient: session.user.email,
+          data: { patientName, lang: languagePreference },
+          patientId,
+        });
+      } catch { /* non-fatal */ }
+
+      // Notify admins
+      try {
+        const admins = await prisma.patient.findMany({
+          where: { role: { in: ["admin", "board"] } },
+          select: { email: true },
+        });
+        const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || admins[0]?.email;
+        if (adminEmail) {
+          await sendEmail({
+            templateType: "VOLUNTEER_REQUEST_NOTIFY",
+            recipient: adminEmail,
+            data: { patientName, patientEmail: session.user.email, submittedAt, lang: "en" },
+            patientId,
+          });
+        }
+      } catch { /* non-fatal */ }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

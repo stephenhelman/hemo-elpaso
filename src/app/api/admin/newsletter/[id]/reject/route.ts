@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     // Notify Communications Liaison if one exists
     const liaisonRole = await prisma.boardRole.findFirst({
       where: { role: "COMMUNICATIONS_LEAD", active: true },
-      include: { patient: true },
+      include: { patient: { include: { contactProfile: true } } },
     });
 
     if (liaisonRole) {

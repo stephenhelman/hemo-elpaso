@@ -2,10 +2,10 @@ import { prisma } from "@/lib/db";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
-import { Calendar, Users, TrendingUp, CheckCircle } from "lucide-react";
+import { Calendar, Users, TrendingUp, CheckCircle, Clock } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
 import { Lang } from "@/types";
-import { adminAttendanceTranslation } from "@/translation/adminPages";
+import { adminAttendanceTranslation, adminAttendanceTableTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AllAttendeesPage() {
@@ -15,17 +15,25 @@ export default async function AllAttendeesPage() {
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminAttendanceTranslation[locale];
+  const tTable = adminAttendanceTableTranslation[locale];
 
   // Get all check-ins with related data
   const checkIns = await prisma.checkIn.findMany({
     include: {
-      event: true,
-      patient: true,
+      event: { select: { id: true, titleEn: true, eventDate: true } },
+      patient: { select: { id: true, email: true, contactProfile: { select: { firstName: true, lastName: true, phone: true } } } },
     },
     orderBy: {
       checkInTime: "desc",
     },
   });
+
+  // Total volunteer hours from timecards
+  const timecards = await prisma.volunteerTimecard.findMany({
+    where: { checkOutTime: { not: null } },
+    select: { totalHours: true },
+  });
+  const totalVolunteerHours = timecards.reduce((sum, tc) => sum + (Number(tc.totalHours) || 0), 0);
 
   // Get all events for filter dropdown
   const events = await prisma.event.findMany({
@@ -60,9 +68,10 @@ export default async function AllAttendeesPage() {
       </div>
 
       {/* Table */}
-      <AllAttendeesTable checkIns={checkIns} events={events} locale={locale}>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <AllAttendeesTable checkIns={checkIns as any} events={events} locale={locale}>
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <StatCard
             icon={<CheckCircle className="w-6 h-6" />}
             label={t.totalCheckIns}
@@ -86,6 +95,13 @@ export default async function AllAttendeesPage() {
             label={t.avgPerEvent}
             value={avgAttendance.toString()}
             color="purple"
+          />
+          <StatCard
+            icon={<Clock className="w-6 h-6" />}
+            label={tTable.volunteerHours}
+            value={totalVolunteerHours.toFixed(1)}
+            color="teal"
+            subtitle={tTable.totalVolunteerHours}
           />
         </div>
       </AllAttendeesTable>

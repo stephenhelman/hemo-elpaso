@@ -171,6 +171,60 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const patient = await prisma.patient.findUnique({ where: { auth0Id: session.user.sub } });
+    if (!patient) return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+
+    const { rsvpId, familyMembershipIds } = await request.json();
+    if (!rsvpId) return NextResponse.json({ error: "RSVP ID required" }, { status: 400 });
+
+    const rsvp = await prisma.rsvp.findUnique({
+      where: { id: rsvpId },
+      include: { event: true },
+    });
+
+    if (!rsvp || rsvp.patientId !== patient.id) {
+      return NextResponse.json({ error: "RSVP not found" }, { status: 404 });
+    }
+
+    // Can't change after event has passed
+    if (new Date(rsvp.event.eventDate) < new Date()) {
+      return NextResponse.json({ error: "Cannot change RSVP after event has passed" }, { status: 400 });
+    }
+
+    const selectedIds: string[] = Array.isArray(familyMembershipIds) ? familyMembershipIds : [];
+    const newAttendeeCount = selectedIds.length + 1; // members + patient
+
+    const updated = await prisma.rsvp.update({
+      where: { id: rsvpId },
+      data: {
+        familyMembershipIds: selectedIds,
+        attendeeCount: newAttendeeCount,
+      },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        patientId: patient.id,
+        action: AuditAction.RSVP_UPDATED,
+        resourceType: "Rsvp",
+        resourceId: rsvpId,
+        details: `Updated RSVP family selection for: ${rsvp.event.titleEn}`,
+      },
+    });
+
+    return NextResponse.json({ success: true, attendeeCount: updated.attendeeCount });
+  } catch (error) {
+    console.error("RSVP update error:", error);
+    return NextResponse.json({ error: "Failed to update RSVP" }, { status: 500 });
+  }
+}
+
 // ADD DELETE METHOD FOR CANCELLATION
 export async function DELETE(request: NextRequest) {
   try {

@@ -10,7 +10,67 @@ export async function POST(request: NextRequest) {
     if (error) return error;
 
     const body = await request.json();
-    const { qrCode, eventId } = body;
+    const { qrCode, eventId, confirmedMembershipIds } = body;
+
+    // Handle volunteer QR codes: "VOLUNTEER-{assignmentId}"
+    if (qrCode.startsWith("VOLUNTEER-")) {
+      const assignmentId = qrCode.replace("VOLUNTEER-", "");
+      const assignment = await prisma.volunteerEventAssignment.findUnique({
+        where: { id: assignmentId },
+        include: {
+          volunteerProfile: { include: { patient: { include: { contactProfile: true } } } },
+          event: true,
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json({ error: "Volunteer assignment not found" }, { status: 404 });
+      }
+      if (assignment.eventId !== eventId) {
+        return NextResponse.json(
+          { error: "QR code is for a different event" },
+          { status: 400 },
+        );
+      }
+
+      // Check for existing active timecard
+      const existing = await prisma.volunteerTimecard.findFirst({
+        where: {
+          volunteerProfileId: assignment.volunteerProfileId,
+          eventId,
+          checkOutTime: null,
+        },
+      });
+      if (existing) {
+        return NextResponse.json(
+          {
+            alreadyCheckedIn: true,
+            patientName: `${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName}`,
+          },
+          { status: 200 },
+        );
+      }
+
+      const timecard = await prisma.volunteerTimecard.create({
+        data: { volunteerProfileId: assignment.volunteerProfileId, eventId, status: "active" },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          patientId: admin!.id,
+          action: AuditAction.VOLUNTEER_CHECKED_IN,
+          resourceType: "VolunteerTimecard",
+          resourceId: timecard.id,
+          details: `Volunteer ${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName} checked in to ${assignment.event.titleEn}`,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        isVolunteer: true,
+        patientName: `${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName}`,
+        timecardId: timecard.id,
+      });
+    }
 
     // Parse QR code (format: "RSVP-{rsvpId}")
     if (!qrCode.startsWith("RSVP-")) {
@@ -75,8 +135,18 @@ export async function POST(request: NextRequest) {
         checkedInBy: admin!.email,
         sessionToken: crypto.randomUUID(),
         sessionExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        familyMembershipIds: confirmedMembershipIds ?? [],
       },
     });
+
+    // Fetch confirmed family member names for the response
+    const confirmedMembers: { id: string; firstName: string; lastName: string }[] =
+      confirmedMembershipIds?.length
+        ? await prisma.familyMembership.findMany({
+            where: { id: { in: confirmedMembershipIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
 
     // Create audit log
     await prisma.auditLog.create({
@@ -141,6 +211,7 @@ export async function POST(request: NextRequest) {
         id: checkIn.id,
         checkInTime: checkIn.checkInTime,
       },
+      confirmedMembers,
     });
   } catch (error) {
     console.error("Check-in error:", error);

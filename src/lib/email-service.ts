@@ -14,6 +14,10 @@ import EventCancelled from "@/messages/EventCancelled";
 import WelcomeEmail from "@/messages/WelcomeEmail";
 import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
 import FamilyMemberInvite from "@/messages/FamilyMemberInvite";
+import VolunteerRequestReceived from "@/messages/VolunteerRequestReceived";
+import VolunteerRequestNotify from "@/messages/VolunteerRequestNotify";
+import VolunteerApproved from "@/messages/VolunteerApproved";
+import VolunteerAssigned from "@/messages/VolunteerAssigned";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const DEFAULT_FROM =
@@ -270,6 +274,44 @@ async function renderEmailTemplate(
             inviterName: String(data.inviterName),
             familyName: String(data.familyName),
             inviteUrl: String(data.inviteUrl),
+          }),
+        );
+
+      case "VOLUNTEER_REQUEST_RECEIVED":
+        return render(
+          VolunteerRequestReceived({
+            patientName: String(data.patientName),
+            lang: (String(data.lang) as "en" | "es") || "en",
+          }),
+        );
+
+      case "VOLUNTEER_REQUEST_NOTIFY":
+        return render(
+          VolunteerRequestNotify({
+            patientName: String(data.patientName),
+            patientEmail: String(data.patientEmail),
+            submittedAt: String(data.submittedAt),
+            lang: (String(data.lang) as "en" | "es") || "en",
+          }),
+        );
+
+      case "VOLUNTEER_APPROVED":
+        return render(
+          VolunteerApproved({
+            patientName: String(data.patientName),
+          }),
+        );
+
+      case "VOLUNTEER_ASSIGNED":
+        return render(
+          VolunteerAssigned({
+            patientName: String(data.patientName),
+            eventTitle: String(data.eventTitle),
+            eventDate: String(data.eventDate),
+            eventTime: String(data.eventTime),
+            location: String(data.location),
+            role: String(data.role),
+            checkinUrl: String(data.checkinUrl),
           }),
         );
 

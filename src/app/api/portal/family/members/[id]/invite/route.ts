@@ -46,7 +46,26 @@ export async function POST(
     ? `${patient.contactProfile.firstName} ${patient.contactProfile.lastName}`
     : patient.email;
 
-  // Update membership with invite info
+  // Send email FIRST — only update DB if it succeeds
+  try {
+    await sendEmail({
+      templateType: "FAMILY_MEMBER_INVITE",
+      recipient: email,
+      data: {
+        inviteeName: `${membership.firstName} ${membership.lastName}`,
+        inviterName,
+        familyName: membership.family.name,
+        inviteUrl,
+      },
+      patientId: patient.id,
+      fromEmail: "HOEP <noreply@hemo-el-paso.org>",
+    });
+  } catch (emailErr) {
+    console.error("Failed to send family invite email:", emailErr);
+    return NextResponse.json({ error: "Failed to send invite email — please try again" }, { status: 500 });
+  }
+
+  // Email sent — now update membership status
   await prisma.familyMembership.update({
     where: { id: params.id },
     data: {
@@ -68,23 +87,6 @@ export async function POST(
       details: `Invite sent to ${email} for family member ${membership.firstName} ${membership.lastName}`,
     },
   });
-
-  try {
-    await sendEmail({
-      templateType: "FAMILY_MEMBER_INVITE",
-      recipient: email,
-      data: {
-        inviteeName: `${membership.firstName} ${membership.lastName}`,
-        inviterName,
-        familyName: membership.family.name,
-        inviteUrl,
-      },
-      patientId: patient.id,
-      fromEmail: "HOEP <noreply@hemo-el-paso.org>",
-    });
-  } catch (emailErr) {
-    console.error("Failed to send family invite email:", emailErr);
-  }
 
   return NextResponse.json({ success: true });
 }

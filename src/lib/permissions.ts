@@ -23,7 +23,8 @@ export type Permission =
   | "canSendBulkEmails"
   | "canSendIndividualEmails"
   | "canManageEmailTemplates"
-  | "canViewAuditLogs";
+  | "canViewAuditLogs"
+  | "canManageVolunteers";
 
 // -------------------------------------------------------
 // Role → Permission mapping
@@ -44,6 +45,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canSendIndividualEmails",
     "canManageEmailTemplates",
     "canViewAuditLogs",
+    "canManageVolunteers",
   ],
   VICE_PRESIDENT: [
     "canViewAdminDashboard",
@@ -59,6 +61,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canSendIndividualEmails",
     "canManageEmailTemplates",
     "canViewAuditLogs",
+    "canManageVolunteers",
   ],
   SECRETARY: [
     "canViewAdminDashboard",
@@ -67,6 +70,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canMarkMinutesPublic",
     "canViewPHI",
     "canSendIndividualEmails",
+    "canManageVolunteers",
   ],
   TREASURER: [
     "canViewAdminDashboard",
@@ -82,6 +86,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canViewAdminDashboard",
     "canViewEventStats",
     "canSelectForNewsletter",
+    "canManageVolunteers",
   ],
   SPONSOR_LIAISON: ["canViewAdminDashboard", "canViewEventStats"],
   COMMUNICATIONS_LEAD: [
@@ -90,7 +95,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canSendIndividualEmails",
   ],
   YOUTH_COORDINATOR: ["canViewAdminDashboard"],
-  VOLUNTEER_COORDINATOR: ["canViewAdminDashboard"],
+  VOLUNTEER_COORDINATOR: ["canViewAdminDashboard", "canManageVolunteers"],
   FUNDRAISING_COORDINATOR: ["canViewAdminDashboard"],
   BOARD_MEMBER_AT_LARGE: ["canViewAdminDashboard"],
 };

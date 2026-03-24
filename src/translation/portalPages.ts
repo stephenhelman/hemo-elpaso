@@ -56,6 +56,7 @@ export const portalEventsDisplayTranslation = {
     cancel: "Cancel",
     rsvped: "RSVP'd!",
     rsvpFailed: "Failed — try again",
+    changeRsvp: "Change RSVP",
   },
   es: {
     myUpcoming: "Mis Próximos Eventos",
@@ -88,6 +89,7 @@ export const portalEventsDisplayTranslation = {
     cancel: "Cancelar",
     rsvped: "¡RSVP Confirmado!",
     rsvpFailed: "Error — intenta de nuevo",
+    changeRsvp: "Cambiar RSVP",
   },
 };
 

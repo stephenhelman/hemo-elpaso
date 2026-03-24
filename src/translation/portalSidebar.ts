@@ -4,6 +4,7 @@ import {
   User,
   DollarSign,
   Users,
+  Heart,
 } from "lucide-react";
 
 export const portalSidebarTranslation = {
@@ -55,5 +56,11 @@ export const portalNavItemsTranslation = [
     en: "My Family",
     es: "Mi Familia",
     icon: Users,
+  },
+  {
+    href: "/portal/volunteer",
+    en: "Volunteer",
+    es: "Voluntariado",
+    icon: Heart,
   },
 ];

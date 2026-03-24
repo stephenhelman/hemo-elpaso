@@ -10,6 +10,7 @@ import type { Lang } from "@/types";
 interface CheckIn {
   id: string;
   checkInTime: Date;
+  attendeeRole: string;
   event: {
     id: string;
     titleEn: string;
@@ -18,7 +19,7 @@ interface CheckIn {
   patient: {
     id: string;
     email: string;
-    profile: {
+    contactProfile: {
       firstName: string;
       lastName: string;
       phone: string | null;
@@ -47,6 +48,7 @@ export default function AllAttendeesTable({
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string>("all");
+  const [selectedRole, setSelectedRole] = useState<string>("all");
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: "",
     end: "",
@@ -59,30 +61,34 @@ export default function AllAttendeesTable({
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
-        checkIn.patient.profile?.firstName
+        checkIn.patient.contactProfile?.firstName
           .toLowerCase()
           .includes(searchLower) ||
-        checkIn.patient.profile?.lastName.toLowerCase().includes(searchLower) ||
+        checkIn.patient.contactProfile?.lastName.toLowerCase().includes(searchLower) ||
         checkIn.patient.email.toLowerCase().includes(searchLower);
 
       const matchesEvent =
         selectedEventId === "all" || checkIn.event.id === selectedEventId;
+
+      const matchesRole =
+        selectedRole === "all" || checkIn.attendeeRole === selectedRole;
 
       const checkInDate = new Date(checkIn.checkInTime);
       const matchesDateRange =
         (!dateRange.start || checkInDate >= new Date(dateRange.start)) &&
         (!dateRange.end || checkInDate <= new Date(dateRange.end));
 
-      return matchesSearch && matchesEvent && matchesDateRange;
+      return matchesSearch && matchesEvent && matchesRole && matchesDateRange;
     });
-  }, [checkIns, searchQuery, selectedEventId, dateRange]);
+  }, [checkIns, searchQuery, selectedEventId, selectedRole, dateRange]);
 
   const exportRows = filteredCheckIns.map((checkIn) => [
     new Date(checkIn.event.eventDate).toLocaleDateString(),
     checkIn.event.titleEn,
-    `${checkIn.patient.profile?.firstName ?? ""} ${checkIn.patient.profile?.lastName ?? ""}`.trim(),
+    `${checkIn.patient.contactProfile?.firstName ?? ""} ${checkIn.patient.contactProfile?.lastName ?? ""}`.trim(),
     checkIn.patient.email,
-    checkIn.patient.profile?.phone ?? "N/A",
+    checkIn.patient.contactProfile?.phone ?? "N/A",
+    t.roleLabels[checkIn.attendeeRole] ?? checkIn.attendeeRole,
     new Date(checkIn.checkInTime).toLocaleString(),
   ]);
 
@@ -104,7 +110,7 @@ export default function AllAttendeesTable({
           <>{t.showing(filteredCheckIns.length, checkIns.length)}</>
         }
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -129,6 +135,18 @@ export default function AllAttendeesTable({
                 {event.titleEn} (
                 {new Date(event.eventDate).toLocaleDateString()})
               </option>
+            ))}
+          </select>
+
+          {/* Role Filter */}
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className={inputClasses}
+          >
+            <option value="all">{t.allRoles}</option>
+            {Object.entries(t.roleLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
         </div>
@@ -185,6 +203,9 @@ export default function AllAttendeesTable({
                   {t.tableHeaders.contact}
                 </th>
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                  {t.tableHeaders.role}
+                </th>
+                <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                   {t.tableHeaders.checkInTime}
                 </th>
               </tr>
@@ -193,7 +214,7 @@ export default function AllAttendeesTable({
               {filteredCheckIns.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-neutral-400"
                   >
                     {t.noCheckIns}
@@ -221,18 +242,23 @@ export default function AllAttendeesTable({
                       </div>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
-                      {checkIn.patient.profile?.firstName}{" "}
-                      {checkIn.patient.profile?.lastName}
+                      {checkIn.patient.contactProfile?.firstName}{" "}
+                      {checkIn.patient.contactProfile?.lastName}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-neutral-600">
                       <div className="max-w-xs">
                         <div className="truncate">{checkIn.patient.email}</div>
-                        {checkIn.patient.profile?.phone && (
+                        {checkIn.patient.contactProfile?.phone && (
                           <div className="text-xs text-neutral-500">
-                            {checkIn.patient.profile.phone}
+                            {checkIn.patient.contactProfile.phone}
                           </div>
                         )}
                       </div>
+                    </td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${t.roleBadgeColors[checkIn.attendeeRole] ?? "bg-neutral-100 text-neutral-700"}`}>
+                        {t.roleLabels[checkIn.attendeeRole] ?? checkIn.attendeeRole}
+                      </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-600">
                       {new Date(checkIn.checkInTime).toLocaleTimeString(

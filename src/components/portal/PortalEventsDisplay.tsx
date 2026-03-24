@@ -57,6 +57,7 @@ interface RSVP {
   id: string;
   eventId: string;
   attendeeCount: number;
+  familyMembershipIds: string[];
   event: Event;
 }
 
@@ -88,6 +89,7 @@ export default function PortalEventsDisplay({
   const [rsvpdEventIds, setRsvpdEventIds] = useState<Set<string>>(
     new Set(myRsvps.map((r) => r.eventId)),
   );
+  const [changingRsvp, setChangingRsvp] = useState<{ event: Event; rsvpId: string; selectedIds: string[] } | null>(null);
 
   const now = new Date();
 
@@ -115,6 +117,18 @@ export default function PortalEventsDisplay({
     setRsvpdEventIds((prev) => new Set([...prev, eventId]));
   };
 
+  const handleRsvpChange = (rsvp: RSVP) => {
+    setChangingRsvp({
+      event: rsvp.event,
+      rsvpId: rsvp.id,
+      selectedIds: rsvp.familyMembershipIds,
+    });
+  };
+
+  const handleRsvpChangeSuccess = (_eventId: string, _newAttendeeCount?: number) => {
+    setChangingRsvp(null);
+  };
+
   return (
     <div className="space-y-8">
       {/* My Upcoming Events */}
@@ -130,6 +144,7 @@ export default function PortalEventsDisplay({
                 rsvp={rsvp}
                 expanded={expandedQr === rsvp.id}
                 onToggleQr={() => setExpandedQr(expandedQr === rsvp.id ? null : rsvp.id)}
+                onChangeRsvp={() => handleRsvpChange(rsvp)}
                 t={t}
                 locale={locale}
               />
@@ -291,6 +306,18 @@ export default function PortalEventsDisplay({
         onClose={() => setRsvpingEvent(null)}
         onSuccess={handleRsvpSuccess}
       />
+
+      {/* Change RSVP modal */}
+      <RsvpModal
+        event={changingRsvp?.event ?? null}
+        familyMembers={familyMemberships}
+        locale={locale}
+        mode="change"
+        rsvpId={changingRsvp?.rsvpId}
+        initialSelectedIds={changingRsvp?.selectedIds}
+        onClose={() => setChangingRsvp(null)}
+        onSuccess={handleRsvpChangeSuccess}
+      />
     </div>
   );
 }
@@ -301,12 +328,14 @@ function MyEventCard({
   rsvp,
   expanded,
   onToggleQr,
+  onChangeRsvp,
   t,
   locale,
 }: {
   rsvp: RSVP;
   expanded: boolean;
   onToggleQr: () => void;
+  onChangeRsvp: () => void;
   t: (typeof portalEventsDisplayTranslation)["en"];
   locale: Lang;
 }) {
@@ -339,6 +368,9 @@ function MyEventCard({
               </Link>
               <button onClick={onToggleQr} className="text-sm text-primary hover:underline">
                 {expanded ? t.hideQr : t.showQr}
+              </button>
+              <button onClick={onChangeRsvp} className="text-sm text-primary hover:underline">
+                {t.changeRsvp}
               </button>
             </div>
           </div>

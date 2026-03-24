@@ -19,19 +19,26 @@ interface Props {
   familyMembers: FamilyMember[];
   locale: Lang;
   onClose: () => void;
-  onSuccess: (eventId: string) => void;
+  onSuccess: (eventId: string, newAttendeeCount?: number) => void;
+  // Optional props for edit mode:
+  mode?: "create" | "change";
+  rsvpId?: string;
+  initialSelectedIds?: string[];
 }
 
 const t = {
   en: {
     whoAttending: "Who's attending?",
+    updateRsvp: "Update Your RSVP",
     you: "You",
     selectAll: "Select All",
     deselectAll: "Deselect All",
     attending: "attending",
     confirmRsvp: "Confirm RSVP",
+    updateButton: "Update RSVP",
     cancel: "Cancel",
     success: "RSVP Confirmed!",
+    updateSuccess: "RSVP Updated!",
     failed: "Failed — please try again",
     retry: "Try again",
     relationship: {
@@ -49,13 +56,16 @@ const t = {
   },
   es: {
     whoAttending: "¿Quién asistirá?",
+    updateRsvp: "Actualizar su RSVP",
     you: "Usted",
     selectAll: "Seleccionar todos",
     deselectAll: "Deseleccionar todos",
     attending: "asistentes",
     confirmRsvp: "Confirmar RSVP",
+    updateButton: "Actualizar RSVP",
     cancel: "Cancelar",
     success: "¡RSVP Confirmado!",
+    updateSuccess: "¡RSVP Actualizado!",
     failed: "Error — intente de nuevo",
     retry: "Intentar de nuevo",
     relationship: {
@@ -79,6 +89,9 @@ export default function RsvpModal({
   locale,
   onClose,
   onSuccess,
+  mode = "create",
+  rsvpId,
+  initialSelectedIds,
 }: Props) {
   const tr = t[locale];
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -88,8 +101,13 @@ export default function RsvpModal({
   // Reset + animate in when event changes
   useEffect(() => {
     if (event) {
-      // Pre-select all active family members by default
-      setSelectedIds(new Set(familyMembers.map((m) => m.id)));
+      if (initialSelectedIds !== undefined) {
+        // Change mode: pre-select the provided IDs
+        setSelectedIds(new Set(initialSelectedIds));
+      } else {
+        // Create mode: pre-select all active family members by default
+        setSelectedIds(new Set(familyMembers.map((m) => m.id)));
+      }
       setStatus("idle");
       requestAnimationFrame(() => setVisible(true));
     } else {
@@ -130,22 +148,43 @@ export default function RsvpModal({
     if (!event) return;
     setStatus("loading");
     try {
-      const res = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId: event.id,
-          familyMembershipIds: Array.from(selectedIds),
-        }),
-      });
-      if (res.ok) {
-        setStatus("success");
-        setTimeout(() => {
-          onSuccess(event.id);
-          onClose();
-        }, 1200);
+      if (mode === "change" && rsvpId) {
+        const res = await fetch("/api/rsvp", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rsvpId,
+            familyMembershipIds: Array.from(selectedIds),
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStatus("success");
+          setTimeout(() => {
+            onSuccess(event.id, data.attendeeCount);
+            onClose();
+          }, 1200);
+        } else {
+          setStatus("error");
+        }
       } else {
-        setStatus("error");
+        const res = await fetch("/api/rsvp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId: event.id,
+            familyMembershipIds: Array.from(selectedIds),
+          }),
+        });
+        if (res.ok) {
+          setStatus("success");
+          setTimeout(() => {
+            onSuccess(event.id);
+            onClose();
+          }, 1200);
+        } else {
+          setStatus("error");
+        }
       }
     } catch {
       setStatus("error");
@@ -153,6 +192,9 @@ export default function RsvpModal({
   };
 
   const title = locale === "es" ? event.titleEs : event.titleEn;
+  const modalHeading = mode === "change" ? tr.updateRsvp : tr.whoAttending;
+  const confirmButtonLabel = mode === "change" ? tr.updateButton : tr.confirmRsvp;
+  const successLabel = mode === "change" ? tr.updateSuccess : tr.success;
 
   return (
     <>
@@ -171,7 +213,7 @@ export default function RsvpModal({
           <div className="flex items-start justify-between p-6 border-b border-neutral-100">
             <div className="flex-1 min-w-0 pr-4">
               <h2 className="font-display font-bold text-neutral-900 text-xl mb-0.5">
-                {tr.whoAttending}
+                {modalHeading}
               </h2>
               <p className="text-sm text-neutral-500 truncate">{title}</p>
             </div>
@@ -263,7 +305,7 @@ export default function RsvpModal({
             {status === "success" ? (
               <div className="flex items-center justify-center gap-2 py-3 rounded-full bg-green-50 border border-green-200 text-green-700 font-semibold text-sm">
                 <Check className="w-4 h-4" />
-                {tr.success}
+                {successLabel}
               </div>
             ) : status === "error" ? (
               <div className="flex items-center gap-2">
@@ -284,7 +326,7 @@ export default function RsvpModal({
                 {status === "loading" ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : null}
-                {tr.confirmRsvp}
+                {confirmButtonLabel}
               </button>
             )}
 
