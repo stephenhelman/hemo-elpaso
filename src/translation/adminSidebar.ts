@@ -11,6 +11,7 @@ import {
   FileText,
   Archive,
   Building2,
+  Shield,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -98,6 +99,12 @@ export const adminNavItemsTranslation = [
     en: "Verification",
     es: "Verificación",
     icon: FileCheck,
+  },
+  {
+    href: "/admin/audit-logs",
+    en: "Audit Log",
+    es: "Registro de Auditoría",
+    icon: Shield,
   },
   {
     href: "/admin/settings",

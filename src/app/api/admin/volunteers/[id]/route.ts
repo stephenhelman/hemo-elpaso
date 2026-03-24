@@ -4,6 +4,17 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
 import { AuditAction } from "@prisma/client";
 
+function getVolunteerDisplayName(profile: {
+  patient: { contactProfile: { firstName: string; lastName: string } | null; } | null;
+  contactName: string | null;
+}): string {
+  if (profile.patient) {
+    const cp = profile.patient.contactProfile;
+    return `${cp?.firstName ?? ""} ${cp?.lastName ?? ""}`.trim() || "Volunteer";
+  }
+  return profile.contactName ?? "Community Volunteer";
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } },
@@ -19,6 +30,8 @@ export async function PATCH(
   });
   if (!profile) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const volunteerName = getVolunteerDisplayName(profile);
+
   if (action === "approve") {
     await prisma.volunteerProfile.update({
       where: { id: params.id },
@@ -30,18 +43,18 @@ export async function PATCH(
         action: AuditAction.VOLUNTEER_APPROVED,
         resourceType: "VolunteerProfile",
         resourceId: params.id,
-        details: `Approved volunteer: ${profile.patient.contactProfile?.firstName} ${profile.patient.contactProfile?.lastName}`,
+        details: `Approved volunteer: ${volunteerName}`,
       },
     });
     try {
-      await sendEmail({
-        templateType: "VOLUNTEER_APPROVED",
-        recipient: profile.patient.email,
-        data: {
-          patientName: `${profile.patient.contactProfile?.firstName} ${profile.patient.contactProfile?.lastName}`,
-        },
-        patientId: profile.patientId,
-      });
+      if (profile.patient) {
+        await sendEmail({
+          templateType: "VOLUNTEER_APPROVED",
+          recipient: profile.patient.email,
+          data: { patientName: volunteerName },
+          patientId: profile.patientId ?? undefined,
+        });
+      }
     } catch { /* non-fatal */ }
   } else if (action === "reject") {
     await prisma.volunteerProfile.update({
@@ -59,7 +72,7 @@ export async function PATCH(
         action: AuditAction.VOLUNTEER_REJECTED,
         resourceType: "VolunteerProfile",
         resourceId: params.id,
-        details: `Rejected volunteer: ${profile.patient.contactProfile?.firstName} ${profile.patient.contactProfile?.lastName}`,
+        details: `Rejected volunteer: ${volunteerName}`,
       },
     });
   } else {

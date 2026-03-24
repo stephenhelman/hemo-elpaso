@@ -7,6 +7,7 @@ import { sponsorshipTiersTranslation } from "@/translation/getInvolvedPage";
 
 interface Props {
   locale: Lang;
+  onInquire: (tier: string) => void;
 }
 
 const tierStyles: Record<
@@ -41,7 +42,7 @@ const tierStyles: Record<
   },
 };
 
-export default function SponsorshipTiers({ locale }: Props) {
+export default function SponsorshipTiers({ locale, onInquire }: Props) {
   const t = sponsorshipTiersTranslation[locale];
 
   return (
@@ -104,7 +105,7 @@ export default function SponsorshipTiers({ locale }: Props) {
 
               {/* Perks */}
               <div className="px-5 py-5">
-                <ul className="space-y-2.5">
+                <ul className="space-y-2.5 mb-5">
                   {tier.perks.map((perk) => (
                     <li
                       key={perk}
@@ -119,6 +120,16 @@ export default function SponsorshipTiers({ locale }: Props) {
                     </li>
                   ))}
                 </ul>
+                <button
+                  onClick={() => onInquire((tier as any).key ?? tier.name.toLowerCase())}
+                  className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                    isFeatured
+                      ? "bg-white text-primary hover:bg-neutral-50"
+                      : "bg-primary text-white hover:bg-primary-600"
+                  }`}
+                >
+                  {t.inquireButton}
+                </button>
               </div>
             </div>
           );

@@ -299,8 +299,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // ── Create VolunteerProfile if requested ─────────────────────────────────
-    if (wantsToVolunteer) {
+    // ── Link or create VolunteerProfile ──────────────────────────────────────
+    // Check for a community inquiry profile (NO branch or pre-existing from Get Involved form)
+    const existingUnlinked = await prisma.volunteerProfile.findFirst({
+      where: { contactEmail: session.user.email, patientId: null },
+    });
+
+    if (existingUnlinked) {
+      // Link existing community profile to this patient
+      await prisma.volunteerProfile.update({
+        where: { id: existingUnlinked.id },
+        data: { patientId },
+      });
+      await prisma.auditLog.create({
+        data: {
+          patientId,
+          action: AuditAction.VOLUNTEER_PROFILE_LINKED,
+          resourceType: "VolunteerProfile",
+          resourceId: existingUnlinked.id,
+          details: `Community volunteer profile linked on registration for ${session.user.email}`,
+        },
+      });
+    } else if (wantsToVolunteer) {
       const volunteerProfile = await prisma.volunteerProfile.create({
         data: {
           patientId,
@@ -359,7 +379,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch { /* non-fatal */ }
-    }
+    } // end else if (wantsToVolunteer)
 
     return NextResponse.json({ success: true });
   } catch (error) {

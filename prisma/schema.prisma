@@ -125,6 +125,14 @@ enum VolunteerEventRole {
   OTHER
 }
 
+enum SponsorStatus {
+  INQUIRED
+  CONTACTED
+  ACTIVE
+  INACTIVE
+  DECLINED
+}
+
 enum BoardRoleType {
   PRESIDENT
   VICE_PRESIDENT
@@ -448,15 +456,25 @@ model Event {
 }
 
 model Sponsor {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   name      String
   logoUrl   String?
   logoKey   String?
-  tier      String   @default("PARTNER") // PLATINUM | GOLD | SILVER | BRONZE | PARTNER
+  tier      String        @default("PARTNER") // PLATINUM | GOLD | SILVER | BRONZE | PARTNER
   website   String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // SCHEMA-004: inquiry fields
+  status              SponsorStatus @default(ACTIVE)
+  contactName         String?
+  contactEmail        String?
+  contactPhone        String?
+  interestedTier      String?
+  estimatedDonation   String?
+  inquiryMessage      String?
+  inquirySubmittedAt  DateTime?
 
   events EventSponsor[]
 
@@ -872,6 +890,10 @@ enum AuditAction {
   BOARD_ROLE_ONBOARDING_SENT
   GMAIL_CONNECTED
   GMAIL_DISCONNECTED
+
+  // SCHEMA-004
+  SPONSOR_INQUIRY_SUBMITTED
+  VOLUNTEER_PROFILE_LINKED
 }
 
 model AuditLog {
@@ -1096,8 +1118,8 @@ model BoardApproval {
 
 model VolunteerProfile {
   id                  String                     @id @default(uuid())
-  patientId           String                     @unique
-  patient             Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId           String?                    @unique
+  patient             Patient?                   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   status              VolunteerStatus            @default(PENDING_REVIEW)
   approvedBy          String?
   approvedAt          DateTime?
@@ -1107,6 +1129,13 @@ model VolunteerProfile {
   internalNotes       String?
   generalAvailability Json?
   skills              Json?
+  // SCHEMA-004: non-patient volunteer contact info
+  contactName         String?
+  contactEmail        String?
+  contactPhone        String?
+  areasOfInterest     String[]  @default([])
+  whyVolunteer        String?
+  hasBDConnection     Boolean   @default(false)
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
   applications        VolunteerApplication[]

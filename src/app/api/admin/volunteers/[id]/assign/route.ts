@@ -26,6 +26,12 @@ export async function POST(
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
+  // Resolve display name — community volunteers may not have a patient account yet
+  const volunteerName = profile.patient
+    ? `${profile.patient.contactProfile?.firstName ?? ""} ${profile.patient.contactProfile?.lastName ?? ""}`.trim()
+    : (profile.contactName ?? "Community Volunteer");
+  const volunteerEmail = profile.patient?.email ?? profile.contactEmail;
+
   const assignment = await prisma.volunteerEventAssignment.create({
     data: {
       volunteerProfileId: params.id,
@@ -42,39 +48,40 @@ export async function POST(
       action: AuditAction.VOLUNTEER_ASSIGNED_TO_EVENT,
       resourceType: "VolunteerEventAssignment",
       resourceId: assignment.id,
-      details: `Assigned ${profile.patient.contactProfile?.firstName} ${profile.patient.contactProfile?.lastName} to ${event.titleEn}`,
+      details: `Assigned ${volunteerName} to ${event.titleEn}`,
     },
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
-  const checkinUrl = `${baseUrl}/events/${event.slug}/checkin/${assignment.accessToken}`;
-
-  try {
-    await sendEmail({
-      templateType: "VOLUNTEER_ASSIGNED",
-      recipient: profile.patient.email,
-      data: {
-        patientName: `${profile.patient.contactProfile?.firstName} ${profile.patient.contactProfile?.lastName}`,
-        eventTitle: event.titleEn,
-        eventDate: event.eventDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        eventTime: event.eventDate.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        location: event.location || "TBD",
-        role: assignment.role,
-        accessToken: assignment.accessToken,
-        checkinUrl,
-      },
-      patientId: profile.patientId,
-      eventId,
-    });
-  } catch { /* non-fatal */ }
+  if (volunteerEmail) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+    const checkinUrl = `${baseUrl}/events/${event.slug}/checkin/${assignment.accessToken}`;
+    try {
+      await sendEmail({
+        templateType: "VOLUNTEER_ASSIGNED",
+        recipient: volunteerEmail,
+        data: {
+          patientName: volunteerName,
+          eventTitle: event.titleEn,
+          eventDate: event.eventDate.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          eventTime: event.eventDate.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          location: event.location || "TBD",
+          role: assignment.role,
+          accessToken: assignment.accessToken,
+          checkinUrl,
+        },
+        patientId: profile.patientId ?? undefined,
+        eventId,
+      });
+    } catch { /* non-fatal */ }
+  }
 
   return NextResponse.json({ success: true, assignment });
 }

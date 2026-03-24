@@ -6,6 +6,7 @@ import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
 import MemberNewsletter from "@/messages/MemberNewsletter";
 import type { NewsletterContent } from "@/lib/newsletter-generator";
+import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 
 const MONTH_NAMES = [
   "January",
@@ -109,6 +110,9 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       for (const patient of batch) {
         const firstName = patient.contactProfile?.firstName || "Friend";
         try {
+          const token = generateUnsubscribeToken(patient.id);
+          const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${token}`;
+
           const html = render(
             MemberNewsletter({
               patientName: firstName,
@@ -120,7 +124,7 @@ export async function PATCH(req: NextRequest, { params }: Props) {
               presidentMessageEs,
               eventRecaps: content.eventRecaps,
               upcomingEvents: content.upcomingEvents,
-              unsubscribeUrl: `${baseUrl}/portal/profile`,
+              unsubscribeUrl,
             }),
           );
 

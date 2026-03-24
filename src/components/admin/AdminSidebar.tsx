@@ -33,6 +33,7 @@ const NAV_PERMISSIONS: Record<string, Permission> = {
   "/admin/users": "canManageUsers",
   "/admin/verification": "canViewPHI",
   "/admin/sponsors": "canManageEvents",
+  "/admin/audit-logs": "canViewAuditLogs",
 };
 
 export default function AdminSidebar({

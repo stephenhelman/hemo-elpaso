@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import ContactFormNotification from "@/messages/ContactFormNotification";
+import { getContactRecipient } from "@/lib/contact-routing";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-const CONTACT_EMAIL = "info@hemo-el-paso.org";
 
 const reasonLabels: Record<string, { en: string; es: string }> = {
   general: { en: "General Inquiry", es: "Consulta General" },
@@ -46,14 +45,17 @@ export async function POST(req: NextRequest) {
     const isEs = locale === "es";
     const reasonLabel = reasonLabels[reason]?.[locale] ?? reason;
 
-    // ── 1. Notification email to info@hemo-el-paso.org ────────────────────────
+    // Determine the correct recipient based on reason
+    const toEmail = await getContactRecipient(reason);
+
+    // ── 1. Notification email routed by reason ────────────────────────────────
     const notificationHtml = await render(
       ContactFormNotification({ name, email, phone, reason, message, locale }),
     );
 
     await resend.emails.send({
       from: `HOEP Contact Form <noreply@hemo-el-paso.org>`,
-      to: CONTACT_EMAIL,
+      to: toEmail,
       replyTo: email, // clicking reply in Gmail goes straight to the sender
       subject: isEs
         ? `Nuevo mensaje: ${reasonLabel} — ${name}`

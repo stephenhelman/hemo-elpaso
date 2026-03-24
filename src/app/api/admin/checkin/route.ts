@@ -40,12 +40,14 @@ export async function POST(request: NextRequest) {
           checkOutTime: null,
         },
       });
+      const vp = assignment.volunteerProfile;
+      const volunteerName = vp.patient
+        ? `${vp.patient.contactProfile?.firstName ?? ""} ${vp.patient.contactProfile?.lastName ?? ""}`.trim()
+        : (vp.contactName ?? "Community Volunteer");
+
       if (existing) {
         return NextResponse.json(
-          {
-            alreadyCheckedIn: true,
-            patientName: `${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName}`,
-          },
+          { alreadyCheckedIn: true, patientName: volunteerName },
           { status: 200 },
         );
       }
@@ -60,14 +62,14 @@ export async function POST(request: NextRequest) {
           action: AuditAction.VOLUNTEER_CHECKED_IN,
           resourceType: "VolunteerTimecard",
           resourceId: timecard.id,
-          details: `Volunteer ${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName} checked in to ${assignment.event.titleEn}`,
+          details: `Volunteer ${volunteerName} checked in to ${assignment.event.titleEn}`,
         },
       });
 
       return NextResponse.json({
         success: true,
         isVolunteer: true,
-        patientName: `${assignment.volunteerProfile.patient.contactProfile?.firstName} ${assignment.volunteerProfile.patient.contactProfile?.lastName}`,
+        patientName: volunteerName,
         timecardId: timecard.id,
       });
     }

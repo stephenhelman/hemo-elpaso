@@ -7,9 +7,10 @@ import { WayCard } from "./WayCard";
 
 interface Props {
   locale: Lang;
+  onOpenVolunteer: () => void;
 }
 
-export default function WaysToHelp({ locale }: Props) {
+export default function WaysToHelp({ locale, onOpenVolunteer }: Props) {
   const t = waysToHelpTranslation[locale];
 
   return (
@@ -30,7 +31,13 @@ export default function WaysToHelp({ locale }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {t.ways.map((way) => (
-          <WayCard key={way.title} way={way} />
+          <WayCard
+            key={way.title}
+            way={way}
+            onCta={
+              way.anchor === "#volunteer" ? onOpenVolunteer : undefined
+            }
+          />
         ))}
       </div>
     </Section>

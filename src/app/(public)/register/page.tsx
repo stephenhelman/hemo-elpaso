@@ -66,6 +66,7 @@ function RegisterPageContent() {
     hipaaConsent: false,
     photoConsent: false,
     communicationConsent: false,
+    wantsToVolunteer: false,
   });
 
   const totalSteps = 6;
@@ -87,6 +88,28 @@ function RegisterPageContent() {
       }
     } catch {
       // Ignore parse errors — start fresh
+    }
+  }, []);
+
+  // Pre-fill from volunteer form data (track B YES branch — hasBDConnection)
+  useEffect(() => {
+    try {
+      const volunteerData = sessionStorage.getItem("volunteerFormData");
+      if (!volunteerData) return;
+      const parsed = JSON.parse(volunteerData);
+      // Split name into firstName / lastName
+      const nameParts = (parsed.name || "").trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+      setFormData((prev) => ({
+        ...prev,
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
+        ...(parsed.phone && { phone: parsed.phone }),
+        wantsToVolunteer: true,
+      }));
+    } catch {
+      // Ignore
     }
   }, []);
 
@@ -170,6 +193,7 @@ function RegisterPageContent() {
       if (response.ok) {
         sessionStorage.removeItem(STORAGE_KEY);
         sessionStorage.removeItem(STEP_KEY);
+        sessionStorage.removeItem("volunteerFormData");
         toast.success("Registration complete! Welcome to HOEP!");
         router.push(callbackUrl);
       } else {
