@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
+import { generateInvitations } from "@/lib/invitations/generate";
 
 export async function PATCH(
   request: NextRequest,
@@ -33,6 +34,26 @@ export async function PATCH(
         ...(body.eventCost !== undefined && { eventCost: body.eventCost }),
       },
     });
+
+    // Targeting is only touched when the form sends it.
+    if (Array.isArray(body.targetConditions)) {
+      await prisma.eventTargeting.upsert({
+        where: { eventId: updatedEvent.id },
+        update: { targetConditions: body.targetConditions },
+        create: {
+          eventId: updatedEvent.id,
+          targetConditions: body.targetConditions,
+          targetSeverity: [],
+          targetAgeGroups: [],
+          targetInterests: [],
+        },
+      });
+    }
+
+    // Re-run matching after edits: adds new matches as pending, never re-sends.
+    if (updatedEvent.status === "published") {
+      await generateInvitations(updatedEvent.id).catch(() => undefined);
+    }
 
     await prisma.auditLog.create({
       data: {

@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   const patient = await prisma.patient.findUnique({
     where: { id: patientId },
-    select: { id: true, consentToContact: true },
+    select: { id: true, emailOptOut: true },
   });
 
   if (!patient) {
@@ -29,10 +29,12 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (patient.consentToContact) {
+  // Opts out of invitation emails only. Transactional emails (RSVP confirmation,
+  // reminders) still go to people who RSVP. Consent records are not touched.
+  if (!patient.emailOptOut) {
     await prisma.patient.update({
       where: { id: patientId },
-      data: { consentToContact: false },
+      data: { emailOptOut: true },
     });
   }
 

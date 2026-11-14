@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
+import { generateInvitations } from "@/lib/invitations/generate";
 
 export async function GET() {
   const { admin, error } = await requirePermission("canViewAdminDashboard");
@@ -40,8 +41,21 @@ export async function POST(req: NextRequest) {
       isPriority: body.isPriority || false,
       liveEnabled: body.liveEnabled || false,
       createdBy: admin!.email,
+      targeting: {
+        create: {
+          targetConditions: Array.isArray(body.targetConditions) ? body.targetConditions : [],
+          targetSeverity: Array.isArray(body.targetSeverity) ? body.targetSeverity : [],
+          targetAgeGroups: Array.isArray(body.targetAgeGroups) ? body.targetAgeGroups : [],
+          targetInterests: [],
+        },
+      },
     },
   });
+
+  // Published events get PENDING invitations for matching patients (nothing is sent).
+  if (event.status === "published") {
+    await generateInvitations(event.id).catch(() => undefined);
+  }
 
   await prisma.auditLog.create({
     data: {

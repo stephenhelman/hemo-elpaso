@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   Images,
+  Mail,
   FileText,
 } from "lucide-react";
 
@@ -18,6 +19,14 @@ export default function EventQuickActions({ eventId }: Props) {
           Event Management
         </p>
         <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/admin/events/${eventId}/invitations`}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-primary hover:text-primary transition-colors"
+          >
+            <Mail className="w-4 h-4" />
+            Invitations
+          </Link>
+
           <Link
             href={`/admin/events/${eventId}/photos`}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-emerald-300 hover:text-emerald-600 transition-colors"

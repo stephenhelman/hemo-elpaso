@@ -11,6 +11,141 @@ interface MatchScore {
   reasons: Reason[];
 }
 
+type ScoringPatient = {
+  statedDiagnoses: string[];
+  familySize: number;
+  preferredLanguage: string;
+  preferences: {
+    interestedTopics: string[];
+    preferredEventTimes: string[];
+  } | null;
+};
+
+type ScoringEvent = Awaited<ReturnType<typeof loadScoringEvents>>[number];
+
+function loadScoringEvents() {
+  return prisma.event.findMany({
+    where: { status: "published", eventDate: { gte: new Date() } },
+    include: { targeting: true, _count: { select: { rsvps: true } } },
+  });
+}
+
+/**
+ * Score one event for one patient. PHI: stated diagnoses are used for scoring
+ * only. Never put them (or these match reasons) in emails, URLs or logs.
+ */
+export function scoreEventForPatient(
+  patient: ScoringPatient,
+  event: ScoringEvent,
+): { score: number; reasons: Reason[] } {
+  const interestedTopics = patient.preferences?.interestedTopics ?? [];
+  const preferredEventTimes = patient.preferences?.preferredEventTimes ?? [];
+  const diagnoses = patient.statedDiagnoses;
+  let score = 0;
+  const reasons: Reason[] = [];
+
+  // Topic/Category match (40 points max)
+  if (interestedTopics.includes(event.category)) {
+    score += 40;
+    reasons.push({
+      en: "Matches your interests",
+      es: "Coincide con tus intereses",
+    });
+  }
+
+  // EventTargeting - Condition match (30 points)
+  if (event.targeting) {
+    // Empty targeting = open to everyone; otherwise any overlap with the
+    // household's stated diagnoses counts.
+    const targets = event.targeting.targetConditions;
+    if (targets.length === 0 || diagnoses.some((d) => targets.includes(d))) {
+      score += 30;
+      reasons.push({
+        en: "Relevant to your household",
+        es: "Relevante para tu hogar",
+      });
+    }
+  }
+
+  // Age appropriateness (20 points)
+  // Family size is the only household signal we keep (no ages).
+  const hasFamily = patient.familySize > 1;
+  if (event.targetAudience === "youth" && hasFamily) {
+    score += 20;
+    reasons.push({
+      en: "Great for families with kids",
+      es: "Ideal para familias con niños.",
+    });
+  } else if (event.targetAudience === "families" && hasFamily) {
+    score += 20;
+    reasons.push({
+      en: "Perfect for your family",
+      es: "Ideal para tu familia",
+    });
+  } else if (event.targetAudience === "all") {
+    score += 10;
+    reasons.push({
+      en: "Open to all ages",
+      es: "Abierto a todas las edades",
+    });
+  }
+
+  // Capacity check (10 points if not full, heavy penalty if full)
+  const maxCapacity = event.maxCapacity || 999;
+  const spotsLeft = maxCapacity - event._count.rsvps;
+  if (spotsLeft > 0) {
+    score += 10;
+    if (spotsLeft <= 5) {
+      reasons.push({
+        en: "⚡ Limited spots remaining!",
+        es: "⚡ ¡Quedan plazas limitadas!",
+      });
+    }
+  } else {
+    score -= 50; // Heavily penalize full events
+    reasons.push({ en: "Event is full", es: "El evento está lleno" });
+  }
+
+  // Time preference match (15 points)
+  const eventDate = new Date(event.eventDate);
+  const dayOfWeek = eventDate.getDay();
+  const hour = eventDate.getHours();
+
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+
+  const timeKey = `${isWeekend ? "weekend" : "weekday"}_${timeOfDay}`;
+  if (preferredEventTimes.includes(timeKey)) {
+    score += 15;
+    reasons.push({ en: "Fits your schedule", es: "Se adapta a tu horario" });
+  }
+
+  // Language match (10 points)
+  const preferredLang = patient.preferredLanguage;
+  if (event.language === preferredLang || event.language === "both") {
+    score += 10;
+  } else {
+    score -= 20; // Penalize language mismatch
+  }
+
+  // Recency boost (5 points for events in next 2 weeks)
+  const daysUntil = Math.floor(
+    (eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  if (daysUntil <= 14) {
+    score += 5;
+    reasons.push({ en: "🔥 Coming up soon", es: "🔥 Próximamente" });
+  }
+
+  // Priority boost for featured events
+  if (event.isPriority) {
+    score += 25;
+    reasons.push({ en: "⭐ Featured event", es: "⭐ Evento destacado" });
+  }
+
+  return { score, reasons: reasons.filter(Boolean) };
+}
+
 export async function getRecommendedEvents(patientId: string, limit = 10) {
   // Get patient with preferences
   const patient = await prisma.patient.findUnique({
@@ -48,112 +183,8 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
 
   // Score each event
   const scores: MatchScore[] = events.map((event) => {
-    let score = 0;
-    const reasons: Reason[] = [];
-
-    // Topic/Category match (40 points max)
-    if (interestedTopics.includes(event.category)) {
-      score += 40;
-      reasons.push({
-        en: "Matches your interests",
-        es: "Coincide con tus intereses",
-      });
-    }
-
-    // EventTargeting - Condition match (30 points)
-    if (event.targeting) {
-      // Empty targeting = open to everyone; otherwise any overlap with the
-      // household's stated diagnoses counts.
-      const targets = event.targeting.targetConditions;
-      if (targets.length === 0 || diagnoses.some((d) => targets.includes(d))) {
-        score += 30;
-        reasons.push({
-          en: "Relevant to your household",
-          es: "Relevante para tu hogar",
-        });
-      }
-
-    }
-
-    // Age appropriateness (20 points)
-    // Family size is the only household signal we keep (no ages).
-    const hasFamily = patient.familySize > 1;
-    if (event.targetAudience === "youth" && hasFamily) {
-      score += 20;
-      reasons.push({
-        en: "Great for families with kids",
-        es: "Ideal para familias con niños.",
-      });
-    } else if (event.targetAudience === "families" && hasFamily) {
-      score += 20;
-      reasons.push({ en: "Perfect for your family", es: "Ideal para tu familia" });
-    } else if (event.targetAudience === "all") {
-      score += 10;
-      reasons.push({
-        en: "Open to all ages",
-        es: "Abierto a todas las edades",
-      });
-    }
-
-    // Capacity check (10 points if not full, heavy penalty if full)
-    const maxCapacity = event.maxCapacity || 999;
-    const spotsLeft = maxCapacity - event._count.rsvps;
-    if (spotsLeft > 0) {
-      score += 10;
-      if (spotsLeft <= 5) {
-        reasons.push({
-          en: "⚡ Limited spots remaining!",
-          es: "⚡ ¡Quedan plazas limitadas!",
-        });
-      }
-    } else {
-      score -= 50; // Heavily penalize full events
-      reasons.push({ en: "Event is full", es: "El evento está lleno" });
-    }
-
-    // Time preference match (15 points)
-    const eventDate = new Date(event.eventDate);
-    const dayOfWeek = eventDate.getDay();
-    const hour = eventDate.getHours();
-
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const timeOfDay =
-      hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-
-    const timeKey = `${isWeekend ? "weekend" : "weekday"}_${timeOfDay}`;
-    if (preferredEventTimes.includes(timeKey)) {
-      score += 15;
-      reasons.push({ en: "Fits your schedule", es: "Se adapta a tu horario" });
-    }
-
-    // Language match (10 points)
-    const preferredLang = patient.preferredLanguage;
-    if (event.language === preferredLang || event.language === "both") {
-      score += 10;
-    } else {
-      score -= 20; // Penalize language mismatch
-    }
-
-    // Recency boost (5 points for events in next 2 weeks)
-    const daysUntil = Math.floor(
-      (eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
-    if (daysUntil <= 14) {
-      score += 5;
-      reasons.push({ en: "🔥 Coming up soon", es: "🔥 Próximamente" });
-    }
-
-    // Priority boost for featured events
-    if (event.isPriority) {
-      score += 25;
-      reasons.push({ en: "⭐ Featured event", es: "⭐ Evento destacado" });
-    }
-
-    return {
-      eventId: event.id,
-      score,
-      reasons: reasons.filter(Boolean),
-    };
+    const { score, reasons } = scoreEventForPatient(patient, event);
+    return { eventId: event.id, score, reasons };
   });
 
   // Sort by score and return top matches

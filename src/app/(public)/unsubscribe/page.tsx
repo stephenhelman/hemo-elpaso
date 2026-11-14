@@ -21,8 +21,8 @@ function UnsubscribeContent() {
             You&apos;ve been unsubscribed
           </h1>
           <p className="text-neutral-500 text-sm leading-relaxed mb-6">
-            You will no longer receive HOEP newsletters at this email address.
-            To start receiving them again, just contact us.
+            You will no longer receive HOEP event invitations at this email address.
+            If you RSVP to an event you'll still get its confirmation and reminder. To start receiving invitations again, just contact us.
           </p>
           <div className="flex flex-col gap-3">
             <Link
