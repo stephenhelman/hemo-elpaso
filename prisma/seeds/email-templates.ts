@@ -5,6 +5,46 @@ const prisma = new PrismaClient();
 export async function seedEmailTemplates() {
   const templates = [
     {
+      type: "REGISTRATION_INFO_CONFIRMATION",
+      name: "Registration Confirmation",
+      subject: "Thanks for registering with HOEP",
+      description: "Sent after someone submits Register for Information. Contains no health information. (Subject is set in code; this row is the catalogue entry.)",
+      enabled: true,
+      variables: ["patientName", "lang"],
+    },
+    {
+      type: "EVENT_INVITATION",
+      name: "Event Invitation",
+      subject: "You're invited: {{eventTitle}}",
+      description: "Sent by the board from an event's Invitations page to matched patients. Contains their personal RSVP link.",
+      enabled: true,
+      variables: ["patientName", "eventTitle", "eventDate", "location", "rsvpUrl", "lang"],
+    },
+    {
+      type: "RSVP_CONFIRMATION",
+      name: "RSVP Confirmation",
+      subject: "RSVP confirmed: {{eventTitle}}",
+      description: "Sent when an RSVP is made or changed. Includes the check-in QR code.",
+      enabled: true,
+      variables: ["patientName", "eventTitle", "eventDate", "location", "attendeeCount", "qrUrl", "lang"],
+    },
+    {
+      type: "RSVP_REMINDER",
+      name: "RSVP Reminder",
+      subject: "Reminder: {{eventTitle}} is tomorrow",
+      description: "Sent by the daily cron the day before an event. Reuses the same QR code.",
+      enabled: true,
+      variables: ["patientName", "eventTitle", "eventDate", "location", "attendeeCount", "qrUrl", "lang"],
+    },
+    {
+      type: "RSVP_CANCELLATION",
+      name: "RSVP Cancellation",
+      subject: "RSVP cancelled: {{eventTitle}}",
+      description: "Sent when an RSVP is cancelled.",
+      enabled: true,
+      variables: ["patientName", "eventTitle", "eventDate", "lang"],
+    },
+    {
       type: "CHECK_IN_CONFIRMATION",
       name: "Check-In Confirmation",
       subject: "Welcome to {{eventTitle}}! 🎉",
