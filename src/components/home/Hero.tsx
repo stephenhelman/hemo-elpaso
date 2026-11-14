@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowRight, Heart, Users } from "lucide-react";
 import { homeHeroTranslation } from "@/translation/homePage";
 import { Lang } from "@/types";
@@ -10,7 +10,7 @@ interface Props {
   locale: Lang;
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: (delay: number) => ({
     opacity: 1,

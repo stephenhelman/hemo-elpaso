@@ -1,5 +1,6 @@
 import { getLocaleCookie } from "@/lib/locale";
 import type { Metadata } from "next";
+import type { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocaleCookie()) as Lang;

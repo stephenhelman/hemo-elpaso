@@ -3,7 +3,7 @@ import React from "react";
 interface Props {
   children: React.ReactNode;
   classNames: string;
-  onChange: (e) => void;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   value: any;
 }
 

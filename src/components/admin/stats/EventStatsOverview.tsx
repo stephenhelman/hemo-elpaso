@@ -24,14 +24,14 @@ export default function EventStatsOverview({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <StatCard
-        title={t.totalRsvps}
+        label={t.totalRsvps}
         value={totalRsvps.toString()}
         icon={<Users className="w-6 h-6" />}
         color="blue"
       />
 
       <StatCard
-        title={t.patientAttendance}
+        label={t.patientAttendance}
         value={patientAttendance.toString()}
         subtitle={t.patientsOnly}
         icon={<CheckCircle className="w-6 h-6" />}
@@ -39,7 +39,7 @@ export default function EventStatsOverview({
       />
 
       <StatCard
-        title={t.attendanceRate}
+        label={t.attendanceRate}
         value={`${attendanceRate}%`}
         icon={<TrendingUp className="w-6 h-6" />}
         color="amber"

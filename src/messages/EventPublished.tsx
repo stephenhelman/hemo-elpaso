@@ -62,7 +62,7 @@ export default function EventPublished({
 
             {/* Event details box */}
             <Section style={eventBox}>
-              <Heading style={eventTitle}>{eventTitle}</Heading>
+              <Heading style={eventTitleStyle}>{eventTitle}</Heading>
 
               <Section style={detailRow}>
                 <Text style={detailIcon}>📅</Text>
@@ -197,7 +197,7 @@ const eventBox = {
   margin: "24px 0",
 };
 
-const eventTitle = {
+const eventTitleStyle = {
   color: "#6d28d9",
   fontSize: "24px",
   fontWeight: "bold",

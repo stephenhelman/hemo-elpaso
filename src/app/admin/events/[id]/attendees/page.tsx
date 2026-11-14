@@ -240,6 +240,7 @@ function AttendeeRow({
           <ManualCheckInButton
             rsvpId={rsvp.id}
             eventId={eventId}
+            isCheckedIn={false}
             patientName={`${rsvp.patient.contactProfile.firstName} ${rsvp.patient.contactProfile.lastName}`}
           />
         )}

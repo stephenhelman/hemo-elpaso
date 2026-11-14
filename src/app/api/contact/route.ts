@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isEs = locale === "es";
-    const reasonLabel = reasonLabels[reason]?.[locale] ?? reason;
+    const reasonLabel = reasonLabels[reason]?.[locale as "en" | "es"] ?? reason;
 
     // Determine the correct recipient based on reason
     const toEmail = await getContactRecipient(reason);

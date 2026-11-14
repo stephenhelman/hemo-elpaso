@@ -18,7 +18,7 @@ export async function GET(
       include: {
         patient: {
           include: {
-            profile: true,
+            contactProfile: true,
           },
         },
       },
