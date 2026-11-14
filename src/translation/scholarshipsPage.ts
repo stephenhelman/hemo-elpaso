@@ -18,6 +18,14 @@ export const scholarshipCardTranslation = {
     in_memory:
       "In memory of Jesus M. Terrazas and Luis Ostos — dedicated members of our bleeding disorders community.",
     status: "Next cycle coming soon",
+    statusOpen: "Now Accepting Applications",
+    statusClosed: "Deadline Passed",
+    amountLabel: "Award Amount",
+    recipientsLabel: "Recipients",
+    recipientsUnit: "Students",
+    deadlineLabel: "Application Deadline",
+    deadlinePast: "The deadline for this scholarship cycle has passed. Check back for the next cycle.",
+    essay: "Essay Prompt",
     soonBody:
       "We are not accepting applications right now. Details for the next scholarship cycle will be posted here. Contact us if you would like to be told when it opens.",
   },
@@ -27,6 +35,14 @@ export const scholarshipCardTranslation = {
     in_memory:
       "En memoria de Jesus M. Terrazas y Luis Ostos — miembros dedicados de nuestra comunidad de trastornos hemorrágicos.",
     status: "El próximo ciclo llegará pronto",
+    statusOpen: "Aceptando Solicitudes",
+    statusClosed: "Plazo Vencido",
+    amountLabel: "Monto del Premio",
+    recipientsLabel: "Beneficiarios",
+    recipientsUnit: "Estudiantes",
+    deadlineLabel: "Fecha Límite",
+    deadlinePast: "La fecha límite para este ciclo de becas ha pasado. Vuelva para el próximo ciclo.",
+    essay: "Tema del Ensayo",
     soonBody:
       "Por el momento no estamos aceptando solicitudes. Los detalles del próximo ciclo de becas se publicarán aquí. Contáctenos si desea que le avisemos cuando abra.",
   },

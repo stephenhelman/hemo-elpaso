@@ -14,5 +14,5 @@ export const sectionsFragment = groq`sections[]{
   _type == "ctaBanner"  => { heading, subheading, icon, background, showIfRegistrationOpen,
                              buttons[]{ style, icon, showIfRegistrationOpen, link${linkFragment} } },
   _type == "peopleGrid" => { header, layout,
-                             "people": people[]->[active == true]|order(order asc){ ${personFragment} } }
+                             "people": *[_type == "person" && _id in ^.people[]._ref && active == true]|order(order asc){ ${personFragment} } }
 }`;

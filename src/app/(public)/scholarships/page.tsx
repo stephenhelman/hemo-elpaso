@@ -1,21 +1,15 @@
-"use client";
+import { getScholarshipsPage } from "@/sanity/data";
+import { effectiveStatus } from "@/sanity/scholarship";
+import ScholarshipsPageView from "@/components/scholarships/ScholarshipsPageView";
 
-import ScholarshipsHero from "@/components/scholarships/ScholarshipsHero";
-import ScholarshipCard from "@/components/scholarships/ScholarshipCard";
-import ScholarshipContacts from "@/components/scholarships/ScholarshipContacts";
-import ScholarshipCTA from "@/components/scholarships/ScholarshipCTA";
-import { useLanguage } from "@/context/LanguageContext";
-
-export default function ScholarshipsPage() {
-  const { locale } = useLanguage();
-  return (
-    <>
-      <ScholarshipsHero locale={locale} />
-      <ScholarshipCard locale={locale} />
-      {/* Hidden until a new cycle opens; component and dictionary are kept. */}
-      {/* <EligibilityRequirements locale={locale} /> */}
-      <ScholarshipContacts locale={locale} />
-      <ScholarshipCTA locale={locale} />
-    </>
-  );
+/**
+ * Rendered from Sanity (page + scholarship docs), with today's dictionary copy as
+ * the fallback if Sanity is unreachable. The old dictionary-driven components
+ * (ScholarshipsHero, ScholarshipCard, EligibilityRequirements, ScholarshipContacts,
+ * ScholarshipCTA) are kept for reference/fallback work.
+ */
+export default async function ScholarshipsPage() {
+  const data = await getScholarshipsPage();
+  const status = effectiveStatus(data.scholarship ?? null);
+  return <ScholarshipsPageView data={data} status={status} />;
 }
