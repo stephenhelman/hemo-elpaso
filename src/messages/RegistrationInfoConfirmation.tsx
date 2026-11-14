@@ -1,3 +1,4 @@
+import { contactEmail } from "@/lib/site";
 import {
   Body,
   Container,
@@ -23,7 +24,7 @@ const copy = {
     heading: "Thank you for registering",
     body: "We received your request for information from Hemophilia Outreach of El Paso. We will let you know about upcoming events and services.",
     change:
-      "To update or remove your information, just reply to this email or contact us at info@hemo-el-paso.org.",
+      `To update or remove your information, just reply to this email or contact us at ${contactEmail()}.`,
     sign: "The HOEP Team",
   },
   es: {
@@ -31,7 +32,7 @@ const copy = {
     heading: "Gracias por registrarte",
     body: "Recibimos tu solicitud de información de Hemophilia Outreach of El Paso. Te avisaremos sobre próximos eventos y servicios.",
     change:
-      "Para actualizar o eliminar tu información, responde a este correo o escríbenos a info@hemo-el-paso.org.",
+      `Para actualizar o eliminar tu información, responde a este correo o escríbenos a ${contactEmail()}.`,
     sign: "El equipo de HOEP",
   },
 };

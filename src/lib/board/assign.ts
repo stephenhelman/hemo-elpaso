@@ -1,3 +1,4 @@
+import { mailbox } from "@/lib/site";
 import { AuditAction, BoardRoleType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
@@ -93,7 +94,7 @@ export async function assignBoardRole(params: {
     const lang = (boardRole.patient.preferredLanguage === "es" ? "es" : "en") as "en" | "es";
     const roleTitles = ROLE_TITLE[role as BoardRoleType];
     const roleTitle = roleTitles ? roleTitles[lang] : role;
-    const roleEmail = boardRole.fromEmail ?? `${role.toLowerCase().replace(/_/g, "")}@hemo-el-paso.org`;
+    const roleEmail = boardRole.fromEmail ?? mailbox(role.toLowerCase().replace(/_/g, ""));
     const contactProfile = boardRole.patient.contactProfile;
     const patientName = contactProfile
       ? `${contactProfile.firstName} ${contactProfile.lastName}`
@@ -105,7 +106,7 @@ export async function assignBoardRole(params: {
       recipient: boardRole.patient.email,
       data: { patientName, roleTitle, roleEmail, dashboardUrl, lang },
       patientId: boardRole.patientId,
-      fromEmail: "HOEP <noreply@hemo-el-paso.org>",
+      fromEmail: `HOEP <${mailbox("noreply")}>`,
     });
 
     await prisma.boardOnboarding.upsert({

@@ -1,3 +1,4 @@
+import { contactEmail } from "@/lib/site";
 import {
   Body,
   Container,
@@ -115,8 +116,8 @@ export default function BoardRoleAssigned({
               El Paso, Texas
             </Text>
             <Text style={footerTextSmall}>
-              <Link href="mailto:info@hemo-el-paso.org" style={footerLink}>
-                info@hemo-el-paso.org
+              <Link href={`mailto:${contactEmail()}`} style={footerLink}>
+                {contactEmail()}
               </Link>
             </Text>
           </Section>

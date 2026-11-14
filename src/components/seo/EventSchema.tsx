@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 interface EventSchemaProps {
   event: {
     titleEn: string;
@@ -34,18 +35,18 @@ export default function EventSchema({ event, locale }: EventSchemaProps) {
         addressCountry: "US",
       },
     },
-    image: event.imageUrl || "https://hemo-el-paso.org/og-default.jpg",
+    image: event.imageUrl || `${siteUrl()}/og-default.jpg`,
     organizer: {
       "@type": "Organization",
       name: "Hemophilia Outreach of El Paso",
-      url: "https://hemo-el-paso.org",
+      url: siteUrl(),
     },
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
-      url: `https://hemo-el-paso.org/events/${event.slug}`,
+      url: `${siteUrl()}/events/${event.slug}`,
     },
   };
 

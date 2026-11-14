@@ -1,3 +1,4 @@
+import { contactEmail } from "@/lib/site";
 import {
   Body,
   Button,
@@ -41,7 +42,7 @@ const copy = {
     qrTitle: "Your check-in QR code",
     qrHelp: "Show this at the door. If the image doesn't load, open your RSVP page:",
     manage: "View / change / cancel my RSVP",
-    questions: "Questions? Call us at 915-621-8291 or email info@hemo-el-paso.org.",
+    questions: `Questions? Call us at 915-621-8291 or email ${contactEmail()}.`,
     sign: "The HOEP Team",
   },
   es: {
@@ -53,7 +54,7 @@ const copy = {
     qrTitle: "Tu código QR de registro",
     qrHelp: "Muéstralo en la entrada. Si la imagen no carga, abre tu página:",
     manage: "Ver / cambiar / cancelar mi asistencia",
-    questions: "¿Preguntas? Llámanos al 915-621-8291 o escribe a info@hemo-el-paso.org.",
+    questions: `¿Preguntas? Llámanos al 915-621-8291 o escribe a ${contactEmail()}.`,
     sign: "El equipo de HOEP",
   },
 };

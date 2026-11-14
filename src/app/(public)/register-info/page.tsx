@@ -1,7 +1,13 @@
 import RegisterInfoForm from "@/components/register-info/RegisterInfoForm";
 import RegisterInfoHeading from "@/components/register-info/RegisterInfoHeading";
+import RegistrationClosed from "@/components/register-info/RegistrationClosed";
+import { registrationOpen } from "@/lib/registration";
+
+export const dynamic = "force-dynamic"; // REGISTRATION_OPEN is read at request time
 
 export default function RegisterInfoPage() {
+  if (!registrationOpen()) return <RegistrationClosed />;
+
   // Read at request time on the server; the public site key is handed to the client form.
   const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY ?? null;
   return (

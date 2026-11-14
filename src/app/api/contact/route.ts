@@ -1,3 +1,4 @@
+import { mailbox, contactEmail } from "@/lib/site";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     );
 
     const notified = await resend.emails.send({
-      from: `HOEP Contact Form <noreply@hemo-el-paso.org>`,
+      from: `HOEP Contact Form <${mailbox("noreply")}>`,
       to: toEmail,
       replyTo: email, // clicking reply in Gmail goes straight to the sender
       subject: isEs
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     // ── 2. Auto-reply confirmation to the sender ──────────────────────────────
     const autoReply = await resend.emails.send({
-      from: `HOEP <info@hemo-el-paso.org>`,
+      from: `HOEP <${contactEmail()}>`,
       to: email,
       subject: isEs
         ? "Hemos recibido su mensaje — HOEP"
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
             <hr style="border-color:#e5e7eb;margin:24px 0"/>
             <p style="color:#6b7280;font-size:13px">
               Hemophilia Outreach of El Paso<br/>
-              info@hemo-el-paso.org
+              ${contactEmail()}
             </p>
           </div>
         `
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
             <hr style="border-color:#e5e7eb;margin:24px 0"/>
             <p style="color:#6b7280;font-size:13px">
               Hemophilia Outreach of El Paso<br/>
-              info@hemo-el-paso.org
+              ${contactEmail()}
             </p>
           </div>
         `,

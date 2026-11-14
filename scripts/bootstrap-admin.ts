@@ -11,7 +11,9 @@
  *
  * Also add the email to BOARD_ALLOWLIST in the Auth0 Action, or login is denied.
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config();
 import { PrismaClient } from "@prisma/client";
 
 async function main() {

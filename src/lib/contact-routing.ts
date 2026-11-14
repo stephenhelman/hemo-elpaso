@@ -1,6 +1,7 @@
+import { contactEmail } from "@/lib/site";
 import { prisma } from "@/lib/db";
 
-const FALLBACK_EMAIL = "info@hemo-el-paso.org";
+const FALLBACK_EMAIL = contactEmail();
 
 /**
  * Look up the active fromEmail for a board role type.

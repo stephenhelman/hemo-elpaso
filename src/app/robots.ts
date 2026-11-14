@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/portal/*", "/admin/*", "/api/*"],
       },
     ],
-    sitemap: "https://hemo-el-paso.org/sitemap.xml",
+    sitemap: `${siteUrl()}/sitemap.xml`,
   };
 }

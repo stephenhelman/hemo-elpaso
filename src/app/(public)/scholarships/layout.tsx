@@ -1,8 +1,10 @@
 import { getLocaleCookie } from "@/lib/locale";
+import { siteUrl } from "@/lib/site";
 import type { Metadata } from "next";
 import type { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const site = siteUrl();
   const locale = (await getLocaleCookie()) as Lang;
 
   const content = {
@@ -34,13 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: c.ogTitle,
       description: c.ogDescription,
-      url: "https://hemo-el-paso.org/scholarships",
+      url: `${site}/scholarships`,
       siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [
         {
-          url: "https://hemo-el-paso.org/images/og-scholarships.jpg",
+          url: `${site}/images/og-scholarships.jpg`,
           width: 1200,
           height: 630,
           alt: locale === "es" ? "Becas - HOEP" : "Scholarships - HOEP",
@@ -52,14 +54,14 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: c.ogTitle,
       description: c.ogDescription,
-      images: ["https://hemo-el-paso.org/images/og-scholarships.jpg"],
+      images: [`${site}/images/og-scholarships.jpg`],
     },
 
     alternates: {
-      canonical: "https://hemo-el-paso.org/scholarships",
+      canonical: `${site}/scholarships`,
       languages: {
-        "en-US": "https://hemo-el-paso.org/scholarships",
-        "es-MX": "https://hemo-el-paso.org/scholarships",
+        "en-US": `${site}/scholarships`,
+        "es-MX": `${site}/scholarships`,
       },
     },
 

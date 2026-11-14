@@ -9,7 +9,7 @@ interface Props {
   referrer: string | undefined;
   event: SerializedEvent;
   rsvpCount: number;
-  registration: "open" | "full" | "closed" | "disabled";
+  registration: "open" | "full" | "closed" | "disabled" | "paused";
   eventId: string;
   turnstileSiteKey: string | null;
 }

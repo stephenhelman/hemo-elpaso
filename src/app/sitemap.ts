@@ -1,8 +1,10 @@
+import { siteUrl } from "@/lib/site";
+import { registrationOpen } from "@/lib/registration";
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://hemo-el-paso.org";
+  const baseUrl = siteUrl();
 
   // Get all published events
   const events = await prisma.event.findMany({
@@ -49,18 +51,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/register-info`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    },
-    {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     },
   ];
+
+  // Public sign-up page only while REGISTRATION_OPEN=true
+  if (registrationOpen()) {
+    staticPages.push({
+      url: `${baseUrl}/register-info`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    });
+  }
 
   // Dynamic event pages
   const eventPages = events.map((event) => ({

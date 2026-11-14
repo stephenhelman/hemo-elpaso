@@ -1,3 +1,4 @@
+import { siteHost } from "@/lib/site";
 import {
   Body,
   Container,
@@ -122,8 +123,8 @@ export default function ContactFormNotification({
           <Section style={footer}>
             <Text style={footerText}>
               {isEs
-                ? "Este mensaje fue enviado desde el formulario de contacto en hemo-el-paso.org"
-                : "This message was submitted via the contact form at hemo-el-paso.org"}
+                ? `Este mensaje fue enviado desde el formulario de contacto en ${siteHost()}`
+                : `This message was submitted via the contact form at ${siteHost()}`}
             </Text>
           </Section>
         </Container>

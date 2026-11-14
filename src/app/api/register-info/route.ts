@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { registrationOpen } from "@/lib/registration";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
 import { sendRegistrationConfirmation } from "@/lib/patients/confirmation";
@@ -16,6 +17,9 @@ import { sendRegistrationConfirmation } from "@/lib/patients/confirmation";
 const OK = () => NextResponse.json({ ok: true });
 
 export async function POST(req: NextRequest) {
+  // Closed (REGISTRATION_OPEN != "true"): the endpoint doesn't exist as far as callers can tell.
+  if (!registrationOpen()) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

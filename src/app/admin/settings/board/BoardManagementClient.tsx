@@ -1,5 +1,7 @@
 "use client";
 
+import { mailbox } from "@/lib/site";
+
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -87,13 +89,13 @@ const COMMUNITY_ROLES = [
 ];
 
 const ROLE_FROM_EMAILS: Record<string, string> = {
-  PRESIDENT: "president@hemo-el-paso.org",
-  VICE_PRESIDENT: "vicepresident@hemo-el-paso.org",
-  TREASURER: "treasurer@hemo-el-paso.org",
-  SECRETARY: "secretary@hemo-el-paso.org",
-  EVENTS_COORDINATOR: "events@hemo-el-paso.org",
-  SPONSOR_LIAISON: "sponsors@hemo-el-paso.org",
-  COMMUNICATIONS_LEAD: "communications@hemo-el-paso.org",
+  PRESIDENT: mailbox("president"),
+  VICE_PRESIDENT: mailbox("vicepresident"),
+  TREASURER: mailbox("treasurer"),
+  SECRETARY: mailbox("secretary"),
+  EVENTS_COORDINATOR: mailbox("events"),
+  SPONSOR_LIAISON: mailbox("sponsors"),
+  COMMUNICATIONS_LEAD: mailbox("communications"),
 };
 
 // -------------------------------------------------------
@@ -413,7 +415,7 @@ function BoardRoleCard({
                   type="email"
                   value={emailValue}
                   onChange={(e) => setEmailValue(e.target.value)}
-                  placeholder={suggestedEmail ?? `role@hemo-el-paso.org`}
+                  placeholder={suggestedEmail ?? mailbox("role")}
                   className="flex-1 px-2 py-1 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <button
@@ -698,7 +700,7 @@ function AssignRoleForm({
               value={fromEmail}
               onChange={(e) => setFromEmail(e.target.value)}
               placeholder={
-                ROLE_FROM_EMAILS[selectedRole] ?? "role@hemo-el-paso.org"
+                ROLE_FROM_EMAILS[selectedRole] ?? mailbox("role")
               }
               className="w-full px-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />

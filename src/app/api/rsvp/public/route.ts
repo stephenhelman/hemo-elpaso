@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { registrationOpen } from "@/lib/registration";
 import { prisma } from "@/lib/db";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
@@ -13,6 +14,9 @@ import { registrationState, rsvpYes } from "@/lib/rsvp";
  * leak who is registered.
  */
 export async function POST(req: NextRequest) {
+  // Closed (REGISTRATION_OPEN != "true"): the endpoint doesn't exist as far as callers can tell.
+  if (!registrationOpen()) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ ok: false, error: "bad_request" }, { status: 400 });
 

@@ -1,8 +1,10 @@
 import { getLocaleCookie } from "@/lib/locale";
+import { siteUrl } from "@/lib/site";
 import type { Metadata } from "next";
 import type { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const site = siteUrl();
   const locale = (await getLocaleCookie()) as Lang;
 
   const content = {
@@ -33,13 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: c.ogTitle,
       description: c.ogDescription,
-      url: "https://hemo-el-paso.org/contact",
+      url: `${site}/contact`,
       siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
       images: [
         {
-          url: "https://hemo-el-paso.org/images/og-contact.jpg",
+          url: `${site}/images/og-contact.jpg`,
           width: 1200,
           height: 630,
           alt: locale === "es" ? "Contáctenos - HOEP" : "Contact Us - HOEP",
@@ -51,14 +53,14 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: c.ogTitle,
       description: c.ogDescription,
-      images: ["https://hemo-el-paso.org/images/og-contact.jpg"],
+      images: [`${site}/images/og-contact.jpg`],
     },
 
     alternates: {
-      canonical: "https://hemo-el-paso.org/contact",
+      canonical: `${site}/contact`,
       languages: {
-        "en-US": "https://hemo-el-paso.org/contact",
-        "es-MX": "https://hemo-el-paso.org/contact",
+        "en-US": `${site}/contact`,
+        "es-MX": `${site}/contact`,
       },
     },
 

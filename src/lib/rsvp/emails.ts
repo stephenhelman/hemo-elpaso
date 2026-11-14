@@ -1,8 +1,9 @@
+import { siteUrl } from "@/lib/site";
 import { render } from "@react-email/render";
 import { sendLoggedEmail } from "@/lib/email/send";
 import RsvpEmail, { type RsvpEmailKind } from "@/messages/RsvpEmail";
 
-const baseUrl = () => process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+const baseUrl = () => siteUrl();
 
 interface EmailEvent { titleEn: string; titleEs: string; eventDate: Date; location: string | null }
 interface EmailPatient { id: string; email: string | null; preferredLanguage: string; contactProfile?: { firstName: string } | null }

@@ -1,5 +1,6 @@
 "use client";
 
+import { siteHost } from "@/lib/site";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Upload, FileText, X } from "lucide-react";
@@ -186,7 +187,7 @@ export default function NewEventPage() {
               placeholder="spring-educational-dinner-2026"
             />
             <p className="text-xs text-neutral-500 mt-1">
-              URL: hemo-el-paso.org/events/{formData.slug || "your-event-slug"}
+              URL: {siteHost()}/events/{formData.slug || "your-event-slug"}
             </p>
           </FormField>
 

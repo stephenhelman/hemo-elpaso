@@ -2,6 +2,7 @@ import PortalNavbar from "./PortalNavBar";
 import PortalFooter from "./PortalFooter";
 import { Lang } from "@/types";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
+import { registrationOpen } from "@/lib/registration";
 
 export async function PortalLayout({
   children,
@@ -15,7 +16,7 @@ export async function PortalLayout({
       <div className="overflow-x-hidden">
         <PortalNavbar locale={locale} />
         {children}
-        <PortalFooter locale={locale} />
+        <PortalFooter locale={locale} registrationOpen={registrationOpen()} />
       </div>
     </UserProvider>
   );

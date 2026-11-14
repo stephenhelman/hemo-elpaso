@@ -1,3 +1,4 @@
+import { contactEmail } from "@/lib/site";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
 
@@ -65,7 +66,7 @@ export async function sendLoggedEmail(params: {
     // Resend's own error instead of a stale import-time value).
     const res = await new Resend(process.env.RESEND_API_KEY).emails.send({
       from: from || "HOEP Events <onboarding@resend.dev>", // non-production only
-      replyTo: params.replyTo ?? "info@hemo-el-paso.org",
+      replyTo: params.replyTo ?? contactEmail(),
       to: params.to,
       subject: params.subject,
       html: params.html,

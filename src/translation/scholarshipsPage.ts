@@ -1,3 +1,4 @@
+import { siteHost } from "@/lib/site";
 export const scholarshipHeroTranslation = {
   en: {
     eyebrow: "Educational Support",
@@ -31,7 +32,7 @@ export const scholarshipCardTranslation = {
       '"How will you be advocating for bleeding disorders through your time in college?"',
     essayLength: "300–400 words",
     apply: "Apply at",
-    applyUrl: "www.hemo-el-paso.org",
+    applyUrl: siteHost(),
     status: "Deadline Passed",
     statusOpen: "Now Accepting Applications",
   },
@@ -54,7 +55,7 @@ export const scholarshipCardTranslation = {
       '"¿Cómo abogará por los trastornos hemorrágicos durante su tiempo en la universidad?"',
     essayLength: "300–400 palabras",
     apply: "Aplique en",
-    applyUrl: "www.hemo-el-paso.org",
+    applyUrl: siteHost(),
     status: "Plazo Vencido",
     statusOpen: "Aceptando Solicitudes",
   },

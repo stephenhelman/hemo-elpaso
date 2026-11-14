@@ -1,4 +1,6 @@
 import { getLocaleCookie } from "../../lib/locale";
+import { siteUrl } from "@/lib/site";
+import { registrationOpen } from "@/lib/registration";
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
@@ -7,6 +9,7 @@ import { inter, poppins } from "@/lib/fonts";
 import { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const site = siteUrl();
   const locale = (await getLocaleCookie()) as Lang;
 
   const content = {
@@ -31,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const c = content[locale as "en" | "es"];
 
   return {
-    metadataBase: new URL("https://hemo-el-paso.org"),
+    metadataBase: new URL(site),
 
     title: {
       default: c.title,
@@ -69,7 +72,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: locale === "es" ? "es_MX" : "en_US",
-      url: "https://hemo-el-paso.org",
+      url: `${site}`,
       siteName:
         locale === "es"
           ? "Hemophilia Outreach of El Paso"
@@ -94,10 +97,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
 
     alternates: {
-      canonical: "https://hemo-el-paso.org",
+      canonical: `${site}`,
       languages: {
-        "en-US": "https://hemo-el-paso.org",
-        "es-MX": "https://hemo-el-paso.org",
+        "en-US": `${site}`,
+        "es-MX": `${site}`,
       },
     },
 
@@ -133,7 +136,7 @@ export default async function RootLayout({
         <OrganizationSchema />
       </head>
       <body className={`${inter.variable} ${poppins.variable}`}>
-        <SiteLayout>{children}</SiteLayout>
+        <SiteLayout registrationOpen={registrationOpen()}>{children}</SiteLayout>
       </body>
     </html>
   );

@@ -1,11 +1,14 @@
+import { contactEmail } from "@/lib/site";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
 import { footerTranslation } from "@/translation/layoutPage";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSiteFlags } from "@/context/SiteFlagsContext";
 
 export default function Footer() {
   const { locale } = useLanguage();
+  const { registrationOpen } = useSiteFlags();
   const t = footerTranslation[locale];
 
   return (
@@ -74,10 +77,10 @@ export default function Footer() {
               <li className="flex items-center gap-2 text-sm text-neutral-400">
                 <Mail className="w-4 h-4 text-primary-400 flex-shrink-0" />
                 <a
-                  href="mailto:info@hemo-el-paso.org"
+                  href={`mailto:${contactEmail()}`}
                   className="hover:text-primary-400 transition-colors"
                 >
-                  info@hemo-el-paso.org
+                  {contactEmail()}
                 </a>
               </li>
             </ul>
@@ -96,7 +99,7 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Newsletter */}
+          {registrationOpen && (
           <div>
             <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
               {t.newsletter}
@@ -109,6 +112,7 @@ export default function Footer() {
               {t.subscribe}
             </Link>
           </div>
+          )}
         </div>
       </div>
 
