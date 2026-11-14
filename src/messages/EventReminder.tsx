@@ -131,9 +131,9 @@ export default function EventReminder({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              Can't make it?{" "}
-              <a href={`${baseUrl}/portal/dashboard`} style={link}>
-                Cancel your RSVP
+              Can't make it? Please let us know at{" "}
+              <a href="mailto:info@hemo-el-paso.org" style={link}>
+                info@hemo-el-paso.org
               </a>
             </Text>
             <Text style={footerText}>

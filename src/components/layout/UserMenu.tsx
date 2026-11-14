@@ -43,7 +43,7 @@ export default function UserMenu({ lang }: Props) {
   if (!user) {
     return (
       <Link
-        href="/api/auth/login"
+        href="/api/auth/login?returnTo=/admin"
         className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
       >
         {t.login}

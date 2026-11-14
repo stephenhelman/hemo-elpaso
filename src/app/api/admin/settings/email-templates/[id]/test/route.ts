@@ -151,7 +151,6 @@ async function renderEmailTemplate(
       // TODO: Implement other templates as we create them
       case "EVENT_PUBLISHED":
       case "EVENT_CANCELLED":
-      case "WELCOME_EMAIL":
         return `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <h1 style="color: #8B1538;">Email Preview Coming Soon</h1>

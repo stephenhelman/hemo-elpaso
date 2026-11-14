@@ -35,7 +35,6 @@ export default function RsvpConfirmation({
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
 
-  const portalUrl = `${baseUrl}/portal/dashboard`;
 
   return (
     <Html>
@@ -84,25 +83,6 @@ export default function RsvpConfirmation({
             </table>
           </Section>
 
-          {/* QR Code — portal CTA */}
-          <Section style={qrSection}>
-            <Heading as="h2" style={h2}>
-              Your Check-In QR Code
-            </Heading>
-            <Text style={text}>
-              Your QR code is ready in your member portal. Show it at the event
-              entrance for quick check-in — no printing needed.
-            </Text>
-            <Button style={qrButton} href={portalUrl}>
-              View My QR Code →
-            </Button>
-            <Text style={smallText}>
-              💡 <strong>Tip:</strong> Open your portal on your phone before
-              arriving so your QR code is ready to scan. No internet required
-              once the page loads.
-            </Text>
-          </Section>
-
           {/* View event CTA */}
           <Section style={buttonSection}>
             <Button style={button} href={`${baseUrl}/events/${eventSlug}`}>
@@ -119,11 +99,11 @@ export default function RsvpConfirmation({
               </a>
             </Text>
             <Text style={footerText}>
-              Can't make it?{" "}
-              <a href={portalUrl} style={link}>
-                Cancel your RSVP
-              </a>{" "}
-              from your portal.
+              Can't make it? Please let us know at{" "}
+              <a href="mailto:info@hemo-el-paso.org" style={link}>
+                info@hemo-el-paso.org
+              </a>
+              .
             </Text>
           </Section>
         </Container>

@@ -7,7 +7,6 @@ import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 import EventPublished from "@/messages/EventPublished";
 import EventCancelled from "@/messages/EventCancelled";
-import WelcomeEmail from "@/messages/WelcomeEmail";
 import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -190,14 +189,6 @@ async function renderEmailTemplate(
             eventTime: String(data.eventTime),
             location: String(data.location),
             cancellationReason: String(data.cancellationReason),
-          }),
-        );
-
-      case "WELCOME_EMAIL":
-        return render(
-          WelcomeEmail({
-            patientName: String(data.patientName),
-            email: String(data.email),
           }),
         );
 

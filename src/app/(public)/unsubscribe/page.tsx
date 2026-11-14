@@ -22,14 +22,14 @@ function UnsubscribeContent() {
           </h1>
           <p className="text-neutral-500 text-sm leading-relaxed mb-6">
             You will no longer receive HOEP newsletters at this email address.
-            You can re-enable communications at any time from your patient portal.
+            To start receiving them again, just contact us.
           </p>
           <div className="flex flex-col gap-3">
             <Link
-              href="/portal/profile"
+              href="/contact"
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
             >
-              Manage Preferences
+              Contact Us
             </Link>
             <Link
               href="/"
