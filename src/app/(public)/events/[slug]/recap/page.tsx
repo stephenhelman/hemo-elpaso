@@ -19,6 +19,7 @@ export default async function EventRecapPublicPage({ params }: Props) {
   const event = await prisma.event.findUnique({
     where: { slug: params.slug },
     select: {
+      // explicit public fields only
       slug: true,
       titleEn: true,
       titleEs: true,

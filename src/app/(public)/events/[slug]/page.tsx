@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getLocaleCookie } from "@/lib/locale";
 
 import { prisma } from "@/lib/db";
+import { publicEventSelect } from "@/lib/events/public-select";
 import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
 import EventSchema from "@/components/seo/EventSchema";
@@ -24,12 +25,11 @@ export default async function EventPage({ params, searchParams }: Props) {
   // Get event from database
   const event = await prisma.event.findUnique({
     where: { slug: params.slug },
-    include: {
-      _count: { select: { rsvps: { where: { cancelledAt: null } } } },
-    },
+    select: publicEventSelect,
   });
 
-  if (!event) notFound();
+  // Drafts are not public.
+  if (!event || event.status === "draft") notFound();
 
   // people (party sizes), same basis as the capacity check
   const currentRsvpCount = await activeHeadcount(event.id);
@@ -49,13 +49,8 @@ export default async function EventPage({ params, searchParams }: Props) {
     rsvpDeadline: event.rsvpDeadline?.toISOString() ?? null,
     status: event.status,
     category: event.category,
-    targetAudience: event.targetAudience,
     language: event.language,
     isPriority: event.isPriority,
-    liveEnabled: event.liveEnabled,
-    createdBy: event.createdBy,
-    createdAt: event.createdAt.toISOString(),
-    updatedAt: event.updatedAt.toISOString(),
     recapPublishedAt: event.recapPublishedAt?.toISOString() ?? null,
   };
 
