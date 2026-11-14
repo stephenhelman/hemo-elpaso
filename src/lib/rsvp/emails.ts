@@ -15,7 +15,7 @@ interface EmailEvent {
 
 interface EmailPatient {
   id: string;
-  email: string;
+  email: string | null;
   contactProfile?: { firstName: string; lastName: string } | null;
 }
 
@@ -45,6 +45,7 @@ export async function sendRsvpConfirmationEmail(params: {
   attendeeCount: number;
 }) {
   const { patient, event, attendeeCount } = params;
+  if (!patient.email) return; // no email on file (e.g. phone call-in)
   try {
     await sendRsvpConfirmation({
       recipient: patient.email,
@@ -70,6 +71,7 @@ export async function sendRsvpCancellationEmail(params: {
   event: EmailEvent;
 }) {
   const { patient, event } = params;
+  if (!patient.email) return;
   try {
     await sendEmail({
       templateType: "RSVP_CANCELLATION",
@@ -99,6 +101,7 @@ export async function sendEventReminderEmail(params: {
   event: EmailEvent;
 }) {
   const { rsvp, patient, event } = params;
+  if (!patient.email) return; // nothing to send to
 
   const qrDataUrl = await QRCode.toDataURL(`RSVP-${rsvp.id}`, {
     width: 500,

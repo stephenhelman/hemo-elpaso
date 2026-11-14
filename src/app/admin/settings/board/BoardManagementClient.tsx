@@ -34,7 +34,7 @@ interface BoardRoleRecord {
   assignedAt: string;
   patient: {
     id: string;
-    email: string;
+    email: string | null;
     firstName: string | null;
     lastName: string | null;
   };
@@ -150,7 +150,7 @@ export default function BoardManagementClient({
   const getPatientName = (patient: BoardRoleRecord["patient"]) =>
     patient.firstName && patient.lastName
       ? `${patient.firstName} ${patient.lastName}`
-      : patient.email;
+      : (patient.email ?? "(no email)");
 
   return (
     <>

@@ -62,7 +62,7 @@ export async function seedEngagement() {
           questionEs: template.questionEs,
           status: "approved",
           active: false, // Past events, polls are closed
-          createdBy: admin.email,
+          createdBy: admin.email ?? "seed",
         },
       });
 
@@ -141,7 +141,7 @@ export async function seedEngagement() {
           messageEs: template.messageEs,
           priority: template.priority,
           active: false, // Past event
-          createdBy: admin.email,
+          createdBy: admin.email ?? "seed",
         },
       });
 
@@ -176,7 +176,7 @@ export async function seedEngagement() {
             "Cafeteria",
             null,
           ]),
-          createdBy: admin.email,
+          createdBy: admin.email ?? "seed",
         },
       });
 

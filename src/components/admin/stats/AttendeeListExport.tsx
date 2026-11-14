@@ -7,7 +7,7 @@ interface Attendee {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   checkInTime: Date;
   attendeeRole: string;
@@ -80,7 +80,7 @@ export default function AttendeeListExport({
       csv.push(
         [
           `"${name}"`,
-          attendee.email,
+          attendee.email ?? "",
           phone,
           role,
           checkInTime,
@@ -220,7 +220,7 @@ function AttendeeCard({ attendee }: { attendee: Attendee }) {
       <p className="font-medium text-neutral-900 text-sm mb-1">
         {abbreviatedName}
       </p>
-      <p className="text-xs text-neutral-600 truncate mb-1">{attendee.email}</p>
+      <p className="text-xs text-neutral-600 truncate mb-1">{attendee.email ?? "—"}</p>
       {attendee.phone && (
         <p className="text-xs text-neutral-500">{attendee.phone}</p>
       )}
@@ -232,7 +232,7 @@ interface Attendee {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   checkInTime: Date;
   attendeeRole: string;

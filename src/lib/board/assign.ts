@@ -91,7 +91,7 @@ export async function assignBoardRole(params: {
     const contactProfile = boardRole.patient.contactProfile;
     const patientName = contactProfile
       ? `${contactProfile.firstName} ${contactProfile.lastName}`
-      : boardRole.patient.email;
+      : (boardRole.patient.email ?? "");
     const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`;
 
     await sendEmail({

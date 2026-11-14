@@ -17,14 +17,18 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     where: { id: patientId },
     include: {
       preferences: true,
-      disorderProfile: true,
-      familyMembers: true,
     },
   });
 
-  if (!patient || !patient.preferences) {
+  // Thin patients (Phase 3) have no PatientPreferences row; that's fine.
+  if (!patient) {
     return [];
   }
+  const interestedTopics = patient.preferences?.interestedTopics ?? [];
+  const preferredEventTimes = patient.preferences?.preferredEventTimes ?? [];
+  // PHI: stated diagnoses are used for scoring only. Never put them (or the
+  // "relevant to your condition" reason below) in emails, URLs or logs.
+  const diagnoses = patient.statedDiagnoses;
 
   // Get all published upcoming events with targeting
   const events = await prisma.event.findMany({
@@ -48,7 +52,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     const reasons: Reason[] = [];
 
     // Topic/Category match (40 points max)
-    if (patient.preferences!.interestedTopics.includes(event.category)) {
+    if (interestedTopics.includes(event.category)) {
       score += 40;
       reasons.push({
         en: "Matches your interests",
@@ -58,44 +62,31 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
 
     // EventTargeting - Condition match (30 points)
     if (event.targeting) {
-      const patientCondition = patient.disorderProfile?.condition ?? "";
-      if (
-        event.targeting.targetConditions.length === 0 ||
-        event.targeting.targetConditions.includes(patientCondition)
-      ) {
+      // Empty targeting = open to everyone; otherwise any overlap with the
+      // household's stated diagnoses counts.
+      const targets = event.targeting.targetConditions;
+      if (targets.length === 0 || diagnoses.some((d) => targets.includes(d))) {
         score += 30;
         reasons.push({
-          en: "Relevant to your condition",
-          es: "Relevant to your condition",
+          en: "Relevant to your household",
+          es: "Relevante para tu hogar",
         });
       }
 
-      // Severity match (15 points)
-      const patientSeverity = patient.disorderProfile?.severity ?? "";
-      if (
-        event.targeting.targetSeverity.length === 0 ||
-        event.targeting.targetSeverity.includes(patientSeverity)
-      ) {
-        score += 15;
-      }
     }
 
     // Age appropriateness (20 points)
-    const hasChildren = patient.familyMembers.some(
-      (m) => m.relationship === "child",
-    );
-    if (event.targetAudience === "youth" && hasChildren) {
+    // Family size is the only household signal we keep (no ages).
+    const hasFamily = patient.familySize > 1;
+    if (event.targetAudience === "youth" && hasFamily) {
       score += 20;
       reasons.push({
         en: "Great for families with kids",
         es: "Ideal para familias con niños.",
       });
-    } else if (
-      event.targetAudience === "families" &&
-      patient.familyMembers.length > 0
-    ) {
+    } else if (event.targetAudience === "families" && hasFamily) {
       score += 20;
-      reasons.push({ en: "Perfect for your family", es: "" });
+      reasons.push({ en: "Perfect for your family", es: "Ideal para tu familia" });
     } else if (event.targetAudience === "all") {
       score += 10;
       reasons.push({
@@ -130,7 +121,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
       hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
     const timeKey = `${isWeekend ? "weekend" : "weekday"}_${timeOfDay}`;
-    if (patient.preferences!.preferredEventTimes.includes(timeKey)) {
+    if (preferredEventTimes.includes(timeKey)) {
       score += 15;
       reasons.push({ en: "Fits your schedule", es: "Se adapta a tu horario" });
     }

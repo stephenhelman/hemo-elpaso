@@ -344,7 +344,14 @@ export default function NewEventPage() {
         <Section title="Targeting (Optional)">
           <FormField label="Target Conditions">
             <div className="grid grid-cols-2 gap-2">
-              {["hemophilia_a", "hemophilia_b", "von_willebrand", "other"].map(
+              {[
+                "hemophilia_a",
+                "hemophilia_b",
+                "von_willebrand",
+                "other",
+                "carrier",
+                "family_caregiver",
+              ].map(
                 (cond) => (
                   <button
                     key={cond}
@@ -357,7 +364,7 @@ export default function NewEventPage() {
                     }`}
                   >
                     {cond
-                      .replace("_", " ")
+                      .replace(/_/g, " ")
                       .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </button>
                 ),
