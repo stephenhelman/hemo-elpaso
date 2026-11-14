@@ -7,8 +7,9 @@ export async function GET(
 ) {
   const event = await prisma.event.findUnique({
     where: { slug: params.slug },
-    select: { id: true, titleEn: true, titleEs: true, eventDate: true, location: true },
+    select: { id: true, titleEn: true, titleEs: true, eventDate: true, location: true, status: true },
   });
-  if (!event) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(event);
+  if (!event || event.status === "draft") return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const { status: _s, ...pub } = event;
+  return NextResponse.json(pub);
 }

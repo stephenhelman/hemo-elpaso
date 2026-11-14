@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all published events
   const events = await prisma.event.findMany({
     where: { status: "published" },
-    select: { slug: true, updatedAt: true },
+    select: { slug: true, updatedAt: true }, // public fields only
   });
 
   // Static pages (high priority)

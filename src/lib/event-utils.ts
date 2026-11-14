@@ -19,13 +19,8 @@ export interface SerializedEvent {
   rsvpDeadline: string | null;
   status: string;
   category: string;
-  targetAudience: string;
   language: string;
   isPriority: boolean;
-  liveEnabled: boolean;
-  createdBy: string | null;
-  createdAt: string;
-  updatedAt: string;
   recapPublishedAt: string | null;
 }
 

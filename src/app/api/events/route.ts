@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { withRsvpPeople } from "@/lib/rsvp/capacity";
 import { eventHasEnded } from "@/lib/rsvp/window";
+import { publicEventSelect } from "@/lib/events/public-select";
+
+// Never prerender at build time: events change without a redeploy.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -10,11 +14,7 @@ export async function GET() {
     const raw = await prisma.event.findMany({
       where: { status: "published" },
       orderBy: { eventDate: "asc" },
-      include: {
-        _count: {
-          select: { rsvps: { where: { cancelledAt: null } } }, // Make sure this is here
-        },
-      },
+      select: publicEventSelect,
     });
 
     const events = await withRsvpPeople(raw);
@@ -22,7 +22,10 @@ export async function GET() {
     const upcoming = events.filter((e) => !eventHasEnded(e, now));
     const past = events.filter((e) => eventHasEnded(e, now));
 
-    return NextResponse.json({ upcoming, past, events });
+    return NextResponse.json(
+      { upcoming, past, events },
+      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } },
+    );
   } catch (error) {
     console.error("Events API error:", error);
     return NextResponse.json(

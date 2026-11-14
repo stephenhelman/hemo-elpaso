@@ -37,9 +37,6 @@ export interface Event {
   /** people (sum of party sizes) with an active RSVP; drives "spots left" */
   rsvpPeople: number;
   endDate?: string | Date | null;
-  _count: {
-    rsvps: number;
-  };
 }
 
 interface Props {
