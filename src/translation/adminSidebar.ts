@@ -47,12 +47,6 @@ export const adminNavItemsTranslation = [
     icon: Calendar,
   },
   {
-    href: "/admin/reports",
-    en: "Reports",
-    es: "Reportes",
-    icon: BarChart3,
-  },
-  {
     href: "/admin/attendance",
     en: "Attendance",
     es: "Asistencia",

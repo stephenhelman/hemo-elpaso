@@ -159,21 +159,13 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
           href="/admin/events/new"
           className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
         >
           <Calendar className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
           <h3 className="font-semibold text-neutral-900">{t.createEvent}</h3>
-        </Link>
-
-        <Link
-          href="/admin/reports"
-          className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
-        >
-          <TrendingUp className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-          <h3 className="font-semibold text-neutral-900">{t.viewReports}</h3>
         </Link>
 
         <Link

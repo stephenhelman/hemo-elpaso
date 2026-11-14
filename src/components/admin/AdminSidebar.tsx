@@ -24,7 +24,6 @@ interface Props {
 
 // Map nav items to the permission needed to see them
 const NAV_PERMISSIONS: Record<string, Permission> = {
-  "/admin/reports": "canViewEventStats",
   "/admin/attendance": "canViewEventStats",
   "/admin/users": "canManageUsers",
   "/admin/audit-logs": "canViewAuditLogs",
