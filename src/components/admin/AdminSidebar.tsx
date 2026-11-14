@@ -27,6 +27,7 @@ const NAV_PERMISSIONS: Record<string, Permission> = {
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
   "/admin/audit-logs": "canViewAuditLogs",
+  "/admin/studio": "canEditSiteContent",
 };
 
 export default function AdminSidebar({
@@ -51,7 +52,7 @@ export default function AdminSidebar({
 
   return (
     <>
-      <AdminMobileNav locale={locale} />
+      <AdminMobileNav locale={locale} canEditSiteContent={can("canEditSiteContent")} />
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-neutral-900 border-r border-neutral-800">
         <div className="flex flex-col flex-1">
           {/* Logo */}

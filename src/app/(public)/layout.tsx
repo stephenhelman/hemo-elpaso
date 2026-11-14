@@ -1,3 +1,4 @@
+import { getDefaultShareImage, getSiteSettings } from "@/sanity/data";
 import { getLocaleCookie } from "../../lib/locale";
 import { siteUrl } from "@/lib/site";
 import { registrationOpen } from "@/lib/registration";
@@ -32,6 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 
   const c = content[locale as "en" | "es"];
+  // Site-wide default share image from Sanity; when absent, Next serves src/app/opengraph-image.png.
+  const og = await getDefaultShareImage();
 
   return {
     metadataBase: new URL(site),
@@ -79,21 +82,14 @@ export async function generateMetadata(): Promise<Metadata> {
           : "Hemophilia Outreach of El Paso",
       title: c.ogTitle,
       description: c.ogDescription,
-      images: [
-        {
-          url: "/images/og-default.jpg",
-          width: 1200,
-          height: 630,
-          alt: locale === "es" ? "HOEP Logo" : "HOEP Logo",
-        },
-      ],
+      ...(og ? { images: [{ url: og, width: 1200, height: 630, alt: c.ogTitle }] } : {}),
     },
 
     twitter: {
       card: "summary_large_image",
       title: c.ogTitle,
       description: c.ogDescription,
-      images: ["/images/og-default.jpg"],
+      ...(og ? { images: [og] } : {}),
     },
 
     alternates: {
@@ -129,6 +125,7 @@ export default async function RootLayout({
 }) {
   // Get locale for dynamic lang attribute
   const locale = (await getLocaleCookie()) as Lang;
+  const settings = await getSiteSettings();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -136,7 +133,11 @@ export default async function RootLayout({
         <OrganizationSchema />
       </head>
       <body className={`${inter.variable} ${poppins.variable}`}>
-        <SiteLayout registrationOpen={registrationOpen()}>{children}</SiteLayout>
+        <SiteLayout
+          registrationOpen={registrationOpen()}
+          initialLocale={locale === "es" ? "es" : "en"}
+          siteInfo={{ orgName: settings.orgName, tagline: settings.tagline, phone: settings.phone }}
+        >{children}</SiteLayout>
       </body>
     </html>
   );

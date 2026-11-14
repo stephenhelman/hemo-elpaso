@@ -25,13 +25,15 @@ export type Permission =
   | "canSendIndividualEmails"
   | "canManageEmailTemplates"
   | "canViewAuditLogs"
-  | "canManageVolunteers";
+  | "canManageVolunteers"
+  | "canEditSiteContent";
 
 // -------------------------------------------------------
 // Role → Permission mapping
 // -------------------------------------------------------
 export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
   PRESIDENT: [
+    "canEditSiteContent",
     "canViewAdminDashboard",
     "canManageEvents",
     "canViewEventStats",
@@ -49,6 +51,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canManageVolunteers",
   ],
   VICE_PRESIDENT: [
+    "canEditSiteContent",
     "canViewAdminDashboard",
     "canManageEvents",
     "canViewEventStats",
@@ -65,6 +68,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canManageVolunteers",
   ],
   SECRETARY: [
+    "canEditSiteContent",
     "canViewAdminDashboard",
     "canViewEventStats",
     "canManageMinutes",
@@ -74,6 +78,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canManageVolunteers",
   ],
   TREASURER: [
+    "canEditSiteContent",
     "canViewAdminDashboard",
     "canViewEventStats",
     "canViewPHI",

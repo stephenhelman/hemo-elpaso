@@ -35,7 +35,7 @@ export default function EventSchema({ event, locale }: EventSchemaProps) {
         addressCountry: "US",
       },
     },
-    image: event.imageUrl || `${siteUrl()}/og-default.jpg`,
+    image: event.imageUrl || `${siteUrl()}/opengraph-image.png`,
     organizer: {
       "@type": "Organization",
       name: "Hemophilia Outreach of El Paso",

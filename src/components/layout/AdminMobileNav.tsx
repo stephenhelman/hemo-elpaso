@@ -14,9 +14,10 @@ import { Lang } from "@/types";
 
 interface Props {
   locale: Lang;
+  canEditSiteContent?: boolean;
 }
 
-export default function AdminMobileNav({ locale }: Props) {
+export default function AdminMobileNav({ locale, canEditSiteContent = false }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -87,7 +88,9 @@ export default function AdminMobileNav({ locale }: Props) {
 
           {/* Navigation Links */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {adminNavItemsTranslation.map((item) => {
+            {adminNavItemsTranslation
+              .filter((item) => item.href !== "/admin/studio" || canEditSiteContent)
+              .map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
 

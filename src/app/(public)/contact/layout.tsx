@@ -1,3 +1,4 @@
+import { getDefaultShareImage } from "@/sanity/data";
 import { getLocaleCookie } from "@/lib/locale";
 import { siteUrl } from "@/lib/site";
 import type { Metadata } from "next";
@@ -27,6 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 
   const c = content[locale as "en" | "es"];
+  // Site-wide default share image from Sanity; when absent, Next serves src/app/opengraph-image.png.
+  const og = await getDefaultShareImage();
 
   return {
     title: c.title,
@@ -39,21 +42,14 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",
       type: "website",
-      images: [
-        {
-          url: `${site}/images/og-contact.jpg`,
-          width: 1200,
-          height: 630,
-          alt: locale === "es" ? "Contáctenos - HOEP" : "Contact Us - HOEP",
-        },
-      ],
+      ...(og ? { images: [{ url: og, width: 1200, height: 630, alt: c.ogTitle }] } : {}),
     },
 
     twitter: {
       card: "summary_large_image",
       title: c.ogTitle,
       description: c.ogDescription,
-      images: [`${site}/images/og-contact.jpg`],
+      ...(og ? { images: [og] } : {}),
     },
 
     alternates: {
