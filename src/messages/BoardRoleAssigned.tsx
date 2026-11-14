@@ -41,7 +41,7 @@ const copy = {
     heading: "Bienvenido/a a la Junta de HOEP",
     greeting: (name: string) => `¡Felicitaciones, ${name}!`,
     intro:
-      "Se le ha asignado un rol en la junta directiva de Hemophilia Outreach de El Paso. Como miembro de la junta, ahora tiene acceso al portal de administración y una dirección de correo electrónico profesional para comunicarse en nombre de la organización.",
+      "Se le ha asignado un rol en la junta directiva de Hemophilia Outreach of El Paso. Como miembro de la junta, ahora tiene acceso al portal de administración y una dirección de correo electrónico profesional para comunicarse en nombre de la organización.",
     roleLabel: "Su Rol",
     emailLabel: "Su Dirección de Correo de la Junta",
     emailNote:

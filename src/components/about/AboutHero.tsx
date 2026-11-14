@@ -3,6 +3,7 @@
 import { aboutHeroTranslation } from "@/translation/aboutPage";
 
 import { Lang } from "@/types";
+import { fillYears } from "@/lib/site";
 
 interface Props {
   locale: Lang;
@@ -25,10 +26,10 @@ export default function AboutHero({ locale }: Props) {
             </span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl font-bold text-white leading-[1.2] mb-6">
-            {t.heading}
+            {fillYears(t.heading, locale)}
           </h1>
           <p className="text-lg text-neutral-300 leading-relaxed max-w-2xl">
-            {t.sub}
+            {fillYears(t.sub, locale)}
           </p>
         </div>
       </div>

@@ -11,19 +11,19 @@ export async function generateMetadata(): Promise<Metadata> {
     en: {
       title: "Scholarships",
       description:
-        "Apply for the Jesus M. Terrazas and Luis Ostos Memorial Scholarship, awarded by Hemophilia Outreach of El Paso (HOEP) to students affected by bleeding disorders. Learn about eligibility, application requirements, and deadlines.",
+        "The Jesus M. Terrazas and Luis Ostos Memorial Scholarship, offered by Hemophilia Outreach of El Paso (HOEP) to students affected by bleeding disorders. The next cycle is coming soon.",
       ogTitle: "Memorial Scholarships for Students with Bleeding Disorders",
       ogDescription:
-        "The Jesus M. Terrazas and Luis Ostos Memorial Scholarship supports students with hemophilia and bleeding disorders in El Paso, Texas. Apply today to receive financial assistance for your education.",
+        "The Jesus M. Terrazas and Luis Ostos Memorial Scholarship supports students with hemophilia and bleeding disorders in El Paso, Texas. The next cycle is coming soon.",
     },
     es: {
       title: "Becas",
       description:
-        "Solicite la Beca Conmemorativa Jesus M. Terrazas y Luis Ostos, otorgada por la Hemophilia Outreach of El Paso (HOEP) a estudiantes afectados por trastornos hemorrágicos. Conozca los requisitos de elegibilidad, solicitud y fechas límite.",
+        "La Beca Conmemorativa Jesus M. Terrazas y Luis Ostos, ofrecida por Hemophilia Outreach of El Paso (HOEP) a estudiantes afectados por trastornos hemorrágicos. El próximo ciclo llegará pronto.",
       ogTitle:
         "Becas Conmemorativas para Estudiantes con Trastornos Hemorrágicos",
       ogDescription:
-        "La Beca Conmemorativa Jesus M. Terrazas y Luis Ostos apoya a estudiantes con hemofilia y trastornos hemorrágicos en El Paso, Texas. Solicite hoy para recibir asistencia financiera para su educación.",
+        "La Beca Conmemorativa Jesus M. Terrazas y Luis Ostos apoya a estudiantes con hemofilia y trastornos hemorrágicos en El Paso, Texas. El próximo ciclo llegará pronto.",
     },
   };
 

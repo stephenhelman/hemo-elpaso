@@ -32,10 +32,7 @@ export default function WaysToHelp({ locale }: Props) {
         {t.ways.map((way) => (
           <WayCard
             key={way.title}
-            // Volunteer sign-up is handled via the contact form for now
-            way={
-              way.anchor === "#volunteer" ? { ...way, anchor: "/contact" } : way
-            }
+            way={way}
           />
         ))}
       </div>

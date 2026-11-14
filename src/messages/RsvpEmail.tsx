@@ -1,4 +1,4 @@
-import { contactEmail } from "@/lib/site";
+import { contactEmail, SITE_PHONE } from "@/lib/site";
 import {
   Body,
   Button,
@@ -45,7 +45,7 @@ const copy = {
     qrFallback: "Can't see your QR code?",
     qrFallbackLink: "Open your RSVP page",
     manage: "View / change / cancel my RSVP",
-    questions: `Questions? Call us at 915-621-8291 or email ${contactEmail()}.`,
+    questions: `Questions? Call us at ${SITE_PHONE.dashed} or email ${contactEmail()}.`,
     sign: "The HOEP Team",
   },
   es: {
@@ -59,7 +59,7 @@ const copy = {
     qrFallback: "¿No ves tu código QR?",
     qrFallbackLink: "Abre tu página de asistencia",
     manage: "Ver / cambiar / cancelar mi asistencia",
-    questions: `¿Preguntas? Llámanos al 915-621-8291 o escribe a ${contactEmail()}.`,
+    questions: `¿Preguntas? Llámanos al ${SITE_PHONE.dashed} o escribe a ${contactEmail()}.`,
     sign: "El equipo de HOEP",
   },
 };

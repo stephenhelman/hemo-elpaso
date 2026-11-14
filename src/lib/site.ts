@@ -30,3 +30,50 @@ export function emailDomain(): string {
 
 export const mailbox = (local: string) => `${local}@${emailDomain()}`;
 export const contactEmail = () => mailbox("info");
+
+/** Year HOEP was founded. Derive every "N years" claim from this. */
+export const FOUNDING_YEAR = 1993;
+export const yearsSinceFounding = (now: Date = new Date()) =>
+  now.getFullYear() - FOUNDING_YEAR;
+/** "30+" style figure: whole decades, floored. */
+export const decadesSinceFounding = (now: Date = new Date()) =>
+  Math.floor(yearsSinceFounding(now) / 10);
+
+/** Org phone, one source. */
+export const SITE_PHONE = {
+  display: "(915) 621-8291",
+  dashed: "915-621-8291",
+  tel: "tel:+19156218291",
+  e164: "+19156218291",
+  schema: "+1-915-621-8291",
+} as const;
+
+/** The only correct Facebook URL. */
+export const FACEBOOK_URL = "https://www.facebook.com/groups/4HOEP";
+export const FACEBOOK_LABEL = {
+  en: "HOEP on Facebook",
+  es: "HOEP en Facebook",
+} as const;
+
+/** Replace {phone} in a translated sentence. */
+export const withPhone = (s: string) => s.replace(/\{phone\}/g, SITE_PHONE.dashed);
+
+const DECADE_WORDS = {
+  en: ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"],
+  es: ["", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"],
+} as const;
+
+/**
+ * Fill age-of-the-org placeholders in a translated string so it never goes stale:
+ *   {years}       33            {decadeYears}  30  (floored to the decade)
+ *   {decades}     three / tres  {Decades}      Three / Tres
+ */
+export function fillYears(s: string, locale: "en" | "es", now: Date = new Date()): string {
+  const d = decadesSinceFounding(now);
+  const w = DECADE_WORDS[locale][d] ?? String(d);
+  return s
+    .replace(/\{years\}/g, String(yearsSinceFounding(now)))
+    .replace(/\{decadeYears\}/g, String(d * 10))
+    .replace(/\{decades\}/g, w)
+    .replace(/\{Decades\}/g, w.charAt(0).toUpperCase() + w.slice(1));
+}

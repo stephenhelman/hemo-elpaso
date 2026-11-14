@@ -104,7 +104,7 @@ export default function Navbar() {
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 rounded-md text-neutral-600 hover:text-primary hover:bg-neutral-100 transition-colors"
-              aria-label="Toggle menu"
+              aria-label={locale === "en" ? "Toggle menu" : "Abrir o cerrar menú"}
             >
               {mobileOpen ? (
                 <X className="w-5 h-5" />

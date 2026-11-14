@@ -1,4 +1,4 @@
-import { contactEmail } from "@/lib/site";
+import { contactEmail, SITE_PHONE, FACEBOOK_URL, FACEBOOK_LABEL } from "@/lib/site";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
@@ -70,10 +70,10 @@ export default function PortalFooter({ locale, registrationOpen = false }: Props
               <li className="flex items-center gap-2 text-sm text-neutral-400">
                 <Phone className="w-4 h-4 text-primary-400 flex-shrink-0" />
                 <a
-                  href="tel:9156218291"
+                  href={SITE_PHONE.tel}
                   className="hover:text-primary-400 transition-colors"
                 >
-                  (915) 621-8291
+                  {SITE_PHONE.display}
                 </a>
               </li>
               <li className="flex items-center gap-2 text-sm text-neutral-400">
@@ -91,13 +91,13 @@ export default function PortalFooter({ locale, registrationOpen = false }: Props
               {t.connect}
             </h3>
             <a
-              href="https://www.facebook.com/4HOEP"
+              href={FACEBOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm text-neutral-400 hover:text-primary-400 transition-colors"
             >
               <Facebook className="w-4 h-4" />
-              <span>Facebook</span>
+              <span>{FACEBOOK_LABEL[locale]}</span>
             </a>
           </div>
 

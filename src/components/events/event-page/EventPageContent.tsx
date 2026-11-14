@@ -19,6 +19,7 @@ import RegisterInfoForm from "@/components/register-info/RegisterInfoForm";
 
 import { eventSlugPageTranslation } from "@/translation/eventsPage";
 import { formatEventDate } from "@/lib/event-utils";
+import { withPhone } from "@/lib/site";
 
 import Link from "next/link";
 
@@ -144,7 +145,7 @@ export function EventPageContent({
               <InfoRow
                 icon={<Calendar className="w-4 h-4" />}
                 label={t.dateTime}
-                value={`${date.full} at ${date.time}`}
+                value={locale === "es" ? `${date.full}, ${date.time}` : `${date.full} at ${date.time}`}
               />
               <InfoRow
                 icon={<MapPin className="w-4 h-4" />}
@@ -193,25 +194,31 @@ export function EventPageContent({
                 </>
               ) : registration === "paused" ? (
                 <p className="text-neutral-700 text-sm font-semibold">
-                  {locale === "es"
-                    ? "Para confirmar asistencia, llama al 915-621-8291."
-                    : "To RSVP, call 915-621-8291."}
+                  {withPhone(
+                    locale === "es"
+                      ? "Para confirmar asistencia, llama al {phone}."
+                      : "To RSVP, call {phone}.",
+                  )}
                 </p>
               ) : registration === "full" || registration === "closed" ? (
                 <p className="text-neutral-700 text-sm font-semibold">
-                  {registration === "full"
-                    ? locale === "es"
-                      ? "Este evento está lleno. Llámanos al 915-621-8291."
-                      : "This event is full. Please call us at 915-621-8291."
-                    : locale === "es"
-                      ? "El registro está cerrado. Llámanos al 915-621-8291."
-                      : "Registration closed. Please call us at 915-621-8291."}
+                  {withPhone(
+                    registration === "full"
+                      ? locale === "es"
+                        ? "Este evento está lleno. Llámanos al {phone}."
+                        : "This event is full. Please call us at {phone}."
+                      : locale === "es"
+                        ? "El registro está cerrado. Llámanos al {phone}."
+                        : "Registration closed. Please call us at {phone}.",
+                  )}
                 </p>
               ) : (
                 <p className="text-neutral-700 text-sm">
-                  {locale === "es"
-                    ? "Para confirmar asistencia, usa el enlace de tu invitación o llámanos al 915-621-8291."
-                    : "To RSVP, use the link in your invitation or call us at 915-621-8291."}
+                  {withPhone(
+                    locale === "es"
+                      ? "Para confirmar asistencia, usa el enlace de tu invitación o llámanos al {phone}."
+                      : "To RSVP, use the link in your invitation or call us at {phone}.",
+                  )}
                 </p>
               )}
             </div>

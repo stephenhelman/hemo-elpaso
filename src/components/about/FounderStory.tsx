@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { founderStoryTranslation } from "@/translation/aboutPage";
 
 import { Lang } from "@/types";
+import { fillYears, FOUNDING_YEAR } from "@/lib/site";
 
 interface Props {
   locale: Lang;
@@ -32,7 +33,7 @@ export default function FounderStory({ locale }: Props) {
           <div className="space-y-4">
             {t.paragraphs.map((p, i) => (
               <p key={i} className="text-neutral-600 leading-relaxed">
-                {p}
+                {fillYears(p, locale)}
               </p>
             ))}
           </div>
@@ -56,15 +57,15 @@ export default function FounderStory({ locale }: Props) {
           {/* 1993 card */}
           <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8 text-white">
             <p className="font-display text-7xl font-bold opacity-20 leading-none mb-2">
-              1993
+              {FOUNDING_YEAR}
             </p>
             <p className="font-display text-2xl font-bold mb-2">
               {locale === "en" ? "Year Founded" : "Año de Fundación"}
             </p>
             <p className="text-primary-100 text-sm">
               {locale === "en"
-                ? "Over 30 years serving the El Paso bleeding disorders community"
-                : "Más de 30 años sirviendo a la comunidad de trastornos hemorrágicos de El Paso"}
+                ? fillYears("Over {decadeYears} years serving the El Paso bleeding disorders community", "en")
+                : fillYears("Más de {decadeYears} años sirviendo a la comunidad de trastornos hemorrágicos de El Paso", "es")}
             </p>
           </div>
 

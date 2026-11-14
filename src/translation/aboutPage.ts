@@ -1,25 +1,35 @@
 export const aboutHeroTranslation = {
   en: {
     eyebrow: "Our Story",
-    heading: "Three Decades of Hope",
-    sub: "Founded in 1993 by Lou Anne Fetters, Hemophilia Outreach of El Paso has spent over 30 years standing beside individuals and families affected by bleeding disorders in our community.",
+    heading: "{Decades} Decades of Hope",
+    sub: "Founded in 1993 by Lou Anne Fetters, Hemophilia Outreach of El Paso has spent over {decadeYears} years standing beside individuals and families affected by bleeding disorders in our community.",
   },
   es: {
     eyebrow: "Nuestra Historia",
-    heading: "Tres Décadas de Esperanza",
-    sub: "Fundada en 1993 por Lou Anne Fetters, Hemophilia Outreach de El Paso ha pasado más de 30 años apoyando a individuos y familias afectadas por trastornos hemorrágicos en nuestra comunidad.",
+    heading: "{Decades} Décadas de Esperanza",
+    sub: "Fundada en 1993 por Lou Anne Fetters, Hemophilia Outreach of El Paso ha pasado más de {decadeYears} años apoyando a individuos y familias afectadas por trastornos hemorrágicos en nuestra comunidad.",
   },
 };
 
+/**
+ * Public board listing. Only the President is shown for now (no personal emails
+ * ship to the client). The full roster is dormant below; restore by moving
+ * entries back into `boardOfDirectors` and re-enabling the Officers/Advisor
+ * blocks in components/about/BoardOfDirectors.tsx.
+ */
 export const boardOfDirectors = {
   executive: [
     {
       name: "Teresita Fernandez de Robles",
-      titleEn: "Vice President",
-      titleEs: "Vicepresidenta",
-      email: "tfernandezr.hoep@gmail.com",
+      titleEn: "President",
+      titleEs: "Presidenta",
     },
   ],
+};
+
+/* DORMANT (not rendered, not shipped). Contains personal emails: do not
+   re-enable without confirming each person wants a public address.
+  executive (previous): Teresita Fernandez de Robles, Vice President / Vicepresidenta, tfernandezr.hoep@gmail.com
   officers: [
     { name: "Angelica Aguiña", email: "angelicaaguina1@gmail.com" },
     { name: "Yuliana L. Serna Salas", email: "ysernas.hoep@gmail.com" },
@@ -30,26 +40,23 @@ export const boardOfDirectors = {
     { name: "Esther Yu", email: "eyu.hoep@gmail.com" },
     { name: "Selene I. Ruiz Carbajal", email: "sruizc.hoep@gmail.com" },
   ],
-};
+  advisor: { name: "Rich Lopez", email: "rlopez.hoep@gmail.com" },
+*/
 
 export const boardOfDirectorsTranslation = {
   en: {
     eyebrow: "Leadership",
-    heading: "Board of Directors 2025",
+    heading: "Board of Directors",
     sub: "We are currently welcoming new board members — contact us if you are interested in getting involved in the El Paso bleeding disorders community.",
     executiveTitle: "Executive Board",
-    officersTitle: "Officers",
-    advisorTitle: "Advisor",
-    advisor: { name: "Rich Lopez", email: "rlopez.hoep@gmail.com" },
+    // dormant: officersTitle: "Officers", advisorTitle: "Advisor"
   },
   es: {
     eyebrow: "Liderazgo",
-    heading: "Junta Directiva 2025",
+    heading: "Junta Directiva",
     sub: "Actualmente damos la bienvenida a nuevos miembros de la junta — contáctenos si está interesado en participar en la comunidad de trastornos hemorrágicos de El Paso.",
     executiveTitle: "Junta Ejecutiva",
-    officersTitle: "Oficiales",
-    advisorTitle: "Asesor",
-    advisor: { name: "Rich Lopez", email: "rlopez.hoep@gmail.com" },
+    // dormant: officersTitle: "Oficiales", advisorTitle: "Asesor"
   },
 };
 
@@ -60,8 +67,8 @@ export const founderSpotlightTranslation = {
     title: "Founder & Visionary",
     founded: "Founded HOEP in 1993",
     quote: '"No family should face a bleeding disorder diagnosis alone."',
-    body: "Lou Anne Fetters is the reason Hemophilia Outreach of El Paso exists. As the mother of a child with hemophilia, she turned personal experience into community action — building an organization from the ground up that has served over 150 families across three decades. Her legacy is not just the organization she created, but every family that has found hope, support, and community because of her vision.",
-    badge1: "30+ Years of Service",
+    body: "Lou Anne Fetters is the reason Hemophilia Outreach of El Paso exists. As the mother of a child with hemophilia, she turned personal experience into community action — building an organization from the ground up that has served over 150 families across {decades} decades. Her legacy is not just the organization she created, but every family that has found hope, support, and community because of her vision.",
+    badge1: "{decadeYears}+ Years of Service",
     badge2: "Community Pioneer",
     badge3: "Past President",
   },
@@ -72,8 +79,8 @@ export const founderSpotlightTranslation = {
     founded: "Fundó HOEP en 1993",
     quote:
       '"Ninguna familia debería enfrentar un diagnóstico de trastorno hemorrágico sola."',
-    body: "Lou Anne Fetters es la razón por la que existe Hemophilia Outreach de El Paso. Como madre de un niño con hemofilia, convirtió la experiencia personal en acción comunitaria — construyendo una organización desde cero que ha servido a más de 150 familias durante tres décadas. Su legado no es solo la organización que creó, sino cada familia que ha encontrado esperanza, apoyo y comunidad gracias a su visión.",
-    badge1: "Más de 30 Años de Servicio",
+    body: "Lou Anne Fetters es la razón por la que existe Hemophilia Outreach of El Paso. Como madre de un niño con hemofilia, convirtió la experiencia personal en acción comunitaria — construyendo una organización desde cero que ha servido a más de 150 familias durante {decades} décadas. Su legado no es solo la organización que creó, sino cada familia que ha encontrado esperanza, apoyo y comunidad gracias a su visión.",
+    badge1: "Más de {decadeYears} Años de Servicio",
     badge2: "Pionera Comunitaria",
     badge3: "Expresidenta",
   },
@@ -85,7 +92,7 @@ export const founderStoryTranslation = {
     heading: "A Mother's Love, A Community's Hope",
     paragraphs: [
       "In 1993, Lou Anne Fetters — a mother raising a child with hemophilia — recognized a gap in support for families navigating bleeding disorders in the El Paso region. Rather than accept that gap, she built something to fill it.",
-      "What began as a small group of families sharing resources and experiences has grown into a recognized 501(c)(3) nonprofit organization serving the greater El Paso community for over three decades.",
+      "What began as a small group of families sharing resources and experiences has grown into a recognized 501(c)(3) nonprofit organization serving the greater El Paso community for over {decades} decades.",
       "Lou Anne's vision was simple but powerful: no family should face a bleeding disorder diagnosis alone. That vision remains the heartbeat of everything HOEP does today.",
     ],
     founder: "Lou Anne Fetters",
@@ -103,11 +110,11 @@ export const founderStoryTranslation = {
     heading: "El Amor de una Madre, la Esperanza de una Comunidad",
     paragraphs: [
       "En 1993, Lou Anne Fetters — una madre criando a un hijo con hemofilia — reconoció una brecha en el apoyo para las familias que navegaban por los trastornos hemorrágicos en la región de El Paso. En lugar de aceptar esa brecha, construyó algo para llenarla.",
-      "Lo que comenzó como un pequeño grupo de familias compartiendo recursos y experiencias ha crecido hasta convertirse en una organización sin fines de lucro 501(c)(3) reconocida que sirve a la comunidad del gran El Paso durante más de tres décadas.",
-      "La visión de Lou Ann era simple pero poderosa: ninguna familia debería enfrentar un diagnóstico de trastorno hemorrágico sola. Esa visión sigue siendo el corazón de todo lo que HOEP hace hoy.",
+      "Lo que comenzó como un pequeño grupo de familias compartiendo recursos y experiencias ha crecido hasta convertirse en una organización sin fines de lucro 501(c)(3) reconocida que sirve a la comunidad del gran El Paso durante más de {decades} décadas.",
+      "La visión de Lou Anne era simple pero poderosa: ninguna familia debería enfrentar un diagnóstico de trastorno hemorrágico sola. Esa visión sigue siendo el corazón de todo lo que HOEP hace hoy.",
     ],
     founder: "Lou Anne Fetters",
-    founderTitle: "Fundadora, Hemophilia Outreach de El Paso (1993)",
+    founderTitle: "Fundadora, Hemophilia Outreach of El Paso (1993)",
     hallOfFame: "Pasados Presidentes - Salón de la Fama",
     hallNames: [
       "Lou Anne Fetters",
