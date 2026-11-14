@@ -7,7 +7,7 @@ import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import type { Lang } from "@/types";
 
-export default async function NewPatientPage() {
+export default async function NewPatientPage({ searchParams }: { searchParams: { eventId?: string } }) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/");
   if (!admin.can("canManageUsers")) redirect("/admin/dashboard");
@@ -23,6 +23,7 @@ export default async function NewPatientPage() {
       <p className="text-neutral-600 mb-6">{t.newHint}</p>
       <PatientForm
         mode="create"
+        returnEventId={searchParams.eventId}
         canViewPHI={admin.can("canViewPHI")}
         locale={locale}
         initial={{ firstName: "", lastName: "", email: "", phone: "", address: "", language: "en", familySize: 1, diagnoses: [], consentData: false, consentMedia: false }}

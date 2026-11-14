@@ -10,7 +10,7 @@ export async function GET() {
       orderBy: { eventDate: "asc" },
       include: {
         _count: {
-          select: { rsvps: true }, // Make sure this is here
+          select: { rsvps: { where: { cancelledAt: null } } }, // Make sure this is here
         },
       },
     });

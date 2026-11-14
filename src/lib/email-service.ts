@@ -1,9 +1,6 @@
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/db";
-import RsvpConfirmation from "@/messages/RsvpConfirmation";
-import RsvpCancellation from "@/messages/RsvpCancellation";
-import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 import EventPublished from "@/messages/EventPublished";
 import EventCancelled from "@/messages/EventCancelled";
@@ -115,47 +112,6 @@ async function renderEmailTemplate(
 ): Promise<string | null> {
   try {
     switch (type) {
-      case "RSVP_CONFIRMATION":
-        return render(
-          RsvpConfirmation({
-            patientName: String(data.patientName),
-            eventTitle: String(data.eventTitle),
-            eventDate: String(data.eventDate),
-            eventTime: String(data.eventTime),
-            location: String(data.location),
-            adultsCount: Number(data.adultsCount) || 1,
-            childrenCount: Number(data.childrenCount) || 0,
-            eventSlug: String(data.eventSlug),
-            // qrCodeDataUrl removed
-          }),
-        );
-
-      case "RSVP_CANCELLATION":
-        return render(
-          RsvpCancellation({
-            patientName: String(data.patientName),
-            eventTitle: String(data.eventTitle),
-            eventDate: String(data.eventDate),
-            eventTime: String(data.eventTime),
-            eventSlug: String(data.eventSlug),
-          }),
-        );
-
-      case "RSVP_REMINDER":
-        return render(
-          EventReminder({
-            patientName: String(data.patientName),
-            eventTitle: String(data.eventTitle),
-            eventDate: String(data.eventDate),
-            eventTime: String(data.eventTime),
-            location: String(data.location),
-            adultsCount: Number(data.adultsCount) || 1,
-            childrenCount: Number(data.childrenCount) || 0,
-            qrCodeDataUrl: String(data.qrCodeDataUrl),
-            eventSlug: String(data.eventSlug),
-          }),
-        );
-
       case "CHECK_IN_CONFIRMATION":
         return render(
           CheckInConfirmation({
@@ -213,38 +169,6 @@ async function renderEmailTemplate(
     console.error("Email render error:", error);
     return null;
   }
-}
-
-// Helper function to send RSVP confirmation
-export async function sendRsvpConfirmation(params: {
-  recipient: string;
-  patientName: string;
-  eventTitle: string;
-  eventDate: string;
-  eventTime: string;
-  location: string;
-  adultsCount: number;
-  childrenCount: number;
-  eventSlug: string;
-  patientId: string;
-  eventId: string;
-}) {
-  return sendEmail({
-    templateType: "RSVP_CONFIRMATION",
-    recipient: params.recipient,
-    data: {
-      patientName: params.patientName,
-      eventTitle: params.eventTitle,
-      eventDate: params.eventDate,
-      eventTime: params.eventTime,
-      location: params.location,
-      adultsCount: params.adultsCount,
-      childrenCount: params.childrenCount,
-      eventSlug: params.eventSlug,
-    },
-    patientId: params.patientId,
-    eventId: params.eventId,
-  });
 }
 
 // Add more helper functions for other email types as needed

@@ -9,12 +9,18 @@ interface Props {
   referrer: string | undefined;
   event: SerializedEvent;
   rsvpCount: number;
+  registration: "open" | "full" | "closed" | "disabled";
+  eventId: string;
+  turnstileSiteKey: string | null;
 }
 
 export function EventSlugPage({
   referrer,
   event,
   rsvpCount,
+  registration,
+  eventId,
+  turnstileSiteKey,
 }: Props) {
   const { locale } = useLanguage();
 
@@ -25,6 +31,9 @@ export function EventSlugPage({
         locale={locale}
         rsvpCount={rsvpCount}
         event={event}
+        registration={registration}
+        eventId={eventId}
+        turnstileSiteKey={turnstileSiteKey}
       />
     </div>
   );

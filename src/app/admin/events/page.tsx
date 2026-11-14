@@ -22,7 +22,7 @@ export default async function AdminEventsPage() {
     },
     include: {
       _count: {
-        select: { rsvps: true },
+        select: { rsvps: { where: { cancelledAt: null } } },
       },
     },
   });

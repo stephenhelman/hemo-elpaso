@@ -1,145 +1,54 @@
-import QRCode from "qrcode";
 import { render } from "@react-email/render";
-import { prisma } from "@/lib/db";
 import { resend, EMAIL_FROM } from "@/lib/resend";
-import { sendEmail, sendRsvpConfirmation } from "@/lib/email-service";
-import EventReminder from "@/messages/EventReminder";
+import RsvpEmail, { type RsvpEmailKind } from "@/messages/RsvpEmail";
 
-interface EmailEvent {
-  id: string;
-  slug: string;
-  titleEn: string;
-  eventDate: Date;
-  location: string | null;
-}
+const baseUrl = () => process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
 
-interface EmailPatient {
-  id: string;
-  email: string | null;
-  contactProfile?: { firstName: string; lastName: string } | null;
-}
-
-function patientName(p: EmailPatient) {
-  return p.contactProfile
-    ? `${p.contactProfile.firstName} ${p.contactProfile.lastName}`
-    : "";
-}
-
-function formatDate(d: Date) {
-  return d.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function formatTime(d: Date) {
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-}
-
-/** Sends the RSVP confirmation. Never throws — email failure must not fail an RSVP. */
-export async function sendRsvpConfirmationEmail(params: {
-  patient: EmailPatient;
-  event: EmailEvent;
-  attendeeCount: number;
-}) {
-  const { patient, event, attendeeCount } = params;
-  if (!patient.email) return; // no email on file (e.g. phone call-in)
-  try {
-    await sendRsvpConfirmation({
-      recipient: patient.email,
-      patientName: patientName(patient),
-      eventTitle: event.titleEn,
-      eventDate: formatDate(event.eventDate),
-      eventTime: formatTime(event.eventDate),
-      location: event.location || "TBD",
-      adultsCount: attendeeCount,
-      childrenCount: 0,
-      eventSlug: event.slug,
-      patientId: patient.id,
-      eventId: event.id,
-    });
-  } catch (e) {
-    console.error("Failed to send RSVP confirmation email:", e);
-  }
-}
-
-/** Sends the RSVP cancellation email. Never throws. */
-export async function sendRsvpCancellationEmail(params: {
-  patient: EmailPatient;
-  event: EmailEvent;
-}) {
-  const { patient, event } = params;
-  if (!patient.email) return;
-  try {
-    await sendEmail({
-      templateType: "RSVP_CANCELLATION",
-      recipient: patient.email,
-      data: {
-        patientName: patientName(patient),
-        eventTitle: event.titleEn,
-        eventDate: formatDate(event.eventDate),
-        eventTime: formatTime(event.eventDate),
-        eventSlug: event.slug,
-      },
-      patientId: patient.id,
-      eventId: event.id,
-    });
-  } catch (e) {
-    console.error("Failed to send cancellation email:", e);
-  }
-}
+interface EmailEvent { titleEn: string; titleEs: string; eventDate: Date; location: string | null }
+interface EmailPatient { email: string | null; preferredLanguage: string; contactProfile?: { firstName: string } | null }
 
 /**
- * Sends the day-before reminder (with QR attachment) for one RSVP and marks it
- * reminderSent. Throws on failure so the cron can count it.
+ * Transactional RSVP email (confirmation, reminder, cancellation). Sent to
+ * patients even if they opted out of invitations. No email on file = no-op.
+ * Never throws: email failure must not fail an RSVP. `token` is the RAW
+ * check-in token (only available at the moment it is minted).
  */
-export async function sendEventReminderEmail(params: {
-  rsvp: { id: string; attendeeCount: number };
+export async function sendRsvpEmail(params: {
+  kind: RsvpEmailKind;
   patient: EmailPatient;
   event: EmailEvent;
-}) {
-  const { rsvp, patient, event } = params;
-  if (!patient.email) return; // nothing to send to
-
-  const qrDataUrl = await QRCode.toDataURL(`RSVP-${rsvp.id}`, {
-    width: 500,
-    margin: 2,
-    color: { dark: "#8B1538", light: "#FFFFFF" },
-  });
-  const qrBuffer = Buffer.from(
-    qrDataUrl.replace(/^data:image\/png;base64,/, ""),
-    "base64",
-  );
-
-  const html = await render(
-    EventReminder({
-      patientName: patientName(patient),
-      eventTitle: event.titleEn,
-      eventDate: formatDate(event.eventDate),
-      eventTime: formatTime(event.eventDate),
-      location: event.location ?? "TBD",
-      adultsCount: rsvp.attendeeCount,
-      childrenCount: 0,
-      qrCodeDataUrl: "cid:qrcode",
-      eventSlug: event.slug,
-    }),
-  );
-
-  await resend.emails.send({
-    from: EMAIL_FROM,
-    replyTo: "info@hemo-el-paso.org",
-    to: patient.email,
-    subject: `Reminder: ${event.titleEn} is Tomorrow!`,
-    html,
-    attachments: [
-      { filename: "qr-code.png", content: qrBuffer, contentId: "qrcode" },
-    ],
-  });
-
-  await prisma.rsvp.update({
-    where: { id: rsvp.id },
-    data: { reminderSent: true },
-  });
+  partySize: number;
+  token?: string;
+}): Promise<boolean> {
+  const { kind, patient, event, partySize, token } = params;
+  if (!patient.email) return false;
+  const lang = patient.preferredLanguage === "es" ? "es" : "en";
+  const loc = lang === "es" ? "es-US" : "en-US";
+  try {
+    const html = await render(
+      RsvpEmail({
+        kind,
+        lang,
+        firstName: patient.contactProfile?.firstName ?? "",
+        eventTitle: lang === "es" ? event.titleEs : event.titleEn,
+        eventDate: event.eventDate.toLocaleDateString(loc, { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+        eventTime: event.eventDate.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" }),
+        location: event.location ?? "",
+        partySize,
+        rsvpUrl: token ? `${baseUrl()}/rsvp/${token}` : undefined,
+        qrUrl: token ? `${baseUrl()}/api/checkin-qr/${token}` : undefined,
+      }),
+    );
+    const title = lang === "es" ? event.titleEs : event.titleEn;
+    const subject = {
+      confirmation: lang === "es" ? `Confirmado: ${title}` : `RSVP confirmed: ${title}`,
+      reminder: lang === "es" ? `Recordatorio: ${title} es mañana` : `Reminder: ${title} is tomorrow`,
+      cancelled: lang === "es" ? `Asistencia cancelada: ${title}` : `RSVP cancelled: ${title}`,
+    }[kind];
+    await resend.emails.send({ from: EMAIL_FROM, replyTo: "info@hemo-el-paso.org", to: patient.email, subject, html });
+    return true;
+  } catch {
+    console.error(`RSVP ${kind} email failed`); // no recipient/body: PII
+    return false;
+  }
 }

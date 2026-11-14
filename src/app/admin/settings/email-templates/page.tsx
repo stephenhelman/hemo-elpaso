@@ -29,6 +29,10 @@ export default async function EmailTemplatesPage() {
           "VOLUNTEER_APPROVED",
           "VOLUNTEER_ASSIGNED",
           "FAMILY_MEMBER_INVITE",
+          // RSVP emails are sent from code (src/lib/rsvp), not editable templates
+          "RSVP_CONFIRMATION",
+          "RSVP_CANCELLATION",
+          "RSVP_REMINDER",
         ],
       },
     },

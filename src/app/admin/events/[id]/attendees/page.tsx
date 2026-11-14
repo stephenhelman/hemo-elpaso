@@ -1,145 +1,79 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle, Users, XCircle } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import Link from "next/link";
-import { ArrowLeft, Users, CheckCircle, XCircle } from "lucide-react";
 import ManualCheckInButton from "@/components/admin/ManualCheckInButton";
+import AddRsvpPanel from "@/components/admin/AddRsvpPanel";
 import { StatCard } from "@/components/ui/StatCard";
+import { PATIENT_ONLY } from "@/lib/patients/query";
 
-interface Props {
+export default async function EventAttendeesPage({
+  params,
+  searchParams,
+}: {
   params: { id: string };
-}
-
-export default async function EventAttendeesPage({ params }: Props) {
+  searchParams: { addPatient?: string };
+}) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/");
-  if (!admin.can("canViewPHI")) redirect("/admin/dashboard");
+  if (!admin.can("canManageEvents")) redirect("/admin/dashboard");
 
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
       rsvps: {
-        include: {
-          patient: {
-            include: {
-              contactProfile: true,
-            },
-          },
-        },
-        orderBy: {
-          rsvpDate: "desc",
-        },
+        where: { cancelledAt: null },
+        include: { patient: { include: { contactProfile: true } } },
+        orderBy: { rsvpDate: "desc" },
       },
-      checkIns: {
-        include: {
-          patient: {
-            include: {
-              contactProfile: true,
-            },
-          },
-        },
-      },
+      checkIns: { include: { patient: { include: { contactProfile: true } } }, orderBy: { checkInTime: "desc" } },
     },
   });
-
   if (!event) notFound();
 
-  const totalRsvps = event.rsvps.length;
-  const totalCheckedIn = event.checkIns.length;
-  const notCheckedIn = event.rsvps.filter(
-    (rsvp) => !event.checkIns.find((c) => c.patientId === rsvp.patientId),
-  );
+  const pre = searchParams.addPatient
+    ? await prisma.patient.findFirst({ where: { id: searchParams.addPatient, ...PATIENT_ONLY }, include: { contactProfile: true } })
+    : null;
 
-  const ageGroups = {
-    "0-17": 0,
-    "18+": 0,
-  };
-
-  const now = new Date();
-
-  const allPatients = event.rsvps.map((rsvp) => rsvp.patient);
-
-  allPatients.forEach((patient) => {
-    if (!patient.contactProfile?.dateOfBirth) return;
-
-    const age = Math.floor(
-      (now.getTime() - new Date(patient.contactProfile.dateOfBirth).getTime()) /
-        (365.25 * 24 * 60 * 60 * 1000),
-    );
-
-    if (age <= 17) ageGroups["0-17"]++;
-    else ageGroups["18+"]++;
-  });
-
-  const totalAdults = ageGroups["18+"];
-  const totalChildren = ageGroups["0-17"];
+  const checkedInIds = new Set(event.checkIns.map((c) => c.patientId));
+  const notCheckedIn = event.rsvps.filter((r) => !checkedInIds.has(r.patientId));
+  const rsvpPeople = event.rsvps.reduce((n, r) => n + r.attendeeCount, 0);
+  const rsvpOf = new Map(event.rsvps.map((r) => [r.patientId, r]));
+  // People actually present: the headcount confirmed at the door (fallback: RSVP party size)
+  const headcount = event.checkIns.reduce((n, c) => n + (c.headcount ?? rsvpOf.get(c.patientId)?.attendeeCount ?? 1), 0);
+  const nm = (p: { contactProfile: { firstName: string; lastName: string } | null }) =>
+    p.contactProfile ? `${p.contactProfile.firstName} ${p.contactProfile.lastName}` : "—";
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <Link
-          href="/admin/events"
-          className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Events
+        <Link href="/admin/events" className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4" /> Back to Events
         </Link>
-
         <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
-            {event.titleEn}
-          </h1>
+          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">{event.titleEn}</h1>
           <p className="text-neutral-500">
-            {new Date(event.eventDate).toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
+            {new Date(event.eventDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
           </p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={<Users className="w-6 h-6" />}
-            label="Total RSVPs"
-            value={totalRsvps.toString()}
-            color="primary"
-          />
-          <StatCard
-            icon={<CheckCircle className="w-6 h-6" />}
-            label="Checked In"
-            value={totalCheckedIn.toString()}
-            color="green"
-          />
-          <StatCard
-            icon={<Users className="w-6 h-6" />}
-            label="Adults"
-            value={totalAdults.toString()}
-            color="blue"
-          />
-          <StatCard
-            icon={<Users className="w-6 h-6" />}
-            label="Children"
-            value={totalChildren.toString()}
-            color="purple"
-          />
+          <StatCard icon={<Users className="w-6 h-6" />} label="RSVP'd (parties)" value={event.rsvps.length.toString()} color="blue" />
+          <StatCard icon={<Users className="w-6 h-6" />} label="RSVP'd (people)" value={rsvpPeople.toString()} subtitle={event.maxCapacity ? `of ${event.maxCapacity} capacity` : undefined} color="purple" />
+          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Checked in (parties)" value={event.checkIns.length.toString()} color="green" />
+          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Checked in (people)" value={headcount.toString()} color="teal" />
         </div>
 
-        {/* Tabs */}
+        <AddRsvpPanel
+          eventId={event.id}
+          preselect={pre ? { id: pre.id, name: `${pre.contactProfile?.firstName ?? ""} ${pre.contactProfile?.lastName ?? ""}`.trim(), email: pre.email, phone: pre.contactProfile?.phone ?? null } : undefined}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Not Checked In */}
           <div className="bg-white rounded-2xl border border-neutral-200">
             <div className="p-6 border-b border-neutral-200">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-neutral-900 text-xl">
-                  Not Checked In ({notCheckedIn.length})
-                </h2>
-              </div>
+              <h2 className="font-display font-bold text-neutral-900 text-xl">Not Checked In ({notCheckedIn.length})</h2>
             </div>
             <div className="max-h-[600px] overflow-y-auto">
               {notCheckedIn.length === 0 ? (
@@ -149,25 +83,27 @@ export default async function EventAttendeesPage({ params }: Props) {
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-200">
-                  {notCheckedIn.map((rsvp) => (
-                    <AttendeeRow
-                      key={rsvp.id}
-                      rsvp={rsvp}
-                      eventId={event.id}
-                      isCheckedIn={false}
-                    />
+                  {notCheckedIn.map((r) => (
+                    <div key={r.id} className="p-4 hover:bg-neutral-50 flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-neutral-900">{nm(r.patient)}</p>
+                        <p className="text-sm text-neutral-500">
+                          Party of {r.attendeeCount} · {r.source}
+                          {r.patient.contactProfile?.phone ? ` · ${r.patient.contactProfile.phone}` : ""}
+                        </p>
+                        <p className="text-xs text-neutral-400 mt-1">RSVP&apos;d {new Date(r.rsvpDate).toLocaleDateString()}</p>
+                      </div>
+                      <ManualCheckInButton rsvpId={r.id} eventId={event.id} isCheckedIn={false} patientName={nm(r.patient)} />
+                    </div>
                   ))}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Checked In */}
           <div className="bg-white rounded-2xl border border-neutral-200">
             <div className="p-6 border-b border-neutral-200">
-              <h2 className="font-display font-bold text-neutral-900 text-xl">
-                Checked In ({totalCheckedIn})
-              </h2>
+              <h2 className="font-display font-bold text-neutral-900 text-xl">Checked In ({event.checkIns.length})</h2>
             </div>
             <div className="max-h-[600px] overflow-y-auto">
               {event.checkIns.length === 0 ? (
@@ -177,16 +113,21 @@ export default async function EventAttendeesPage({ params }: Props) {
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-200">
-                  {event.checkIns.map((checkIn) => {
-                    const rsvp = event.rsvps.find(
-                      (r) => r.patientId === checkIn.patientId,
-                    );
+                  {event.checkIns.map((c) => {
+                    const r = rsvpOf.get(c.patientId);
                     return (
-                      <CheckedInRow
-                        key={checkIn.id}
-                        checkIn={checkIn}
-                        rsvp={rsvp}
-                      />
+                      <div key={c.id} className="p-4 hover:bg-neutral-50 flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-semibold text-neutral-900">{nm(c.patient)}</p>
+                          <p className="text-sm text-neutral-500">
+                            {c.headcount ?? r?.attendeeCount ?? 1} present{r ? ` (RSVP'd ${r.attendeeCount})` : " (walk-in)"}
+                          </p>
+                          <p className="text-xs text-neutral-400 mt-1">
+                            Checked in {new Date(c.checkInTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                          </p>
+                        </div>
+                        <ManualCheckInButton checkInId={c.id} eventId={c.eventId} patientName={nm(c.patient)} isCheckedIn={true} />
+                      </div>
                     );
                   })}
                 </div>
@@ -194,101 +135,6 @@ export default async function EventAttendeesPage({ params }: Props) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function AttendeeRow({
-  rsvp,
-  eventId,
-  isCheckedIn,
-}: {
-  rsvp: any;
-  eventId: string;
-  isCheckedIn: boolean;
-}) {
-  return (
-    <div className="p-4 hover:bg-neutral-50 transition-colors">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-neutral-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-neutral-900">
-              {rsvp.patient.contactProfile.firstName}{" "}
-              {rsvp.patient.contactProfile.lastName}
-            </p>
-            <p className="text-sm text-neutral-500">
-              {rsvp.adultsAttending} adult
-              {rsvp.adultsAttending !== 1 ? "s" : ""}, {rsvp.childrenAttending}{" "}
-              child{rsvp.childrenAttending !== 1 ? "ren" : ""}
-            </p>
-            {rsvp.dietaryRestrictions && (
-              <p className="text-xs text-neutral-400 mt-1">
-                🍽️ {rsvp.dietaryRestrictions}
-              </p>
-            )}
-            <p className="text-xs text-neutral-400 mt-1">
-              RSVP'd {new Date(rsvp.rsvpDate).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-
-        {!isCheckedIn && (
-          <ManualCheckInButton
-            rsvpId={rsvp.id}
-            eventId={eventId}
-            isCheckedIn={false}
-            patientName={`${rsvp.patient.contactProfile.firstName} ${rsvp.patient.contactProfile.lastName}`}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CheckedInRow({ checkIn, rsvp }: { checkIn: any; rsvp: any }) {
-  return (
-    <div className="p-4 hover:bg-neutral-50 transition-colors">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-neutral-900">
-              {checkIn.patient.contactProfile.firstName}{" "}
-              {checkIn.patient.contactProfile.lastName}
-            </p>
-            {rsvp && (
-              <p className="text-sm text-neutral-500">
-                {rsvp.adultsAttending} adult
-                {rsvp.adultsAttending !== 1 ? "s" : ""},{" "}
-                {rsvp.childrenAttending} child
-                {rsvp.childrenAttending !== 1 ? "ren" : ""}
-              </p>
-            )}
-            <p className="text-xs text-neutral-500 capitalize">
-              {checkIn.attendeeRole}
-            </p>
-            <p className="text-xs text-neutral-400 mt-1">
-              Checked in{" "}
-              {new Date(checkIn.checkInTime).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        </div>
-
-        <ManualCheckInButton
-          checkInId={checkIn.id}
-          eventId={checkIn.eventId}
-          patientName={`${checkIn.patient.contactProfile.firstName} ${checkIn.patient.contactProfile.lastName}`}
-          isCheckedIn={true}
-        />
       </div>
     </div>
   );

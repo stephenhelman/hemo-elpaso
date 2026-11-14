@@ -9,7 +9,7 @@ export default async function EventsPage() {
     },
     include: {
       _count: {
-        select: { rsvps: true },
+        select: { rsvps: { where: { cancelledAt: null } } },
       },
     },
     orderBy: {

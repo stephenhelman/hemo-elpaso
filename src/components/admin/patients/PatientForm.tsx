@@ -31,7 +31,9 @@ export default function PatientForm({
   initial,
   canViewPHI,
   locale,
+  returnEventId,
 }: {
+  returnEventId?: string;
   mode: "create" | "edit";
   patientId?: string;
   initial: PatientFormValues;
@@ -75,7 +77,12 @@ export default function PatientForm({
         return;
       }
       toast.success(mode === "create" ? t.created : t.saved);
-      if (mode === "create") router.push(`/admin/patients/${data.id}`);
+      if (mode === "create")
+        router.push(
+          returnEventId
+            ? `/admin/events/${returnEventId}/attendees?addPatient=${data.id}`
+            : `/admin/patients/${data.id}`,
+        );
       else router.refresh();
     } catch {
       toast.error(t.genericError);

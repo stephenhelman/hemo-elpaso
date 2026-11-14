@@ -6,6 +6,7 @@ import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
 import EventSchema from "@/components/seo/EventSchema";
 import type { Lang } from "@/types";
+import { registrationState } from "@/lib/rsvp";
 
 interface Props {
   params: { slug: string };
@@ -27,7 +28,7 @@ export default async function EventPage({ params, searchParams }: Props) {
   const event = await prisma.event.findUnique({
     where: { slug: params.slug },
     include: {
-      _count: { select: { rsvps: true } },
+      _count: { select: { rsvps: { where: { cancelledAt: null } } } },
     },
   });
 
@@ -78,6 +79,9 @@ export default async function EventPage({ params, searchParams }: Props) {
         referrer={referrer}
         event={serializedEvent}
         rsvpCount={currentRsvpCount}
+        registration={await registrationState(event)}
+        eventId={event.id}
+        turnstileSiteKey={process.env.TURNSTILE_SITE_KEY ?? null}
       />
     </>
   );
