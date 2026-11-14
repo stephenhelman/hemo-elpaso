@@ -29,8 +29,8 @@ export const registerInfoTranslation = {
     rsvpSuccessTitle: "You're on the list!",
     rsvpSuccessBody:
       "We received your RSVP. If you gave us an email address, your confirmation and check-in QR code are on their way.",
-    full: "This event is full. Please call us at 915-621-8291.",
-    closed: "Registration is closed. Please call us at 915-621-8291.",
+    full: "This event is full. Please call us at {phone}.",
+    closed: "Registration is closed. Please call us at {phone}.",
     submitting: "Sending…",
     successTitle: "Thank you!",
     successBody:
@@ -78,8 +78,8 @@ export const registerInfoTranslation = {
     rsvpSuccessTitle: "¡Estás en la lista!",
     rsvpSuccessBody:
       "Recibimos tu confirmación. Si nos diste un correo electrónico, tu confirmación y tu código QR de registro van en camino.",
-    full: "Este evento está lleno. Llámanos al 915-621-8291.",
-    closed: "El registro está cerrado. Llámanos al 915-621-8291.",
+    full: "Este evento está lleno. Llámanos al {phone}.",
+    closed: "El registro está cerrado. Llámanos al {phone}.",
     submitting: "Enviando…",
     successTitle: "¡Gracias!",
     successBody:

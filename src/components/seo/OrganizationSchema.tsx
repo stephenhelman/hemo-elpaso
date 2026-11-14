@@ -1,4 +1,4 @@
-import { siteUrl, contactEmail } from "@/lib/site";
+import { siteUrl, contactEmail, SITE_PHONE, FACEBOOK_URL, FOUNDING_YEAR } from "@/lib/site";
 export default function OrganizationSchema() {
   const schema = {
     "@context": "https://schema.org",
@@ -9,7 +9,7 @@ export default function OrganizationSchema() {
     logo: `${siteUrl()}/logo.png`,
     description:
       "Supporting individuals and families affected by bleeding disorders in the El Paso community since 1993.",
-    foundingDate: "1993",
+    foundingDate: String(FOUNDING_YEAR),
     address: {
       "@type": "PostalAddress",
       addressLocality: "El Paso",
@@ -18,13 +18,13 @@ export default function OrganizationSchema() {
     },
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+1-915-621-8291",
+      telephone: SITE_PHONE.schema,
       contactType: "Customer Service",
       email: contactEmail(),
       availableLanguage: ["English", "Spanish"],
     },
     sameAs: [
-      "https://facebook.com/HOEPElPaso", // Update with real links
+      FACEBOOK_URL,
     ],
     areaServed: {
       "@type": "Place",

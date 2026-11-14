@@ -1,12 +1,3 @@
-export const navbarNavLinksTranslation = [
-  { href: "/", labelEn: "Home", labelEs: "Inicio" },
-  { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
-  { href: "/events", labelEn: "Events", labelEs: "Eventos" },
-  { href: "/resources", labelEn: "Resources", labelEs: "Recursos" },
-  { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
-  { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
-];
-
 export const userMenuTranslation = {
   en: {
     login: "Login",

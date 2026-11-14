@@ -5,6 +5,7 @@ import { Heart, Star } from "lucide-react";
 import { founderSpotlightTranslation } from "@/translation/aboutPage";
 
 import { Lang } from "@/types";
+import { fillYears } from "@/lib/site";
 
 interface Props {
   locale: Lang;
@@ -62,11 +63,11 @@ export default function FounderSpotlight({ locale }: Props) {
                 </p>
               </blockquote>
 
-              <p className="text-neutral-300 leading-relaxed mb-8">{t.body}</p>
+              <p className="text-neutral-300 leading-relaxed mb-8">{fillYears(t.body, locale)}</p>
 
               {/* Badges */}
               <div className="flex flex-wrap gap-2">
-                {[t.badge1, t.badge2, t.badge3].map((badge) => (
+                {[t.badge1, t.badge2, t.badge3].map((b) => fillYears(b, locale)).map((badge) => (
                   <span
                     key={badge}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white text-xs font-medium"

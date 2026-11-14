@@ -1,8 +1,8 @@
 "use client";
 
-import { contactEmail } from "@/lib/site";
+import { contactEmail, SITE_PHONE, FACEBOOK_URL, FACEBOOK_LABEL } from "@/lib/site";
 
-import { Phone, Mail, MapPin, Facebook, Clock } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { Lang } from "@/types";
 import { contactInfoTranslation } from "@/translation/contactPage";
@@ -24,8 +24,8 @@ export default function ContactInfo({ locale }: Props) {
           <InfoRow
             icon={<Phone className="w-4 h-4" />}
             label={t.phone}
-            value="(915) 621-8291"
-            href="tel:+19156218291"
+            value={SITE_PHONE.display}
+            href={SITE_PHONE.tel}
           />
           <InfoRow
             icon={<Mail className="w-4 h-4" />}
@@ -38,11 +38,6 @@ export default function ContactInfo({ locale }: Props) {
             label={t.address}
             value={t.addrVal}
           />
-          <InfoRow
-            icon={<Clock className="w-4 h-4" />}
-            label={t.hours}
-            value={t.hoursVal}
-          />
         </div>
       </HoepCard>
 
@@ -52,7 +47,7 @@ export default function ContactInfo({ locale }: Props) {
           {t.social}
         </h3>
         <a
-          href="https://facebook.com/hemoelpaso"
+          href={FACEBOOK_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors group"
@@ -62,9 +57,8 @@ export default function ContactInfo({ locale }: Props) {
           </div>
           <div>
             <p className="text-sm font-semibold text-neutral-900 group-hover:text-primary transition-colors">
-              Facebook
+              {FACEBOOK_LABEL[locale]}
             </p>
-            <p className="text-xs text-neutral-400">@hemoelpaso</p>
           </div>
         </a>
       </HoepCard>

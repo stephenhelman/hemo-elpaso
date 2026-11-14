@@ -6,6 +6,7 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { useLanguage } from "@/context/LanguageContext";
 import { registerInfoTranslation } from "@/translation/registerInfoPage";
+import { withPhone } from "@/lib/site";
 import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 
@@ -94,8 +95,8 @@ export default function RegisterInfoForm({
       }
       const data = await res.json().catch(() => ({}));
       if (data.error === "captcha") setError(t.errors.captcha);
-      else if (data.error === "full") setError(t.full);
-      else if (data.error === "closed" || data.error === "disabled") setError(t.closed);
+      else if (data.error === "full") setError(withPhone(t.full));
+      else if (data.error === "closed" || data.error === "disabled") setError(withPhone(t.closed));
       else if (data.field && data.field in t.errors)
         setError((t.errors as Record<string, string>)[data.field]);
       else setError(t.errors.generic);

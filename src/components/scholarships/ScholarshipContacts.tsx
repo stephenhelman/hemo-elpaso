@@ -1,7 +1,9 @@
 "use client";
 
 import Section from "@/components/layout/Section";
+import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
+import { SITE_PHONE } from "@/lib/site";
 import { Lang } from "@/types";
 import { scholarshipContactsTranslation } from "@/translation/scholarshipsPage";
 
@@ -28,7 +30,7 @@ export default function ScholarshipContacts({ locale }: Props) {
         <p className="text-neutral-500 max-w-xl mx-auto">{t.sub}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+      <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
         {t.contacts.map((contact) => {
           const initials = contact.name
             .split(" ")
@@ -51,19 +53,19 @@ export default function ScholarshipContacts({ locale }: Props) {
                 {contact.title}
               </p>
               <div className="space-y-2 w-full">
-                <a
-                  href={`mailto:${contact.email}`}
+                <Link
+                  href="/contact"
                   className="flex items-center justify-center gap-2 text-sm text-neutral-500 hover:text-primary transition-colors"
                 >
                   <Mail className="w-4 h-4" />
-                  {contact.email}
-                </a>
+                  {t.formLabel}
+                </Link>
                 <a
-                  href={`tel:${contact.phone.replace(/\D/g, "")}`}
+                  href={SITE_PHONE.tel}
                   className="flex items-center justify-center gap-2 text-sm text-neutral-500 hover:text-primary transition-colors"
                 >
                   <Phone className="w-4 h-4" />
-                  {contact.phone}
+                  {SITE_PHONE.display}
                 </a>
               </div>
             </div>

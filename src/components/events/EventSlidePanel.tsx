@@ -45,7 +45,7 @@ interface PanelProps {
   children: (event: Event) => React.ReactNode;
 }
 
-function SlidePanel({ event, lang: _lang, onClose, children }: PanelProps) {
+function SlidePanel({ event, lang, onClose, children }: PanelProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ function SlidePanel({ event, lang: _lang, onClose, children }: PanelProps) {
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-500 hover:text-neutral-900"
-            aria-label="Close"
+            aria-label={lang === "es" ? "Cerrar" : "Close"}
           >
             <X className="w-5 h-5" />
           </button>

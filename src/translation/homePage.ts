@@ -10,7 +10,7 @@ export const homeHeroTranslation = {
     badge2: "Community Driven",
   },
   es: {
-    eyebrow: "Hemophilia Outreach de El Paso",
+    eyebrow: "Hemophilia Outreach of El Paso",
     heading: "Dando Esperanza A Nuestra Comunidad",
     subheading:
       "Apoyando a individuos y familias afectadas por trastornos hemorrágicos en la región de El Paso. No estás solo.",
@@ -27,7 +27,7 @@ export const impactStatsTranslation = {
     sub: "Making a difference in the El Paso bleeding disorders community",
     stats: [
       { value: 150, suffix: "+", label: "Families Served" },
-      { value: 12, suffix: "+", label: "Years of Service" },
+      { value: 0, computed: "years", suffix: "", label: "Years of Service" },
       { value: 50, suffix: "+", label: "Events Hosted" },
       { value: 100, suffix: "%", label: "Free of Charge" },
     ],
@@ -37,7 +37,7 @@ export const impactStatsTranslation = {
     sub: "Haciendo una diferencia en la comunidad de trastornos hemorrágicos de El Paso",
     stats: [
       { value: 150, suffix: "+", label: "Familias Atendidas" },
-      { value: 12, suffix: "+", label: "Años de Servicio" },
+      { value: 0, computed: "years", suffix: "", label: "Años de Servicio" },
       { value: 50, suffix: "+", label: "Eventos Realizados" },
       { value: 100, suffix: "%", label: "Gratuito" },
     ],

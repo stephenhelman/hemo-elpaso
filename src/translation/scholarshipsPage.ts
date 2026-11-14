@@ -1,4 +1,3 @@
-import { siteHost } from "@/lib/site";
 export const scholarshipHeroTranslation = {
   en: {
     eyebrow: "Educational Support",
@@ -8,56 +7,28 @@ export const scholarshipHeroTranslation = {
   es: {
     eyebrow: "Apoyo Educativo",
     heading: "Becas",
-    sub: "Hemophilia Outreach de El Paso se enorgullece de apoyar a estudiantes afectados por trastornos hemorrágicos en la búsqueda de su educación en atención médica y farmacia.",
+    sub: "Hemophilia Outreach of El Paso se enorgullece de apoyar a estudiantes afectados por trastornos hemorrágicos en la búsqueda de su educación en atención médica y farmacia.",
   },
 };
 
 export const scholarshipCardTranslation = {
   en: {
-    eyebrow: "Current Scholarship",
+    eyebrow: "Memorial Scholarship",
     heading: "Jesus M. Terrazas & Luis Ostos Memorial Scholarship",
-    semester: "Spring Semester 2026",
     in_memory:
       "In memory of Jesus M. Terrazas and Luis Ostos — dedicated members of our bleeding disorders community.",
-    amount: "$500",
-    amountLabel: "Award Amount",
-    recipients: "3 Students",
-    recipientsLabel: "Recipients",
-    deadline: "November 25, 2025",
-    deadlineLabel: "Application Deadline",
-    deadlinePast:
-      "The deadline for this scholarship cycle has passed. Check back for the next cycle.",
-    essay: "Essay Prompt",
-    essayPrompt:
-      '"How will you be advocating for bleeding disorders through your time in college?"',
-    essayLength: "300–400 words",
-    apply: "Apply at",
-    applyUrl: siteHost(),
-    status: "Deadline Passed",
-    statusOpen: "Now Accepting Applications",
+    status: "Next cycle coming soon",
+    soonBody:
+      "We are not accepting applications right now. Details for the next scholarship cycle will be posted here. Contact us if you would like to be told when it opens.",
   },
   es: {
-    eyebrow: "Beca Actual",
+    eyebrow: "Beca Conmemorativa",
     heading: "Beca Memorial Jesus M. Terrazas y Luis Ostos",
-    semester: "Semestre de Primavera 2026",
     in_memory:
       "En memoria de Jesus M. Terrazas y Luis Ostos — miembros dedicados de nuestra comunidad de trastornos hemorrágicos.",
-    amount: "$500",
-    amountLabel: "Monto del Premio",
-    recipients: "3 Estudiantes",
-    recipientsLabel: "Beneficiarios",
-    deadline: "25 de noviembre de 2025",
-    deadlineLabel: "Fecha Límite",
-    deadlinePast:
-      "La fecha límite para este ciclo de becas ha pasado. Vuelva para el próximo ciclo.",
-    essay: "Tema del Ensayo",
-    essayPrompt:
-      '"¿Cómo abogará por los trastornos hemorrágicos durante su tiempo en la universidad?"',
-    essayLength: "300–400 palabras",
-    apply: "Aplique en",
-    applyUrl: siteHost(),
-    status: "Plazo Vencido",
-    statusOpen: "Aceptando Solicitudes",
+    status: "El próximo ciclo llegará pronto",
+    soonBody:
+      "Por el momento no estamos aceptando solicitudes. Los detalles del próximo ciclo de becas se publicarán aquí. Contáctenos si desea que le avisemos cuando abra.",
   },
 };
 
@@ -129,43 +100,35 @@ export const scholarshipEligibilityTranslation = {
 export const scholarshipContactsTranslation = {
   en: {
     eyebrow: "Questions?",
-    heading: "Contact Scholarship Coordinators",
-    sub: "Reach out to our scholarship coordinators with any questions about eligibility or the application process.",
+    heading: "Scholarship Questions",
+    sub: "Reach out to us with any questions about the scholarship.",
     contacts: [
-      {
-        name: "Teresita Fernandez de Robles",
-        title: "Vice President, HOEP",
-        email: "tfernandezr.hoep@gmail.com",
-        phone: "(915) 621-8291",
-      },
+      { name: "Teresita Fernandez de Robles", title: "President, HOEP" },
     ],
+    formLabel: "Send a message",
   },
   es: {
     eyebrow: "¿Preguntas?",
-    heading: "Contactar Coordinadores de Becas",
-    sub: "Comuníquese con nuestros coordinadores de becas si tiene preguntas sobre elegibilidad o el proceso de solicitud.",
+    heading: "Preguntas sobre la Beca",
+    sub: "Comuníquese con nosotros si tiene preguntas sobre la beca.",
     contacts: [
-      {
-        name: "Teresita Fernandez de Robles",
-        title: "Vicepresidenta, HOEP",
-        email: "tfernandezr.hoep@gmail.com",
-        phone: "(915) 621-8291",
-      },
+      { name: "Teresita Fernandez de Robles", title: "Presidenta, HOEP" },
     ],
+    formLabel: "Enviar un mensaje",
   },
 };
 
 export const scholarshipCTATranslation = {
   en: {
-    heading: "Want to Be Notified About Future Scholarships?",
-    sub: "Sign up for our newsletter to be the first to know when the next scholarship cycle opens.",
-    cta1: "Subscribe to Newsletter",
+    heading: "Want to Know When the Next Cycle Opens?",
+    sub: "Get in touch and we'll let you know when the next scholarship cycle opens.",
+    cta1: "Register for Information",
     cta2: "Contact Us",
   },
   es: {
-    heading: "¿Quiere ser Notificado sobre Futuras Becas?",
-    sub: "Suscríbase a nuestro boletín para ser el primero en saber cuándo abre el próximo ciclo de becas.",
-    cta1: "Suscribirse al Boletín",
+    heading: "¿Quiere Saber Cuándo Abre el Próximo Ciclo?",
+    sub: "Comuníquese con nosotros y le avisaremos cuando abra el próximo ciclo de becas.",
+    cta1: "Regístrate para Recibir Información",
     cta2: "Contáctenos",
   },
 };

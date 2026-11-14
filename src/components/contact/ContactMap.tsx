@@ -31,7 +31,7 @@ export default function ContactMap({ locale }: Props) {
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="El Paso, Texas"
+            title={t.mapTitle}
           />
 
           {/* Overlay card */}

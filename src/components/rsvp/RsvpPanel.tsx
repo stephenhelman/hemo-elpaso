@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { rsvpPageTranslation } from "@/translation/rsvpPage";
+import { withPhone } from "@/lib/site";
 
 export type RsvpPanelProps =
   | { valid: false }
@@ -40,7 +41,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
       <div className="bg-white rounded-2xl border border-neutral-200 p-8 text-center">
         <XCircle className="w-10 h-10 text-neutral-400 mx-auto mb-3" />
         <h1 className="font-display font-bold text-xl mb-2">{t.invalidTitle}</h1>
-        <p className="text-neutral-600 text-sm">{t.invalidBody}</p>
+        <p className="text-neutral-600 text-sm">{withPhone(t.invalidBody)}</p>
       </div>
     );
   }
@@ -50,7 +51,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const d = new Date(event.eventDate);
   const loc = locale === "es" ? "es-US" : "en-US";
   const when = `${d.toLocaleDateString(loc, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}, ${d.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" })}`;
-  const errText = (e?: string) => (e === "full" ? t.full : e === "closed" ? t.closed : e === "ended" ? t.ended : t.genericError);
+  const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "ended" ? t.ended : t.genericError);
 
   const respond = async (response: "yes" | "no") => {
     setBusy(response); setMsg(null);
@@ -72,7 +73,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
     setBusy("resend"); setMsg(null);
     const res = await fetch("/api/rsvp/resend-qr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
     const data = await res.json().catch(() => ({}));
-    setMsg(res.ok ? t.resent : data.error === "wait" ? t.wait : data.error === "no_email" ? t.noEmail : t.genericError);
+    setMsg(res.ok ? t.resent : data.error === "wait" ? t.wait : data.error === "no_email" ? withPhone(t.noEmail) : t.genericError);
     setBusy(null);
     if (res.ok) router.refresh();
   };
@@ -141,7 +142,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
         <div className="mb-6 text-center">
           <h2 className="font-semibold text-neutral-900 mb-2">{t.qrTitle}</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/api/checkin-qr/${props.qrToken}`} alt="QR" width={220} height={220} className="mx-auto border border-neutral-200 rounded-lg" />
+          <img src={`/api/checkin-qr/${props.qrToken}`} alt={t.qrAlt} width={220} height={220} className="mx-auto border border-neutral-200 rounded-lg" />
           <p className="text-xs text-neutral-500 mt-2">{t.qrHelp}</p>
         </div>
       ) : (
