@@ -36,6 +36,7 @@ export async function rsvpYes(params: {
   source: RsvpSource;
   actorId?: string;
   ignoreDeadline?: boolean;
+  ignoreCapacity?: boolean;
   sendEmail?: boolean;
 }): Promise<
   | { ok: true; rsvpId: string; token: string | null; created: boolean }
@@ -57,6 +58,7 @@ export async function rsvpYes(params: {
     partySize,
     excludeRsvpId: active ? existing!.id : undefined,
     ignoreDeadline: params.ignoreDeadline || !increasing,
+    ignoreCapacity: params.ignoreCapacity,
   });
   if (!elig.ok) return elig;
   const { event } = elig;

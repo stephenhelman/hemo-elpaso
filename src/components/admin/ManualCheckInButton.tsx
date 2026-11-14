@@ -37,13 +37,10 @@ export default function ManualCheckInButton({
     setLoading(true);
 
     try {
-      const response = await fetch("/api/admin/checkin/manual", {
+      const response = await fetch("/api/admin/checkin/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rsvpId,
-          eventId,
-        }),
+        body: JSON.stringify({ rsvpId, eventId, manual: true }),
       });
 
       if (response.ok) {
@@ -72,7 +69,7 @@ export default function ManualCheckInButton({
 
     try {
       const response = await fetch(
-        `/api/admin/checkin/manual?id=${checkInId}`,
+        `/api/admin/checkin/confirm?checkInId=${checkInId}`,
         {
           method: "DELETE",
         },
