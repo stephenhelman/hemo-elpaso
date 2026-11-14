@@ -29,7 +29,6 @@ const NAV_PERMISSIONS: Record<string, Permission> = {
   "/admin/reports": "canViewEventStats",
   "/admin/attendance": "canViewEventStats",
   "/admin/users": "canManageUsers",
-  "/admin/verification": "canViewPHI",
   "/admin/audit-logs": "canViewAuditLogs",
 };
 

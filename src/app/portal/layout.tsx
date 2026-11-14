@@ -3,7 +3,6 @@ import { getLocaleCookie } from "@/lib/locale";
 import { redirect } from "next/navigation";
 import PortalSidebar from "@/components/portal/PortalSidebar";
 import { prisma } from "@/lib/db";
-import DiagnosisReminderBanner from "@/components/portal/DiagnosisReminderBanner";
 import { ensurePatientExists } from "@/lib/ensure-patient";
 import { Lang } from "@/types";
 import { PortalLayout as Portal } from "@/components/layout/PortalLayout";
@@ -44,23 +43,6 @@ export default async function PortalLayout({
     redirect("/register");
   }
 
-  const needsDiagnosisLetter =
-    patient.disorderProfile?.condition && // Has a bleeding disorder
-    !patient.disorderProfile.diagnosisVerified && // Not verified yet
-    patient.diagnosisGracePeriodEndsAt; // Has grace period set
-
-  const daysRemaining =
-    needsDiagnosisLetter && patient.diagnosisGracePeriodEndsAt
-      ? Math.max(
-          0,
-          Math.ceil(
-            (new Date(patient.diagnosisGracePeriodEndsAt).getTime() -
-              Date.now()) /
-              (1000 * 60 * 60 * 24),
-          ),
-        )
-      : 0;
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${poppins.variable}`}>
@@ -74,18 +56,6 @@ export default async function PortalLayout({
           />
           <main className="flex-1 min-w-0 lg:ml-64">
             <Portal locale={locale as Lang}>
-              {needsDiagnosisLetter && (
-                <div className="p-4 lg:p-6">
-                  <DiagnosisReminderBanner
-                    daysRemaining={daysRemaining}
-                    hasUploadedLetter={
-                      !!patient.disorderProfile?.diagnosisLetterUrl
-                    }
-                    isVerified={patient.disorderProfile?.diagnosisVerified}
-                    locale={locale as Lang}
-                  />
-                </div>
-              )}
               {children}
             </Portal>
           </main>

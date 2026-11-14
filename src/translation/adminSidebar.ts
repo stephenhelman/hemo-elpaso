@@ -77,12 +77,6 @@ export const adminNavItemsTranslation = [
     icon: Users,
   },
   {
-    href: "/admin/verification",
-    en: "Verification",
-    es: "Verificación",
-    icon: FileCheck,
-  },
-  {
     href: "/admin/audit-logs",
     en: "Audit Log",
     es: "Registro de Auditoría",

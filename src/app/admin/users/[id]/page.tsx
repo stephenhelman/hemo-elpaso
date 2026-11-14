@@ -12,7 +12,6 @@ import {
   AlertCircle,
 } from "lucide-react"; // ADD AlertCircle
 import Link from "next/link";
-import DiagnosisVerificationStatus from "@/components/admin/DiagnosisVerificationStatus";
 import { StatCard } from "@/components/ui/StatCard";
 import { AuditAction } from "@prisma/client";
 import { getLocaleCookie } from "@/lib/locale";
@@ -480,64 +479,6 @@ export default async function patientDetailPage({ params }: Props) {
               </div>
             </div>
           )}
-          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-              Diagnosis Verification Status
-            </h2>
-
-            {/* Patient's Diagnosis */}
-            {patient.disorderProfile?.condition && (
-              <div className="mb-4">
-                <h3 className="font-medium text-neutral-700 mb-2">Patient</h3>
-                <DiagnosisVerificationStatus
-                  diagnosisLetterUrl={
-                    patient.disorderProfile?.diagnosisLetterUrl ?? null
-                  }
-                  diagnosisVerified={
-                    patient.disorderProfile?.diagnosisVerified ?? false
-                  }
-                  diagnosisVerifiedAt={
-                    patient.disorderProfile?.diagnosisVerifiedAt ?? null
-                  }
-                  diagnosisRejectedReason={
-                    patient.disorderProfile?.diagnosisRejectedReason ?? null
-                  }
-                  gracePeriodEndsAt={patient.diagnosisGracePeriodEndsAt}
-                  locale={locale}
-                />
-              </div>
-            )}
-
-            {/* Family Members with Bleeding Disorders */}
-            {patient.familyMembers
-              .filter((m) => m.hasBleedingDisorder)
-              .map((member) => (
-                <div
-                  key={member.id}
-                  className="mb-4 pt-4 border-t border-neutral-200"
-                >
-                  <h3 className="font-medium text-neutral-700 mb-2">
-                    {member.contactProfile?.firstName}{" "}
-                    {member.contactProfile?.lastName} ({member.relationship})
-                  </h3>
-                  <DiagnosisVerificationStatus
-                    diagnosisLetterUrl={
-                      member.disorderProfile?.diagnosisLetterUrl ?? null
-                    }
-                    diagnosisVerified={
-                      member.disorderProfile?.diagnosisVerified ?? false
-                    }
-                    diagnosisVerifiedAt={
-                      member.disorderProfile?.diagnosisVerifiedAt ?? null
-                    }
-                    diagnosisRejectedReason={
-                      member.disorderProfile?.diagnosisRejectedReason ?? null
-                    }
-                    locale={locale}
-                  />
-                </div>
-              ))}
-          </div>
         </div>
       </div>
     </div>
