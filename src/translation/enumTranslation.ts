@@ -5,6 +5,6 @@ type LanguageMap = {
   es: string;
 };
 
-export function translateEnum(config, value: string, lang: Lang) {
+export function translateEnum(config: Record<string, Record<Lang, string>>, value: string, lang: Lang) {
   return config[value][lang];
 }

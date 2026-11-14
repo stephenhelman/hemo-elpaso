@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 
 export async function PATCH(

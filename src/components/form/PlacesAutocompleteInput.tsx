@@ -11,6 +11,22 @@ interface Props {
   className?: string;
 }
 
+// Google Maps JS is loaded at runtime via <Script>; no @types/google.maps installed.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare namespace google {
+  namespace maps {
+    type MapsEventListener = any;
+    namespace places {
+      type Autocomplete = any;
+    }
+  }
+}
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
 export default function PlacesAutocompleteInput({

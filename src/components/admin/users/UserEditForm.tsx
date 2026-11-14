@@ -14,10 +14,10 @@ interface User {
   contactProfile: {
     firstName: string;
     lastName: string;
-    phone: string;
-    city: string;
-    state: string;
-    zipCode: string;
+    phone: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
   } | null;
 }
 

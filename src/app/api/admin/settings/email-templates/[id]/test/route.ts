@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/permissions";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import RsvpConfirmation from "@/messages/RsvpConfirmation";
@@ -105,7 +106,6 @@ async function renderEmailTemplate(
             location: data.location,
             adultsCount: parseInt(data.adultsCount) || 2,
             childrenCount: parseInt(data.childrenCount) || 1,
-            qrCodeDataUrl: "https://via.placeholder.com/250x250?text=QR+Code",
             eventSlug: data.eventSlug,
           }),
         );

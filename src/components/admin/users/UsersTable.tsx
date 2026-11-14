@@ -17,11 +17,11 @@ interface User {
   contactProfile: {
     firstName: string;
     lastName: string;
-    city: string;
+    city: string | null;
   } | null;
   disorderProfile: {
     condition: string;
-    severity: string;
+    severity: string | null;
   } | null;
   _count: {
     rsvps: number;

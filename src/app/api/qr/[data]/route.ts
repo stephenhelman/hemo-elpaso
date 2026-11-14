@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: Props) {
       },
     });
 
-    return new NextResponse(png, {
+    return new NextResponse(new Uint8Array(png), {
       headers: {
         "Content-Type": "image/png",
         // Cache immutably — RSVP-{id} never changes for a given RSVP

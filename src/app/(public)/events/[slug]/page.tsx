@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
 import EventSchema from "@/components/seo/EventSchema";
+import type { Lang } from "@/types";
 
 interface Props {
   params: { slug: string };
@@ -61,7 +62,18 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <EventSchema event={event} locale={locale} />
+      <EventSchema
+        event={{
+          titleEn: event.titleEn,
+          titleEs: event.titleEs,
+          descriptionEn: event.descriptionEn ?? "",
+          descriptionEs: event.descriptionEs ?? "",
+          eventDate: event.eventDate,
+          location: event.location,
+          slug: event.slug,
+        }}
+        locale={locale}
+      />
       <EventSlugPage
         referrer={referrer}
         event={serializedEvent}

@@ -50,7 +50,7 @@ export default function EventCancelled({
 
             {/* Event details box */}
             <Section style={eventBox}>
-              <Heading style={eventTitle}>{eventTitle}</Heading>
+              <Heading style={eventTitleStyle}>{eventTitle}</Heading>
 
               <Section style={detailRow}>
                 <Text style={detailLabel}>Originally Scheduled:</Text>
@@ -179,7 +179,7 @@ const eventBox = {
   margin: "24px 0",
 };
 
-const eventTitle = {
+const eventTitleStyle = {
   color: "#c2410c",
   fontSize: "24px",
   fontWeight: "bold",
