@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, MapPin, Users, QrCode } from "lucide-react";
+import { Calendar, MapPin, Users } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
-import EventAccessQr from "./EventAccessQr";
 import InviteSponsorButton from "./InviteSponsorButton";
 import { EventRowActions } from "./EventRowActions";
 
@@ -13,7 +12,6 @@ interface Props {
 }
 
 export default function EventRowWithQr({ event, isPast }: Props) {
-  const [showAccessQr, setShowAccessQr] = useState(false);
   const [showSponsorInvite, setShowSponsorInvite] = useState(false);
   const eventDate = new Date(event.eventDate);
   const rsvpCount = event._count.rsvps;
@@ -157,26 +155,6 @@ export default function EventRowWithQr({ event, isPast }: Props) {
           </div>
         </div>
 
-        {/* Event Access QR Toggle */}
-        {event.status === "published" && (
-          <div className="border-t border-neutral-200">
-            <button
-              onClick={() => setShowAccessQr(!showAccessQr)}
-              className="w-full px-5 py-3 text-sm text-primary hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
-            >
-              <QrCode className="w-4 h-4" />
-              {showAccessQr
-                ? "Hide Event Access QR"
-                : "Show Event Access QR (for projection)"}
-            </button>
-
-            {showAccessQr && (
-              <div className="p-6 bg-neutral-50 border-t border-neutral-200">
-                <EventAccessQr eventId={event.id} eventTitle={event.titleEn} />
-              </div>
-            )}
-          </div>
-        )}
       </div>
       {showSponsorInvite && (
         <InviteSponsorButton

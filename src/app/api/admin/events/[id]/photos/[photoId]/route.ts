@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { deleteFromR2 } from "@/lib/r2";
 import { AuditAction } from "@prisma/client";
-import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
 export async function PATCH(
   request: NextRequest,
@@ -25,22 +24,6 @@ export async function PATCH(
       where: { id: params.photoId },
       data: { approved },
     });
-
-    // Trigger Pusher — approved photo appears in attendee gallery instantly
-    if (approved) {
-      await pusherServer.trigger(
-        eventChannel(params.id),
-        PUSHER_EVENTS.PHOTO_APPROVED,
-        {
-          photo: {
-            id: photo.id,
-            url: photo.url,
-            caption: photo.caption,
-            uploadedAt: photo.uploadedAt,
-          },
-        },
-      );
-    }
 
     return NextResponse.json({ photo });
   } catch (error) {

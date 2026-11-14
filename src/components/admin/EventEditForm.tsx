@@ -316,20 +316,6 @@ export default function EventEditForm({ event, locale }: Props) {
                   {t.priorityEvent}
                 </span>
               </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.liveEnabled}
-                  onChange={(e) =>
-                    setFormData({ ...formData, liveEnabled: e.target.checked })
-                  }
-                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm font-medium text-neutral-700">
-                  {t.liveFeatures}
-                </span>
-              </label>
             </div>
           </div>
           <div className="border-t mt-4 border-neutral-200 pt-8">

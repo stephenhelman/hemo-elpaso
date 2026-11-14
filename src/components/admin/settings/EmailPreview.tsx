@@ -43,8 +43,6 @@ export default function EmailPreview({ template, adminEmail }: Props) {
       expectedDate: "Within 5-7 business days",
       reviewNotes: "Application approved - all documentation was in order.",
       cancellationReason: "Due to unforeseen circumstances",
-      liveEventUrl:
-        "https://hemo-elpaso.vercel.app/events/spring-dinner-2026/live",
       portalUrl: "https://hemo-elpaso.vercel.app/portal/dashboard",
     };
 

@@ -17,7 +17,6 @@ interface Props {
   eventTime: string;
   location: string;
   checkInTime: string;
-  liveEventUrl: string;
 }
 
 export default function CheckInConfirmation({
@@ -27,7 +26,6 @@ export default function CheckInConfirmation({
   eventTime = "6:00 PM",
   location = "UMC El Paso Conference Center",
   checkInTime = "5:45 PM",
-  liveEventUrl = "",
 }: Props) {
   return (
     <Html>
@@ -70,30 +68,6 @@ export default function CheckInConfirmation({
                 <td style={detailValue}>{checkInTime}</td>
               </tr>
             </table>
-          </Section>
-
-          {/* Live Event Access */}
-          <Section style={liveSection}>
-            <Heading as="h2" style={h2}>
-              🌟 Access Live Event Features
-            </Heading>
-            <Text style={text}>
-              As a checked-in attendee, you now have access to exclusive live
-              event features:
-            </Text>
-            <ul style={list}>
-              <li style={listItem}>📊 Live polls and voting</li>
-              <li style={listItem}>💬 Q&A with speakers and sponsors</li>
-              <li style={listItem}>📸 Photo gallery and sharing</li>
-              <li style={listItem}>📢 Real-time event updates</li>
-            </ul>
-          </Section>
-
-          {/* CTA Button */}
-          <Section style={buttonSection}>
-            <Button style={button} href={liveEventUrl}>
-              Join Live Event
-            </Button>
           </Section>
 
           {/* Footer */}

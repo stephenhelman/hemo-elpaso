@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
-import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
 interface Props {
   params: { token: string; itemId: string };
@@ -51,16 +50,6 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     where: { id: params.itemId },
     data: { status },
   });
-
-  // Trigger Pusher — agenda highlights current item for all attendees
-  await pusherServer.trigger(
-    eventChannel(presenterToken.eventId),
-    PUSHER_EVENTS.ITINERARY_UPDATED,
-    {
-      itemId: params.itemId,
-      status,
-    },
-  );
 
   return NextResponse.json({ item: updated });
 }

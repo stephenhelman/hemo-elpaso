@@ -14,8 +14,6 @@ import {
   Save,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { getPusherClient, eventChannel } from "@/lib/pusher-client";
-import { PUSHER_EVENTS } from "@/lib/pusher-server";
 
 import SlidesControl from "./SlidesControl";
 
@@ -109,33 +107,6 @@ export default function PresenterControlPanel({
 
   // Poll for live state every 5 seconds
   useEffect(() => {
-    const pusher = getPusherClient();
-    const channel = pusher.subscribe(eventChannel(event.id));
-
-    // New question submitted by an attendee — show instantly in Q&A tab
-    channel.bind(PUSHER_EVENTS.QUESTION_ADDED, (data: { question: any }) => {
-      setState((prev) => ({
-        ...prev,
-        questions: prev.questions.find((q) => q.id === data.question.id)
-          ? prev.questions
-          : [...prev.questions, data.question],
-      }));
-    });
-
-    // New vote on a poll — update counts in control panel
-    channel.bind(
-      PUSHER_EVENTS.POLL_VOTE,
-      (data: { pollId: string; options: any[]; totalResponses: number }) => {
-        setState((prev) => ({
-          ...prev,
-          polls: prev.polls.map((p) =>
-            p.id === data.pollId
-              ? { ...p, responseCount: data.totalResponses }
-              : p,
-          ),
-        }));
-      },
-    );
     const photoPoll = setInterval(async () => {
       try {
         const res = await fetch(`/api/presenter/${token}`);
@@ -150,8 +121,6 @@ export default function PresenterControlPanel({
     }, 10000); // 10 seconds — only needed for pending photo count badge
 
     return () => {
-      channel.unbind_all();
-      pusher.unsubscribe(eventChannel(event.id));
       clearInterval(photoPoll);
     };
   }, [event.id, token]);
