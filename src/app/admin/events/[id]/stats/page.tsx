@@ -4,8 +4,6 @@ import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import EventStatsOverview from "@/components/admin/stats/EventStatsOverview";
-import PollResultsExport from "@/components/admin/stats/PollResultsExport";
-import QandAExport from "@/components/admin/stats/QandAExport";
 import AttendanceBreakdown from "@/components/admin/stats/AttendanceBreakdown";
 import { headers } from "next/headers";
 import ExportAllButton from "@/components/admin/stats/ExportAllButton";
@@ -38,14 +36,6 @@ export default async function EventStatsPage({ params }: Props) {
           },
         },
       },
-      polls: {
-        include: {
-          options: true,
-        },
-      },
-      questions: true,
-      announcements: true,
-      itineraryItems: true,
     },
   });
 
@@ -86,48 +76,6 @@ export default async function EventStatsPage({ params }: Props) {
       ? Math.round((patientCheckIns.length / totalRsvps) * 100)
       : 0;
 
-  const totalQuestions = event.questions.length;
-  const answeredQuestions = event.questions.filter((q) => q.answered).length;
-
-  // Calculate poll response counts manually
-  const pollsWithCounts = await Promise.all(
-    event.polls.map(async (poll) => {
-      const responses = await prisma.pollResponse.count({
-        where: { pollId: poll.id },
-      });
-
-      const optionsWithCounts = await Promise.all(
-        poll.options.map(async (option) => {
-          const optionResponses = await prisma.pollResponse.count({
-            where: {
-              pollId: poll.id,
-              selectedOptionId: option.id,
-            },
-          });
-
-          return {
-            ...option,
-            _count: {
-              responses: optionResponses,
-            },
-          };
-        }),
-      );
-
-      return {
-        ...poll,
-        _count: {
-          responses,
-        },
-        options: optionsWithCounts,
-      };
-    }),
-  );
-
-  const totalPollResponses = pollsWithCounts.reduce(
-    (sum, p) => sum + p._count.responses,
-    0,
-  );
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
@@ -166,8 +114,6 @@ export default async function EventStatsPage({ params }: Props) {
           donorCount={donorCheckIns.length}
           volunteerCount={volunteerCheckIns.length}
           attendanceRate={attendanceRate}
-          polls={pollsWithCounts}
-          questions={event.questions}
         />
       </div>
 
@@ -176,9 +122,6 @@ export default async function EventStatsPage({ params }: Props) {
         totalRsvps={totalRsvps}
         patientAttendance={patientCheckIns.length}
         attendanceRate={attendanceRate}
-        totalQuestions={totalQuestions}
-        answeredQuestions={answeredQuestions}
-        totalPollResponses={totalPollResponses}
         locale={locale}
       />
 
@@ -196,22 +139,6 @@ export default async function EventStatsPage({ params }: Props) {
         eventSlug={event.slug}
         eventTitle={event.titleEn}
         attendees={attendeesForExport}
-      />
-
-      {/* Poll Results - PHI Free */}
-      <PollResultsExport
-        eventId={event.id}
-        eventSlug={event.slug}
-        eventTitle={event.titleEn}
-        polls={pollsWithCounts}
-      />
-
-      {/* Q&A Export - PHI Free */}
-      <QandAExport
-        eventId={event.id}
-        eventSlug={event.slug}
-        eventTitle={event.titleEn}
-        questions={event.questions}
       />
     </div>
   );

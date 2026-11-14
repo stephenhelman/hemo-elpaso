@@ -196,7 +196,6 @@ export async function POST(request: NextRequest) {
               minute: "2-digit",
             },
           ),
-          liveEventUrl: `${baseUrl}/events/${rsvp.event.slug}/live`,
         },
         patientId: rsvp.patientId,
         eventId: eventId,

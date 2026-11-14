@@ -145,7 +145,6 @@ async function renderEmailTemplate(
             eventTime: data.eventTime,
             location: data.location,
             checkInTime: data.checkInTime,
-            liveEventUrl: data.liveEventUrl,
           }),
         );
 

@@ -173,7 +173,6 @@ async function renderEmailTemplate(
             eventTime: String(data.eventTime),
             location: String(data.location),
             checkInTime: String(data.checkInTime),
-            liveEventUrl: String(data.liveEventUrl),
           }),
         );
 

@@ -3,12 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Send,
-  Clock,
-  Megaphone,
   Pencil,
   ScanLine,
-  BarChart3,
-  MessageSquare,
   Images,
   PieChart,
   Users,
@@ -83,38 +79,6 @@ export function EventRowActions({ event, setShowSponsorInvite }: Props) {
               <Send className="w-4 h-4 text-yellow-600" />
               Invite Sponsor
             </button>
-            <Link
-              href={`/admin/events/${event.id}/itinerary`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <Clock className="w-4 h-4 text-purple-600" />
-              Itinerary
-            </Link>
-            <Link
-              href={`/admin/events/${event.id}/announcements`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <Megaphone className="w-4 h-4 text-green-600" />
-              Announcements
-            </Link>
-            <Link
-              href={`/admin/events/${event.id}/polls`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <BarChart3 className="w-4 h-4 text-cyan-600" />
-              Polls
-            </Link>
-            <Link
-              href={`/admin/events/${event.id}/questions`}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <MessageSquare className="w-4 h-4 text-blue-600" />
-              Q&A
-            </Link>
             <Link
               href={`/admin/events/${event.id}/photos`}
               onClick={() => setOpen(false)}

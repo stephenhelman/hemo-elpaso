@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { pusherServer, eventChannel, PUSHER_EVENTS } from "@/lib/pusher-server";
 
 interface Props {
   params: { token: string };
@@ -43,13 +42,6 @@ export async function PATCH(req: NextRequest, { params }: Props) {
           data: { eventId, isLive: true },
         });
 
-    // Trigger Pusher — all attendees immediately see live status change
-    await pusherServer.trigger(
-      eventChannel(eventId),
-      PUSHER_EVENTS.PRESENTATION_LIVE,
-      { isLive: updated.isLive },
-    );
-
     return NextResponse.json({ presentation: updated });
   }
 
@@ -79,13 +71,6 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     where: { eventId },
     data: { currentSlide: newSlide },
   });
-
-  // Trigger Pusher — all attendees instantly advance their slide
-  await pusherServer.trigger(
-    eventChannel(eventId),
-    PUSHER_EVENTS.SLIDE_CHANGED,
-    { currentSlide: newSlide },
-  );
 
   return NextResponse.json({ presentation: updated });
 }

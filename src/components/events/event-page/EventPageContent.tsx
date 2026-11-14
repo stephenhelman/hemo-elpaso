@@ -201,28 +201,6 @@ export function EventPageContent({
             </div>
           )}
 
-          {/* Join Live Event Button - Only if checked in and live enabled */}
-          {isCheckedIn && event.liveEnabled && (
-            <div className="bg-white rounded-2xl border-2 border-green-200 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-green-700 text-sm font-semibold">
-                  You're Checked In!
-                </span>
-              </div>
-              <Link
-                href={`/events/${event.slug}/live`}
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all"
-              >
-                <Sparkles className="w-4 h-4" />
-                Join Live Event
-              </Link>
-              <p className="text-xs text-neutral-500 text-center mt-2">
-                Access live polls, Q&A, and event updates
-              </p>
-            </div>
-          )}
-
           {/* RSVP Button */}
           {isUpcoming && isLoggedIn && !isCheckedIn && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
