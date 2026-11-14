@@ -113,17 +113,6 @@ export default async function TransparencyArchivePage() {
 
   const sections = [
     {
-      icon: Newspaper,
-      title: t.newsletters,
-      desc: t.newslettersDesc,
-      href: "/newsletter",
-      count: newsletterCount,
-      latest: latestNewsletter
-        ? `${isEs ? MONTH_NAMES_ES[latestNewsletter.month - 1] : MONTH_NAMES[latestNewsletter.month - 1]} ${latestNewsletter.year}`
-        : null,
-      color: "bg-primary-50 text-primary",
-    },
-    {
       icon: FileText,
       title: t.minutes,
       desc: t.minutesDesc,

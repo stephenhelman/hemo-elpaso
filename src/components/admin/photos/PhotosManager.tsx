@@ -7,7 +7,6 @@ import {
   Trash2,
   Loader2,
   Image as ImageIcon,
-  Newspaper,
   CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -19,7 +18,6 @@ interface Photo {
   key: string;
   caption: string | null;
   approved: boolean;
-  selectedForNewsletter: boolean;
   uploadedBy: string;
   uploadedAt: Date;
 }
@@ -28,21 +26,16 @@ interface Props {
   eventId: string;
   photos: Photo[];
   adminEmail: string;
-  newsletterMode?: boolean;
 }
 
 export default function PhotosManager({
   eventId,
   photos,
   adminEmail,
-  newsletterMode = false,
 }: Props) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [newsletterLoading, setNewsletterLoading] = useState<string | null>(
-    null,
-  );
   const [approvingLoading, setApprovingLoading] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -142,36 +135,6 @@ export default function PhotosManager({
     }
   };
 
-  const handleToggleNewsletter = async (
-    photoId: string,
-    currentSelected: boolean,
-  ) => {
-    setNewsletterLoading(photoId);
-    try {
-      const response = await fetch(
-        `/api/admin/events/${eventId}/photos/${photoId}/newsletter`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ selected: !currentSelected }),
-        },
-      );
-      if (response.ok) {
-        toast.success(
-          currentSelected ? "Removed from newsletter" : "Added to newsletter",
-        );
-        router.refresh();
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "Failed to update newsletter selection");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update newsletter selection");
-    } finally {
-      setNewsletterLoading(null);
-    }
-  };
-
   const approvedPhotos = photos.filter((p) => p.approved);
   const unapprovedPhotos = photos.filter((p) => !p.approved);
 
@@ -245,17 +208,6 @@ export default function PhotosManager({
         </div>
       </div>
 
-      {/* Newsletter mode banner */}
-      {newsletterMode && (
-        <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
-          <Newspaper className="w-5 h-5 text-emerald-600 shrink-0" />
-          <p className="text-sm text-emerald-800">
-            <strong>Newsletter Mode:</strong> Click the bookmark icon on any
-            approved photo to include it in the next newsletter.
-          </p>
-        </div>
-      )}
-
       {/* Photos Grid */}
       {photos.length === 0 ? (
         <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
@@ -278,11 +230,8 @@ export default function PhotosManager({
                     photo={photo}
                     onDelete={handleDelete}
                     onToggleApproved={handleToggleApproved}
-                    onToggleNewsletter={handleToggleNewsletter}
                     deleting={deleting === photo.id}
                     approvingLoading={approvingLoading === photo.id}
-                    newsletterLoading={newsletterLoading === photo.id}
-                    newsletterMode={newsletterMode}
                   />
                 ))}
               </div>
@@ -303,11 +252,8 @@ export default function PhotosManager({
                     photo={photo}
                     onDelete={handleDelete}
                     onToggleApproved={handleToggleApproved}
-                    onToggleNewsletter={handleToggleNewsletter}
                     deleting={deleting === photo.id}
                     approvingLoading={approvingLoading === photo.id}
-                    newsletterLoading={newsletterLoading === photo.id}
-                    newsletterMode={newsletterMode}
                   />
                 ))}
               </div>
@@ -323,42 +269,24 @@ function PhotoCard({
   photo,
   onDelete,
   onToggleApproved,
-  onToggleNewsletter,
   deleting,
   approvingLoading,
-  newsletterLoading,
-  newsletterMode,
 }: {
   photo: Photo;
   onDelete: (id: string) => void;
   onToggleApproved: (id: string, approved: boolean) => void;
-  onToggleNewsletter: (id: string, selected: boolean) => void;
   deleting: boolean;
   approvingLoading: boolean;
-  newsletterLoading: boolean;
-  newsletterMode: boolean;
 }) {
   return (
     <div
-      className={`relative group aspect-square rounded-lg overflow-hidden border transition-all ${
-        photo.selectedForNewsletter
-          ? "border-emerald-400 ring-2 ring-emerald-200"
-          : "border-neutral-200"
-      }`}
+      className="relative group aspect-square rounded-lg overflow-hidden border border-neutral-200 transition-all"
     >
       <img
         src={photo.url}
         alt={photo.caption || "Event photo"}
         className="w-full h-full object-cover"
       />
-
-      {/* Newsletter badge */}
-      {photo.selectedForNewsletter && (
-        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-600 text-white text-xs font-semibold">
-          <Newspaper className="w-3 h-3" />
-          Newsletter
-        </div>
-      )}
 
       {/* Unapproved overlay */}
       {!photo.approved && (
@@ -388,28 +316,6 @@ function PhotoCard({
           )}
           {photo.approved ? "Unapprove" : "Approve"}
         </button>
-
-        {/* Newsletter toggle — only show on approved photos in newsletter mode */}
-        {newsletterMode && photo.approved && (
-          <button
-            onClick={() =>
-              onToggleNewsletter(photo.id, photo.selectedForNewsletter)
-            }
-            disabled={newsletterLoading}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
-              photo.selectedForNewsletter
-                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-white text-emerald-700 hover:bg-emerald-50"
-            }`}
-          >
-            {newsletterLoading ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <Newspaper className="w-3 h-3" />
-            )}
-            {photo.selectedForNewsletter ? "Deselect" : "Newsletter"}
-          </button>
-        )}
 
         {/* Delete */}
         <button
