@@ -12,7 +12,7 @@ interface Props {
 
 export default async function EventAttendeesPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewPHI")) redirect("/admin/dashboard");
 
   const event = await prisma.event.findUnique({

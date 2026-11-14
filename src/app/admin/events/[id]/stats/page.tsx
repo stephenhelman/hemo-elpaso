@@ -17,7 +17,7 @@ interface Props {
 
 export default async function EventStatsPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewEventStats")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;

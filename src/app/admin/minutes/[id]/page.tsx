@@ -9,7 +9,7 @@ interface Props {
 
 export default async function AdminMinutesDetailPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageMinutes")) redirect("/admin/dashboard");
 
   const minutes = await prisma.boardMinutes.findUnique({

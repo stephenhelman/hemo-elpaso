@@ -20,7 +20,7 @@ interface PageProps {
 
 export default async function AuditLogsPage({ searchParams }: PageProps) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewAuditLogs")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;

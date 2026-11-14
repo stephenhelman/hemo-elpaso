@@ -7,7 +7,7 @@ import type { Lang } from "@/types";
 
 export default async function EmailTemplatesPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageEmailTemplates")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;

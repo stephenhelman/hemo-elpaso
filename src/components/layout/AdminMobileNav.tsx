@@ -115,13 +115,6 @@ export default function AdminMobileNav({ locale }: Props) {
           {/* Footer Actions */}
           <div className="p-4 border-t border-neutral-200 space-y-2">
             <Link
-              href="/portal/dashboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-700 hover:bg-neutral-100 font-medium transition-colors w-full"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              {t.patientPortal}
-            </Link>
-            <Link
               href="/"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-700 hover:bg-neutral-100 font-medium transition-colors w-full"
             >

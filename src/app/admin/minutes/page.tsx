@@ -5,7 +5,7 @@ import MinutesIndexClient from "./MinutesIndexClient";
 
 export default async function AdminMinutesPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageMinutes")) redirect("/admin/dashboard");
 
   const minutes = await prisma.boardMinutes.findMany({

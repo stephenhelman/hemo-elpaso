@@ -5,7 +5,7 @@ import AdminArchiveClient from "./AdminArchiveClient";
 
 export default async function AdminArchivePage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewFinancials")) redirect("/admin/dashboard");
 
   const isTreasurer = admin.can("canManageFinancials");

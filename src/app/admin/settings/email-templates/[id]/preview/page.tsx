@@ -11,7 +11,7 @@ interface Props {
 
 export default async function PreviewTemplatePage({ params }: Props) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageEmailTemplates")) redirect("/admin/dashboard");
 
   const template = await prisma.emailTemplate.findUnique({

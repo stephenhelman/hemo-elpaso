@@ -4,7 +4,7 @@ import NewEventForm from "./NewEventForm";
 
 export default async function NewEventPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageEvents")) redirect("/admin/events");
 
   return <NewEventForm />;
