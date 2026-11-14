@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { eventHasEnded } from "./window";
+import { registrationOpen } from "@/lib/registration";
 
 export type RsvpBlock = "EVENT_NOT_FOUND" | "ENDED" | "NOT_PUBLISHED" | "DEADLINE_PASSED" | "AT_CAPACITY";
 
@@ -53,7 +54,9 @@ export async function checkRsvpEligibility(params: {
 /** For the public page: can a NEW public RSVP happen right now? */
 export async function registrationState(event: {
   id: string; status: string; eventDate: Date; rsvpDeadline: Date | null; maxCapacity: number | null; registrationEnabled: boolean;
-}): Promise<"open" | "full" | "closed" | "disabled"> {
+}): Promise<"open" | "full" | "closed" | "disabled" | "paused"> {
+  // Launch switch (REGISTRATION_OPEN): public RSVP is off for every event until it's turned on.
+  if (!registrationOpen()) return "paused";
   if (!event.registrationEnabled || event.status !== "published") return "disabled";
   if (eventHasEnded(event)) return "closed";
   if (event.rsvpDeadline && event.rsvpDeadline < new Date()) return "closed";

@@ -1,3 +1,4 @@
+import { mailbox } from "@/lib/site";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/db";
@@ -8,7 +9,7 @@ import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const DEFAULT_FROM =
-  process.env.EMAIL_FROM || "HOEP (DO NOT REPLY) <noreply@hemo-el-paso.org>";
+  process.env.EMAIL_FROM || `HOEP (DO NOT REPLY) <${mailbox("noreply")}>`;
 
 interface EmailData {
   [key: string]: string | number;
@@ -20,7 +21,7 @@ interface SendEmailParams {
   data: EmailData;
   patientId?: string;
   eventId?: string;
-  fromEmail?: string; // override sender (e.g. president@hemo-el-paso.org)
+  fromEmail?: string; // override sender (e.g. president@<email domain>)
   replyTo?: string; // board member's personal Gmail
 }
 

@@ -1,3 +1,4 @@
+import { mailbox } from "@/lib/site";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
@@ -8,7 +9,7 @@ import { AuditAction } from "@prisma/client";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const EMAIL_FROM =
-  process.env.EMAIL_FROM || "HOEP Events <events@events.hemo-el-paso.org>";
+  process.env.EMAIL_FROM || `HOEP Events <${mailbox("events")}>`;
 
 export async function POST(
   request: NextRequest,

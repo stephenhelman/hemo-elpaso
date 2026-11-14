@@ -11,6 +11,7 @@ import UserMenu from "./UserMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
+import { useSiteFlags } from "@/context/SiteFlagsContext";
 
 const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
@@ -27,6 +28,8 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { registrationOpen } = useSiteFlags();
+  const links = navLinks.filter((l) => registrationOpen || l.href !== "/register-info");
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { locale } = useLanguage();
@@ -63,7 +66,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -116,7 +119,7 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-neutral-200 bg-white">
             <nav className="flex flex-col px-4 py-3 gap-1">
-              {navLinks.map((link) => (
+              {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

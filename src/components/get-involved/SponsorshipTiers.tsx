@@ -1,5 +1,7 @@
 "use client";
 
+import { contactEmail } from "@/lib/site";
+
 import Section from "@/components/layout/Section";
 import Link from "next/link";
 import { Check } from "lucide-react";
@@ -139,10 +141,10 @@ export default function SponsorshipTiers({ locale }: Props) {
       <p className="text-center text-sm text-neutral-500">
         {t.contact}{" "}
         <a
-          href="mailto:info@hemo-el-paso.org"
+          href={`mailto:${contactEmail()}`}
           className="text-primary font-semibold hover:underline"
         >
-          info@hemo-el-paso.org
+          {contactEmail()}
         </a>
       </p>
     </Section>

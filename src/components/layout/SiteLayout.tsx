@@ -7,6 +7,7 @@ import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
+import { SiteFlagsProvider } from "@/context/SiteFlagsContext";
 import ToastProvider from "@/components/providers/ToastProvider";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
@@ -21,10 +22,13 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
 export default function SiteLayout({
   children,
+  registrationOpen,
 }: {
   children: React.ReactNode;
+  registrationOpen: boolean;
 }) {
   return (
+    <SiteFlagsProvider registrationOpen={registrationOpen}>
     <UserProvider>
       <LanguageProvider>
         <EventsProvider>
@@ -35,5 +39,6 @@ export default function SiteLayout({
         </EventsProvider>
       </LanguageProvider>
     </UserProvider>
+    </SiteFlagsProvider>
   );
 }

@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -8,8 +9,7 @@ import { currentConsents } from "@/lib/patients/query";
 import EventInvitation from "@/messages/EventInvitation";
 import { emailBlocker } from "./match";
 
-const baseUrl = () =>
-  process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+const baseUrl = () => siteUrl();
 
 export function pendingInvitationCount(eventId: string) {
   return prisma.invitation.count({ where: { eventId, status: "pending" } });

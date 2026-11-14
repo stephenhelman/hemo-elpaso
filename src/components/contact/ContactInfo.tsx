@@ -1,5 +1,7 @@
 "use client";
 
+import { contactEmail } from "@/lib/site";
+
 import { Phone, Mail, MapPin, Facebook, Clock } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { Lang } from "@/types";
@@ -28,8 +30,8 @@ export default function ContactInfo({ locale }: Props) {
           <InfoRow
             icon={<Mail className="w-4 h-4" />}
             label={t.email}
-            value="info@hemo-el-paso.org"
-            href="mailto:info@hemo-el-paso.org"
+            value={contactEmail()}
+            href={`mailto:${contactEmail()}`}
           />
           <InfoRow
             icon={<MapPin className="w-4 h-4" />}

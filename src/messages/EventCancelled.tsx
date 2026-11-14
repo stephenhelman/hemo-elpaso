@@ -1,3 +1,4 @@
+import { mailbox } from "@/lib/site";
 import {
   Body,
   Container,
@@ -116,8 +117,8 @@ export default function EventCancelled({
             </Text>
             <Text style={footerTextSmall}>
               Questions? Contact us at{" "}
-              <Link href="mailto:events@hemo-el-paso.org" style={footerLink}>
-                events@hemo-el-paso.org
+              <Link href={`mailto:${mailbox("events")}`} style={footerLink}>
+                {mailbox("events")}
               </Link>
             </Text>
           </Section>

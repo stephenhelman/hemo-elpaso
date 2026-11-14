@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
+    "db:migrate": "tsx scripts/db-guard.ts && prisma migrate dev",
+    "db:push": "tsx scripts/db-guard.ts && prisma db push",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "db:reset": "prisma migrate reset",
-    "seed": "tsx prisma/seed.ts"
+    "db:reset": "tsx scripts/db-guard.ts && prisma migrate reset",
+    "seed": "tsx scripts/db-guard.ts && tsx prisma/seed.ts",
+    "db:whoami": "tsx scripts/db-guard.ts whoami",
+    "db:deploy": "ALLOW_PROD_DB=yes tsx scripts/db-guard.ts whoami && prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

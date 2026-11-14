@@ -1,5 +1,7 @@
 "use client";
 
+import { contactEmail } from "@/lib/site";
+
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { CheckCircle, AlertCircle } from "lucide-react";
@@ -55,7 +57,7 @@ function UnsubscribeContent() {
         <p className="text-neutral-500 text-sm leading-relaxed mb-6">
           {error === "invalid" || error === "missing"
             ? "This unsubscribe link is invalid or has expired. Please use the link from a recent newsletter email."
-            : "Something went wrong. Please contact us at info@hemo-el-paso.org to be removed from our mailing list."}
+            : `Something went wrong. Please contact us at ${contactEmail()} to be removed from our mailing list.`}
         </p>
         <Link
           href="/"

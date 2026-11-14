@@ -4,6 +4,7 @@ import Link from "next/link";
 import Section from "@/components/layout/Section";
 import { ArrowRight, Bell } from "lucide-react";
 import { Lang } from "@/types";
+import { useSiteFlags } from "@/context/SiteFlagsContext";
 import { scholarshipCTATranslation } from "@/translation/scholarshipsPage";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export default function ScholarshipCTA({ locale }: Props) {
   const t = scholarshipCTATranslation[locale];
+  const { registrationOpen } = useSiteFlags();
 
   return (
     <Section background="white">
@@ -24,6 +26,7 @@ export default function ScholarshipCTA({ locale }: Props) {
         </h2>
         <p className="text-neutral-500 text-lg mb-8 leading-relaxed">{t.sub}</p>
         <div className="flex flex-wrap gap-4 justify-center">
+          {registrationOpen && (
           <Link
             href="/register-info"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-white font-display font-semibold hover:bg-primary-600 transition-colors group"
@@ -31,6 +34,7 @@ export default function ScholarshipCTA({ locale }: Props) {
             <Bell className="w-4 h-4" />
             {t.cta1}
           </Link>
+          )}
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border-2 border-neutral-300 text-neutral-700 font-display font-semibold hover:border-primary hover:text-primary transition-colors"

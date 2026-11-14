@@ -26,7 +26,7 @@ interface Props {
   locale: Lang;
   event: SerializedEvent;
   rsvpCount: number;
-  registration: "open" | "full" | "closed" | "disabled";
+  registration: "open" | "full" | "closed" | "disabled" | "paused";
   eventId: string;
   turnstileSiteKey: string | null;
 }
@@ -191,6 +191,12 @@ export function EventPageContent({
                     RSVP
                   </a>
                 </>
+              ) : registration === "paused" ? (
+                <p className="text-neutral-700 text-sm font-semibold">
+                  {locale === "es"
+                    ? "Para confirmar asistencia, llama al 915-621-8291."
+                    : "To RSVP, call 915-621-8291."}
+                </p>
               ) : registration === "full" || registration === "closed" ? (
                 <p className="text-neutral-700 text-sm font-semibold">
                   {registration === "full"
