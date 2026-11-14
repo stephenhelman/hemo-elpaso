@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
-import { sendRsvpConfirmation, sendEmail } from "@/lib/email-service";
+import { createRsvp, cancelRsvp } from "@/lib/rsvp";
 import { AuditAction } from "@prisma/client";
 import { getFamilyRestrictionStatus } from "@/lib/family-utils";
 
@@ -63,100 +63,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event ID required" }, { status: 400 });
     }
 
-    // Find event
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-    });
-
-    if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-
-    // Check if already RSVPed
-    const existingRsvp = await prisma.rsvp.findFirst({
-      where: {
-        patientId: patient.id,
-        eventId: event.id,
-      },
-    });
-
-    if (existingRsvp) {
-      return NextResponse.json({ error: "Already RSVPed" }, { status: 400 });
-    }
-
-    // Check capacity
-    if (event.maxCapacity) {
-      const currentRsvps = await prisma.rsvp.count({
-        where: { eventId: event.id },
-      });
-
-      if (currentRsvps >= event.maxCapacity) {
-        return NextResponse.json(
-          { error: "Event is at capacity" },
-          { status: 400 },
-        );
-      }
-    }
-
     // Derive attendee count: selected family members + patient themselves
     const selectedMemberIds: string[] = Array.isArray(familyMembershipIds)
       ? familyMembershipIds
       : [];
-    const finalAttendeeCount =
-      attendeeCount ?? selectedMemberIds.length + 1;
+    const finalAttendeeCount = attendeeCount ?? selectedMemberIds.length + 1;
 
-    // Create RSVP
-    const rsvp = await prisma.rsvp.create({
-      data: {
-        patientId: patient.id,
-        eventId: event.id,
-        status: "confirmed",
-        attendeeCount: finalAttendeeCount,
-        familyMembershipIds: selectedMemberIds,
-        dietaryRestrictions,
-        specialNeeds: accessibilityNeeds,
-        rsvpDate: new Date(),
-      },
+    // Eligibility (event exists, not duplicate, deadline, capacity), create,
+    // audit log and confirmation email all live in src/lib/rsvp.
+    const result = await createRsvp({
+      eventId,
+      patientId: patient.id,
+      attendeeCount: finalAttendeeCount,
+      familyMembershipIds: selectedMemberIds,
+      dietaryRestrictions,
+      specialNeeds: accessibilityNeeds,
     });
 
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        patientId: patient.id,
-        action: AuditAction.RSVP_CREATED,
-        resourceType: "Rsvp",
-        resourceId: rsvp.id,
-        details: `RSVPed for event: ${event.titleEn}`,
-      },
-    });
-
-    // SEND RSVP CONFIRMATION EMAIL
-    try {
-      await sendRsvpConfirmation({
-        recipient: patient.email,
-        patientName: `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
-        eventTitle: event.titleEn,
-        eventDate: event.eventDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        eventTime: event.eventDate.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        location: event.location || "TBD",
-        adultsCount: finalAttendeeCount,
-        childrenCount: 0,
-        eventSlug: event.slug,
-        patientId: patient.id,
-        eventId: event.id,
-      });
-    } catch (emailError) {
-      console.error("Failed to send RSVP confirmation email:", emailError);
-      // Don't fail the RSVP if email fails
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: result.error, code: result.code },
+        { status: result.status },
+      );
     }
+    const rsvp = result.rsvp;
 
     return NextResponse.json({
       success: true,
@@ -236,7 +166,6 @@ export async function DELETE(request: NextRequest) {
 
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
-      include: { contactProfile: true },
     });
 
     if (!patient) {
@@ -250,60 +179,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "RSVP ID required" }, { status: 400 });
     }
 
-    // Find RSVP with event details
-    const rsvp = await prisma.rsvp.findUnique({
-      where: { id: rsvpId },
-      include: {
-        event: true,
-      },
-    });
+    const rsvp = await prisma.rsvp.findUnique({ where: { id: rsvpId } });
 
     if (!rsvp || rsvp.patientId !== patient.id) {
       return NextResponse.json({ error: "RSVP not found" }, { status: 404 });
     }
 
-    // Delete RSVP
-    await prisma.rsvp.delete({
-      where: { id: rsvpId },
-    });
-
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        patientId: patient.id,
-        action: AuditAction.RSVP_CANCELLED,
-        resourceType: "Rsvp",
-        resourceId: rsvp.id,
-        details: `Cancelled RSVP for event: ${rsvp.event.titleEn}`,
-      },
-    });
-
-    // SEND CANCELLATION EMAIL
-    try {
-      await sendEmail({
-        templateType: "RSVP_CANCELLATION",
-        recipient: patient.email,
-        data: {
-          patientName: `${patient.contactProfile?.firstName} ${patient.contactProfile?.lastName}`,
-          eventTitle: rsvp.event.titleEn,
-          eventDate: rsvp.event.eventDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          eventTime: rsvp.event.eventDate.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-          }),
-          eventSlug: rsvp.event.slug,
-        },
-        patientId: patient.id,
-        eventId: rsvp.eventId,
-      });
-    } catch (emailError) {
-      console.error("Failed to send cancellation email:", emailError);
-    }
+    await cancelRsvp({ rsvpId, actorId: patient.id });
 
     return NextResponse.json({ success: true });
   } catch (error) {
