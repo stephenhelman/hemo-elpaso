@@ -1,5 +1,6 @@
 "use client";
 
+import { eventHasEnded } from "@/lib/rsvp/window";
 import { useState, useMemo } from "react";
 import {
   LayoutGrid,
@@ -29,6 +30,8 @@ interface Event {
   category: string;
   maxCapacity: number | null;
   isPriority: boolean;
+  rsvpPeople: number;
+  endDate?: string | Date | null;
   _count: {
     rsvps: number;
   };
@@ -66,14 +69,14 @@ export default function EventsDisplay({ events, locale }: Props) {
     });
 
     const upcoming = filtered
-      .filter((e) => new Date(e.eventDate) >= now)
+      .filter((e) => !eventHasEnded(e, now))
       .sort(
         (a, b) =>
           new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime(),
       );
 
     const past = filtered
-      .filter((e) => new Date(e.eventDate) < now)
+      .filter((e) => eventHasEnded(e, now))
       .sort(
         (a, b) =>
           new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
@@ -305,7 +308,7 @@ function EventTableRow({
 }) {
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
-    ? event.maxCapacity - event._count.rsvps
+    ? event.maxCapacity - event.rsvpPeople
     : null;
 
   const statusColors: Record<string, string> = {

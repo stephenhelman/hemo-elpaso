@@ -22,6 +22,7 @@ interface Event {
   flyerEnUrl: string | null;
   flyerEsUrl: string | null;
   eventDate: Date;
+  endDate: Date | null;
   location: string;
   maxCapacity: number | null;
   rsvpDeadline: Date | null;
@@ -39,6 +40,9 @@ interface Event {
     targetInterests: string[];
   } | null;
 }
+
+const toLocalInput = (d: Date) =>
+  new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
 interface Props {
   event: Event;
@@ -70,9 +74,8 @@ export default function EventEditForm({ event, locale }: Props) {
       .slice(0, 16),
     location: event.location,
     maxCapacity: event.maxCapacity?.toString() || "",
-    rsvpDeadline: event.rsvpDeadline
-      ? new Date(event.rsvpDeadline).toISOString().slice(0, 16)
-      : "",
+    rsvpDeadline: event.rsvpDeadline ? toLocalInput(new Date(event.rsvpDeadline)) : "",
+    endDate: event.endDate ? toLocalInput(new Date(event.endDate)) : "",
     status: event.status,
     category: event.category,
     targetAudience: event.targetAudience,
@@ -97,12 +100,14 @@ export default function EventEditForm({ event, locale }: Props) {
         titleEs: formData.title.es,
         descriptionEn: formData.description.en,
         descriptionEs: formData.description.es,
-        eventDate: formData.eventDate,
+        // datetime-local values are LOCAL time: send ISO so the server doesn't reinterpret them in its own timezone
+        eventDate: new Date(formData.eventDate).toISOString(),
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
         location: formData.location,
         maxCapacity: formData.maxCapacity
           ? parseInt(formData.maxCapacity)
           : null,
-        rsvpDeadline: formData.rsvpDeadline || null,
+        rsvpDeadline: formData.rsvpDeadline ? new Date(formData.rsvpDeadline).toISOString() : null,
         status: formData.status,
         category: formData.category,
         targetAudience: formData.targetAudience,
@@ -212,6 +217,21 @@ export default function EventEditForm({ event, locale }: Props) {
                   }
                   className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Ends (optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  RSVPs and the check-in QR stop after this. Blank = start + 12 hours.
+                </p>
               </div>
 
               <div>

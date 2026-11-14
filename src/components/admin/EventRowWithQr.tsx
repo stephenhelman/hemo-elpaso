@@ -13,7 +13,7 @@ interface Props {
 export default function EventRowWithQr({ event, isPast }: Props) {
   const eventDate = new Date(event.eventDate);
   const rsvpCount = event._count.rsvps;
-  const spotsLeft = event.maxCapacity ? event.maxCapacity - rsvpCount : null;
+  const spotsLeft = event.maxCapacity ? event.maxCapacity - (event.rsvpPeople ?? rsvpCount) : null;
 
   const statusColors: Record<string, string> = {
     draft: "bg-neutral-100 text-neutral-600",

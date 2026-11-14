@@ -17,7 +17,7 @@ export async function resolveRsvpToken(raw: unknown) {
     include: { event: true, patient: { include: { contactProfile: true } } },
   });
   if (rsvp && !rsvp.cancelledAt) {
-    return { via: "checkin" as const, event: rsvp.event, patient: rsvp.patient, rsvp, invitation: null, ended: eventHasEnded(rsvp.event.eventDate) };
+    return { via: "checkin" as const, event: rsvp.event, patient: rsvp.patient, rsvp, invitation: null, ended: eventHasEnded(rsvp.event) };
   }
 
   const inv = await prisma.invitation.findUnique({
@@ -34,7 +34,7 @@ export async function resolveRsvpToken(raw: unknown) {
       patient: inv.patient,
       rsvp: r && !r.cancelledAt ? r : null,
       invitation: inv,
-      ended: eventHasEnded(inv.event.eventDate),
+      ended: eventHasEnded(inv.event),
     };
   }
   return null;

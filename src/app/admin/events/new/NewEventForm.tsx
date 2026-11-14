@@ -37,6 +37,7 @@ export default function NewEventPage() {
     // Date & Location
     eventDate: "",
     eventTime: "",
+    endDate: "",
     location: "",
     maxCapacity: "",
     rsvpDeadline: "",
@@ -104,6 +105,8 @@ export default function NewEventPage() {
         body: JSON.stringify({
           ...formData,
           eventDate: eventDateTime.toISOString(),
+          // optional end (local time -> ISO); without it the event is treated as ending 12h after it starts
+          endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
           rsvpDeadline: rsvpDeadlineDate?.toISOString(),
           maxCapacity: formData.maxCapacity
             ? parseInt(formData.maxCapacity)
@@ -223,6 +226,19 @@ export default function NewEventPage() {
               />
             </FormField>
           </div>
+
+          <FormField label="Ends (optional)">
+            <input
+              type="datetime-local"
+              value={formData.endDate}
+              min={formData.eventDate && formData.eventTime ? `${formData.eventDate}T${formData.eventTime}` : undefined}
+              onChange={(e) => updateFormData({ endDate: e.target.value })}
+              className={inputClass}
+            />
+            <p className="text-xs text-neutral-500 mt-1">
+              RSVPs and the check-in QR stop working after this. Leave blank for start + 12 hours.
+            </p>
+          </FormField>
 
           <FormField label="Location" required>
             <PlacesAutocompleteInput

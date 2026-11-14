@@ -1,6 +1,7 @@
 import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { decryptCheckInToken, encryptCheckInToken } from "@/lib/crypto/checkin-token";
 import { checkRsvpEligibility, type RsvpBlock } from "./eligibility";
 import { eventHasEnded } from "./window";
 import { sendRsvpEmail } from "./emails";
@@ -82,6 +83,7 @@ export async function rsvpYes(params: {
     attendeeCount: partySize,
     source: params.source,
     checkInTokenHash: hashToken(token),
+    checkInTokenEnc: encryptCheckInToken(token),
     cancelledAt: null,
     reminderSent: false,
     rsvpDate: new Date(),
@@ -106,12 +108,12 @@ export async function cancelRsvp(params: { rsvpId: string; actorId?: string; sen
     include: { event: true, patient: { include: { contactProfile: true } } },
   });
   if (!rsvp || rsvp.cancelledAt) return { ok: false as const, error: "RSVP not found", status: 404 };
-  if (eventHasEnded(rsvp.event.eventDate))
+  if (eventHasEnded(rsvp.event))
     return { ok: false as const, error: "This event has ended", status: 400 };
 
   await prisma.rsvp.update({
     where: { id: rsvp.id },
-    data: { cancelledAt: new Date(), status: "cancelled", checkInTokenHash: null },
+    data: { cancelledAt: new Date(), status: "cancelled", checkInTokenHash: null, checkInTokenEnc: null },
   });
   await markInvitation(rsvp.eventId, rsvp.patientId, "rsvp_no");
   await audit(params.actorId ?? rsvp.patientId, AuditAction.RSVP_CANCELLED, rsvp.id, "RSVP cancelled");
@@ -127,18 +129,27 @@ export async function declineInvitation(eventId: string, patientId: string) {
 }
 
 /**
- * Issue a NEW check-in token for an active RSVP (the old QR/link stops working)
- * and email it. Used by "resend my QR" and by the day-before reminder: raw tokens
- * aren't stored, so they can only be re-delivered by minting a fresh one.
+ * Re-deliver an active RSVP's QR/link by email ("resend my QR", day-before
+ * reminder). Each RSVP keeps ONE QR for its lifetime (until cancelled and
+ * reactivated): the stored encrypted token is decrypted and reused.
+ * Only a legacy RSVP with no encrypted copy (or an undecryptable one) gets a
+ * one-time new token, which is then stored encrypted too.
  */
 export async function reissueCheckInToken(rsvpId: string, kind: "confirmation" | "reminder") {
   const rsvp = await prisma.rsvp.findUnique({
     where: { id: rsvpId },
     include: { event: true, patient: { include: { contactProfile: true } } },
   });
-  if (!rsvp || rsvp.cancelledAt || eventHasEnded(rsvp.event.eventDate)) return null;
-  const token = generateToken();
-  await prisma.rsvp.update({ where: { id: rsvp.id }, data: { checkInTokenHash: hashToken(token) } });
+  if (!rsvp || rsvp.cancelledAt || eventHasEnded(rsvp.event)) return null;
+
+  let token = decryptCheckInToken(rsvp.checkInTokenEnc);
+  if (!token || hashToken(token) !== rsvp.checkInTokenHash) {
+    token = generateToken();
+    await prisma.rsvp.update({
+      where: { id: rsvp.id },
+      data: { checkInTokenHash: hashToken(token), checkInTokenEnc: encryptCheckInToken(token) },
+    });
+  }
   const sent = await sendRsvpEmail({ kind, patient: rsvp.patient, event: rsvp.event, partySize: rsvp.attendeeCount, token });
   return { token, sent };
 }

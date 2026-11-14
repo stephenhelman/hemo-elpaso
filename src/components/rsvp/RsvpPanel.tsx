@@ -12,6 +12,7 @@ export type RsvpPanelProps =
       valid: true;
       token: string;
       via: "checkin" | "invitation";
+      qrToken: string | null;
       firstName: string;
       hasEmail: boolean;
       event: { titleEn: string; titleEs: string; eventDate: string; location: string };
@@ -136,11 +137,11 @@ export default function RsvpPanel(props: RsvpPanelProps) {
         <span className="text-neutral-500 text-sm">· {t.confirmedFor(props.partySize)}</span>
       </div>
       {header}
-      {via === "checkin" ? (
+      {props.qrToken ? (
         <div className="mb-6 text-center">
           <h2 className="font-semibold text-neutral-900 mb-2">{t.qrTitle}</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/api/checkin-qr/${token}`} alt="QR" width={220} height={220} className="mx-auto border border-neutral-200 rounded-lg" />
+          <img src={`/api/checkin-qr/${props.qrToken}`} alt="QR" width={220} height={220} className="mx-auto border border-neutral-200 rounded-lg" />
           <p className="text-xs text-neutral-500 mt-2">{t.qrHelp}</p>
         </div>
       ) : (

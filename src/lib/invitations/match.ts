@@ -28,7 +28,7 @@ export function emailBlocker(p: {
 export async function matchPatientsForEvent(eventId: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    include: { targeting: true, _count: { select: { rsvps: { where: { cancelledAt: null } } } } },
+    include: { targeting: true, rsvps: { where: { cancelledAt: null }, select: { attendeeCount: true } } },
   });
   if (!event) return null;
 
