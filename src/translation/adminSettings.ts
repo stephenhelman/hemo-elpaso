@@ -58,11 +58,6 @@ export const adminEmailTemplatesListTranslation = {
         title: "Event Notifications",
         description: "Emails related to event RSVPs and attendance",
       },
-      assistance: {
-        title: "Financial Assistance",
-        description:
-          "Emails for financial assistance applications and disbursements",
-      },
       other: {
         title: "Other Notifications",
         description: "General system emails",
@@ -81,11 +76,6 @@ export const adminEmailTemplatesListTranslation = {
       event: {
         title: "Notificaciones de Eventos",
         description: "Correos relacionados con RSVPs y asistencia a eventos",
-      },
-      assistance: {
-        title: "Asistencia Financiera",
-        description:
-          "Correos para solicitudes de asistencia financiera y desembolsos",
       },
       other: {
         title: "Otras Notificaciones",

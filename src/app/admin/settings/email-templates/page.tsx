@@ -13,7 +13,25 @@ export default async function EmailTemplatesPage() {
   const locale = (await getLocaleCookie()) as Lang;
 
   // Fetch all email templates
+  // Rows for cut features (assistance, volunteers, family, welcome) stay in the
+  // DB (dormant) but are hidden from the admin list.
   const templatesRaw = await prisma.emailTemplate.findMany({
+    where: {
+      type: {
+        notIn: [
+          "ASSISTANCE_SUBMITTED",
+          "ASSISTANCE_APPROVED",
+          "ASSISTANCE_DENIED",
+          "DISBURSEMENT_ISSUED",
+          "WELCOME_EMAIL",
+          "VOLUNTEER_REQUEST_RECEIVED",
+          "VOLUNTEER_REQUEST_NOTIFY",
+          "VOLUNTEER_APPROVED",
+          "VOLUNTEER_ASSIGNED",
+          "FAMILY_MEMBER_INVITE",
+        ],
+      },
+    },
     orderBy: {
       type: "asc",
     },

@@ -33,17 +33,7 @@ export default function EmailPreview({ template, adminEmail }: Props) {
       childrenCount: "1",
       checkInTime: "5:45 PM",
       eventSlug: "spring-dinner-2026",
-      assistanceType: "Event Fees",
-      requestedAmount: "$150.00",
-      approvedAmount: "$150.00",
-      applicationId: "APP-12345",
-      amount: "$150.00",
-      paymentMethod: "Check",
-      checkNumber: "1001",
-      expectedDate: "Within 5-7 business days",
-      reviewNotes: "Application approved - all documentation was in order.",
       cancellationReason: "Due to unforeseen circumstances",
-      portalUrl: "https://hemo-elpaso.vercel.app/portal/dashboard",
     };
 
     return baseData;

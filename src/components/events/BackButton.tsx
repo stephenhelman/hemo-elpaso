@@ -15,19 +15,14 @@ export default function BackButton({ referrer, lang }: Props) {
   const t = {
     en: {
       backToEvents: "Back to Events",
-      backToMyEvents: "Back to My Events",
     },
     es: {
       backToEvents: "Volver a Eventos",
-      backToMyEvents: "Volver a Mis Eventos",
     },
   }[lang];
 
   // Determine where to go back
   const getBackPath = () => {
-    if (referrer === "portal") {
-      return { path: "/portal/events", label: t.backToMyEvents };
-    }
     return { path: "/events", label: t.backToEvents };
   };
 

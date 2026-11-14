@@ -63,9 +63,6 @@ export default function EmailTemplatesList({ templates, adminEmail, locale }: Pr
   const getCategoryIcon = (type: string) => {
     if (type.includes("RSVP") || type.includes("EVENT")) return "📅";
     if (type.includes("CHECK_IN")) return "✅";
-    if (type.includes("ASSISTANCE") || type.includes("DISBURSEMENT"))
-      return "💰";
-    if (type.includes("WELCOME")) return "👋";
     return "📧";
   };
 
@@ -76,16 +73,11 @@ export default function EmailTemplatesList({ templates, adminEmail, locale }: Pr
       tmpl.type.includes("EVENT") ||
       tmpl.type.includes("CHECK_IN"),
   );
-  const assistanceTemplates = templates.filter(
-    (tmpl) => tmpl.type.includes("ASSISTANCE") || tmpl.type.includes("DISBURSEMENT"),
-  );
   const otherTemplates = templates.filter(
     (tmpl) =>
       !tmpl.type.includes("RSVP") &&
       !tmpl.type.includes("EVENT") &&
-      !tmpl.type.includes("CHECK_IN") &&
-      !tmpl.type.includes("ASSISTANCE") &&
-      !tmpl.type.includes("DISBURSEMENT"),
+      !tmpl.type.includes("CHECK_IN"),
   );
 
   return (
@@ -95,17 +87,6 @@ export default function EmailTemplatesList({ templates, adminEmail, locale }: Pr
         title={t.categories.event.title}
         description={t.categories.event.description}
         templates={eventTemplates}
-        toggling={toggling}
-        onToggle={handleToggle}
-        getCategoryIcon={getCategoryIcon}
-        t={t}
-      />
-
-      {/* Assistance Templates */}
-      <TemplateCategory
-        title={t.categories.assistance.title}
-        description={t.categories.assistance.description}
-        templates={assistanceTemplates}
         toggling={toggling}
         onToggle={handleToggle}
         getCategoryIcon={getCategoryIcon}

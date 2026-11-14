@@ -121,10 +121,10 @@ export default function EventPublished({
             <Text style={footerTextSmall}>
               Don't want event announcements?{" "}
               <Link
-                href={`${process.env.NEXT_PUBLIC_BASE_URL}/portal/profile`}
+                href={`${process.env.NEXT_PUBLIC_BASE_URL}/contact`}
                 style={footerLink}
               >
-                Update your preferences
+                Contact us
               </Link>
             </Text>
           </Section>

@@ -159,7 +159,7 @@ function MobileSignInButton({
 
   return (
     <Link
-      href="/api/auth/login"
+      href="/api/auth/login?returnTo=/admin"
       onClick={onClose}
       className="flex items-center justify-center px-4 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
     >
