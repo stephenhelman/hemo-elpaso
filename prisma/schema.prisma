@@ -951,6 +951,7 @@ enum AuditAction {
   PATIENT_CREATED
   PATIENT_MERGED
   INVITATIONS_SENT
+  PATIENT_UPDATED
 }
 
 model AuditLog {

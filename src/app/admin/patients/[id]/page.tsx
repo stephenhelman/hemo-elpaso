@@ -8,6 +8,7 @@ import { PATIENT_ONLY, currentConsents } from "@/lib/patients/query";
 import { auditPatient } from "@/lib/patients/audit";
 import PatientForm from "@/components/admin/patients/PatientForm";
 import DeletePatientPanel from "@/components/admin/patients/DeletePatientPanel";
+import NotDuplicateButton from "@/components/admin/patients/NotDuplicateButton";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import type { Lang } from "@/types";
@@ -59,7 +60,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
               {t.duplicateOf}{" "}
               <Link className="font-semibold underline" href={`/admin/patients/${p.possibleDuplicateOf.id}`}>
                 {nm(p.possibleDuplicateOf)}
-              </Link>
+              </Link>{" "}
+              <NotDuplicateButton patientId={p.id} label={t.notDuplicate} />
             </p>
           )}
           {p.possibleDuplicates.length > 0 && (
