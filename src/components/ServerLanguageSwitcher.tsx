@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocaleRefresh } from "@/hooks/useLocaleRefresh";
+import { useLanguage } from "@/context/LanguageContext";
 import { Globe } from "lucide-react";
 import { setLocaleCookie } from "@/lib/locale";
 
@@ -14,6 +16,8 @@ export default function ServerLanguageSwitcher({
 }: ServerLanguageSwitcherProps) {
   const [isChanging, setIsChanging] = useState(false);
   const [locale, setLocale] = useState(currentLocale);
+  const { setLocale: setContextLocale } = useLanguage();
+  const { refresh } = useLocaleRefresh();
 
   async function toggleLanguage() {
     if (isChanging) return;
@@ -26,6 +30,10 @@ export default function ServerLanguageSwitcher({
 
     // Set cookie
     await setLocaleCookie(newLocale);
+    // Keep client pages (LanguageContext) in step, then re-render server components
+    // without a reload; the current page stays visible until the new render arrives.
+    setContextLocale(newLocale);
+    refresh();
     setIsChanging(false);
   }
 
