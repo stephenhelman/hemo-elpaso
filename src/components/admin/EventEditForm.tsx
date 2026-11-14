@@ -31,6 +31,7 @@ interface Event {
   language: string;
   isPriority: boolean;
   liveEnabled: boolean;
+  registrationEnabled: boolean;
   targeting: {
     targetConditions: string[];
     targetSeverity: string[];
@@ -78,6 +79,7 @@ export default function EventEditForm({ event, locale }: Props) {
     language: event.language,
     isPriority: event.isPriority,
     liveEnabled: event.liveEnabled,
+    registrationEnabled: event.registrationEnabled,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
   });
 
@@ -107,6 +109,7 @@ export default function EventEditForm({ event, locale }: Props) {
         language: formData.language,
         isPriority: formData.isPriority,
         liveEnabled: formData.liveEnabled,
+        registrationEnabled: formData.registrationEnabled,
         targetConditions: formData.targetConditions,
       };
       const response = await fetch(`/api/admin/events/${event.id}`, {
@@ -316,6 +319,20 @@ export default function EventEditForm({ event, locale }: Props) {
                 />
                 <span className="text-sm font-medium text-neutral-700">
                   {t.priorityEvent}
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.registrationEnabled}
+                  onChange={(e) =>
+                    setFormData({ ...formData, registrationEnabled: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-neutral-700">
+                  Public RSVP on the event page
                 </span>
               </label>
             </div>

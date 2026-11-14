@@ -3,9 +3,6 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
-import RsvpConfirmation from "@/messages/RsvpConfirmation";
-import RsvpCancellation from "@/messages/RsvpCancellation";
-import EventReminder from "@/messages/EventReminder";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 import { AuditAction } from "@prisma/client";
 
@@ -96,46 +93,6 @@ async function renderEmailTemplate(
 ): Promise<string | null> {
   try {
     switch (type) {
-      case "RSVP_CONFIRMATION":
-        return render(
-          RsvpConfirmation({
-            patientName: data.patientName,
-            eventTitle: data.eventTitle,
-            eventDate: data.eventDate,
-            eventTime: data.eventTime,
-            location: data.location,
-            adultsCount: parseInt(data.adultsCount) || 2,
-            childrenCount: parseInt(data.childrenCount) || 1,
-            eventSlug: data.eventSlug,
-          }),
-        );
-
-      case "RSVP_CANCELLATION":
-        return render(
-          RsvpCancellation({
-            patientName: data.patientName,
-            eventTitle: data.eventTitle,
-            eventDate: data.eventDate,
-            eventTime: data.eventTime,
-            eventSlug: data.eventSlug,
-          }),
-        );
-
-      case "RSVP_REMINDER":
-        return render(
-          EventReminder({
-            patientName: data.patientName,
-            eventTitle: data.eventTitle,
-            eventDate: data.eventDate,
-            eventTime: data.eventTime,
-            location: data.location,
-            adultsCount: parseInt(data.adultsCount) || 2,
-            childrenCount: parseInt(data.childrenCount) || 1,
-            qrCodeDataUrl: "https://via.placeholder.com/250x250?text=QR+Code",
-            eventSlug: data.eventSlug,
-          }),
-        );
-
       case "CHECK_IN_CONFIRMATION":
         return render(
           CheckInConfirmation({

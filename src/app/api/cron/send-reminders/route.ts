@@ -1,99 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendEventReminderEmail } from "@/lib/rsvp";
+import { reissueCheckInToken } from "@/lib/rsvp";
 
+/**
+ * Day-before reminders for ACTIVE yes-RSVPs that have an email.
+ * Transactional: sent even to people who opted out of invitations.
+ * Raw check-in tokens aren't stored (only hashes), so the reminder mints a
+ * fresh token; the QR in the reminder replaces the one in the confirmation.
+ */
 export async function GET(request: NextRequest) {
   try {
-    // Verify this is actually from Vercel Cron (optional but recommended)
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get tomorrow's date range
-    const now = new Date();
-    const tomorrow = new Date(now);
+    const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
+    const dayAfter = new Date(tomorrow);
+    dayAfter.setDate(dayAfter.getDate() + 1);
 
-    const dayAfterTomorrow = new Date(tomorrow);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-
-    console.log(
-      `Checking for events between ${tomorrow.toISOString()} and ${dayAfterTomorrow.toISOString()}`,
-    );
-
-    // Find all events happening tomorrow
-    const upcomingEvents = await prisma.event.findMany({
+    const rsvps = await prisma.rsvp.findMany({
       where: {
-        status: "published",
-        eventDate: {
-          gte: tomorrow,
-          lt: dayAfterTomorrow,
-        },
+        cancelledAt: null,
+        reminderSent: false,
+        patient: { email: { not: null } },
+        event: { status: "published", eventDate: { gte: tomorrow, lt: dayAfter } },
       },
-      include: {
-        rsvps: {
-          where: {
-            reminderSent: false, // only RSVPs that haven't received a reminder
-            patient: { email: { not: null } },
-          },
-          include: {
-            patient: {
-              include: {
-                contactProfile: true,
-              },
-            },
-          },
-        },
-      },
+      select: { id: true },
     });
-
-    console.log(`Found ${upcomingEvents.length} events tomorrow`);
 
     let emailsSent = 0;
     let emailsFailed = 0;
-
-    // Send reminders for each event
-    for (const event of upcomingEvents) {
-      console.log(
-        `Processing event: ${event.titleEn} with ${event.rsvps.length} RSVPs`,
-      );
-
-      for (const rsvp of event.rsvps) {
-        try {
-          await sendEventReminderEmail({
-            rsvp,
-            patient: rsvp.patient,
-            event,
-          });
-
-          emailsSent++;
-          console.log(`✓ Sent reminder to ${rsvp.patient.email}`);
-        } catch (error) {
-          console.error(
-            `✗ Failed to send reminder to ${rsvp.patient.email}:`,
-            error,
-          );
-          emailsFailed++;
-        }
+    for (const r of rsvps) {
+      const res = await reissueCheckInToken(r.id, "reminder");
+      if (res?.sent) {
+        await prisma.rsvp.update({ where: { id: r.id }, data: { reminderSent: true } });
+        emailsSent++;
+      } else {
+        emailsFailed++;
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      eventsProcessed: upcomingEvents.length,
-      emailsSent,
-      emailsFailed,
-    });
-  } catch (error) {
-    console.error("Cron job error:", error);
-    return NextResponse.json(
-      {
-        error: "Cron job failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: true, rsvps: rsvps.length, emailsSent, emailsFailed });
+  } catch {
+    console.error("Reminder cron failed");
+    return NextResponse.json({ error: "Cron job failed" }, { status: 500 });
   }
 }

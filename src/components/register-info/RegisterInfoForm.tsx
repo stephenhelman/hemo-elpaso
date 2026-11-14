@@ -14,8 +14,11 @@ const input =
 
 export default function RegisterInfoForm({
   turnstileSiteKey,
+  eventId,
 }: {
   turnstileSiteKey: string | null;
+  /** When set, this is a public event RSVP: adds party size, posts to /api/rsvp/public. */
+  eventId?: string;
 }) {
   const { locale } = useLanguage();
   const t = registerInfoTranslation[locale];
@@ -27,6 +30,7 @@ export default function RegisterInfoForm({
   const [address, setAddress] = useState("");
   const [language, setLanguage] = useState<"en" | "es">(locale);
   const [familySize, setFamilySize] = useState("1");
+  const [partySize, setPartySize] = useState("1");
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [consentData, setConsentData] = useState(false);
   const [consentMedia, setConsentMedia] = useState(false);
@@ -65,7 +69,7 @@ export default function RegisterInfoForm({
     setSubmitting(true);
     try {
       // POST body only: diagnoses never go in a URL or query string.
-      const res = await fetch("/api/register-info", {
+      const res = await fetch(eventId ? "/api/rsvp/public" : "/api/register-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,6 +80,7 @@ export default function RegisterInfoForm({
           address,
           language,
           familySize: Number(familySize),
+          ...(eventId ? { eventId, partySize: Number(partySize), familySize: Number(partySize) } : {}),
           diagnoses,
           consentDataAndContact: consentData,
           consentMedia,
@@ -89,6 +94,8 @@ export default function RegisterInfoForm({
       }
       const data = await res.json().catch(() => ({}));
       if (data.error === "captcha") setError(t.errors.captcha);
+      else if (data.error === "full") setError(t.full);
+      else if (data.error === "closed" || data.error === "disabled") setError(t.closed);
       else if (data.field && data.field in t.errors)
         setError((t.errors as Record<string, string>)[data.field]);
       else setError(t.errors.generic);
@@ -106,9 +113,9 @@ export default function RegisterInfoForm({
       <div className="bg-white rounded-2xl border border-neutral-200 p-10 text-center">
         <CheckCircle className="w-12 h-12 text-secondary mx-auto mb-4" />
         <h2 className="font-display font-bold text-2xl text-neutral-900 mb-2">
-          {t.successTitle}
+          {eventId ? t.rsvpSuccessTitle : t.successTitle}
         </h2>
-        <p className="text-neutral-600">{t.successBody}</p>
+        <p className="text-neutral-600">{eventId ? t.rsvpSuccessBody : t.successBody}</p>
       </div>
     );
   }
@@ -181,13 +188,23 @@ export default function RegisterInfoForm({
             <option value="es">{t.spanish}</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-            {t.familySize} *
-          </label>
-          <input type="number" min={1} max={30} className={input} value={familySize}
-            onChange={(e) => setFamilySize(e.target.value)} required />
-        </div>
+        {eventId ? (
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+              {t.partySize} *
+            </label>
+            <input type="number" min={1} max={30} className={input} value={partySize}
+              onChange={(e) => setPartySize(e.target.value)} required />
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+              {t.familySize} *
+            </label>
+            <input type="number" min={1} max={30} className={input} value={familySize}
+              onChange={(e) => setFamilySize(e.target.value)} required />
+          </div>
+        )}
       </div>
 
       <fieldset>
@@ -249,7 +266,7 @@ export default function RegisterInfoForm({
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-60"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-        {submitting ? t.submitting : t.submit}
+        {submitting ? t.submitting : eventId ? t.rsvpSubmit : t.submit}
       </button>
     </form>
   );

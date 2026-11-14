@@ -28,6 +28,7 @@ export default async function AdminDashboardPage() {
   const totalPatients = await prisma.patient.count({
     where: {
       role: "patient",
+      auth0Id: null,
     },
   });
 
@@ -53,7 +54,7 @@ export default async function AdminDashboardPage() {
     include: {
       _count: {
         select: {
-          rsvps: true,
+          rsvps: { where: { cancelledAt: null } },
         },
       },
     },
@@ -63,6 +64,7 @@ export default async function AdminDashboardPage() {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const recentRsvps = await prisma.rsvp.count({
     where: {
+      cancelledAt: null,
       rsvpDate: {
         gte: sevenDaysAgo,
       },
@@ -81,6 +83,7 @@ export default async function AdminDashboardPage() {
 
   const upcomingRsvps = await prisma.rsvp.count({
     where: {
+      cancelledAt: null,
       event: {
         eventDate: {
           gte: now,
@@ -107,7 +110,7 @@ export default async function AdminDashboardPage() {
     include: {
       _count: {
         select: {
-          rsvps: true,
+          rsvps: { where: { cancelledAt: null } },
           checkIns: {
             where: {
               attendeeRole: "patient", // Only count patients
@@ -133,6 +136,7 @@ export default async function AdminDashboardPage() {
 
   // Recent activity (last 10 RSVPs)
   const recentActivity = await prisma.rsvp.findMany({
+    where: { cancelledAt: null },
     take: 10,
     orderBy: {
       rsvpDate: "desc",

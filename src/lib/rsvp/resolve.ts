@@ -1,0 +1,41 @@
+import { prisma } from "@/lib/db";
+import { hashToken, looksLikeToken } from "@/lib/tokens";
+import { eventHasEnded } from "./window";
+
+/**
+ * Resolve a raw token from a link to its context. Two token kinds exist:
+ * - check-in token  -> an active RSVP (shown with QR)
+ * - invitation token -> an invitation (may or may not have an RSVP yet)
+ * Unknown/invalid tokens all return null (callers show one generic message).
+ */
+export async function resolveRsvpToken(raw: unknown) {
+  if (!looksLikeToken(raw)) return null;
+  const hash = hashToken(raw);
+
+  const rsvp = await prisma.rsvp.findUnique({
+    where: { checkInTokenHash: hash },
+    include: { event: true, patient: { include: { contactProfile: true } } },
+  });
+  if (rsvp && !rsvp.cancelledAt) {
+    return { via: "checkin" as const, event: rsvp.event, patient: rsvp.patient, rsvp, invitation: null, ended: eventHasEnded(rsvp.event.eventDate) };
+  }
+
+  const inv = await prisma.invitation.findUnique({
+    where: { tokenHash: hash },
+    include: { event: true, patient: { include: { contactProfile: true } } },
+  });
+  if (inv) {
+    const r = await prisma.rsvp.findUnique({
+      where: { eventId_patientId: { eventId: inv.eventId, patientId: inv.patientId } },
+    });
+    return {
+      via: "invitation" as const,
+      event: inv.event,
+      patient: inv.patient,
+      rsvp: r && !r.cancelledAt ? r : null,
+      invitation: inv,
+      ended: eventHasEnded(inv.event.eventDate),
+    };
+  }
+  return null;
+}

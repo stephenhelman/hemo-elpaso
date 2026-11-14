@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       language: body.language || "both",
       isPriority: body.isPriority || false,
       liveEnabled: body.liveEnabled || false,
+      registrationEnabled: body.registrationEnabled === true,
       createdBy: admin!.email,
       targeting: {
         create: {

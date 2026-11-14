@@ -460,12 +460,13 @@ model Event {
   rsvpDeadline DateTime?
   status       String    @default("draft")
 
-  category       String   @default("FAMILY_SUPPORT")
-  targetAudience String   @default("all")
-  language       String   @default("both")
-  isPriority     Boolean  @default(false)
-  liveEnabled    Boolean  @default(false)
-  eventCost      Decimal? @db.Decimal(10, 2)
+  category            String   @default("FAMILY_SUPPORT")
+  targetAudience      String   @default("all")
+  language            String   @default("both")
+  isPriority          Boolean  @default(false)
+  liveEnabled         Boolean  @default(false)
+  registrationEnabled Boolean  @default(false) // public RSVP form on the event page
+  eventCost           Decimal? @db.Decimal(10, 2)
 
   // Recap (post-event)
   recapTitleEn         String?

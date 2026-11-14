@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import FlyerPreview from "@/components/events/FlyerPreview";
+import RegisterInfoForm from "@/components/register-info/RegisterInfoForm";
 
 import { eventSlugPageTranslation } from "@/translation/eventsPage";
 import { formatEventDate } from "@/lib/event-utils";
@@ -25,12 +26,18 @@ interface Props {
   locale: Lang;
   event: SerializedEvent;
   rsvpCount: number;
+  registration: "open" | "full" | "closed" | "disabled";
+  eventId: string;
+  turnstileSiteKey: string | null;
 }
 
 export function EventPageContent({
   locale,
   event,
   rsvpCount,
+  registration,
+  eventId,
+  turnstileSiteKey,
 }: Props) {
   const t = eventSlugPageTranslation[locale];
   const isUpcoming = event.status === "published";
@@ -58,6 +65,15 @@ export function EventPageContent({
               </p>
             </div>
           </div>
+
+          {isUpcoming && registration === "open" && (
+            <div id="rsvp" className="scroll-mt-24">
+              <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
+                {locale === "es" ? "Confirma tu asistencia" : "RSVP for this event"}
+              </h2>
+              <RegisterInfoForm turnstileSiteKey={turnstileSiteKey} eventId={eventId} />
+            </div>
+          )}
 
           {/* Past Event Notice */}
           {isPast && (
@@ -160,34 +176,37 @@ export function EventPageContent({
             lang={locale}
           />
 
-          {/* RSVP placeholder — replaced by the tokenized RSVP flow in Phase 4 */}
+          {/* RSVP status card (the form itself is in the main column) */}
           {isUpcoming && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              {deadlinePassed ? (
-                <div className="px-4 py-2 rounded-full bg-neutral-100 text-neutral-500 border border-neutral-200 text-sm font-semibold text-center">
-                  {locale === "es"
-                    ? "Registro cerrado"
-                    : "Registration closed"}
-                </div>
-              ) : (
+              {registration === "open" ? (
                 <>
-                  <p className="font-display font-bold text-neutral-900 mb-1">
-                    {locale === "es"
-                      ? "RSVP próximamente"
-                      : "RSVP coming soon"}
+                  <p className="font-display font-bold text-neutral-900 mb-3">
+                    {locale === "es" ? "Reserva tu lugar" : "Reserve your spot"}
                   </p>
-                  <p className="text-neutral-600 text-sm mb-4">
-                    {locale === "es"
-                      ? "Para reservar tu lugar, contáctanos."
-                      : "To reserve your spot, call or contact us."}
-                  </p>
-                  <Link
-                    href="/contact"
+                  <a
+                    href="#rsvp"
                     className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
                   >
-                    {locale === "es" ? "Contáctanos" : "Contact Us"}
-                  </Link>
+                    RSVP
+                  </a>
                 </>
+              ) : registration === "full" || registration === "closed" ? (
+                <p className="text-neutral-700 text-sm font-semibold">
+                  {registration === "full"
+                    ? locale === "es"
+                      ? "Este evento está lleno. Llámanos al 915-621-8291."
+                      : "This event is full. Please call us at 915-621-8291."
+                    : locale === "es"
+                      ? "El registro está cerrado. Llámanos al 915-621-8291."
+                      : "Registration closed. Please call us at 915-621-8291."}
+                </p>
+              ) : (
+                <p className="text-neutral-700 text-sm">
+                  {locale === "es"
+                    ? "Para confirmar asistencia, usa el enlace de tu invitación o llámanos al 915-621-8291."
+                    : "To RSVP, use the link in your invitation or call us at 915-621-8291."}
+                </p>
               )}
             </div>
           )}

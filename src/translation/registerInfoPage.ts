@@ -23,6 +23,14 @@ export const registerInfoTranslation = {
     consentDataLabel: "I agree (required)",
     consentMediaLabel: "I agree (optional)",
     submit: "Register",
+    rsvpTitle: "RSVP for this event",
+    rsvpSubmit: "RSVP",
+    partySize: "How many people are coming (including you)?",
+    rsvpSuccessTitle: "You're on the list!",
+    rsvpSuccessBody:
+      "We received your RSVP. If you gave us an email address, your confirmation and check-in QR code are on their way.",
+    full: "This event is full. Please call us at 915-621-8291.",
+    closed: "Registration is closed. Please call us at 915-621-8291.",
     submitting: "Sending…",
     successTitle: "Thank you!",
     successBody:
@@ -64,6 +72,14 @@ export const registerInfoTranslation = {
     consentDataLabel: "Acepto (obligatorio)",
     consentMediaLabel: "Acepto (opcional)",
     submit: "Registrarme",
+    rsvpTitle: "Confirma tu asistencia",
+    rsvpSubmit: "Confirmar asistencia",
+    partySize: "¿Cuántas personas vienen (contándote)?",
+    rsvpSuccessTitle: "¡Estás en la lista!",
+    rsvpSuccessBody:
+      "Recibimos tu confirmación. Si nos diste un correo electrónico, tu confirmación y tu código QR de registro van en camino.",
+    full: "Este evento está lleno. Llámanos al 915-621-8291.",
+    closed: "El registro está cerrado. Llámanos al 915-621-8291.",
     submitting: "Enviando…",
     successTitle: "¡Gracias!",
     successBody:

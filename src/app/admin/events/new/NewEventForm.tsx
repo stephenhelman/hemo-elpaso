@@ -46,6 +46,7 @@ export default function NewEventPage() {
     targetAudience: "all",
     language: "both",
     isPriority: false,
+    registrationEnabled: false,
     status: "draft",
 
     // Targeting
@@ -335,6 +336,23 @@ export default function NewEventPage() {
               <span className="text-sm text-neutral-700">
                 Mark as featured/priority event (will appear first in
                 recommendations)
+              </span>
+            </label>
+          </FormField>
+
+          <FormField label="Public RSVP">
+            <label className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:border-primary-200 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={formData.registrationEnabled}
+                onChange={(e) =>
+                  updateFormData({ registrationEnabled: e.target.checked })
+                }
+                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-neutral-700">
+                Let anyone RSVP from the public event page (otherwise RSVP is by
+                invitation or phone)
               </span>
             </label>
           </FormField>

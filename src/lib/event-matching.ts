@@ -26,7 +26,7 @@ type ScoringEvent = Awaited<ReturnType<typeof loadScoringEvents>>[number];
 function loadScoringEvents() {
   return prisma.event.findMany({
     where: { status: "published", eventDate: { gte: new Date() } },
-    include: { targeting: true, _count: { select: { rsvps: true } } },
+    include: { targeting: true, _count: { select: { rsvps: { where: { cancelledAt: null } } } } },
   });
 }
 
@@ -176,7 +176,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     include: {
       targeting: true,
       _count: {
-        select: { rsvps: true },
+        select: { rsvps: { where: { cancelledAt: null } } },
       },
     },
   });
