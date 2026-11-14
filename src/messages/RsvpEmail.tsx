@@ -7,6 +7,7 @@ import {
   Heading,
   Html,
   Img,
+  Link,
   Preview,
   Text,
 } from "@react-email/components";
@@ -40,7 +41,9 @@ const copy = {
     hi: (n: string) => `Hi ${n},`,
     when: "When", where: "Where", party: "People",
     qrTitle: "Your check-in QR code",
-    qrHelp: "Show this at the door. If the image doesn't load, open your RSVP page:",
+    qrHelp: "Show this at the door.",
+    qrFallback: "Can't see your QR code?",
+    qrFallbackLink: "Open your RSVP page",
     manage: "View / change / cancel my RSVP",
     questions: `Questions? Call us at 915-621-8291 or email ${contactEmail()}.`,
     sign: "The HOEP Team",
@@ -52,7 +55,9 @@ const copy = {
     hi: (n: string) => `Hola ${n},`,
     when: "Cuándo", where: "Dónde", party: "Personas",
     qrTitle: "Tu código QR de registro",
-    qrHelp: "Muéstralo en la entrada. Si la imagen no carga, abre tu página:",
+    qrHelp: "Muéstralo en la entrada.",
+    qrFallback: "¿No ves tu código QR?",
+    qrFallbackLink: "Abre tu página de asistencia",
     manage: "Ver / cambiar / cancelar mi asistencia",
     questions: `¿Preguntas? Llámanos al 915-621-8291 o escribe a ${contactEmail()}.`,
     sign: "El equipo de HOEP",
@@ -99,7 +104,16 @@ export default function RsvpEmail({
             <>
               <Heading as="h2" style={{ fontSize: 18 }}>{t.qrTitle}</Heading>
               <Img src={qrUrl} width={220} height={220} alt="QR" />
-              <Text style={{ fontSize: 13 }}>{t.qrHelp}</Text>
+              <Text style={{ fontSize: 13 }}>
+                {t.qrHelp}
+                {rsvpUrl && (
+                  <>
+                    <br />
+                    {t.qrFallback}{" "}
+                    <Link href={rsvpUrl} style={{ color: "#8B1538" }}>{t.qrFallbackLink}</Link>
+                  </>
+                )}
+              </Text>
             </>
           )}
           {kind !== "cancelled" && rsvpUrl && (

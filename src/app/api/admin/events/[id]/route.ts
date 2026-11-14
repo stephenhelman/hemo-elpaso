@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 import { generateInvitations } from "@/lib/invitations/generate";
+import { eventTextFields } from "@/lib/events/text-fields";
 
 export async function PATCH(
   request: NextRequest,
@@ -17,13 +18,13 @@ export async function PATCH(
       return NextResponse.json({ error: "The end must be after the start" }, { status: 400 });
     }
 
+    const text = eventTextFields(body);
+    if (!text.ok) return NextResponse.json({ error: text.error }, { status: 400 });
+
     const updatedEvent = await prisma.event.update({
       where: { id: params.id },
       data: {
-        titleEn: body.titleEn,
-        titleEs: body.titleEs,
-        descriptionEn: body.descriptionEn || null,
-        descriptionEs: body.descriptionEs || null,
+        ...text.data,
         eventDate: new Date(body.eventDate),
         endDate: body.endDate ? new Date(body.endDate) : null,
         location: body.location,
