@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       ContactFormNotification({ name, email, phone, reason, message, locale }),
     );
 
-    await resend.emails.send({
+    const notified = await resend.emails.send({
       from: `HOEP Contact Form <noreply@hemo-el-paso.org>`,
       to: toEmail,
       replyTo: email, // clicking reply in Gmail goes straight to the sender
@@ -62,9 +62,15 @@ export async function POST(req: NextRequest) {
         : `New message: ${reasonLabel} — ${name}`,
       html: notificationHtml,
     });
+    // The SDK returns errors instead of throwing. If the board notification
+    // didn't go out the message would be lost, so fail the request.
+    if (notified.error) {
+      console.error("contact notification failed", { error: notified.error.name });
+      return NextResponse.json({ error: "Failed to send message" }, { status: 502 });
+    }
 
     // ── 2. Auto-reply confirmation to the sender ──────────────────────────────
-    await resend.emails.send({
+    const autoReply = await resend.emails.send({
       from: `HOEP <info@hemo-el-paso.org>`,
       to: email,
       subject: isEs
@@ -96,6 +102,9 @@ export async function POST(req: NextRequest) {
           </div>
         `,
     });
+    if (autoReply.error) {
+      console.error("contact auto-reply failed", { error: autoReply.error.name });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -9,6 +9,8 @@ import { auditPatient } from "@/lib/patients/audit";
 import PatientForm from "@/components/admin/patients/PatientForm";
 import DeletePatientPanel from "@/components/admin/patients/DeletePatientPanel";
 import NotDuplicateButton from "@/components/admin/patients/NotDuplicateButton";
+import ResendConfirmationButton from "@/components/admin/patients/ResendConfirmationButton";
+import { confirmationStatus } from "@/lib/patients/query";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import type { Lang } from "@/types";
@@ -30,6 +32,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       checkIns: { select: { id: true, checkInTime: true, event: { select: { titleEn: true, titleEs: true } } }, orderBy: { checkInTime: "desc" } },
       possibleDuplicateOf: { include: { contactProfile: true } },
       possibleDuplicates: { include: { contactProfile: true } },
+      emailLogs: { where: { templateType: "REGISTRATION_INFO_CONFIRMATION" }, orderBy: { sentAt: "desc" }, take: 1, select: { status: true } },
     },
   });
   if (!p) notFound();
@@ -52,6 +55,16 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           {t.detailsViewed} · {p.source} · {p.createdAt.toLocaleDateString()}
         </p>
       </div>
+
+      {(() => {
+        const c = confirmationStatus(p);
+        return c === "failed" || c === "missing" ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+            {t.confirmationNotSent}.{" "}
+            <ResendConfirmationButton patientId={p.id} label={t.resendConfirmation} />
+          </div>
+        ) : null;
+      })()}
 
       {(p.possibleDuplicateOf || p.possibleDuplicates.length > 0) && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-1">

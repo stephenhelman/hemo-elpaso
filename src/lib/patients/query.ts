@@ -61,12 +61,22 @@ export async function listPatients(f: PatientFilters, limit = 2000) {
       contactProfile: true,
       consentRecords: true,
       possibleDuplicateOf: { include: { contactProfile: true } },
+      emailLogs: {
+        where: { templateType: "REGISTRATION_INFO_CONFIRMATION" },
+        orderBy: { sentAt: "desc" },
+        take: 1,
+        select: { status: true },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
 
-  let out = rows.map((r) => ({ ...r, consents: currentConsents(r.consentRecords) }));
+  let out = rows.map((r) => ({
+    ...r,
+    consents: currentConsents(r.consentRecords),
+    confirmation: confirmationStatus(r),
+  }));
   if (f.consent) {
     const [type, val] = f.consent.split("_");
     const key = type === "data" ? "data_and_contact" : type === "media" ? "media" : null;
@@ -77,4 +87,22 @@ export async function listPatients(f: PatientFilters, limit = 2000) {
     }
   }
   return out;
+}
+
+/**
+ * Did the "Register for Information" confirmation go out?
+ * "n/a" for patients who never get one (no email, or added by phone).
+ * "missing" = web registration with an email but no log row (never attempted or logged).
+ */
+export type ConfirmationStatus = "sent" | "failed" | "missing" | "n/a";
+export function confirmationStatus(p: {
+  email: string | null;
+  source: string;
+  emailLogs: { status: string }[];
+}): ConfirmationStatus {
+  if (!p.email || p.source !== "web") return "n/a";
+  const last = p.emailLogs[0]?.status;
+  if (last === "sent") return "sent";
+  if (last === "failed") return "failed";
+  return "missing";
 }
