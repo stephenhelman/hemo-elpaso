@@ -106,6 +106,7 @@ export default function BoardManagementClient({
   const { confirm, ConfirmDialog } = useConfirm();
   const [showHistory, setShowHistory] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(false);
 
   const activeRoles = boardRoles.filter((r) => r.active);
   const pastRoles = boardRoles.filter((r) => !r.active);
@@ -167,15 +168,41 @@ export default function BoardManagementClient({
             </p>
           </div>
           {canAssign && (
+            <div className="flex gap-2">
             <button
-              onClick={() => setShowAssignForm((v) => !v)}
+              onClick={() => {
+                setShowInviteForm((v) => !v);
+                setShowAssignForm(false);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-semibold hover:bg-primary-50 transition-colors text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Invite board member
+            </button>
+            <button
+              onClick={() => {
+                setShowAssignForm((v) => !v);
+                setShowInviteForm(false);
+              }}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               Assign Role
             </button>
+            </div>
           )}
         </div>
+
+        {/* Invite board member form */}
+        {showInviteForm && canAssign && (
+          <InviteBoardMemberForm
+            onSuccess={() => {
+              setShowInviteForm(false);
+              router.refresh();
+            }}
+            onCancel={() => setShowInviteForm(false)}
+          />
+        )}
 
         {/* Assign role form */}
         {showAssignForm && canAssign && (
@@ -693,6 +720,151 @@ function AssignRoleForm({
               <Check className="w-4 h-4" />
             )}
             Assign Role
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -------------------------------------------------------
+// InviteBoardMemberForm — for people with no account yet
+// -------------------------------------------------------
+function InviteBoardMemberForm({
+  onSuccess,
+  onCancel,
+}: {
+  onSuccess: () => void;
+  onCancel: () => void;
+}) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings/board/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          role,
+          fromEmail: ROLE_FROM_EMAILS[role] ?? null,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(
+          `${firstName} invited as ${ROLE_LABELS[role]}. Add ${email} to the Auth0 allow-list so they can sign in.`,
+          { duration: 10000 },
+        );
+        onSuccess();
+      } else {
+        toast.error(data.error || "Failed to invite board member");
+      }
+    } catch {
+      toast.error("Failed to invite board member");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const input =
+    "w-full px-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+
+  return (
+    <div className="bg-neutral-50 rounded-2xl border border-neutral-200 p-6">
+      <h3 className="font-semibold text-neutral-900 mb-1">
+        Invite Board Member
+      </h3>
+      <p className="text-xs text-neutral-500 mb-5">
+        Creates their board record now. They are linked automatically the first
+        time they sign in with this (verified) email. Also add the email to the
+        Auth0 board allow-list.
+      </p>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              First name <span className="text-red-500">*</span>
+            </label>
+            <input
+              className={input}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Last name <span className="text-red-500">*</span>
+            </label>
+            <input
+              className={input}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Email <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            className={input}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Board role <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className={input}
+          >
+            <option value="">Select a role...</option>
+            <optgroup label="Executive Board">
+              {EXECUTIVE_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABELS[r]}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Community at Large">
+              {COMMUNITY_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABELS[r]}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <button
+            onClick={onCancel}
+            className="px-5 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-sm font-semibold hover:bg-neutral-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !firstName || !lastName || !email || !role}
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" />
+            )}
+            Send Invite
           </button>
         </div>
       </div>

@@ -23,6 +23,13 @@
  *    can't lock yourself out. Keep your own email in the allow-list.
  *
  * NOTES
+ * - NEW BOARD MEMBERS MUST ALSO BE ADDED TO THIS ALLOW-LIST. "Invite board
+ *   member" in the app (Admin → Settings → Board) only creates their record in
+ *   the HOEP database; it does NOT touch Auth0. Until their email is added to
+ *   the BOARD_ALLOWLIST secret (then Deploy), they cannot sign in at all. On
+ *   their first login the app links the session to the invited record by
+ *   verified email, so the Auth0 email must match the invited email.
+ *   Removing someone from the board: remove them from the secret too.
  * - Existing sessions are not terminated; the gate applies on next login.
  * - This only controls who can authenticate. The app still checks
  *   Patient.role in ("board","admin") in middleware.ts and requirePermission().
