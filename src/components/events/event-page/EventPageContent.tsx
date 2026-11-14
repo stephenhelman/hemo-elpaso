@@ -239,42 +239,6 @@ export function EventPageContent({
           )}
 
           {/* Share Button */}
-          {/* Sponsors */}
-          {event.sponsors.length > 0 && (
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              <h3 className="font-display font-bold text-neutral-900 mb-4 text-sm uppercase tracking-wide">
-                {locale === "es" ? "Patrocinadores" : "Sponsors"}
-              </h3>
-              <div className="space-y-3">
-                {event.sponsors.map((s) => (
-                  <div key={s.id} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg border border-neutral-100 bg-neutral-50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {s.logoUrl ? (
-                        <Image src={s.logoUrl} alt={s.name} width={40} height={40} className="object-contain" />
-                      ) : (
-                        <Building2 className="w-5 h-5 text-neutral-300" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      {s.website ? (
-                        <a
-                          href={s.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-neutral-900 hover:text-primary hover:underline"
-                        >
-                          {s.name}
-                        </a>
-                      ) : (
-                        <p className="text-sm font-medium text-neutral-900">{s.name}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* <button className="w-full px-4 py-2 rounded-full border-2 border-neutral-300 text-neutral-700 font-semibold hover:border-primary hover:text-primary transition-colors">
               {t.share}
             </button> */}

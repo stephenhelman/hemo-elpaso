@@ -27,7 +27,6 @@ export interface SerializedEvent {
   createdAt: string;
   updatedAt: string;
   recapPublishedAt: string | null;
-  sponsors: { id: string; name: string; logoUrl: string | null; tier: string; website: string | null }[];
 }
 
 export function formatEventDate(dateString: string | Date, lang: Lang) {

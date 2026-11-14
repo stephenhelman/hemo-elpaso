@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Images,
   FileText,
-  Building2,
 } from "lucide-react";
 
 interface Props {
@@ -35,13 +34,6 @@ export default function EventQuickActions({ eventId }: Props) {
             Recap
           </Link>
 
-          <Link
-            href={`/admin/events/${eventId}/sponsors`}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-colors"
-          >
-            <Building2 className="w-4 h-4" />
-            Sponsors
-          </Link>
         </div>
       </div>
     </>

@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import EventRowWithQr from "./EventRowWithQr";
 import { EventRowActions } from "./EventRowActions";
-import InviteSponsorButton from "./InviteSponsorButton";
 import ExportButton from "@/components/ui/ExportButton";
 import { adminEventsTranslation } from "@/translation/adminPages";
 import { Select } from "../form/Select";
@@ -304,7 +303,6 @@ function EventTableRow({
   isPast?: boolean;
   t: TranslationType;
 }) {
-  const [showSponsorInvite, setShowSponsorInvite] = useState(false);
   const eventDate = new Date(event.eventDate);
   const spotsLeft = event.maxCapacity
     ? event.maxCapacity - event._count.rsvps
@@ -358,19 +356,9 @@ function EventTableRow({
           </span>
         </td>
         <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
-          <EventRowActions
-            event={event}
-            setShowSponsorInvite={setShowSponsorInvite}
-          />
+          <EventRowActions event={event} />
         </td>
       </tr>
-      {showSponsorInvite && (
-        <InviteSponsorButton
-          eventId={event.id}
-          isOpen={showSponsorInvite}
-          onClose={() => setShowSponsorInvite(false)}
-        />
-      )}
     </>
   );
 }
