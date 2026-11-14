@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { BoardRoleType } from "@prisma/client";
+import { linkPendingBoardMember } from "@/lib/board/link-session";
 
 // -------------------------------------------------------
 // Permission types
@@ -139,15 +140,22 @@ export async function getAdminWithPermissions(): Promise<AdminWithPermissions | 
   const session = await getSession();
   if (!session?.user) return null;
 
-  const patient = await prisma.patient.findUnique({
-    where: { auth0Id: session.user.sub },
-    include: {
-      boardRoles: {
-        where: { active: true },
-        select: { role: true, active: true },
+  const findPatient = () =>
+    prisma.patient.findUnique({
+      where: { auth0Id: session.user.sub },
+      include: {
+        boardRoles: {
+          where: { active: true },
+          select: { role: true, active: true },
+        },
       },
-    },
-  });
+    });
+
+  let patient = await findPatient();
+  // First login of an invited board member: link by verified email.
+  if (!patient && (await linkPendingBoardMember(session.user as any))) {
+    patient = await findPatient();
+  }
 
   if (!patient || !["board", "admin"].includes(patient.role)) return null;
 
