@@ -52,7 +52,12 @@ export async function middleware(req: NextRequest) {
 
   let isBoard = false;
   try {
-    const check = await fetch(new URL("/api/session/board-check", req.url), {
+    // Site-content Studio needs more than "is board": canEditSiteContent.
+    const needsPerm =
+      pathname === "/admin/studio" || pathname.startsWith("/admin/studio/")
+        ? "?perm=canEditSiteContent"
+        : "";
+    const check = await fetch(new URL(`/api/session/board-check${needsPerm}`, req.url), {
       headers: { cookie: req.headers.get("cookie") ?? "" },
       cache: "no-store",
     });

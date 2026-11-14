@@ -12,6 +12,7 @@ import {
   Archive,
   Building2,
   Shield,
+  PenSquare,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -63,6 +64,12 @@ export const adminNavItemsTranslation = [
     en: "Audit Log",
     es: "Registro de Auditoría",
     icon: Shield,
+  },
+  {
+    href: "/admin/studio",
+    en: "Site content",
+    es: "Contenido del sitio",
+    icon: PenSquare,
   },
   {
     href: "/admin/settings",

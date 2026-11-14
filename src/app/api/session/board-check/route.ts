@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
+import { getAdminWithPermissions, type Permission } from "@/lib/permissions";
 import { linkPendingBoardMember } from "@/lib/board/link-session";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
  * record has role board/admin. Reports only on the caller's own session.
  * Returns an empty body — no data is exposed.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getSession();
   if (!session?.user) return new NextResponse(null, { status: 401 });
 
@@ -29,6 +30,13 @@ export async function GET() {
 
   if (!patient || !["board", "admin"].includes(patient.role)) {
     return new NextResponse(null, { status: 403 });
+  }
+
+  // Optional extra gate used by middleware for specific areas (e.g. /admin/studio).
+  const perm = new URL(req.url).searchParams.get("perm");
+  if (perm) {
+    const admin = await getAdminWithPermissions();
+    if (!admin || !admin.can(perm as Permission)) return new NextResponse(null, { status: 403 });
   }
   return new NextResponse(null, { status: 200 });
 }

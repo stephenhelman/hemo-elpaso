@@ -9,6 +9,8 @@ import Footer from "./Footer";
 
 import { SiteFlagsProvider } from "@/context/SiteFlagsContext";
 import ToastProvider from "@/components/providers/ToastProvider";
+import { SiteSettingsProvider, type PublicSiteInfo } from "@/context/SiteSettingsContext";
+import type { Lang } from "@/types";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   return (
@@ -23,20 +25,26 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 export default function SiteLayout({
   children,
   registrationOpen,
+  initialLocale,
+  siteInfo,
 }: {
   children: React.ReactNode;
   registrationOpen: boolean;
+  initialLocale: Lang;
+  siteInfo: PublicSiteInfo;
 }) {
   return (
     <SiteFlagsProvider registrationOpen={registrationOpen}>
     <UserProvider>
-      <LanguageProvider>
+      <LanguageProvider initialLocale={initialLocale}>
+      <SiteSettingsProvider value={siteInfo}>
         <EventsProvider>
           <LayoutInner>
             {children}
             <ToastProvider />
           </LayoutInner>
         </EventsProvider>
+      </SiteSettingsProvider>
       </LanguageProvider>
     </UserProvider>
     </SiteFlagsProvider>
