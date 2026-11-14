@@ -28,7 +28,6 @@ export default async function BoardManagementPage() {
         active: r.active,
         assignedBy: r.assignedBy,
         assignedAt: r.assignedAt.toISOString(),
-        gmailSendAsConfigured: r.gmailSendAsConfigured,
         patient: {
           id: r.patient.id,
           email: r.patient.email,

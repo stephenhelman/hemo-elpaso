@@ -7,9 +7,6 @@ import { StatCard } from "@/components/ui/StatCard";
 import { Lang } from "@/types";
 import { adminDashboardTranslation } from "@/translation/adminPages";
 import { getLocaleCookie } from "@/lib/locale";
-import GmailSetupBanner from "@/components/admin/GmailSetupBanner";
-import { ROLE_PERMISSIONS } from "@/lib/permissions";
-import { BoardRoleType } from "@prisma/client";
 
 export default async function AdminDashboardPage() {
   const admin = await getAdminWithPermissions();
@@ -20,78 +17,6 @@ export default async function AdminDashboardPage() {
     where: { id: admin.id },
     select: { contactProfile: { select: { firstName: true } } },
   });
-
-  // Gmail setup banner: only for roles with canSendIndividualEmails
-  const gmailBannerRoles = admin.can("canSendIndividualEmails")
-    ? await prisma.boardRole.findMany({
-        where: {
-          patientId: admin.id,
-          active: true,
-          role: {
-            in: (Object.entries(ROLE_PERMISSIONS) as [BoardRoleType, string[]][])
-              .filter(([, perms]) => perms.includes("canSendIndividualEmails"))
-              .map(([role]) => role),
-          },
-        },
-        select: {
-          id: true,
-          role: true,
-          fromEmail: true,
-          gmailSendAsConfigured: true,
-          gmailConnectedAt: true,
-          gmailConnectedBy: true,
-        },
-      })
-    : [];
-
-  // Detect board member changes: if the token was connected by a different patient, clear it
-  for (const role of gmailBannerRoles) {
-    if (
-      role.gmailConnectedAt &&
-      role.gmailConnectedBy &&
-      role.gmailConnectedBy !== admin.id
-    ) {
-      await prisma.boardRole.update({
-        where: { id: role.id },
-        data: {
-          gmailAccessToken: null,
-          gmailRefreshToken: null,
-          gmailConnectedAt: null,
-          gmailConnectedBy: null,
-          gmailTokenExpiry: null,
-        },
-      });
-      await prisma.auditLog.create({
-        data: {
-          action: "GMAIL_DISCONNECTED",
-          patientId: admin.id,
-          details: `Gmail disconnected from ${role.role} — board member changed`,
-        },
-      });
-      // Update local object so banner shows correctly
-      role.gmailConnectedAt = null;
-      role.gmailConnectedBy = null;
-    }
-  }
-
-  const ROLE_LABEL: Record<string, string> = {
-    PRESIDENT: "President",
-    VICE_PRESIDENT: "Vice President",
-    SECRETARY: "Secretary",
-    COMMUNICATIONS_LEAD: "Communications Lead",
-  };
-
-  // Admin's personal email is used as replyTo for Gmail compose
-  const adminEmail = admin.email;
-
-  const gmailBannerData = gmailBannerRoles.map((r) => ({
-    id: r.id,
-    role: r.role,
-    roleLabel: ROLE_LABEL[r.role] ?? r.role,
-    fromEmail: r.fromEmail ?? `${r.role.toLowerCase().replace(/_/g, "")}@hemo-el-paso.org`,
-    gmailSendAsConfigured: r.gmailSendAsConfigured,
-    gmailConnectedAt: r.gmailConnectedAt ? r.gmailConnectedAt.toISOString() : null,
-  }));
 
   const locale = (await getLocaleCookie()) as Lang;
   const t = adminDashboardTranslation[locale as Lang];
@@ -224,11 +149,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-4 md:p-8">
-      {/* Gmail setup banner for board members with canSendIndividualEmails */}
-      {gmailBannerData.length > 0 && (
-        <GmailSetupBanner roles={gmailBannerData} replyTo={adminEmail} />
-      )}
-
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">
