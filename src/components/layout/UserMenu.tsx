@@ -3,7 +3,7 @@
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LogOut, User, LayoutDashboard, Shield } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 import { Lang } from "@/types";
 import { userMenuTranslation } from "@/translation/layoutPage";
 
@@ -13,26 +13,9 @@ interface Props {
 
 export default function UserMenu({ lang }: Props) {
   const { user, isLoading } = useUser();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingRole, setCheckingRole] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
   const t = userMenuTranslation[lang];
-
-  useEffect(() => {
-    if (user) {
-      // Check if user is admin/board
-      fetch("/api/user/role")
-        .then((res) => res.json())
-        .then((data) => {
-          setIsAdmin(data.role === "admin" || data.role === "board");
-          setCheckingRole(false);
-        })
-        .catch(() => setCheckingRole(false));
-    } else {
-      setCheckingRole(false);
-    }
-  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -93,19 +76,8 @@ export default function UserMenu({ lang }: Props) {
             <p className="text-xs text-neutral-500 truncate">{user.email}</p>
           </div>
           <div className="py-2">
-            <Link
-              href="/portal/dashboard"
-              onClick={() => setIsOpen(false)} // ADD THIS
-              className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              {t.portal}
-            </Link>
-
             {/* Admin Dashboard Link */}
-            {!checkingRole && isAdmin && (
-              <>
-                <div className="border-t border-neutral-100 my-2" />
+            <>
                 <Link
                   href="/admin/dashboard"
                   onClick={() => setIsOpen(false)} // ADD THIS
@@ -118,8 +90,7 @@ export default function UserMenu({ lang }: Props) {
                   <Shield className="w-4 h-4" />
                   {t.adminDashboard}
                 </Link>
-              </>
-            )}
+            </>
           </div>
           <div className="border-t border-neutral-100 py-2">
             <a

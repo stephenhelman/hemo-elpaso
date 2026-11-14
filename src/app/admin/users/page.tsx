@@ -18,7 +18,7 @@ interface Props {
 
 export default async function AdminUsersPage({ searchParams }: Props) {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canManageUsers")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;

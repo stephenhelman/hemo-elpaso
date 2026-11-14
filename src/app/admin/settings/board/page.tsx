@@ -5,7 +5,7 @@ import BoardManagementClient from "./BoardManagementClient";
 
 export default async function BoardManagementPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canAssignBoardRoles")) redirect("/admin/dashboard");
 
   const canAssign = admin.can("canAssignBoardRoles");

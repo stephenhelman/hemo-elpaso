@@ -4,7 +4,7 @@ import { Building2 } from "lucide-react";
 
 export default async function GeneralSettingsPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
 
   return (

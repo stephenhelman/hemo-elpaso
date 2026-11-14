@@ -23,7 +23,7 @@ export default async function AdminLayout({
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
-    redirect("/portal/dashboard");
+    redirect("/");
   }
 
   return (

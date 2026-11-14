@@ -10,7 +10,7 @@ import { getLocaleCookie } from "@/lib/locale";
 
 export default async function AdminEventsPage() {
   const admin = await getAdminWithPermissions();
-  if (!admin) redirect("/portal/dashboard");
+  if (!admin) redirect("/");
   if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
 
   const locale = (await getLocaleCookie()) as Lang;
