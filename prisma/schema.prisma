@@ -457,6 +457,7 @@ model Event {
   flyerEsUrl String?
 
   eventDate    DateTime
+  endDate      DateTime? // optional; RSVP window / past-event logic use it, else eventDate + 12h
   location     String
   maxCapacity  Int?
   rsvpDeadline DateTime?
@@ -676,7 +677,8 @@ model Rsvp {
   familyMembershipIds String[]  @default([])
   // Phase 4. Party size is attendeeCount.
   source              String    @default("manual") // invite | public | manual
-  checkInTokenHash    String?   @unique // SHA-256 of the raw token (raw lives only in email links)
+  checkInTokenHash    String?   @unique // SHA-256 of the raw token (used for lookup)
+  checkInTokenEnc     String? // AES-256-GCM copy (CHECKIN_TOKEN_KEY) so the same QR can be re-sent
   cancelledAt         DateTime?
 
   @@unique([eventId, patientId])

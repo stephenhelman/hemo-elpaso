@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { withRsvpPeople } from "@/lib/rsvp/capacity";
 
 import { EventsPageContent } from "@/components/events/EventsPageContent";
 
@@ -17,5 +18,5 @@ export default async function EventsPage() {
     },
   });
 
-  return <EventsPageContent events={allEvents} />;
+  return <EventsPageContent events={await withRsvpPeople(allEvents)} />;
 }

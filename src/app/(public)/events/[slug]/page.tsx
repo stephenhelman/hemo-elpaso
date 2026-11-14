@@ -6,7 +6,7 @@ import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
 import EventSchema from "@/components/seo/EventSchema";
 import type { Lang } from "@/types";
-import { registrationState } from "@/lib/rsvp";
+import { registrationState, activeHeadcount } from "@/lib/rsvp";
 
 interface Props {
   params: { slug: string };
@@ -34,7 +34,8 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   if (!event) notFound();
 
-  const currentRsvpCount = event._count.rsvps;
+  // people (party sizes), same basis as the capacity check
+  const currentRsvpCount = await activeHeadcount(event.id);
 
   const serializedEvent: SerializedEvent = {
     id: event.id,

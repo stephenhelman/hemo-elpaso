@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { resolveRsvpToken } from "@/lib/rsvp";
+import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
 import RsvpPanel, { type RsvpPanelProps } from "@/components/rsvp/RsvpPanel";
 
 // Personal link: never index, never leak the token via Referer.
@@ -18,6 +19,8 @@ export default async function RsvpTokenPage({ params }: { params: { token: strin
         valid: true,
         token: params.token,
         via: ctx.via,
+        // the RSVP's QR token, shown even when the visitor arrived via the invitation link
+        qrToken: ctx.via === "checkin" ? params.token : decryptCheckInToken(ctx.rsvp?.checkInTokenEnc),
         firstName: ctx.patient.contactProfile?.firstName ?? "",
         hasEmail: !!ctx.patient.email,
         event: {

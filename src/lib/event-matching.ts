@@ -26,7 +26,7 @@ type ScoringEvent = Awaited<ReturnType<typeof loadScoringEvents>>[number];
 function loadScoringEvents() {
   return prisma.event.findMany({
     where: { status: "published", eventDate: { gte: new Date() } },
-    include: { targeting: true, _count: { select: { rsvps: { where: { cancelledAt: null } } } } },
+    include: { targeting: true, rsvps: { where: { cancelledAt: null }, select: { attendeeCount: true } } },
   });
 }
 
@@ -92,7 +92,7 @@ export function scoreEventForPatient(
 
   // Capacity check (10 points if not full, heavy penalty if full)
   const maxCapacity = event.maxCapacity || 999;
-  const spotsLeft = maxCapacity - event._count.rsvps;
+  const spotsLeft = maxCapacity - event.rsvps.reduce((n, r) => n + r.attendeeCount, 0);
   if (spotsLeft > 0) {
     score += 10;
     if (spotsLeft <= 5) {
@@ -175,9 +175,7 @@ export async function getRecommendedEvents(patientId: string, limit = 10) {
     },
     include: {
       targeting: true,
-      _count: {
-        select: { rsvps: { where: { cancelledAt: null } } },
-      },
+      rsvps: { where: { cancelledAt: null }, select: { attendeeCount: true } },
     },
   });
 

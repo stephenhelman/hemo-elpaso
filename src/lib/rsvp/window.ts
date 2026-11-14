@@ -1,14 +1,17 @@
 /**
- * The Event model only has a start time. "Until the event ends" = start + 12h
- * (override in one place if events get an end time later).
+ * "The event is over" for RSVP/QR/past-event purposes: Event.endDate when set,
+ * otherwise start + 12h (events created before endDate existed, or without one).
+ * Pure functions: safe to import from client components.
  */
-const EVENT_LENGTH_MS = 12 * 60 * 60 * 1000;
+const DEFAULT_LENGTH_MS = 12 * 60 * 60 * 1000;
 
-export const eventEndsAt = (eventDate: Date) =>
-  new Date(eventDate.getTime() + EVENT_LENGTH_MS);
+type EventTimes = { eventDate: Date | string; endDate?: Date | string | null };
 
-export const eventHasEnded = (eventDate: Date, now = new Date()) =>
-  now >= eventEndsAt(eventDate);
+export const eventEndsAt = (e: EventTimes): Date =>
+  e.endDate ? new Date(e.endDate) : new Date(new Date(e.eventDate).getTime() + DEFAULT_LENGTH_MS);
+
+export const eventHasEnded = (e: EventTimes, now = new Date()): boolean =>
+  now >= eventEndsAt(e);
 
 /** Shown when an event is full or registration closed. */
 export const CALL_US_PHONE = "915-621-8291";

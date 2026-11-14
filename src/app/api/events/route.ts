@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { withRsvpPeople } from "@/lib/rsvp/capacity";
+import { eventHasEnded } from "@/lib/rsvp/window";
 
 export async function GET() {
   try {
     const now = new Date();
 
-    const events = await prisma.event.findMany({
+    const raw = await prisma.event.findMany({
       where: { status: "published" },
       orderBy: { eventDate: "asc" },
       include: {
@@ -15,8 +17,10 @@ export async function GET() {
       },
     });
 
-    const upcoming = events.filter((e) => new Date(e.eventDate) >= now);
-    const past = events.filter((e) => new Date(e.eventDate) < now);
+    const events = await withRsvpPeople(raw);
+    // "Past" = the event has ended (endDate, else start + 12h)
+    const upcoming = events.filter((e) => !eventHasEnded(e, now));
+    const past = events.filter((e) => eventHasEnded(e, now));
 
     return NextResponse.json({ upcoming, past, events });
   } catch (error) {

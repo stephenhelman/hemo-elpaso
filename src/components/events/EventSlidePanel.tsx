@@ -114,7 +114,7 @@ export function PublicEventSlidePanel({
     <SlidePanel event={event} lang={lang} onClose={onClose}>
       {(ev) => {
         const eventDate = new Date(ev.eventDate);
-        const spotsLeft = ev.maxCapacity ? ev.maxCapacity - ev._count.rsvps : null;
+        const spotsLeft = ev.maxCapacity ? ev.maxCapacity - ev.rsvpPeople : null;
         const title = lang === "es" ? ev.titleEs : ev.titleEn;
         const description = lang === "es" ? ev.descriptionEs : ev.descriptionEn;
 
@@ -194,7 +194,7 @@ export function PortalEventSlidePanel({
     <SlidePanel event={event} lang={lang} onClose={onClose}>
       {(ev) => {
         const eventDate = new Date(ev.eventDate);
-        const spotsLeft = ev.maxCapacity ? ev.maxCapacity - ev._count.rsvps : null;
+        const spotsLeft = ev.maxCapacity ? ev.maxCapacity - ev.rsvpPeople : null;
         const isFull = spotsLeft !== null && spotsLeft <= 0;
         const title = lang === "es" ? ev.titleEs : ev.titleEn;
         const description = lang === "es" ? ev.descriptionEs : ev.descriptionEn;

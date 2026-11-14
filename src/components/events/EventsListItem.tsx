@@ -17,7 +17,7 @@ interface Props {
 export function EventListItem({ event, isPast, lang }: Props) {
   const eventDate = formatEventDate(event.eventDate, lang);
   const spotsLeft = event.maxCapacity
-    ? event.maxCapacity - event._count.rsvps
+    ? event.maxCapacity - event.rsvpPeople
     : null;
   const titleLang = lang === "en" ? "titleEn" : "titleEs";
   const descriptionLang = lang === "en" ? "descriptionEn" : "descriptionEs";

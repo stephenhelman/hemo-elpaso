@@ -36,7 +36,7 @@ export async function checkRsvpEligibility(params: {
   const { eventId, partySize, excludeRsvpId, ignoreDeadline = false, ignoreCapacity = false, requirePublished = true, now = new Date() } = params;
   const event = await loadEvent(eventId);
   if (!event) return { ok: false, code: "EVENT_NOT_FOUND", error: "Event not found", status: 404 };
-  if (eventHasEnded(event.eventDate, now))
+  if (eventHasEnded(event, now))
     return { ok: false, code: "ENDED", error: "This event has ended", status: 400 };
   if (requirePublished && event.status !== "published")
     return { ok: false, code: "NOT_PUBLISHED", error: "This event is not open for RSVPs", status: 400 };
@@ -55,7 +55,7 @@ export async function registrationState(event: {
   id: string; status: string; eventDate: Date; rsvpDeadline: Date | null; maxCapacity: number | null; registrationEnabled: boolean;
 }): Promise<"open" | "full" | "closed" | "disabled"> {
   if (!event.registrationEnabled || event.status !== "published") return "disabled";
-  if (eventHasEnded(event.eventDate)) return "closed";
+  if (eventHasEnded(event)) return "closed";
   if (event.rsvpDeadline && event.rsvpDeadline < new Date()) return "closed";
   if (event.maxCapacity && (await activeHeadcount(event.id)) >= event.maxCapacity) return "full";
   return "open";

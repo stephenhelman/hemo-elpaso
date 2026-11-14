@@ -1,5 +1,6 @@
 "use client";
 
+import { eventHasEnded } from "@/lib/rsvp/window";
 import { eventsPageTranslation } from "@/translation/eventsPage";
 import PublicEventsDisplay from "@/components/events/PublicEventsDisplay";
 import { Calendar } from "lucide-react";
@@ -14,8 +15,8 @@ export function EventsPageContent({ events }: Props) {
   const { locale } = useLanguage();
   const t = eventsPageTranslation[locale];
 
-  const upcomingEvents = events.filter((e) => new Date(e.eventDate) >= now);
-  const pastEvents = events.filter((e) => new Date(e.eventDate) < now);
+  const upcomingEvents = events.filter((e) => !eventHasEnded(e, now));
+  const pastEvents = events.filter((e) => eventHasEnded(e, now));
 
   return (
     <div className="min-h-screen bg-neutral-50">

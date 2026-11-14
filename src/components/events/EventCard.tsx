@@ -16,7 +16,7 @@ export function EventCard({ event, lang, isPast }: Props) {
   const descriptionLang = lang === "en" ? "descriptionEn" : "descriptionEs";
   const eventDate = formatEventDate(event.eventDate, lang);
   const spotsLeft = event.maxCapacity
-    ? event.maxCapacity - event._count.rsvps
+    ? event.maxCapacity - event.rsvpPeople
     : null;
   const t = eventsActionTranslation[lang];
   return (

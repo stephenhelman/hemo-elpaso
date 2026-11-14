@@ -34,6 +34,9 @@ export interface Event {
   category: string;
   maxCapacity: number | null;
   isPriority: boolean;
+  /** people (sum of party sizes) with an active RSVP; drives "spots left" */
+  rsvpPeople: number;
+  endDate?: string | Date | null;
   _count: {
     rsvps: number;
   };

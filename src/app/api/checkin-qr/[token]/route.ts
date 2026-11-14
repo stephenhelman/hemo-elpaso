@@ -15,9 +15,9 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
 
   const rsvp = await prisma.rsvp.findUnique({
     where: { checkInTokenHash: hashToken(params.token) },
-    select: { cancelledAt: true, event: { select: { eventDate: true } } },
+    select: { cancelledAt: true, event: { select: { eventDate: true, endDate: true } } },
   });
-  if (!rsvp || rsvp.cancelledAt || eventHasEnded(rsvp.event.eventDate)) return notFound();
+  if (!rsvp || rsvp.cancelledAt || eventHasEnded(rsvp.event)) return notFound();
 
   const png = await QRCode.toBuffer(params.token, {
     type: "png",

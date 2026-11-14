@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
+import { withRsvpPeople } from "@/lib/rsvp/capacity";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import EventsDisplay from "@/components/admin/EventDisplay";
@@ -45,7 +46,7 @@ export default async function AdminEventsPage() {
         </Link>
       </div>
 
-      <EventsDisplay events={events} locale={locale} />
+      <EventsDisplay events={await withRsvpPeople(events)} locale={locale} />
     </div>
   );
 }

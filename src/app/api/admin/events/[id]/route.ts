@@ -13,6 +13,9 @@ export async function PATCH(
     if (error) return error;
 
     const body = await request.json();
+    if (body.endDate && new Date(body.endDate) <= new Date(body.eventDate)) {
+      return NextResponse.json({ error: "The end must be after the start" }, { status: 400 });
+    }
 
     const updatedEvent = await prisma.event.update({
       where: { id: params.id },
@@ -22,6 +25,7 @@ export async function PATCH(
         descriptionEn: body.descriptionEn || null,
         descriptionEs: body.descriptionEs || null,
         eventDate: new Date(body.eventDate),
+        endDate: body.endDate ? new Date(body.endDate) : null,
         location: body.location,
         maxCapacity: body.maxCapacity || null,
         rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,

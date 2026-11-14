@@ -22,6 +22,9 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   const body = await req.json();
+  if (body.endDate && new Date(body.endDate) <= new Date(body.eventDate)) {
+    return NextResponse.json({ error: "The end must be after the start" }, { status: 400 });
+  }
 
   const event = await prisma.event.create({
     data: {
@@ -31,6 +34,7 @@ export async function POST(req: NextRequest) {
       descriptionEn: body.descriptionEn || null,
       descriptionEs: body.descriptionEs || null,
       eventDate: new Date(body.eventDate),
+      endDate: body.endDate ? new Date(body.endDate) : null,
       location: body.location,
       maxCapacity: body.maxCapacity || null,
       rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,
