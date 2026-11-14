@@ -104,3 +104,8 @@ export function useLanguage() {
   }
   return context;
 }
+
+/** Like useLanguage, but returns undefined outside a LanguageProvider (admin/portal layouts have none). */
+export function useOptionalLanguage() {
+  return useContext(LanguageContext);
+}
