@@ -9,12 +9,16 @@
  * (src/lib/board/link-session.ts). Idempotent: if an admin with that email
  * already exists, it does nothing.
  *
+ * Also (idempotently) seeds the email template catalogue, so a fresh/wiped DB is
+ * never left without it.
+ *
  * Also add the email to BOARD_ALLOWLIST in the Auth0 Action, or login is denied.
  */
 import { config } from "dotenv";
 config({ path: ".env.local" });
 config();
 import { PrismaClient } from "@prisma/client";
+import { seedEmailTemplates } from "../prisma/seeds/email-templates";
 
 async function main() {
   const [emailArg, firstName, lastName] = process.argv.slice(2);
@@ -31,6 +35,7 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
+  await seedEmailTemplates();
   try {
     const existing = await prisma.patient.findFirst({
       where: { email: { equals: email, mode: "insensitive" }, role: "admin" },

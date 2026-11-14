@@ -119,6 +119,12 @@ Recreate these at the new DNS host for `hemoelpaso.org` if you're keeping the sa
 9. **Form with registration on, on a test basis**: set `REGISTRATION_OPEN=true` in Vercel Production, redeploy, submit `/register-info` with a `+test` address, confirm: success message, confirmation email arrives, patient appears in admin → Patients. **Delete the test patient** (admin → Patients → Delete). Set `REGISTRATION_OPEN=false` again and redeploy until you want to launch.
 10. `https://hemoelpaso.org/api/cron/send-reminders` without credentials returns 401 (cron is protected).
 
+## After any database reset/restore
+
+Seed the email template catalogue (admin → Settings → Email templates) or it stays empty:
+`npm run db:seed-templates` on a dev DB, or on production (on purpose):
+`ALLOW_PROD_DB=yes npx tsx scripts/seed-templates.ts`. Idempotent. `scripts/bootstrap-admin.ts` also does it.
+
 ## Rollback
 
 | Symptom | Do this |
