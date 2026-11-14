@@ -21,24 +21,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.disorderProfile?.condition) {
-      // Has a bleeding disorder - check if verified or within grace period
-      const gracePeriodEnded = patient.diagnosisGracePeriodEndsAt
-        ? new Date(patient.diagnosisGracePeriodEndsAt) < new Date()
-        : false;
-
-      if (!patient.disorderProfile?.diagnosisVerified && gracePeriodEnded) {
-        return NextResponse.json(
-          {
-            error:
-              "Diagnosis verification required. Please upload your diagnosis letter to RSVP for events.",
-            code: "VERIFICATION_REQUIRED",
-          },
-          { status: 403 },
-        );
-      }
-    }
-
     const body = await request.json();
     const {
       eventId,

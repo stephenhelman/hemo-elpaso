@@ -4,8 +4,6 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
 import {
   ensurePatientExists,
-  calculateGracePeriodEnd,
-  getGracePeriodSource,
 } from "@/lib/ensure-patient";
 import { AuditAction } from "@prisma/client";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -122,15 +120,6 @@ export async function POST(request: NextRequest) {
 
     // ── Calculate grace period ────────────────────────────────────────────────
     const registrationCompletedAt = new Date();
-    const diagnosisGracePeriodEndsAt = calculateGracePeriodEnd(
-      patientHasCondition,
-      familyHasCondition,
-    );
-    const diagnosisGracePeriodSource = getGracePeriodSource(
-      patientHasCondition,
-      familyHasCondition,
-    );
-
     // ── Upload patient's diagnosis letter (if they have condition) ────────────
     let diagnosisLetterUrl: string | null = null;
     let diagnosisLetterKey: string | null = null;
@@ -229,8 +218,6 @@ export async function POST(request: NextRequest) {
       where: { id: patientId },
       data: {
         registrationCompletedAt,
-        diagnosisGracePeriodEndsAt,
-        diagnosisGracePeriodSource,
         preferredLanguage: languagePreference,
         consentToContact: communicationConsent,
         consentToPhotos: photoConsent,
