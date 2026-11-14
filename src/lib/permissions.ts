@@ -170,7 +170,7 @@ export async function getAdminWithPermissions(): Promise<AdminWithPermissions | 
 
   return {
     id: patient.id,
-    email: patient.email,
+    email: patient.email ?? "",
     role: patient.role,
     boardRoles: patient.boardRoles,
     permissions,

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       users = users.filter((u) => {
         const name =
           `${u.contactProfile?.firstName ?? ""} ${u.contactProfile?.lastName ?? ""}`.toLowerCase();
-        return name.includes(q) || u.email.toLowerCase().includes(q);
+        return name.includes(q) || (u.email ?? "").toLowerCase().includes(q);
       });
     }
 

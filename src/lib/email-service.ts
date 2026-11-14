@@ -19,7 +19,7 @@ interface EmailData {
 
 interface SendEmailParams {
   templateType: string;
-  recipient: string;
+  recipient: string | null | undefined; // patients may have no email
   data: EmailData;
   patientId?: string;
   eventId?: string;
@@ -36,6 +36,8 @@ export async function sendEmail({
   fromEmail,
   replyTo,
 }: SendEmailParams) {
+  if (!recipient) return { skipped: true, reason: "no-recipient" };
+
   try {
     // Get template from database
     const template = await prisma.emailTemplate.findUnique({

@@ -9,7 +9,7 @@ import type { Lang } from "@/types";
 
 interface User {
   id: string;
-  email: string;
+  email: string | null;
   role: string;
   contactProfile: {
     firstName: string;
@@ -191,7 +191,7 @@ export default function UserEditForm({ user, locale }: Props) {
         </label>
         <input
           type="email"
-          value={user.email}
+          value={user.email ?? ""}
           disabled
           className="w-full px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-100 text-neutral-600 cursor-not-allowed"
         />

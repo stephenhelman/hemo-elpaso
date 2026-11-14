@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
       include: {
         rsvps: {
           where: {
-            reminderSent: false, // ADD THIS - only get RSVPs that haven't received reminder
+            reminderSent: false, // only RSVPs that haven't received a reminder
+            patient: { email: { not: null } },
           },
           include: {
             patient: {

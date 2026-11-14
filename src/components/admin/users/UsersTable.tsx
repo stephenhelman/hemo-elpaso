@@ -11,7 +11,7 @@ import type { Lang } from "@/types";
 
 interface User {
   id: string;
-  email: string;
+  email: string | null;
   role: string;
   createdAt: Date;
   contactProfile: {
@@ -76,7 +76,7 @@ export default function UsersTable({
     const searchLower = search.toLowerCase();
     const name =
       `${user.contactProfile?.firstName} ${user.contactProfile?.lastName}`.toLowerCase();
-    const email = user.email.toLowerCase();
+    const email = (user.email ?? "").toLowerCase();
     return name.includes(searchLower) || email.includes(searchLower);
   });
 

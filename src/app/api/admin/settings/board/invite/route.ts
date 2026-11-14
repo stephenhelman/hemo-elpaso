@@ -3,13 +3,13 @@ import { BoardRoleType } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { assignBoardRole } from "@/lib/board/assign";
-import { pendingAuth0Id } from "@/lib/board/link-session";
+import { AuditAction } from "@prisma/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Invite a board member who has no account yet.
- * Creates a Patient (role "board", placeholder auth0Id) + ContactProfile, then
+ * Creates a Patient (role "board", no Auth0 link yet) + ContactProfile, then
  * the BoardRole. The row is linked to their Auth0 login on first sign-in
  * (see lib/board/link-session.ts).
  */
@@ -36,32 +36,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
+  // Only reuse an existing BOARD/ADMIN row. A public patient row with the same
+  // email is deliberately left alone (and never made linkable): the board
+  // member gets their own row, so patient data/diagnoses stay separate.
   let patient = await prisma.patient.findFirst({
-    where: { email: { equals: email, mode: "insensitive" } },
+    where: {
+      email: { equals: email, mode: "insensitive" },
+      role: { in: ["board", "admin"] },
+    },
     include: { contactProfile: true },
   });
 
-  if (patient) {
-    // Existing row: make sure it can reach /admin. Never downgrade an admin.
-    if (patient.role !== "admin" && patient.role !== "board") {
-      patient = await prisma.patient.update({
-        where: { id: patient.id },
-        data: { role: "board" },
-        include: { contactProfile: true },
-      });
-    }
-  } else {
+  if (!patient) {
     patient = await prisma.patient.create({
       data: {
-        auth0Id: pendingAuth0Id(),
+        auth0Id: null, // linked on first login (lib/board/link-session.ts)
         email,
         role: "board",
         preferredLanguage: "en",
+        source: "web",
         contactProfile: { create: { firstName, lastName } },
       },
       include: { contactProfile: true },
     });
   }
+
+  await prisma.auditLog.create({
+    data: {
+      patientId: admin!.id,
+      action: AuditAction.BOARD_MEMBER_INVITED,
+      resourceType: "Patient",
+      resourceId: patient.id,
+      details: `Board member invited as ${role} by ${admin!.email}`,
+    },
+  });
 
   const result = await assignBoardRole({
     patientId: patient.id,
