@@ -10,8 +10,32 @@ import { getSession } from "@auth0/nextjs-auth0/edge";
  * the caller's cookies. Route handlers still run their own requirePermission()
  * checks — this is the outer layer, not a replacement.
  */
+const ADMIN_PREFIXES = ["/admin", "/api/admin"];
+
+/**
+ * Links in patient emails carry ?lang=en|es. That wins over the locale cookie:
+ * store it as the cookie (response) and make THIS request see it too (request
+ * header), so the server render is already in the right language.
+ */
+function applyLangParam(req: NextRequest): NextResponse | null {
+  const lang = req.nextUrl.searchParams.get("lang");
+  if (lang !== "en" && lang !== "es") return null;
+  req.cookies.set("locale", lang);
+  const res = NextResponse.next({ request: { headers: req.headers } });
+  res.cookies.set("locale", lang, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return res;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
+  if (!ADMIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    return applyLangParam(req) ?? NextResponse.next();
+  }
   const isApi = pathname.startsWith("/api/");
   const res = NextResponse.next();
 
@@ -49,5 +73,15 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    // ?lang= from email links
+    "/rsvp/:path*",
+    "/unsubscribe",
+    "/api/unsubscribe",
+    "/events/:path*",
+    "/contact",
+    "/register-info",
+  ],
 };

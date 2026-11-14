@@ -160,3 +160,14 @@ Places where tú and usted are mixed on the **same page** (highest priority):
 ## `src/lib/invitations/send.ts`
 
 - L78: `? `Estás invitado/a: ${event.titleEs}``
+
+## `src/app/(public)/unsubscribe/page.tsx` (added with the bilingual unsubscribe page)
+
+All ES strings on this page are tú-form, matching the registration/RSVP flow:
+
+- `doneTitle`: `Se canceló tu suscripción`
+- `doneBody`: `Ya no recibirás invitaciones a eventos de HOEP en este correo electrónico. Si confirmas tu asistencia a un evento, seguirás recibiendo su confirmación y recordatorio. Para volver a recibir invitaciones, solo contáctanos.`
+- `contact`: `Contáctanos`
+- `invalid`: `Este enlace para cancelar la suscripción no es válido o ya expiró. Usa el enlace de un correo reciente de HOEP.`
+- `generic`: `Algo salió mal. Escríbenos a {email} para que te quitemos de nuestra lista de correo.`
+- `failTitle` (`No se pudo cancelar la suscripción`) and `home` (`Volver al inicio`) are register-neutral.

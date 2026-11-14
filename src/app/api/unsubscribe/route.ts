@@ -4,17 +4,19 @@ import { verifyUnsubscribeToken } from "@/lib/unsubscribe-token";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
+  const l = req.nextUrl.searchParams.get("lang");
+  const langQs = l === "es" || l === "en" ? `&lang=${l}` : "";
 
   if (!token) {
     return NextResponse.redirect(
-      new URL("/unsubscribe?error=missing", req.url),
+      new URL(`/unsubscribe?error=missing${langQs}`, req.url),
     );
   }
 
   const patientId = verifyUnsubscribeToken(token);
   if (!patientId) {
     return NextResponse.redirect(
-      new URL("/unsubscribe?error=invalid", req.url),
+      new URL(`/unsubscribe?error=invalid${langQs}`, req.url),
     );
   }
 
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   if (!patient) {
     return NextResponse.redirect(
-      new URL("/unsubscribe?error=notfound", req.url),
+      new URL(`/unsubscribe?error=notfound${langQs}`, req.url),
     );
   }
 
@@ -38,5 +40,5 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return NextResponse.redirect(new URL("/unsubscribe?success=1", req.url));
+  return NextResponse.redirect(new URL(`/unsubscribe?success=1${langQs}`, req.url));
 }
