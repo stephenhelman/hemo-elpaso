@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { Resend } from "resend";
 
 /**
  * The ONE way code-built emails (registration confirmation, invitations, RSVP
@@ -61,7 +61,9 @@ export async function sendLoggedEmail(params: {
   if (!from && process.env.NODE_ENV === "production") return fail("missing_email_from");
 
   try {
-    const res = await resend.emails.send({
+    // Client built per call so it always sees the runtime env (and a bad key shows up as
+    // Resend's own error instead of a stale import-time value).
+    const res = await new Resend(process.env.RESEND_API_KEY).emails.send({
       from: from || "HOEP Events <onboarding@resend.dev>", // non-production only
       replyTo: params.replyTo ?? "info@hemo-el-paso.org",
       to: params.to,
