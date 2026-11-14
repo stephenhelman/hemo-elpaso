@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@auth0/nextjs-auth0/edge";
+
+/**
+ * Gatekeeper for /admin/* and /api/admin/*.
+ *
+ * Requires an Auth0 session whose Patient record has role "board" or "admin".
+ * Middleware runs on the Edge runtime where Prisma is unavailable, so the role
+ * check is delegated to /api/session/board-check (Node runtime), forwarding
+ * the caller's cookies. Route handlers still run their own requirePermission()
+ * checks — this is the outer layer, not a replacement.
+ */
+export async function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  const isApi = pathname.startsWith("/api/");
+  const res = NextResponse.next();
+
+  const session = await getSession(req, res);
+
+  if (!session?.user) {
+    if (isApi) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const login = new URL("/api/auth/login", req.url);
+    login.searchParams.set("returnTo", pathname + search);
+    return NextResponse.redirect(login);
+  }
+
+  let isBoard = false;
+  try {
+    const check = await fetch(new URL("/api/session/board-check", req.url), {
+      headers: { cookie: req.headers.get("cookie") ?? "" },
+      cache: "no-store",
+    });
+    isBoard = check.ok;
+  } catch {
+    // Fail closed
+    isBoard = false;
+  }
+
+  if (!isBoard) {
+    if (isApi) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  return res;
+}
+
+export const config = {
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
+};

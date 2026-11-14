@@ -9,6 +9,9 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
+    const { error } = await requirePermission("canViewAdminDashboard");
+    if (error) return error;
+
     const photos = await prisma.eventPhoto.findMany({
       where: { eventId: params.id },
       orderBy: { uploadedAt: "desc" },

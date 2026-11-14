@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { getLocaleCookie } from "@/lib/locale";
-import { ensurePatientExists } from "@/lib/ensure-patient";
 
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
@@ -77,21 +76,20 @@ export default async function EventPage({ params, searchParams }: Props) {
   let isCheckedIn = false;
   let isLoggedIn = false;
 
-  // If user is logged in, ensure a Patient row exists then check RSVP/check-in state
+  // If user is logged in, look up (never create) their Patient row.
   if (session?.user) {
-    const stub = await ensurePatientExists(
-      session.user.sub,
-      session.user.email,
-    );
-
-    // Gate: if registration is not complete, send them to finish it and come back
-    if (!stub.registrationCompletedAt && !stub.contactProfile) {
-      redirect(`/register?callbackUrl=/events/${params.slug}`);
-    }
-
     const patient = await prisma.patient.findUnique({
       where: { auth0Id: session.user.sub },
+      include: { contactProfile: { select: { id: true } } },
     });
+
+    // Gate: if registration is not complete, send them to finish it and come back
+    if (
+      !patient ||
+      (!patient.registrationCompletedAt && !patient.contactProfile)
+    ) {
+      redirect(`/register?callbackUrl=/events/${params.slug}`);
+    }
 
     if (patient) {
       const rsvp = await prisma.rsvp.findFirst({
