@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requirePermission } from "@/lib/permissions";
 import { translateBilingual } from "@/lib/translate";
 
 export async function POST(request: NextRequest) {
   try {
+    const { error } = await requirePermission("canViewAdminDashboard");
+    if (error) return error;
+
     const body = await request.json();
     const { text } = body;
 
