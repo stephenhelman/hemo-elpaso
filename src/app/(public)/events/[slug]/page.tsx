@@ -1,7 +1,6 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getLocaleCookie } from "@/lib/locale";
 
-import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
@@ -60,64 +59,12 @@ export default async function EventPage({ params, searchParams }: Props) {
     recapPublishedAt: event.recapPublishedAt?.toISOString() ?? null,
   };
 
-  const session = await getSession();
-
-  let hasRsvp = false;
-  let rsvpId: string | undefined;
-  let isCheckedIn = false;
-  let isLoggedIn = false;
-
-  // If user is logged in, look up (never create) their Patient row.
-  if (session?.user) {
-    const patient = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-      include: { contactProfile: { select: { id: true } } },
-    });
-
-    // Gate: if registration is not complete, send them to finish it and come back
-    if (
-      !patient ||
-      (!patient.registrationCompletedAt && !patient.contactProfile)
-    ) {
-      redirect(`/register?callbackUrl=/events/${params.slug}`);
-    }
-
-    if (patient) {
-      const rsvp = await prisma.rsvp.findFirst({
-        where: {
-          patientId: patient.id,
-          eventId: event.id,
-        },
-      });
-
-      if (rsvp) {
-        hasRsvp = true;
-        rsvpId = rsvp.id;
-      }
-
-      // Check if patient is checked in
-      const checkIn = await prisma.checkIn.findFirst({
-        where: {
-          patientId: patient.id,
-          eventId: event.id,
-        },
-      });
-
-      isCheckedIn = !!checkIn;
-      isLoggedIn = true;
-    }
-  }
-
   return (
     <>
       <EventSchema event={event} locale={locale} />
       <EventSlugPage
         referrer={referrer}
         event={serializedEvent}
-        hasRsvp={hasRsvp}
-        isCheckedIn={isCheckedIn}
-        rsvpId={rsvpId}
-        isLoggedIn={isLoggedIn}
         rsvpCount={currentRsvpCount}
       />
     </>
