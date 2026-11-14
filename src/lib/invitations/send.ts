@@ -1,0 +1,102 @@
+import { render } from "@react-email/render";
+import { AuditAction } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { resend, EMAIL_FROM } from "@/lib/resend";
+import { generateToken, hashToken } from "@/lib/tokens";
+import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
+import { currentConsents } from "@/lib/patients/query";
+import EventInvitation from "@/messages/EventInvitation";
+import { emailBlocker } from "./match";
+
+const baseUrl = () =>
+  process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
+
+export function pendingInvitationCount(eventId: string) {
+  return prisma.invitation.count({ where: { eventId, status: "pending" } });
+}
+
+/**
+ * Send every PENDING invitation for an event. Consent/email/opt-out are
+ * re-checked at send time. A fresh token is minted per send (its hash replaces
+ * the placeholder). Failed sends stay pending. Rows already sent are never
+ * re-sent. The audit entry records the event id and count only.
+ */
+export async function sendInvitations(eventId: string, adminId: string) {
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  if (!event) return { sent: 0, failed: 0, skipped: 0 };
+
+  const pending = await prisma.invitation.findMany({
+    where: { eventId, status: "pending" },
+    include: { patient: { include: { contactProfile: true, consentRecords: true } } },
+  });
+
+  let sent = 0, failed = 0, skipped = 0;
+  for (const inv of pending) {
+    const p = inv.patient;
+    const blocker = emailBlocker({
+      email: p.email,
+      emailOptOut: p.emailOptOut,
+      consentData: currentConsents(p.consentRecords).data_and_contact,
+    });
+    if (blocker) {
+      skipped++;
+      continue;
+    }
+    const lang = p.preferredLanguage === "es" ? "es" : "en";
+    const token = generateToken();
+    try {
+      const date = event.eventDate;
+      const html = await render(
+        EventInvitation({
+          lang,
+          firstName: p.contactProfile?.firstName ?? "",
+          eventTitle: lang === "es" ? event.titleEs : event.titleEn,
+          eventDate: date.toLocaleDateString(lang === "es" ? "es-US" : "en-US", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
+          }),
+          eventTime: date.toLocaleTimeString(lang === "es" ? "es-US" : "en-US", {
+            hour: "numeric", minute: "2-digit",
+          }),
+          location: event.location,
+          description:
+            (lang === "es" ? event.descriptionEs : event.descriptionEn)?.slice(0, 500) ?? undefined,
+          rsvpUrl: `${baseUrl()}/rsvp/${token}`,
+          unsubscribeUrl: `${baseUrl()}/api/unsubscribe?token=${generateUnsubscribeToken(p.id)}`,
+        }),
+      );
+      // Store the new hash BEFORE sending so the link works as soon as it lands.
+      await prisma.invitation.update({
+        where: { id: inv.id },
+        data: { tokenHash: hashToken(token) },
+      });
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        replyTo: "info@hemo-el-paso.org",
+        to: p.email!,
+        subject:
+          lang === "es"
+            ? `Estás invitado/a: ${event.titleEs}`
+            : `You're invited: ${event.titleEn}`,
+        html,
+      });
+      await prisma.invitation.update({
+        where: { id: inv.id },
+        data: { status: "sent", sentAt: new Date(), sentByBoardUserId: adminId },
+      });
+      sent++;
+    } catch {
+      failed++; // stays pending; no details logged (recipient is PII)
+    }
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      patientId: adminId,
+      action: AuditAction.INVITATIONS_SENT,
+      resourceType: "Event",
+      resourceId: eventId,
+      details: `Sent ${sent} invitations (${failed} failed, ${skipped} skipped)`,
+    },
+  });
+  return { sent, failed, skipped };
+}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import {
+  Mail,
   Pencil,
   ScanLine,
   Images,
@@ -67,6 +68,14 @@ export function EventRowActions({ event }: Props) {
 
         {open && (
           <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl border border-neutral-200 shadow-lg z-50 py-1">
+            <Link
+              href={`/admin/events/${event.id}/invitations`}
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-primary" />
+              Invitations
+            </Link>
             <Link
               href={`/admin/events/${event.id}/photos`}
               onClick={() => setOpen(false)}

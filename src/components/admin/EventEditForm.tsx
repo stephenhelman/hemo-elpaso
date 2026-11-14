@@ -78,6 +78,7 @@ export default function EventEditForm({ event, locale }: Props) {
     language: event.language,
     isPriority: event.isPriority,
     liveEnabled: event.liveEnabled,
+    targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
   });
 
   const handleFlyerUploadComplete = () => {
@@ -106,6 +107,7 @@ export default function EventEditForm({ event, locale }: Props) {
         language: formData.language,
         isPriority: formData.isPriority,
         liveEnabled: formData.liveEnabled,
+        targetConditions: formData.targetConditions,
       };
       const response = await fetch(`/api/admin/events/${event.id}`, {
         method: "PATCH",
@@ -316,6 +318,37 @@ export default function EventEditForm({ event, locale }: Props) {
                   {t.priorityEvent}
                 </span>
               </label>
+            </div>
+          </div>
+          <div className="border-t mt-4 border-neutral-200 pt-8">
+            <h3 className="text-xl font-display font-bold text-neutral-900 mb-1">
+              Invitation targeting
+            </h3>
+            <p className="text-sm text-neutral-600 mb-4">
+              Leave empty to invite everyone. Otherwise only households with a matching stated diagnosis are matched. Never shown to patients.
+            </p>
+            <div className="grid grid-cols-2 gap-2 mb-8">
+              {["hemophilia_a", "hemophilia_b", "von_willebrand", "other", "carrier", "family_caregiver"].map((cond) => (
+                <button
+                  key={cond}
+                  type="button"
+                  onClick={() =>
+                    setFormData((f) => ({
+                      ...f,
+                      targetConditions: f.targetConditions.includes(cond)
+                        ? f.targetConditions.filter((c) => c !== cond)
+                        : [...f.targetConditions, cond],
+                    }))
+                  }
+                  className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                    formData.targetConditions.includes(cond)
+                      ? "border-primary bg-primary-50 text-primary"
+                      : "border-neutral-200 hover:border-primary-200"
+                  }`}
+                >
+                  {cond.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </button>
+              ))}
             </div>
           </div>
           <div className="border-t mt-4 border-neutral-200 pt-8">
