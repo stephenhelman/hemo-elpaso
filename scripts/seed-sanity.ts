@@ -55,7 +55,7 @@ const fs = founderSpotlightTranslation;
 const card = scholarshipCardTranslation;
 const fallback = scholarshipsPageFallback();
 
-const docs: any[] = [
+export const docs: any[] = [
   {
     _id: ids.settings,
     _type: "siteSettings",
@@ -146,7 +146,9 @@ async function main() {
   console.log("Done. Documents were written as published. Open /admin/studio to review them.");
 }
 
-main().catch((e) => {
-  console.error(e.message);
-  process.exit(1);
-});
+if (process.argv[1]?.endsWith("seed-sanity.ts")) {
+  main().catch((e) => {
+    console.error(e.message);
+    process.exit(1);
+  });
+}

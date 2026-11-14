@@ -82,3 +82,6 @@ export function fillYears(s: string, locale: "en" | "es", now: Date = new Date()
 export function withLang(url: string, lang: "en" | "es"): string {
   return url + (url.includes("?") ? "&" : "?") + `lang=${lang}`;
 }
+
+/** Short form of the org name, used in person subtitles ("President, HOEP"). */
+export const ORG_ABBR = "HOEP";

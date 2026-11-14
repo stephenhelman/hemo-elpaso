@@ -179,3 +179,18 @@ New ES labels for a fluent reviewer to confirm (register-neutral nouns, but the 
 - `Officers` → `Funcionarios` (alternatives: `Directivos`, `Oficiales`; the site previously used `Oficiales`)
 - `Members at Large` → `Vocales` (alternative: `Miembros en general`)
 - `Advisors` → `Asesores`
+
+## Sanity-era Spanish for a fluent reviewer
+
+Group labels used by the People block (`src/components/sanity/PeopleGridBlock.tsx`). The first three are the approved wording; the rest are new:
+
+- `Officers` → `Funcionarios`; `Members at Large` → `Vocales`; `Advisors` → `Asesores` (approved)
+- `Founders` → `Fundadores`; `Past Presidents` → `Pasados Presidentes` (existing site wording); `In Memory` → `En Memoria`
+- `Send a message` → `Enviar un mensaje`
+- Office: `President` → `Presidenta` (Teresita; the Studio takes a separate Spanish office per person)
+
+New pages written in **usted** (formal), unlike the register/RSVP flow which is tú:
+
+- `src/components/layout/NotFoundContent.tsx` (404): `Página no encontrada`, `No pudimos encontrar esa página…`, `Volver al inicio`, `Ver eventos`, `Contáctenos`, `¿Preguntas? Llámenos al`
+- `src/app/(public)/error.tsx`: `Algo salió mal`, `Tuvimos un problema inesperado…`, `Intentar de nuevo`, `Si sigue ocurriendo, llámenos al`
+- Scholarships card labels (`translation/scholarshipsPage.ts`): `Aceptando Solicitudes`, `Plazo Vencido`, `Monto del Premio`, `Beneficiarios`, `Estudiantes`, `Fecha Límite`, `Tema del Ensayo`
