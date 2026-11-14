@@ -25,7 +25,7 @@ export default function ScholarshipCTA({ locale }: Props) {
         <p className="text-neutral-500 text-lg mb-8 leading-relaxed">{t.sub}</p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="/#newsletter"
+            href="/register-info"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-white font-display font-semibold hover:bg-primary-600 transition-colors group"
           >
             <Bell className="w-4 h-4" />

@@ -1,0 +1,63 @@
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Preview,
+  Text,
+} from "@react-email/components";
+
+/**
+ * Sent after "Register for Information". Deliberately generic: it must NOT
+ * mention diagnoses, family details, or anything health-related.
+ */
+interface Props {
+  firstName: string;
+  lang: "en" | "es";
+}
+
+const copy = {
+  en: {
+    preview: "Thanks for registering with HOEP",
+    heading: "Thank you for registering",
+    body: "We received your request for information from Hemophilia Outreach of El Paso. We will let you know about upcoming events and services.",
+    change:
+      "To update or remove your information, just reply to this email or contact us at info@hemo-el-paso.org.",
+    sign: "The HOEP Team",
+  },
+  es: {
+    preview: "Gracias por registrarte con HOEP",
+    heading: "Gracias por registrarte",
+    body: "Recibimos tu solicitud de información de Hemophilia Outreach of El Paso. Te avisaremos sobre próximos eventos y servicios.",
+    change:
+      "Para actualizar o eliminar tu información, responde a este correo o escríbenos a info@hemo-el-paso.org.",
+    sign: "El equipo de HOEP",
+  },
+};
+
+export default function RegistrationInfoConfirmation({
+  firstName = "Friend",
+  lang = "en",
+}: Props) {
+  const t = copy[lang];
+  return (
+    <Html>
+      <Head />
+      <Preview>{t.preview}</Preview>
+      <Body style={{ backgroundColor: "#f6f6f6", fontFamily: "sans-serif" }}>
+        <Container
+          style={{ backgroundColor: "#fff", padding: "32px", maxWidth: 560 }}
+        >
+          <Heading style={{ color: "#8B1538", fontSize: 24 }}>
+            {t.heading}
+          </Heading>
+          <Text>{lang === "es" ? `Hola ${firstName},` : `Hi ${firstName},`}</Text>
+          <Text>{t.body}</Text>
+          <Text>{t.change}</Text>
+          <Text>{t.sign}</Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}

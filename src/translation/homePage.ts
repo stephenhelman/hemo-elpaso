@@ -44,26 +44,6 @@ export const impactStatsTranslation = {
   },
 };
 
-export const newsletterSignupTranslation = {
-  en: {
-    heading: "Stay in the Loop",
-    sub: "Get notified about upcoming events, resources, and community news. No spam, ever.",
-    placeholder: "Enter your email address",
-    cta: "Subscribe",
-    success: "You're subscribed! Welcome to the HOEP community.",
-    privacy: "We respect your privacy. Unsubscribe at any time.",
-  },
-  es: {
-    heading: "Mantente Informado",
-    sub: "Recibe notificaciones sobre próximos eventos, recursos y noticias de la comunidad. Sin spam, nunca.",
-    placeholder: "Ingresa tu correo electrónico",
-    cta: "Suscribirse",
-    success: "¡Estás suscrito! Bienvenido a la comunidad HOEP.",
-    privacy:
-      "Respetamos tu privacidad. Cancela la suscripción en cualquier momento.",
-  },
-};
-
 export const upcomingEventsTranslation = {
   en: {
     title: "Upcoming Events",

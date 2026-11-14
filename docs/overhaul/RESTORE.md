@@ -71,3 +71,10 @@ Dirs are relative to `src/`. "Merge SHA" is filled in as each cut lands.
 | `cut/admin-reports` | `ce9ab6a` | 35 → 35 | (none) | (none) | Verified: no /api/admin/reports routes existed; recharts was not used by this feature. |
 | `cut/admin-trim` | `f9a6c84` | 35 → 35 | (none) | (none) | Dormant EmailTemplate rows for removed types remain in DB (hidden from admin list). RsvpConfirmation lost its QR/portal section — Phase 4 should add the QR to the email. returnTo=/admin works via new src/app/admin/page.tsx redirect. |
 | `chore/unused-deps` | `5230281` | 35 → 35 | removed 21 packages (see commit) | (none) | Restore a cut feature: reinstall its deps (see each RESTORE row) — package.json/lock diff is in this merge; revert -m 1 it or re-add per row. |
+
+## Phase 3 log
+
+| Branch | What changed | Dormant things reactivated / removed |
+| --- | --- | --- |
+| `feat/thin-patient-schema` | Migration `20261113180000_thin_patient_consent` (additive; `patients.auth0Id`/`email` made nullable, email UNIQUE→index; `consent_records` + UPDATE-reject trigger; 4 AuditAction values). | Old `Patient.consentToContact/consentToPhotos/consentDate` columns stay dormant (superseded by `ConsentRecord`). To undo the schema: do NOT drop columns; revert code only. |
+| `feat/register-info` | `/register-info` public form + `/api/register-info`, Turnstile, honeypot, confirmation email; homepage/footer/nav/sitemap. | **Removed** `components/home/NewsletterSignup.tsx` (was left in place by cut/newsletter) and its translation; footer newsletter stub forms replaced with a link. New env vars: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. `/register` (archived multi-step flow) is untouched and must not be restored over `/register-info`. |
