@@ -14,7 +14,6 @@ import {
   Building2,
 } from "lucide-react";
 import Image from "next/image";
-import RsvpButton from "@/components/events/RsvpButton";
 import FlyerPreview from "@/components/events/FlyerPreview";
 
 import { eventSlugPageTranslation } from "@/translation/eventsPage";
@@ -24,21 +23,13 @@ import Link from "next/link";
 
 interface Props {
   locale: Lang;
-  isCheckedIn: boolean;
-  hasRsvp: boolean;
-  rsvpId: string | undefined;
   event: SerializedEvent;
-  isLoggedIn: boolean;
   rsvpCount: number;
 }
 
 export function EventPageContent({
   locale,
-  isCheckedIn,
-  hasRsvp,
-  rsvpId,
   event,
-  isLoggedIn,
   rsvpCount,
 }: Props) {
   const t = eventSlugPageTranslation[locale];
@@ -169,72 +160,35 @@ export function EventPageContent({
             lang={locale}
           />
 
-          {isUpcoming && hasRsvp && !isCheckedIn && (
-            <div className="bg-white rounded-2xl border-2 border-primary/20 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <QrCode className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-primary font-semibold text-sm">
-                  {locale === "es"
-                    ? "¡Tienes una reservación!"
-                    : "You're registered!"}
-                </span>
-              </div>
-              <p className="text-neutral-600 text-sm mb-4">
-                {locale === "es"
-                  ? "Muestra tu código QR al llegar para registrarte rápidamente."
-                  : "Show your QR code at the entrance for quick check-in."}
-              </p>
-              <Link
-                href="/portal/dashboard"
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
-              >
-                <QrCode className="w-4 h-4" />
-                {locale === "es" ? "Ver mi código QR" : "View My QR Code"}
-              </Link>
-              <p className="text-xs text-neutral-400 text-center mt-2">
-                {locale === "es"
-                  ? "Disponible en tu portal de miembro"
-                  : "Available in your member portal"}
-              </p>
-            </div>
-          )}
-
-          {/* RSVP Button */}
-          {isUpcoming && isLoggedIn && !isCheckedIn && (
+          {/* RSVP placeholder — replaced by the tokenized RSVP flow in Phase 4 */}
+          {isUpcoming && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              {deadlinePassed && !hasRsvp ? (
+              {deadlinePassed ? (
                 <div className="px-4 py-2 rounded-full bg-neutral-100 text-neutral-500 border border-neutral-200 text-sm font-semibold text-center">
                   {locale === "es"
                     ? "Registro cerrado"
                     : "Registration closed"}
                 </div>
               ) : (
-                <RsvpButton
-                  eventId={event.id}
-                  eventTitle={title}
-                  hasRsvp={hasRsvp}
-                  rsvpId={rsvpId}
-                  maxCapacity={event.maxCapacity || undefined}
-                  currentRsvps={rsvpCount}
-                />
+                <>
+                  <p className="font-display font-bold text-neutral-900 mb-1">
+                    {locale === "es"
+                      ? "RSVP próximamente"
+                      : "RSVP coming soon"}
+                  </p>
+                  <p className="text-neutral-600 text-sm mb-4">
+                    {locale === "es"
+                      ? "Para reservar tu lugar, contáctanos."
+                      : "To reserve your spot, call or contact us."}
+                  </p>
+                  <Link
+                    href="/contact"
+                    className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+                  >
+                    {locale === "es" ? "Contáctanos" : "Contact Us"}
+                  </Link>
+                </>
               )}
-            </div>
-          )}
-
-          {/* Not logged in prompt */}
-          {isUpcoming && !isLoggedIn && (
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              <p className="text-neutral-600 text-sm mb-4">
-                Sign in to RSVP for this event
-              </p>
-              <Link
-                href={`/api/auth/login?returnTo=/events/${event.slug}`}
-                className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
-              >
-                Sign In
-              </Link>
             </div>
           )}
 
