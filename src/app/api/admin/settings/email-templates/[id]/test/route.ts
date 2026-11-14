@@ -59,12 +59,16 @@ export async function POST(
     }
 
     // Send via Resend
-    await resend.emails.send({
+    const sent = await resend.emails.send({
       from: EMAIL_FROM,
       to: testEmail,
       subject: `[TEST] ${subject}`,
       html: emailHtml,
     });
+    if (sent.error) {
+      console.error("test email failed", { error: sent.error.name });
+      return NextResponse.json({ error: `Resend rejected the test email (${sent.error.name})` }, { status: 502 });
+    }
 
     // Audit log
     await prisma.auditLog.create({

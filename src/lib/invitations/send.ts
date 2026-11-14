@@ -1,7 +1,7 @@
 import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { resend, EMAIL_FROM } from "@/lib/resend";
+import { sendLoggedEmail } from "@/lib/email/send";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { currentConsents } from "@/lib/patients/query";
@@ -23,7 +23,7 @@ export function pendingInvitationCount(eventId: string) {
  */
 export async function sendInvitations(eventId: string, adminId: string) {
   const event = await prisma.event.findUnique({ where: { id: eventId } });
-  if (!event) return { sent: 0, failed: 0, skipped: 0 };
+  if (!event) return { sent: 0, failed: 0, skipped: 0, errors: [] as string[] };
 
   const pending = await prisma.invitation.findMany({
     where: { eventId, status: "pending" },
@@ -31,6 +31,7 @@ export async function sendInvitations(eventId: string, adminId: string) {
   });
 
   let sent = 0, failed = 0, skipped = 0;
+  const errors = new Set<string>(); // Resend error NAMES only
   for (const inv of pending) {
     const p = inv.patient;
     const blocker = emailBlocker({
@@ -69,16 +70,22 @@ export async function sendInvitations(eventId: string, adminId: string) {
         where: { id: inv.id },
         data: { tokenHash: hashToken(token) },
       });
-      await resend.emails.send({
-        from: EMAIL_FROM,
-        replyTo: "info@hemo-el-paso.org",
+      const res = await sendLoggedEmail({
+        kind: "EVENT_INVITATION",
         to: p.email!,
         subject:
           lang === "es"
             ? `Estás invitado/a: ${event.titleEs}`
             : `You're invited: ${event.titleEn}`,
         html,
+        patientId: p.id,
       });
+      if (!res.ok) {
+        // Not accepted by Resend: stays pending so it can be retried.
+        errors.add(res.errorName);
+        failed++;
+        continue;
+      }
       await prisma.invitation.update({
         where: { id: inv.id },
         data: { status: "sent", sentAt: new Date(), sentByBoardUserId: adminId },
@@ -98,5 +105,5 @@ export async function sendInvitations(eventId: string, adminId: string) {
       details: `Sent ${sent} invitations (${failed} failed, ${skipped} skipped)`,
     },
   });
-  return { sent, failed, skipped };
+  return { sent, failed, skipped, errors: Array.from(errors) };
 }

@@ -32,6 +32,7 @@ export default async function AdminPatientsPage() {
     consentMedia: p.consents.media,
     source: p.source,
     createdAt: p.createdAt.toISOString(),
+    confirmation: p.confirmation,
     duplicateOfId: p.possibleDuplicateOfId,
     duplicateOfName: p.possibleDuplicateOf
       ? `${p.possibleDuplicateOf.contactProfile?.firstName ?? ""} ${p.possibleDuplicateOf.contactProfile?.lastName ?? ""}`.trim()

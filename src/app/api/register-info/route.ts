@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { render } from "@react-email/render";
-import { resend, EMAIL_FROM } from "@/lib/resend";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
-import RegistrationInfoConfirmation from "@/messages/RegistrationInfoConfirmation";
+import { sendRegistrationConfirmation } from "@/lib/patients/confirmation";
 
 /**
  * Public "Register for Information" endpoint.
@@ -49,29 +47,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await createPatient(v.value, { source: "web", method: "web" });
+    const { id } = await createPatient(v.value, { source: "web", method: "web" });
 
+    // Awaited, result checked and logged (EmailLog: kind/status/error name only).
+    // A failed send never fails the registration; the admin Patients list shows
+    // "Confirmation not sent" so the board can retry.
     if (v.value.email) {
-      try {
-        const html = await render(
-          RegistrationInfoConfirmation({
-            firstName: v.value.firstName,
-            lang: v.value.language,
-          }),
-        );
-        await resend.emails.send({
-          from: EMAIL_FROM,
-          replyTo: "info@hemo-el-paso.org",
-          to: v.value.email,
-          subject:
-            v.value.language === "es"
-              ? "Gracias por registrarte con HOEP"
-              : "Thanks for registering with HOEP",
-          html,
-        });
-      } catch {
-        console.error("Registration confirmation email failed");
-      }
+      await sendRegistrationConfirmation({
+        id,
+        email: v.value.email,
+        firstName: v.value.firstName,
+        language: v.value.language,
+      });
     }
   } catch {
     // No details: the payload contains PII and PHI.

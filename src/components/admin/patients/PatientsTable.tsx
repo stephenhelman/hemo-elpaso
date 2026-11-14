@@ -23,6 +23,7 @@ export interface PatientRow {
   createdAt: string;
   duplicateOfId: string | null;
   duplicateOfName: string | null;
+  confirmation: "sent" | "failed" | "missing" | "n/a";
 }
 
 const field =
@@ -94,6 +95,19 @@ export default function PatientsTable({
         toast.success(t.notDuplicateDone);
         router.refresh();
       } else toast.error((await res.json().catch(() => ({}))).error ?? t.genericError);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const resendConfirmation = async (id: string) => {
+    setBusy(id);
+    try {
+      const res = await fetch(`/api/admin/patients/${id}/resend-confirmation`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) toast.success(t.confirmationResent);
+      else toast.error(`${t.confirmationFailed}${data.error ? ` (${data.error})` : ""}`);
+      router.refresh();
     } finally {
       setBusy(null);
     }
@@ -180,6 +194,17 @@ export default function PatientsTable({
                   <Link href={`/admin/patients/${r.id}`} className="font-semibold text-primary hover:underline">
                     {r.name}
                   </Link>
+                  {(r.confirmation === "failed" || r.confirmation === "missing") && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-medium">
+                        {t.confirmationNotSent}
+                      </span>
+                      <button onClick={() => resendConfirmation(r.id)} disabled={busy === r.id}
+                        className="text-xs font-semibold text-primary hover:underline disabled:opacity-50">
+                        {t.resendConfirmation}
+                      </button>
+                    </div>
+                  )}
                   {r.duplicateOfId && (
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">

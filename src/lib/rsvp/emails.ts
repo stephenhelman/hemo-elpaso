@@ -1,11 +1,11 @@
 import { render } from "@react-email/render";
-import { resend, EMAIL_FROM } from "@/lib/resend";
+import { sendLoggedEmail } from "@/lib/email/send";
 import RsvpEmail, { type RsvpEmailKind } from "@/messages/RsvpEmail";
 
 const baseUrl = () => process.env.NEXT_PUBLIC_BASE_URL || "https://hemo-elpaso.vercel.app";
 
 interface EmailEvent { titleEn: string; titleEs: string; eventDate: Date; location: string | null }
-interface EmailPatient { email: string | null; preferredLanguage: string; contactProfile?: { firstName: string } | null }
+interface EmailPatient { id: string; email: string | null; preferredLanguage: string; contactProfile?: { firstName: string } | null }
 
 /**
  * Transactional RSVP email (confirmation, reminder, cancellation). Sent to
@@ -45,10 +45,16 @@ export async function sendRsvpEmail(params: {
       reminder: lang === "es" ? `Recordatorio: ${title} es mañana` : `Reminder: ${title} is tomorrow`,
       cancelled: lang === "es" ? `Asistencia cancelada: ${title}` : `RSVP cancelled: ${title}`,
     }[kind];
-    await resend.emails.send({ from: EMAIL_FROM, replyTo: "info@hemo-el-paso.org", to: patient.email, subject, html });
-    return true;
+    const res = await sendLoggedEmail({
+      kind: { confirmation: "RSVP_CONFIRMATION", reminder: "RSVP_REMINDER", cancelled: "RSVP_CANCELLATION" }[kind] as "RSVP_CONFIRMATION" | "RSVP_REMINDER" | "RSVP_CANCELLATION",
+      to: patient.email,
+      subject,
+      html,
+      patientId: patient.id,
+    });
+    return res.ok;
   } catch {
-    console.error(`RSVP ${kind} email failed`); // no recipient/body: PII
+    console.error(`RSVP ${kind} email failed`); // render error: no recipient/body
     return false;
   }
 }

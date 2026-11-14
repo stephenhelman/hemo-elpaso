@@ -73,6 +73,8 @@ export async function sendEmail({
       ...(replyTo ? { replyTo } : {}),
     });
 
+    if (result.error) throw new Error(result.error.name); // the SDK returns errors, it doesn't throw
+
     // Log email
     await prisma.emailLog.create({
       data: {

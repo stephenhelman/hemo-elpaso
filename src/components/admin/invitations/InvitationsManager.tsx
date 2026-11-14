@@ -67,7 +67,7 @@ export default function InvitationsManager({
     if (!window.confirm(`Send ${pending} invitation email${pending === 1 ? "" : "s"} now? Already-sent invitations are never re-sent.`)) return;
     await call("send", `/api/admin/events/${eventId}/invitations/send`,
       { method: "POST", body: JSON.stringify({ expectedCount: pending }) },
-      (d) => `Sent ${d.sent}${d.failed ? `, ${d.failed} failed (still pending)` : ""}${d.skipped ? `, ${d.skipped} skipped` : ""}`);
+      (d) => `Sent ${d.sent}${d.failed ? `, ${d.failed} FAILED and still pending (${(d.errors ?? []).join(", ") || "unknown error"})` : ""}${d.skipped ? `, ${d.skipped} skipped` : ""}`);
   };
 
   return (
