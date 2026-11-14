@@ -1,13 +1,13 @@
 "use client";
 
 import Section from "@/components/layout/Section";
+import Link from "next/link";
 import { Check } from "lucide-react";
 import { Lang } from "@/types";
 import { sponsorshipTiersTranslation } from "@/translation/getInvolvedPage";
 
 interface Props {
   locale: Lang;
-  onInquire: (tier: string) => void;
 }
 
 const tierStyles: Record<
@@ -42,7 +42,7 @@ const tierStyles: Record<
   },
 };
 
-export default function SponsorshipTiers({ locale, onInquire }: Props) {
+export default function SponsorshipTiers({ locale }: Props) {
   const t = sponsorshipTiersTranslation[locale];
 
   return (
@@ -120,16 +120,16 @@ export default function SponsorshipTiers({ locale, onInquire }: Props) {
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => onInquire((tier as any).key ?? tier.name.toLowerCase())}
-                  className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                <Link
+                  href="/contact"
+                  className={`block text-center w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
                     isFeatured
                       ? "bg-white text-primary hover:bg-neutral-50"
                       : "bg-primary text-white hover:bg-primary-600"
                   }`}
                 >
                   {t.inquireButton}
-                </button>
+                </Link>
               </div>
             </div>
           );

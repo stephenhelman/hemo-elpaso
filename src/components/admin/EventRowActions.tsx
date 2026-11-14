@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import {
-  Send,
   Pencil,
   ScanLine,
   Images,
@@ -15,10 +14,9 @@ import Link from "next/link";
 
 interface Props {
   event: any;
-  setShowSponsorInvite: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function EventRowActions({ event, setShowSponsorInvite }: Props) {
+export function EventRowActions({ event }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -69,16 +67,6 @@ export function EventRowActions({ event, setShowSponsorInvite }: Props) {
 
         {open && (
           <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl border border-neutral-200 shadow-lg z-50 py-1">
-            <button
-              onClick={() => {
-                setShowSponsorInvite(true);
-                setOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <Send className="w-4 h-4 text-yellow-600" />
-              Invite Sponsor
-            </button>
             <Link
               href={`/admin/events/${event.id}/photos`}
               onClick={() => setOpen(false)}

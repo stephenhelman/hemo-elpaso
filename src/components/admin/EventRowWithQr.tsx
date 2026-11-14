@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
-import InviteSponsorButton from "./InviteSponsorButton";
 import { EventRowActions } from "./EventRowActions";
 
 interface Props {
@@ -12,7 +11,6 @@ interface Props {
 }
 
 export default function EventRowWithQr({ event, isPast }: Props) {
-  const [showSponsorInvite, setShowSponsorInvite] = useState(false);
   const eventDate = new Date(event.eventDate);
   const rsvpCount = event._count.rsvps;
   const spotsLeft = event.maxCapacity ? event.maxCapacity - rsvpCount : null;
@@ -60,10 +58,7 @@ export default function EventRowWithQr({ event, isPast }: Props) {
                   {eventDate.getDate()}
                 </span>
               </div>
-              <EventRowActions
-                event={event}
-                setShowSponsorInvite={setShowSponsorInvite}
-              />
+              <EventRowActions event={event} />
             </div>
 
             {/* Content — dimmed for past events */}
@@ -148,21 +143,11 @@ export default function EventRowWithQr({ event, isPast }: Props) {
             </div>
 
             {/* Actions */}
-            <EventRowActions
-              event={event}
-              setShowSponsorInvite={setShowSponsorInvite}
-            />
+            <EventRowActions event={event} />
           </div>
         </div>
 
       </div>
-      {showSponsorInvite && (
-        <InviteSponsorButton
-          eventId={event.id}
-          isOpen={showSponsorInvite}
-          onClose={() => setShowSponsorInvite(false)}
-        />
-      )}
     </>
   );
 }

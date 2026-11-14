@@ -47,12 +47,6 @@ export const adminNavItemsTranslation = [
     icon: Calendar,
   },
   {
-    href: "/admin/sponsors",
-    en: "Sponsors",
-    es: "Patrocinadores",
-    icon: Building2,
-  },
-  {
     href: "/admin/newsletter",
     en: "Newsletter",
     es: "Boletín",
