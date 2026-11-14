@@ -29,6 +29,8 @@ export const adminPatientsTranslation = {
     mergeConfirm:
       "Merge this record into the older one? RSVPs, check-ins and consents move to the older record, and this record is deleted. This cannot be undone.",
     merged: "Merged",
+    notDuplicate: "Not a duplicate",
+    notDuplicateDone: "Flag cleared",
     hiddenDx: "hidden",
     // detail / forms
     back: "Back to patients",
@@ -88,6 +90,8 @@ export const adminPatientsTranslation = {
     mergeConfirm:
       "¿Combinar este registro con el más antiguo? Las reservaciones, registros de asistencia y consentimientos pasan al registro más antiguo y este registro se elimina. No se puede deshacer.",
     merged: "Combinado",
+    notDuplicate: "No es duplicado",
+    notDuplicateDone: "Marca eliminada",
     hiddenDx: "oculto",
     back: "Volver a pacientes",
     newTitle: "Agregar paciente (llamada)",

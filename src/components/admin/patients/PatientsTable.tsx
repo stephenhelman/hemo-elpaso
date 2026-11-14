@@ -86,6 +86,19 @@ export default function PatientsTable({
     }
   };
 
+  const notDuplicate = async (id: string) => {
+    setBusy(id);
+    try {
+      const res = await fetch(`/api/admin/patients/${id}/not-duplicate`, { method: "POST" });
+      if (res.ok) {
+        toast.success(t.notDuplicateDone);
+        router.refresh();
+      } else toast.error((await res.json().catch(() => ({}))).error ?? t.genericError);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const exportCsv = async () => {
     setExporting(true);
     try {
@@ -175,6 +188,10 @@ export default function PatientsTable({
                       <button onClick={() => merge(r.id)} disabled={busy === r.id}
                         className="text-xs font-semibold text-primary hover:underline disabled:opacity-50">
                         {busy === r.id ? t.merging : t.merge}
+                      </button>
+                      <button onClick={() => notDuplicate(r.id)} disabled={busy === r.id}
+                        className="text-xs font-semibold text-neutral-500 hover:underline disabled:opacity-50">
+                        {t.notDuplicate}
                       </button>
                     </div>
                   )}
