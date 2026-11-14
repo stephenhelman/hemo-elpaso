@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/permissions";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,19 +19,19 @@ export async function GET(request: NextRequest) {
         OR: [
           { email: { contains: query, mode: "insensitive" } },
           {
-            profile: {
+            contactProfile: {
               firstName: { contains: query, mode: "insensitive" },
             },
           },
           {
-            profile: {
+            contactProfile: {
               lastName: { contains: query, mode: "insensitive" },
             },
           },
         ],
       },
       include: {
-        profile: {
+        contactProfile: {
           select: {
             firstName: true,
             lastName: true,

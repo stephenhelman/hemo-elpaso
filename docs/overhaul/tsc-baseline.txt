@@ -1,0 +1,219 @@
+src/app/(public)/about/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/contact/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/events/[slug]/live/page.tsx(128,15): error TS2322: Type '{ currentSlide: number; totalSlides: any; slideUrls: any; isLive: boolean; } | null' is not assignable to type 'Presentation | null'.
+  Object literal may only specify known properties, but 'totalSlides' does not exist in type 'Presentation'. Did you mean to write 'totalSlidesEn'?
+src/app/(public)/events/[slug]/live/page.tsx(128,47): error TS2551: Property 'totalSlides' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; eventId: string; currentSlide: number; isLive: boolean; slideUrlsEn: string[]; totalSlidesEn: number; originalFileUrlEn: string | null; ... 10 more ...; conversionStatusEs: string; }'. Did you mean 'totalSlidesEn'?
+src/app/(public)/events/[slug]/live/page.tsx(129,45): error TS2551: Property 'slideUrls' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; eventId: string; currentSlide: number; isLive: boolean; slideUrlsEn: string[]; totalSlidesEn: number; originalFileUrlEn: string | null; ... 10 more ...; conversionStatusEs: string; }'. Did you mean 'slideUrlsEn'?
+src/app/(public)/events/[slug]/live/page.tsx(133,9): error TS2322: Type '{ id: string; createdAt: Date; updatedAt: Date; titleEn: string; titleEs: string; descriptionEn: string | null; descriptionEs: string | null; location: string | null; status: string; ... 5 more ...; sequenceOrder: number; }[]' is not assignable to type 'ItineraryItem[]'.
+  Type '{ id: string; createdAt: Date; updatedAt: Date; titleEn: string; titleEs: string; descriptionEn: string | null; descriptionEs: string | null; location: string | null; status: string; ... 5 more ...; sequenceOrder: number; }' is not assignable to type 'ItineraryItem'.
+    Types of property 'startTime' are incompatible.
+      Type 'Date' is not assignable to type 'string'.
+src/app/(public)/events/[slug]/live/page.tsx(134,9): error TS2322: Type '{ id: string; createdAt: Date; createdBy: string; eventId: string; active: boolean; messageEn: string; messageEs: string; priority: string; expiresAt: Date | null; }[]' is not assignable to type 'Announcement[]'.
+  Type '{ id: string; createdAt: Date; createdBy: string; eventId: string; active: boolean; messageEn: string; messageEs: string; priority: string; expiresAt: Date | null; }' is not assignable to type 'Announcement'.
+    Types of property 'createdAt' are incompatible.
+      Type 'Date' is not assignable to type 'string'.
+src/app/(public)/events/[slug]/live/page.tsx(135,9): error TS2322: Type '{ options: { id: string; textEn: string; textEs: string; pollId: string; }[]; responses: { id: string; createdAt: Date; sessionToken: string; pollId: string; selectedOptionId: string; }[]; id: string; ... 8 more ...; selectedForNewsletter: boolean; }[]' is not assignable to type 'ActivePoll[]'.
+  Property 'totalResponses' is missing in type '{ options: { id: string; textEn: string; textEs: string; pollId: string; }[]; responses: { id: string; createdAt: Date; sessionToken: string; pollId: string; selectedOptionId: string; }[]; id: string; ... 8 more ...; selectedForNewsletter: boolean; }' but required in type 'ActivePoll'.
+src/app/(public)/events/[slug]/live/page.tsx(141,9): error TS2322: Type '{ id: string; eventId: string; sessionToken: string | null; selectedForNewsletter: boolean; approved: boolean; uploadedBy: string; url: string; key: string; caption: string | null; source: string; uploadedAt: Date; }[]' is not assignable to type 'Photo[]'.
+  Type '{ id: string; eventId: string; sessionToken: string | null; selectedForNewsletter: boolean; approved: boolean; uploadedBy: string; url: string; key: string; caption: string | null; source: string; uploadedAt: Date; }' is not assignable to type 'Photo'.
+    Types of property 'uploadedAt' are incompatible.
+      Type 'Date' is not assignable to type 'string'.
+src/app/(public)/events/[slug]/page.tsx(25,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/events/[slug]/page.tsx(124,20): error TS2322: Type '{ _count: { rsvps: number; }; sponsors: ({ sponsor: { id: string; name: string; logoUrl: string | null; tier: string; website: string | null; }; } & { id: string; eventId: string; sponsorId: string; })[]; } & { ...; }' is not assignable to type '{ titleEn: string; titleEs: string; descriptionEn: string; descriptionEs: string; eventDate: Date; location: string; imageUrl?: string | undefined; slug: string; }'.
+  Types of property 'descriptionEn' are incompatible.
+    Type 'string | null' is not assignable to type 'string'.
+      Type 'null' is not assignable to type 'string'.
+src/app/(public)/events/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/get-involved/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/minutes/[id]/page.tsx(24,19): error TS2352: Conversion of type 'string | number | boolean | JsonObject | JsonArray | null' to type '{ sections: MinutesSection[]; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'sections' is missing in type 'JsonValue[]' but required in type '{ sections: MinutesSection[]; }'.
+src/app/(public)/presenter/[token]/page.tsx(68,47): error TS2551: Property 'totalSlides' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; eventId: string; currentSlide: number; isLive: boolean; slideUrlsEn: string[]; totalSlidesEn: number; originalFileUrlEn: string | null; ... 10 more ...; conversionStatusEs: string; }'. Did you mean 'totalSlidesEn'?
+src/app/(public)/presenter/[token]/page.tsx(69,45): error TS2551: Property 'slideUrls' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; eventId: string; currentSlide: number; isLive: boolean; slideUrlsEn: string[]; totalSlidesEn: number; originalFileUrlEn: string | null; ... 10 more ...; conversionStatusEs: string; }'. Did you mean 'slideUrlsEn'?
+src/app/(public)/resources/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/(public)/scholarships/layout.tsx(5,47): error TS2304: Cannot find name 'Lang'.
+src/app/admin/assistance/page.tsx(92,9): error TS2322: Type '{ requestedAmount: number; approvedAmount: number | null; disbursements: { amount: number; id: string; createdAt: Date; updatedAt: Date; status: DisbursementStatus; ... 8 more ...; proofOfPaymentKey: string | null; }[]; ... 14 more ...; purpose: string; }[]' is not assignable to type 'Application[]'.
+  Type '{ requestedAmount: number; approvedAmount: number | null; disbursements: { amount: number; id: string; createdAt: Date; updatedAt: Date; status: $Enums.DisbursementStatus; ... 8 more ...; proofOfPaymentKey: string | null; }[]; ... 14 more ...; purpose: string; }' is not assignable to type 'Application'.
+    Types of property 'patient' are incompatible.
+      Property 'contactProfile' is missing in type '{ id: string; auth0Id: string; email: string; role: string; preferredLanguage: string; createdAt: Date; updatedAt: Date; registrationCompletedAt: Date | null; consentDate: Date | null; ... 8 more ...; volunteerRequestedAt: Date | null; }' but required in type '{ email: string; contactProfile: { firstName: string; lastName: string; } | null; }'.
+src/app/admin/events/[id]/announcements/page.tsx(77,11): error TS2322: Type '{ id: string; createdAt: Date; createdBy: string; eventId: string; active: boolean; messageEn: string; messageEs: string; priority: string; expiresAt: Date | null; }[]' is not assignable to type 'Announcement[]'.
+  Type '{ id: string; createdAt: Date; createdBy: string; eventId: string; active: boolean; messageEn: string; messageEs: string; priority: string; expiresAt: Date | null; }' is not assignable to type 'Announcement'.
+    Types of property 'priority' are incompatible.
+      Type 'string' is not assignable to type 'AnnouncementPriority'.
+src/app/admin/events/[id]/attendees/page.tsx(240,12): error TS2741: Property 'isCheckedIn' is missing in type '{ rsvpId: any; eventId: string; patientName: string; }' but required in type 'Props'.
+src/app/admin/events/[id]/itinerary/page.tsx(70,11): error TS2322: Type '{ id: string; createdAt: Date; updatedAt: Date; titleEn: string; titleEs: string; descriptionEn: string | null; descriptionEs: string | null; location: string | null; status: string; ... 5 more ...; sequenceOrder: number; }[]' is not assignable to type 'ItineraryItem[]'.
+  Type '{ id: string; createdAt: Date; updatedAt: Date; titleEn: string; titleEs: string; descriptionEn: string | null; descriptionEs: string | null; location: string | null; status: string; ... 5 more ...; sequenceOrder: number; }' is not assignable to type 'ItineraryItem'.
+    Types of property 'status' are incompatible.
+      Type 'string' is not assignable to type 'ItineraryStatus'.
+src/app/admin/events/[id]/polls/EventPollsClient.tsx(90,11): error TS2719: Type 'Poll[]' is not assignable to type 'Poll[]'. Two different types with this name exist, but they are unrelated.
+  Type 'Poll' is missing the following properties from type 'Poll': titleEn, titleEs, sequenceOrder
+src/app/admin/users/[id]/edit/page.tsx(49,21): error TS2322: Type '{ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; } & { ...; }' is not assignable to type 'User'.
+  Types of property 'contactProfile' are incompatible.
+    Type '{ firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; addressLine2: string | null; ... 4 more ...; patientId: string | null; } | null' is not assignable to type '{ firstName: string; lastName: string; phone: string; city: string; state: string; zipCode: string; } | null'.
+      Type '{ firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; addressLine2: string | null; ... 4 more ...; patientId: string | null; }' is not assignable to type '{ firstName: string; lastName: string; phone: string; city: string; state: string; zipCode: string; }'.
+        Types of property 'phone' are incompatible.
+          Type 'string | null' is not assignable to type 'string'.
+            Type 'null' is not assignable to type 'string'.
+src/app/admin/users/page.tsx(91,9): error TS2322: Type '({ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; disorderProfile: { ...; } | null; _count: { ...; }; } & { ...; })[]' is not assignable to type 'User[]'.
+  Type '{ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; disorderProfile: { ...; } | null; _count: { ...; }; } & { ...; }' is not assignable to type 'User'.
+    Types of property 'contactProfile' are incompatible.
+      Type '{ firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; addressLine2: string | null; ... 4 more ...; patientId: string | null; } | null' is not assignable to type '{ firstName: string; lastName: string; city: string; } | null'.
+        Type '{ firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; addressLine2: string | null; ... 4 more ...; patientId: string | null; }' is not assignable to type '{ firstName: string; lastName: string; city: string; }'.
+          Types of property 'city' are incompatible.
+            Type 'string | null' is not assignable to type 'string'.
+              Type 'null' is not assignable to type 'string'.
+src/app/admin/verification/page.tsx(90,9): error TS2322: Type '({ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; patient: { ...; } & { ...; }; } & { ...; })[]' is not assignable to type 'FamilyMember[]'.
+  Property 'disorderProfile' is missing in type '{ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; patient: { ...; } & { ...; }; } & { ...; }' but required in type 'FamilyMember'.
+src/app/api/admin/assistance/[id]/disbursement/route.ts(11,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/assistance/[id]/disbursement/upload/route.ts(21,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/assistance/[id]/review/route.ts(11,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/checkin/[eventId]/route.ts(21,13): error TS2353: Object literal may only specify known properties, and 'profile' does not exist in type 'PatientInclude<DefaultArgs>'.
+src/app/api/admin/checkin/manual/search/route.ts(8,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/checkin/patients/search/route.ts(6,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/checkin/patients/search/route.ts(21,13): error TS2353: Object literal may only specify known properties, and 'profile' does not exist in type 'PatientWhereInput'.
+src/app/api/admin/checkin/patients/search/route.ts(26,13): error TS2353: Object literal may only specify known properties, and 'profile' does not exist in type 'PatientWhereInput'.
+src/app/api/admin/checkin/patients/search/route.ts(33,9): error TS2353: Object literal may only specify known properties, and 'profile' does not exist in type 'PatientInclude<DefaultArgs>'.
+src/app/api/admin/events/[id]/flyers/route.ts(11,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/events/[id]/photos/route.ts(31,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/events/[id]/sponsor-invite/route.ts(11,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/newsletter/[id]/approve/route.ts(140,13): error TS2322: Type 'Promise<string>' is not assignable to type 'string'.
+src/app/api/admin/newsletter/[id]/reject/route.ts(102,9): error TS2322: Type 'Promise<string>' is not assignable to type 'string'.
+src/app/api/admin/newsletter/generate/route.ts(85,9): error TS2322: Type 'Promise<string>' is not assignable to type 'string'.
+src/app/api/admin/polls/[pollId]/approve/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/polls/[pollId]/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/polls/invite/route.ts(8,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/polls/route.ts(8,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/questions/[questionId]/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/settings/email-templates/[id]/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/settings/email-templates/[id]/test/route.ts(20,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/settings/email-templates/[id]/test/route.ts(108,13): error TS2353: Object literal may only specify known properties, and 'qrCodeDataUrl' does not exist in type 'Props'.
+src/app/api/admin/users/export/route.ts(7,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/verification/family/[id]/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/admin/verification/patient/[id]/route.ts(10,36): error TS2304: Cannot find name 'requirePermission'.
+src/app/api/contact/route.ts(46,25): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ en: string; es: string; }'.
+src/app/api/cron/newsletter/route.ts(69,9): error TS2322: Type 'Promise<string>' is not assignable to type 'string'.
+src/app/api/cron/send-reminders/route.ts(101,33): error TS2339: Property 'adultsAttending' does not exist on type '{ patient: { contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; } & { ...; }; } & { ...; }'.
+src/app/api/cron/send-reminders/route.ts(102,35): error TS2339: Property 'childrenAttending' does not exist on type '{ patient: { contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; } & { ...; }; } & { ...; }'.
+src/app/api/qr/[data]/route.ts(27,29): error TS2345: Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Buffer<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 2 more.
+src/app/api/sponsor/check-in/route.ts(40,11): error TS2353: Object literal may only specify known properties, and 'profile' does not exist in type '(Without<PatientCreateInput, PatientUncheckedCreateInput> & PatientUncheckedCreateInput) | (Without<...> & PatientCreateInput)'.
+src/app/portal/assistance/[id]/edit/page.tsx(69,30): error TS2322: Type '{ documents: { id: string; description: string | null; applicationId: string; uploadedBy: string; uploadedAt: Date; fileName: string; fileUrl: string; fileKey: string; fileSize: number; mimeType: string; }[]; } & { ...; }' is not assignable to type 'Application'.
+  Types of property 'requestedAmount' are incompatible.
+    Type 'Decimal' is not assignable to type 'number'.
+src/app/portal/assistance/new/page.tsx(50,26): error TS2741: Property 'profile' is missing in type '{ contactProfile: { firstName: string; lastName: string; id: string; createdAt: Date; updatedAt: Date; phone: string | null; dateOfBirth: Date | null; addressLine1: string | null; ... 5 more ...; patientId: string | null; } | null; } & { ...; }' but required in type 'Patient'.
+src/app/portal/assistance/page.tsx(75,27): error TS2322: Type '({ documents: { id: string; description: string | null; applicationId: string; uploadedBy: string; uploadedAt: Date; fileName: string; fileUrl: string; fileKey: string; fileSize: number; mimeType: string; }[]; disbursements: { ...; }[]; } & { ...; })[]' is not assignable to type 'Application[]'.
+  Type '{ documents: { id: string; description: string | null; applicationId: string; uploadedBy: string; uploadedAt: Date; fileName: string; fileUrl: string; fileKey: string; fileSize: number; mimeType: string; }[]; disbursements: { ...; }[]; } & { ...; }' is not assignable to type 'Application'.
+    Types of property 'requestedAmount' are incompatible.
+      Type 'Decimal' is not assignable to type 'number'.
+src/app/portal/profile/page.tsx(148,9): error TS2322: Type '{ id: string; email: string; diagnosisGracePeriodEndsAt: Date | null; emergencyContactName: string | null; emergencyContactPhone: string | null; emergencyContactRelationship: string | null; contactProfile: { ...; } | null; disorderProfile: { ...; } | null; familyMembers: { ...; }[]; }' is not assignable to type 'Patient'.
+  Types of property 'disorderProfile' are incompatible.
+    Type '{ id: string; condition: string; severity: string | null; dateOfDiagnosis: Date | null; treatingPhysician: string | null; specialtyPharmacy: string | null; diagnosisLetterUrl: string | null; ... 5 more ...; diagnosisRejectedReason: string | null; } | null' is not assignable to type '{ id: string; condition: string; severity: string; dateOfDiagnosis: Date | null; treatingPhysician: string | null; specialtyPharmacy: string | null; diagnosisLetterUrl: string | null; ... 5 more ...; diagnosisRejectedReason: string | null; } | null'.
+      Type '{ id: string; condition: string; severity: string | null; dateOfDiagnosis: Date | null; treatingPhysician: string | null; specialtyPharmacy: string | null; diagnosisLetterUrl: string | null; ... 5 more ...; diagnosisRejectedReason: string | null; }' is not assignable to type '{ id: string; condition: string; severity: string; dateOfDiagnosis: Date | null; treatingPhysician: string | null; specialtyPharmacy: string | null; diagnosisLetterUrl: string | null; ... 5 more ...; diagnosisRejectedReason: string | null; }'.
+        Types of property 'severity' are incompatible.
+          Type 'string | null' is not assignable to type 'string'.
+            Type 'null' is not assignable to type 'string'.
+src/components/admin/stats/EventStatsOverview.tsx(36,9): error TS2322: Type '{ title: string; value: string; icon: Element; color: "blue"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/admin/stats/EventStatsOverview.tsx(43,9): error TS2322: Type '{ title: string; value: string; subtitle: string; icon: Element; color: "green"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/admin/stats/EventStatsOverview.tsx(51,9): error TS2322: Type '{ title: string; value: string; icon: Element; color: "amber"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/admin/stats/EventStatsOverview.tsx(58,9): error TS2322: Type '{ title: string; value: string; subtitle: string; icon: Element; color: "purple"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/admin/stats/EventStatsOverview.tsx(66,9): error TS2322: Type '{ title: string; value: string; icon: Element; color: "indigo"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/admin/stats/EventStatsOverview.tsx(73,9): error TS2322: Type '{ title: string; value: string; subtitle: string; icon: Element; color: "teal"; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Props'.
+src/components/events/live/LivePoll.tsx(75,45): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/components/events/live/tabs/QandATab.tsx(101,42): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/components/form/PlacesAutocompleteInput.tsx(24,34): error TS2503: Cannot find namespace 'google'.
+src/components/form/PlacesAutocompleteInput.tsx(25,30): error TS2503: Cannot find namespace 'google'.
+src/components/form/PlacesAutocompleteInput.tsx(29,17): error TS2339: Property 'google' does not exist on type 'Window & typeof globalThis'.
+src/components/form/PlacesAutocompleteInput.tsx(31,27): error TS2339: Property 'google' does not exist on type 'Window & typeof globalThis'.
+src/components/form/PlacesAutocompleteInput.tsx(48,16): error TS2339: Property 'google' does not exist on type 'Window & typeof globalThis'.
+src/components/form/PlacesAutocompleteInput.tsx(53,16): error TS2339: Property 'google' does not exist on type 'Window & typeof globalThis'.
+src/components/form/Select.tsx(6,14): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/home/Hero.tsx(50,13): error TS2322: Type '{ hidden: { opacity: number; y: number; }; visible: (delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'Variant'.
+      Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'string' is not assignable to type 'Easing | Easing[] | undefined'.
+src/components/home/Hero.tsx(64,13): error TS2322: Type '{ hidden: { opacity: number; y: number; }; visible: (delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'Variant'.
+      Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'string' is not assignable to type 'Easing | Easing[] | undefined'.
+src/components/home/Hero.tsx(86,13): error TS2322: Type '{ hidden: { opacity: number; y: number; }; visible: (delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'Variant'.
+      Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'string' is not assignable to type 'Easing | Easing[] | undefined'.
+src/components/home/Hero.tsx(97,13): error TS2322: Type '{ hidden: { opacity: number; y: number; }; visible: (delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'Variant'.
+      Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'string' is not assignable to type 'Easing | Easing[] | undefined'.
+src/components/home/Hero.tsx(120,13): error TS2322: Type '{ hidden: { opacity: number; y: number; }; visible: (delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'Variant'.
+      Type '(delay: number) => { opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { duration: number; delay: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ duration: number; delay: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'string' is not assignable to type 'Easing | Easing[] | undefined'.
+src/components/portal/PortalEventsDisplay.tsx(117,44): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/components/portal/ProfileEditForm.tsx(526,23): error TS2322: Type 'string' is not assignable to type 'Lang'.
+src/components/portal/UpcomingEventCard.tsx(65,15): error TS2322: Type '{ en: string; es: string; }' is not assignable to type 'string'.
+src/components/presenter/PresenterControlPanel.tsx(241,13): error TS2719: Type 'Presentation | null' is not assignable to type 'Presentation | null'. Two different types with this name exist, but they are unrelated.
+  Type 'Presentation' is missing the following properties from type 'Presentation': slideUrlsEn, slideUrlsEs, totalSlidesEn, totalSlidesEs
+src/components/presenter/PresenterControlPanel.tsx(243,24): error TS2345: Argument of type '(prev: EventData) => { presentation: Presentation; id: string; titleEn: string; titleEs: string; itinerary: ItineraryItem[]; announcements: Announcement[]; polls: Poll[]; questions: Question[]; pendingPhotos: PendingPhoto[]; }' is not assignable to parameter of type 'SetStateAction<EventData>'.
+  Type '(prev: EventData) => { presentation: Presentation; id: string; titleEn: string; titleEs: string; itinerary: ItineraryItem[]; announcements: Announcement[]; polls: Poll[]; questions: Question[]; pendingPhotos: PendingPhoto[]; }' is not assignable to type '(prevState: EventData) => EventData'.
+    Call signature return types '{ presentation: Presentation; id: string; titleEn: string; titleEs: string; itinerary: ItineraryItem[]; announcements: Announcement[]; polls: Poll[]; questions: Question[]; pendingPhotos: PendingPhoto[]; }' and 'EventData' are incompatible.
+      The types of 'presentation' are incompatible between these types.
+        Type 'Presentation' is missing the following properties from type 'Presentation': totalSlides, slideUrls
+src/lib/cloudconvert.ts(160,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | Request | URL, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | Request | URL'.
+      Type 'undefined' is not assignable to type 'string | Request | URL'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'URL | RequestInfo'.
+      Type 'undefined' is not assignable to type 'URL | RequestInfo'.
+src/messages/EventCancelled.tsx(53,24): error TS2559: Type 'string' has no properties in common with type 'CSSProperties'.
+src/messages/EventPublished.tsx(65,24): error TS2559: Type 'string' has no properties in common with type 'CSSProperties'.
+src/translation/enumTranslation.ts(8,31): error TS7006: Parameter 'config' implicitly has an 'any' type.
