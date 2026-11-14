@@ -1,4 +1,4 @@
-import { siteUrl } from "@/lib/site";
+import { siteUrl, withLang } from "@/lib/site";
 import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -61,8 +61,8 @@ export async function sendInvitations(eventId: string, adminId: string) {
           location: event.location,
           description:
             (lang === "es" ? event.descriptionEs : event.descriptionEn)?.slice(0, 500) ?? undefined,
-          rsvpUrl: `${baseUrl()}/rsvp/${token}`,
-          unsubscribeUrl: `${baseUrl()}/api/unsubscribe?token=${generateUnsubscribeToken(p.id)}`,
+          rsvpUrl: withLang(`${baseUrl()}/rsvp/${token}`, lang),
+          unsubscribeUrl: withLang(`${baseUrl()}/api/unsubscribe?token=${generateUnsubscribeToken(p.id)}`, lang),
         }),
       );
       // Store the new hash BEFORE sending so the link works as soon as it lands.

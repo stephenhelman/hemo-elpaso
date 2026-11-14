@@ -77,3 +77,8 @@ export function fillYears(s: string, locale: "en" | "es", now: Date = new Date()
     .replace(/\{decades\}/g, w)
     .replace(/\{Decades\}/g, w.charAt(0).toUpperCase() + w.slice(1));
 }
+
+/** Append ?lang=en|es (or &lang=) so a link opened from an email renders in the patient's language. */
+export function withLang(url: string, lang: "en" | "es"): string {
+  return url + (url.includes("?") ? "&" : "?") + `lang=${lang}`;
+}

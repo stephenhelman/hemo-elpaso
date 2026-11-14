@@ -1,4 +1,4 @@
-import { siteUrl } from "@/lib/site";
+import { siteUrl, withLang } from "@/lib/site";
 import { render } from "@react-email/render";
 import { sendLoggedEmail } from "@/lib/email/send";
 import RsvpEmail, { type RsvpEmailKind } from "@/messages/RsvpEmail";
@@ -36,7 +36,7 @@ export async function sendRsvpEmail(params: {
         eventTime: event.eventDate.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" }),
         location: event.location ?? "",
         partySize,
-        rsvpUrl: token ? `${baseUrl()}/rsvp/${token}` : undefined,
+        rsvpUrl: token ? withLang(`${baseUrl()}/rsvp/${token}`, lang) : undefined,
         qrUrl: token ? `${baseUrl()}/api/checkin-qr/${token}` : undefined,
       }),
     );
