@@ -3,7 +3,6 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { createRsvp, cancelRsvp } from "@/lib/rsvp";
 import { AuditAction } from "@prisma/client";
-import { getFamilyRestrictionStatus } from "@/lib/family-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,15 +37,6 @@ export async function POST(request: NextRequest) {
           { status: 403 },
         );
       }
-    }
-
-    // Check family restriction
-    const familyRestriction = await getFamilyRestrictionStatus(patient.id);
-    if (familyRestriction.restricted) {
-      return NextResponse.json(
-        { error: familyRestriction.reason, code: "FAMILY_RESTRICTED" },
-        { status: 403 },
-      );
     }
 
     const body = await request.json();
