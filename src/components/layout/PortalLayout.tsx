@@ -13,7 +13,7 @@ export async function PortalLayout({
 }) {
   return (
     <UserProvider>
-      <div className="overflow-x-hidden">
+      <div className="overflow-x-clip">
         <PortalNavbar locale={locale} />
         {children}
         <PortalFooter locale={locale} registrationOpen={registrationOpen()} />

@@ -12,7 +12,7 @@ import ToastProvider from "@/components/providers/ToastProvider";
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-clip">
       <Navbar />
       {children}
       <Footer />
