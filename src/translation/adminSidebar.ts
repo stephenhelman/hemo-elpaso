@@ -71,12 +71,6 @@ export const adminNavItemsTranslation = [
     icon: CheckCircle,
   },
   {
-    href: "/admin/assistance",
-    en: "Financial Assistance",
-    es: "Asistencia Financiera",
-    icon: DollarSign,
-  },
-  {
     href: "/admin/users",
     en: "Users",
     es: "Usuarios",

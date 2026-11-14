@@ -151,10 +151,6 @@ async function renderEmailTemplate(
       // TODO: Implement other templates as we create them
       case "EVENT_PUBLISHED":
       case "EVENT_CANCELLED":
-      case "ASSISTANCE_SUBMITTED":
-      case "ASSISTANCE_APPROVED":
-      case "ASSISTANCE_DENIED":
-      case "DISBURSEMENT_ISSUED":
       case "WELCOME_EMAIL":
         return `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
