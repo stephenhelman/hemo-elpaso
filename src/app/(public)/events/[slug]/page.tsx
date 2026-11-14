@@ -13,12 +13,9 @@ interface Props {
   searchParams: { from?: string };
 }
 
-export async function generateStaticParams() {
-  const events = await prisma.event.findMany({
-    select: { slug: true },
-  });
-  return events.map((event) => ({ slug: event.slug }));
-}
+// Rendered per request: the page reads the visitor's locale cookie and live RSVP counts, and events
+// are created after deploy. (generateStaticParams made new slugs fail with DYNAMIC_SERVER_USAGE.)
+export const dynamic = "force-dynamic";
 
 export default async function EventPage({ params, searchParams }: Props) {
   const referrer = searchParams.from;

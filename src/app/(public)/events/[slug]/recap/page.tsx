@@ -9,13 +9,9 @@ interface Props {
   params: { slug: string };
 }
 
-export async function generateStaticParams() {
-  const events = await prisma.event.findMany({
-    where: { recapPublishedAt: { not: null } },
-    select: { slug: true },
-  });
-  return events.map((e) => ({ slug: e.slug }));
-}
+// Rendered per request: the page reads the visitor's locale cookie and live RSVP counts, and events
+// are created after deploy. (generateStaticParams made new slugs fail with DYNAMIC_SERVER_USAGE.)
+export const dynamic = "force-dynamic";
 
 export default async function EventRecapPublicPage({ params }: Props) {
   const locale = (await getLocaleCookie()) as Lang;
