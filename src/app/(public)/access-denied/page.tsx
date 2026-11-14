@@ -31,10 +31,23 @@ const t = {
   },
 };
 
-// Log out first so Auth0 drops any session, then go straight back to login.
-const SWITCH_ACCOUNT_HREF = `/api/auth/logout?returnTo=${encodeURIComponent(
-  `/api/auth/login?returnTo=${encodeURIComponent("/admin")}`,
-)}`;
+/**
+ * A denied user has NO app session, so /api/auth/logout would skip the Auth0
+ * logout and the Auth0 SSO + Google sessions would survive (and "login" would
+ * silently sign them straight back into the same denied account). So go to
+ * Auth0's own /v2/logout directly, then return to /api/auth/login with
+ * prompt=login so Auth0 re-authenticates. Built server-side from env vars.
+ * The returnTo URL below must be listed in Auth0 "Allowed Logout URLs".
+ */
+function switchAccountHref(): string {
+  const issuer = process.env.AUTH0_ISSUER_BASE_URL;
+  const clientId = process.env.AUTH0_CLIENT_ID;
+  const base = process.env.AUTH0_BASE_URL;
+  if (!issuer || !clientId || !base) return "/api/auth/logout"; // best effort if env is incomplete
+  const host = new URL(issuer).host;
+  const returnTo = `${base.replace(/\/$/, "")}/api/auth/login?returnTo=/admin&prompt=login`;
+  return `https://${host}/v2/logout?client_id=${encodeURIComponent(clientId)}&returnTo=${encodeURIComponent(returnTo)}`;
+}
 
 export default async function AccessDeniedPage({
   searchParams,
@@ -44,6 +57,7 @@ export default async function AccessDeniedPage({
   const locale = ((await getLocaleCookie()) as Lang) === "es" ? "es" : "en";
   const c = t[locale];
   const isError = searchParams.reason === "error";
+  const switchHref = switchAccountHref();
 
   return (
     <div className="min-h-[70vh] bg-neutral-50 flex items-center justify-center px-4 py-16">
@@ -60,7 +74,7 @@ export default async function AccessDeniedPage({
         <div className="flex flex-col gap-3">
           {/* Plain <a>: this is an API route, not a client-side navigation */}
           <a
-            href={SWITCH_ACCOUNT_HREF}
+            href={switchHref}
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
           >
             {c.switchAccount}
