@@ -9,7 +9,6 @@ import EventPublished from "@/messages/EventPublished";
 import EventCancelled from "@/messages/EventCancelled";
 import WelcomeEmail from "@/messages/WelcomeEmail";
 import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
-import FamilyMemberInvite from "@/messages/FamilyMemberInvite";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const DEFAULT_FROM =
@@ -210,16 +209,6 @@ async function renderEmailTemplate(
             roleEmail: String(data.roleEmail),
             dashboardUrl: String(data.dashboardUrl),
             lang: String(data.lang) as "en" | "es",
-          }),
-        );
-
-      case "FAMILY_MEMBER_INVITE":
-        return render(
-          FamilyMemberInvite({
-            inviteeName: String(data.inviteeName),
-            inviterName: String(data.inviterName),
-            familyName: String(data.familyName),
-            inviteUrl: String(data.inviteUrl),
           }),
         );
 

@@ -8,7 +8,6 @@ import {
   getGracePeriodSource,
 } from "@/lib/ensure-patient";
 import { AuditAction } from "@prisma/client";
-import { calculateAgeTier } from "@/lib/family-utils";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
@@ -224,52 +223,6 @@ export async function POST(request: NextRequest) {
         smsNotifications,
       },
     });
-
-    // ── Create Family + FamilyMemberships (if family members provided) ────────
-    if (familyMembers.length > 0) {
-      // Derive family name from primary patient's last name
-      const familyName = `${lastName} Family`;
-
-      const family = await prisma.family.create({
-        data: {
-          name: familyName,
-          primaryPatientId: patientId,
-        },
-      });
-
-      for (const member of familyMembers) {
-        const memberDOB = member.dateOfBirth
-          ? new Date(member.dateOfBirth)
-          : null;
-        const ageTier = calculateAgeTier(memberDOB);
-
-        await prisma.familyMembership.create({
-          data: {
-            familyId: family.id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            dateOfBirth: memberDOB,
-            relationship: member.relationship,
-            ageTier,
-            hasBleedingDisorder: member.hasBleedingDisorder,
-            status: "ACTIVE",
-          },
-        });
-      }
-    }
-
-    // ── Link invite membership if present ────────────────────────────────────
-    if (inviteMembershipId) {
-      const membership = await prisma.familyMembership.findUnique({
-        where: { id: inviteMembershipId },
-      });
-      if (membership && membership.status === "PENDING_INVITE") {
-        await prisma.familyMembership.update({
-          where: { id: inviteMembershipId },
-          data: { patientId, status: "ACTIVE" },
-        });
-      }
-    }
 
     // ── Update Patient (timestamps, language, consent, emergency contact, grace period) ───
     await prisma.patient.update({
