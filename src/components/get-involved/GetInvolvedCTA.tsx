@@ -8,10 +8,9 @@ import { getInvolvedCTATranslation } from "@/translation/getInvolvedPage";
 
 interface Props {
   locale: Lang;
-  onOpenVolunteer: () => void;
 }
 
-export default function GetInvolvedCTA({ locale, onOpenVolunteer }: Props) {
+export default function GetInvolvedCTA({ locale }: Props) {
   const t = getInvolvedCTATranslation[locale];
 
   return (
@@ -22,13 +21,13 @@ export default function GetInvolvedCTA({ locale, onOpenVolunteer }: Props) {
         </h2>
         <p className="text-neutral-500 text-lg mb-8 leading-relaxed">{t.sub}</p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <button
-            onClick={onOpenVolunteer}
+          <Link
+            href="/contact"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-white font-display font-semibold hover:bg-primary-600 transition-colors group"
           >
             {t.cta1}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border-2 border-neutral-300 text-neutral-700 font-display font-semibold hover:border-primary hover:text-primary transition-colors"

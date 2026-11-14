@@ -28,13 +28,6 @@ export default async function AllAttendeesPage() {
     },
   });
 
-  // Total volunteer hours from timecards
-  const timecards = await prisma.volunteerTimecard.findMany({
-    where: { checkOutTime: { not: null } },
-    select: { totalHours: true },
-  });
-  const totalVolunteerHours = timecards.reduce((sum, tc) => sum + (Number(tc.totalHours) || 0), 0);
-
   // Get all events for filter dropdown
   const events = await prisma.event.findMany({
     orderBy: {
@@ -95,13 +88,6 @@ export default async function AllAttendeesPage() {
             label={t.avgPerEvent}
             value={avgAttendance.toString()}
             color="purple"
-          />
-          <StatCard
-            icon={<Clock className="w-6 h-6" />}
-            label={tTable.volunteerHours}
-            value={totalVolunteerHours.toFixed(1)}
-            color="teal"
-            subtitle={tTable.totalVolunteerHours}
           />
         </div>
       </AllAttendeesTable>

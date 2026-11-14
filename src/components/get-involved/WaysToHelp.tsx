@@ -7,10 +7,9 @@ import { WayCard } from "./WayCard";
 
 interface Props {
   locale: Lang;
-  onOpenVolunteer: () => void;
 }
 
-export default function WaysToHelp({ locale, onOpenVolunteer }: Props) {
+export default function WaysToHelp({ locale }: Props) {
   const t = waysToHelpTranslation[locale];
 
   return (
@@ -33,9 +32,9 @@ export default function WaysToHelp({ locale, onOpenVolunteer }: Props) {
         {t.ways.map((way) => (
           <WayCard
             key={way.title}
-            way={way}
-            onCta={
-              way.anchor === "#volunteer" ? onOpenVolunteer : undefined
+            // Volunteer sign-up is handled via the contact form for now
+            way={
+              way.anchor === "#volunteer" ? { ...way, anchor: "/contact" } : way
             }
           />
         ))}

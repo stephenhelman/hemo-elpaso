@@ -9,7 +9,6 @@ type Way = {
 
 interface Props {
   way: Way;
-  onCta?: () => void;
 }
 
 const iconColors: Record<string, string> = {
@@ -18,7 +17,7 @@ const iconColors: Record<string, string> = {
   accent: "bg-accent/10 text-accent-dark",
 };
 
-export function WayCard({ way, onCta }: Props) {
+export function WayCard({ way }: Props) {
   const Icon = way.icon;
   return (
     <div className="flex flex-col p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-200 hover:shadow-md transition-all duration-200">
@@ -33,21 +32,12 @@ export function WayCard({ way, onCta }: Props) {
       <p className="text-neutral-500 text-sm leading-relaxed mb-5 flex-1">
         {way.body}
       </p>
-      {onCta ? (
-        <button
-          onClick={onCta}
-          className="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
-        >
-          {way.cta} →
-        </button>
-      ) : (
-        <a
-          href={way.anchor}
-          className="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
-        >
-          {way.cta} →
-        </a>
-      )}
+      <a
+        href={way.anchor}
+        className="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-600 transition-colors"
+      >
+        {way.cta} →
+      </a>
     </div>
   );
 }

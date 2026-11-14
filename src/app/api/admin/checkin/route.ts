@@ -12,68 +12,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { qrCode, eventId, confirmedMembershipIds } = body;
 
-    // Handle volunteer QR codes: "VOLUNTEER-{assignmentId}"
-    if (qrCode.startsWith("VOLUNTEER-")) {
-      const assignmentId = qrCode.replace("VOLUNTEER-", "");
-      const assignment = await prisma.volunteerEventAssignment.findUnique({
-        where: { id: assignmentId },
-        include: {
-          volunteerProfile: { include: { patient: { include: { contactProfile: true } } } },
-          event: true,
-        },
-      });
-      if (!assignment) {
-        return NextResponse.json({ error: "Volunteer assignment not found" }, { status: 404 });
-      }
-      if (assignment.eventId !== eventId) {
-        return NextResponse.json(
-          { error: "QR code is for a different event" },
-          { status: 400 },
-        );
-      }
-
-      // Check for existing active timecard
-      const existing = await prisma.volunteerTimecard.findFirst({
-        where: {
-          volunteerProfileId: assignment.volunteerProfileId,
-          eventId,
-          checkOutTime: null,
-        },
-      });
-      const vp = assignment.volunteerProfile;
-      const volunteerName = vp.patient
-        ? `${vp.patient.contactProfile?.firstName ?? ""} ${vp.patient.contactProfile?.lastName ?? ""}`.trim()
-        : (vp.contactName ?? "Community Volunteer");
-
-      if (existing) {
-        return NextResponse.json(
-          { alreadyCheckedIn: true, patientName: volunteerName },
-          { status: 200 },
-        );
-      }
-
-      const timecard = await prisma.volunteerTimecard.create({
-        data: { volunteerProfileId: assignment.volunteerProfileId, eventId, status: "active" },
-      });
-
-      await prisma.auditLog.create({
-        data: {
-          patientId: admin!.id,
-          action: AuditAction.VOLUNTEER_CHECKED_IN,
-          resourceType: "VolunteerTimecard",
-          resourceId: timecard.id,
-          details: `Volunteer ${volunteerName} checked in to ${assignment.event.titleEn}`,
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        isVolunteer: true,
-        patientName: volunteerName,
-        timecardId: timecard.id,
-      });
-    }
-
     // Parse QR code (format: "RSVP-{rsvpId}")
     if (!qrCode.startsWith("RSVP-")) {
       return NextResponse.json(
