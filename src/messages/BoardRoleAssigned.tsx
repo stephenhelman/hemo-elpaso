@@ -28,16 +28,9 @@ const copy = {
     roleLabel: "Your Role",
     emailLabel: "Your Board Email Address",
     emailNote:
-      "This address is already active. When you send emails through the HOEP portal, they will appear as coming from this address. Replies from recipients will land in your personal inbox.",
+      "This is the HOEP address assigned to your role.",
     setupTitle: "Next Steps",
     step1: "Log in to the admin dashboard.",
-    step2:
-      'You will see a banner prompting you to connect your Gmail account. Click "Connect Gmail" and follow the authorization steps.',
-    step3:
-      "Once connected, you can send emails on behalf of your role directly from the portal.",
-    optionalTitle: "Optional: Gmail Send Mail As",
-    optionalBody:
-      'If you want to send emails as your role address directly from Gmail (outside the portal), you can set up "Send mail as" in your Gmail settings. Instructions are available on the dashboard after connecting.',
     cta: "Go to Admin Dashboard",
     closing: "We're glad to have you on the team.",
     signature: "The HOEP Team",
@@ -51,16 +44,9 @@ const copy = {
     roleLabel: "Su Rol",
     emailLabel: "Su Dirección de Correo de la Junta",
     emailNote:
-      "Esta dirección ya está activa. Cuando envíe correos a través del portal de HOEP, aparecerán como provenientes de esta dirección. Las respuestas de los destinatarios llegarán a su bandeja de entrada personal.",
+      "Esta es la dirección de HOEP asignada a su rol.",
     setupTitle: "Próximos Pasos",
     step1: "Inicie sesión en el panel de administración.",
-    step2:
-      'Verá un aviso solicitándole que conecte su cuenta de Gmail. Haga clic en "Conectar Gmail" y siga los pasos de autorización.',
-    step3:
-      "Una vez conectado, podrá enviar correos en nombre de su rol directamente desde el portal.",
-    optionalTitle: "Opcional: Enviar como en Gmail",
-    optionalBody:
-      'Si desea enviar correos desde su dirección de rol directamente en Gmail (fuera del portal), puede configurar "Enviar como" en la configuración de Gmail. Las instrucciones están disponibles en el panel después de conectarse.',
     cta: "Ir al Panel de Administración",
     closing: "Nos alegra tenerle en el equipo.",
     signature: "El Equipo de HOEP",
@@ -108,19 +94,6 @@ export default function BoardRoleAssigned({
             <Text style={step}>
               <strong>1.</strong> {t.step1}
             </Text>
-            <Text style={step}>
-              <strong>2.</strong> {t.step2}
-            </Text>
-            <Text style={step}>
-              <strong>3.</strong> {t.step3}
-            </Text>
-
-            {/* Optional section */}
-            <Section style={optionalBox}>
-              <Text style={optionalTitle}>{t.optionalTitle}</Text>
-              <Text style={optionalBody}>{t.optionalBody}</Text>
-            </Section>
-
             {/* CTA */}
             <Section style={buttonSection}>
               <Link href={dashboardUrl} style={button}>
