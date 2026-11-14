@@ -47,18 +47,6 @@ export const adminNavItemsTranslation = [
     icon: Calendar,
   },
   {
-    href: "/admin/minutes",
-    en: "Board Minutes",
-    es: "Actas",
-    icon: FileText,
-  },
-  {
-    href: "/admin/archive",
-    en: "Archive",
-    es: "Archivo",
-    icon: Archive,
-  },
-  {
     href: "/admin/reports",
     en: "Reports",
     es: "Reportes",
