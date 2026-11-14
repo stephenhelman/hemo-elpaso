@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useLocaleRefresh } from "@/hooks/useLocaleRefresh";
-import { useLanguage } from "@/context/LanguageContext";
+import { useOptionalLanguage } from "@/context/LanguageContext";
 import { Globe } from "lucide-react";
 import { setLocaleCookie } from "@/lib/locale";
 
@@ -16,7 +16,8 @@ export default function ServerLanguageSwitcher({
 }: ServerLanguageSwitcherProps) {
   const [isChanging, setIsChanging] = useState(false);
   const [locale, setLocale] = useState(currentLocale);
-  const { setLocale: setContextLocale } = useLanguage();
+  // Admin/portal layouts have no LanguageProvider; public pages do.
+  const languageContext = useOptionalLanguage();
   const { refresh } = useLocaleRefresh();
 
   async function toggleLanguage() {
@@ -32,7 +33,7 @@ export default function ServerLanguageSwitcher({
     await setLocaleCookie(newLocale);
     // Keep client pages (LanguageContext) in step, then re-render server components
     // without a reload; the current page stays visible until the new render arrives.
-    setContextLocale(newLocale);
+    languageContext?.setLocale(newLocale);
     refresh();
     setIsChanging(false);
   }
