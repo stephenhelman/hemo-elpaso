@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
         </Link>
 
         <Link
-          href="/admin/users"
+          href="/admin/patients"
           className="p-6 rounded-xl border-2 border-dashed border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors text-center"
         >
           <Users className="w-8 h-8 text-neutral-400 mx-auto mb-2" />

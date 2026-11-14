@@ -36,13 +36,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  // Only reuse an existing BOARD/ADMIN row. A public patient row with the same
-  // email is deliberately left alone (and never made linkable): the board
-  // member gets their own row, so patient data/diagnoses stay separate.
+  // Only reuse an existing STAFF row: board/admin, or a row that already has an
+  // Auth0 login (public patients never do, so that's a former board member).
+  // A public patient row with the same email is deliberately left alone and
+  // never made linkable: the board member gets their own row, so patient data
+  // and diagnoses stay separate.
   let patient = await prisma.patient.findFirst({
     where: {
       email: { equals: email, mode: "insensitive" },
-      role: { in: ["board", "admin"] },
+      OR: [{ role: { in: ["board", "admin"] } }, { auth0Id: { not: null } }],
     },
     include: { contactProfile: true },
   });

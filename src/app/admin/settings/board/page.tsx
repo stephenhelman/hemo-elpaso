@@ -30,6 +30,7 @@ export default async function BoardManagementPage() {
         assignedAt: r.assignedAt.toISOString(),
         patient: {
           id: r.patient.id,
+          linked: r.patient.auth0Id !== null,
           email: r.patient.email,
           firstName: r.patient.contactProfile?.firstName ?? null,
           lastName: r.patient.contactProfile?.lastName ?? null,

@@ -26,7 +26,10 @@ export async function GET(req: NextRequest) {
           },
         },
       ],
-      registrationCompletedAt: { not: null },
+      // Only staff rows: board/admin, or anyone who already has an Auth0 login
+      // (e.g. a former board member). Public patients are never assignable here;
+      // use "Invite board member" for new people.
+      AND: [{ OR: [{ role: { in: ["board", "admin"] } }, { auth0Id: { not: null } }] }],
     },
     include: { contactProfile: true },
     take: 10,
