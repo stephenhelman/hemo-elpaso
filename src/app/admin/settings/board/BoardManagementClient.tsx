@@ -34,6 +34,7 @@ interface BoardRoleRecord {
   assignedAt: string;
   patient: {
     id: string;
+    linked: boolean; // false = invited, hasn't signed in yet
     email: string | null;
     firstName: string | null;
     lastName: string | null;
@@ -136,7 +137,9 @@ export default function BoardManagementClient({
         method: "DELETE",
       });
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
         toast.success(`${roleName} role removed`);
+        if (data.reminder) toast(data.reminder, { duration: 12000, icon: "⚠️" });
         router.refresh();
       } else {
         const data = await res.json();
@@ -164,7 +167,7 @@ export default function BoardManagementClient({
               Board Management
             </h2>
             <p className="text-sm text-neutral-500 mt-1">
-              Assign and manage board roles for HOEP members
+              Invite board members and manage their roles
             </p>
           </div>
           {canAssign && (
@@ -393,6 +396,11 @@ function BoardRoleCard({
             <span className="px-2 py-0.5 rounded-full bg-primary-50 text-primary text-xs font-semibold">
               {label}
             </span>
+            {!record.patient.linked && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                Invited (pending)
+              </span>
+            )}
           </div>
           <p className="text-sm text-neutral-500">{record.patient.email}</p>
 
@@ -572,7 +580,7 @@ function AssignRoleForm({
         {/* Patient search */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Search Member <span className="text-red-500">*</span>
+            Search Board Member <span className="text-red-500">*</span>
           </label>
           {selectedPatient ? (
             <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-primary">
@@ -641,7 +649,7 @@ function AssignRoleForm({
 
               {query.length >= 2 && results.length === 0 && !searching && (
                 <p className="text-xs text-neutral-400 mt-2">
-                  No registered members found for "{query}"
+                  No board members found for "{query}"
                 </p>
               )}
             </div>

@@ -54,5 +54,25 @@ export async function DELETE(req: NextRequest, { params }: Props) {
     },
   });
 
-  return NextResponse.json({ success: true });
+  // Last active role gone -> no more board access (admins are never downgraded).
+  const remaining = await prisma.boardRole.count({
+    where: { patientId: boardRole.patientId, active: true },
+  });
+  let demoted = false;
+  if (remaining === 0) {
+    const res = await prisma.patient.updateMany({
+      where: { id: boardRole.patientId, role: "board" },
+      data: { role: "patient" },
+    });
+    demoted = res.count > 0;
+  }
+
+  return NextResponse.json({
+    success: true,
+    demoted,
+    // The app can't edit the Auth0 Action: remind the admin to do it by hand.
+    reminder: demoted
+      ? `Also remove ${boardRole.patient.email ?? "this person"} from BOARD_ALLOWLIST in the Auth0 Action.`
+      : null,
+  });
 }

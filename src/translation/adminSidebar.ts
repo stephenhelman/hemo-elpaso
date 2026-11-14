@@ -53,9 +53,9 @@ export const adminNavItemsTranslation = [
     icon: CheckCircle,
   },
   {
-    href: "/admin/users",
-    en: "Users",
-    es: "Usuarios",
+    href: "/admin/patients",
+    en: "Patients",
+    es: "Pacientes",
     icon: Users,
   },
   {

@@ -46,6 +46,12 @@ export async function assignBoardRole(params: {
     };
   }
 
+  // Board access is driven by Patient.role: make sure it is "board" (admins keep "admin").
+  await prisma.patient.updateMany({
+    where: { id: patientId, role: { notIn: ["admin", "board"] } },
+    data: { role: "board" },
+  });
+
   // If a previous inactive record exists for this combo, reactivate it
   const inactive = await prisma.boardRole.findFirst({
     where: { patientId, role, active: false },
