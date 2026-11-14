@@ -171,3 +171,11 @@ All ES strings on this page are tú-form, matching the registration/RSVP flow:
 - `invalid`: `Este enlace para cancelar la suscripción no es válido o ya expiró. Usa el enlace de un correo reciente de HOEP.`
 - `generic`: `Algo salió mal. Escríbenos a {email} para que te quitemos de nuestra lista de correo.`
 - `failTitle` (`No se pudo cancelar la suscripción`) and `home` (`Volver al inicio`) are register-neutral.
+
+## About page board group labels (`src/translation/aboutPage.ts`)
+
+New ES labels for a fluent reviewer to confirm (register-neutral nouns, but the terminology needs a native check):
+
+- `Officers` → `Funcionarios` (alternatives: `Directivos`, `Oficiales`; the site previously used `Oficiales`)
+- `Members at Large` → `Vocales` (alternative: `Miembros en general`)
+- `Advisors` → `Asesores`

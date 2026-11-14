@@ -14,6 +14,11 @@ interface Props {
 
 export default function BoardOfDirectors({ locale }: Props) {
   const t = boardOfDirectorsTranslation[locale];
+  const groups = [
+    { key: "officers", label: t.officersTitle, people: boardOfDirectors.officers },
+    { key: "members", label: t.membersTitle, people: boardOfDirectors.members },
+    { key: "advisors", label: t.advisorsTitle, people: boardOfDirectors.advisors },
+  ];
 
   return (
     <Section background="white">
@@ -32,15 +37,19 @@ export default function BoardOfDirectors({ locale }: Props) {
         <p className="text-neutral-500 max-w-2xl mx-auto">{t.sub}</p>
       </div>
 
-      {/* Executive Board */}
-      <div>
-        <SectionLabel label={t.executiveTitle} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {boardOfDirectors.executive.map((member) => (
-            <ExecutiveCard key={member.name} member={member} lang={locale} />
-          ))}
-        </div>
-      </div>
+      {/* Groups render only when they have people */}
+      {groups
+        .filter((g) => g.people.length > 0)
+        .map((g, i, shown) => (
+          <div key={g.key} className={i < shown.length - 1 ? "mb-12" : undefined}>
+            <SectionLabel label={g.label} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {g.people.map((member) => (
+                <ExecutiveCard key={member.name} member={member} lang={locale} />
+              ))}
+            </div>
+          </div>
+        ))}
 
     </Section>
   );
@@ -58,7 +67,7 @@ function ExecutiveCard({
   member,
   lang,
 }: {
-  member: (typeof boardOfDirectors.executive)[0];
+  member: { name: string; titleEn?: string; titleEs?: string };
   lang: "en" | "es";
 }) {
   const initials = member.name
@@ -76,9 +85,11 @@ function ExecutiveCard({
       <h3 className="font-display font-bold text-neutral-900 text-sm mb-0.5">
         {member.name}
       </h3>
-      <p className="text-primary-600 text-xs font-semibold mb-3">
-        {lang === "en" ? member.titleEn : member.titleEs}
-      </p>
+      {(lang === "en" ? member.titleEn : member.titleEs) && (
+        <p className="text-primary-600 text-xs font-semibold mb-3">
+          {lang === "en" ? member.titleEn : member.titleEs}
+        </p>
+      )}
     </div>
   );
 }

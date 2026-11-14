@@ -17,14 +17,22 @@ export const aboutHeroTranslation = {
  * entries back into `boardOfDirectors` and re-enabling the Officers/Advisor
  * blocks in components/about/BoardOfDirectors.tsx.
  */
-export const boardOfDirectors = {
-  executive: [
+type BoardMember = { name: string; titleEn?: string; titleEs?: string };
+export const boardOfDirectors: {
+  officers: BoardMember[];
+  members: BoardMember[];
+  advisors: BoardMember[];
+} = {
+  officers: [
     {
       name: "Teresita Fernandez de Robles",
       titleEn: "President",
       titleEs: "Presidenta",
     },
   ],
+  // Rendered only when non-empty. Names only: no emails on the public page.
+  members: [],
+  advisors: [],
 };
 
 /* DORMANT (not rendered, not shipped). Contains personal emails: do not
@@ -48,15 +56,17 @@ export const boardOfDirectorsTranslation = {
     eyebrow: "Leadership",
     heading: "Board of Directors",
     sub: "We are currently welcoming new board members — contact us if you are interested in getting involved in the El Paso bleeding disorders community.",
-    executiveTitle: "Executive Board",
-    // dormant: officersTitle: "Officers", advisorTitle: "Advisor"
+    officersTitle: "Officers",
+    membersTitle: "Members at Large",
+    advisorsTitle: "Advisors",
   },
   es: {
     eyebrow: "Liderazgo",
     heading: "Junta Directiva",
     sub: "Actualmente damos la bienvenida a nuevos miembros de la junta — contáctenos si está interesado en participar en la comunidad de trastornos hemorrágicos de El Paso.",
-    executiveTitle: "Junta Ejecutiva",
-    // dormant: officersTitle: "Oficiales", advisorTitle: "Asesor"
+    officersTitle: "Funcionarios",
+    membersTitle: "Vocales",
+    advisorsTitle: "Asesores",
   },
 };
 
