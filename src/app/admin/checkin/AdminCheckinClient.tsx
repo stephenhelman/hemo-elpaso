@@ -9,7 +9,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import QrScanner from "@/components/admin/QrScanner";
-import ManualCheckInSearch from "@/components/admin/ManualCheckInSearch";
+import GuestList from "@/components/admin/GuestList";
+import WalkInForm from "@/components/admin/WalkInForm";
 import { Lang } from "@/types";
 
 interface Props {
@@ -25,6 +26,8 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
   const [checkIns, setCheckIns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEventData, setSelectedEventData] = useState<any>(null);
+  const [totals, setTotals] = useState<any>(null);
+  const [tab, setTab] = useState<"scan" | "guests" | "walkin">("scan");
 
   useEffect(() => {
     // Fetch upcoming events
@@ -53,6 +56,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
       .then((res) => res.json())
       .then((data) => {
         setCheckIns(data.checkIns || []);
+        setTotals(data.totals ?? null);
       });
   }, [selectedEvent]);
 
@@ -63,6 +67,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
         .then((res) => res.json())
         .then((data) => {
           setCheckIns(data.checkIns || []);
+          setTotals(data.totals ?? null);
         });
     }
   };
@@ -158,51 +163,39 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Scanner Section */}
+          {/* Left: scan / guest list / walk-in */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-neutral-900 text-xl">
-                QR Code Scanner
-              </h2>
-            </div>
-
-            {/* Event Info Card */}
             {selectedEventData && (
-              <div className="bg-primary-50 rounded-xl border border-primary-200 p-4 mb-4">
-                <h3 className="font-semibold text-primary-900 mb-1">
-                  {selectedEventData.titleEn}
-                </h3>
+              <div className="bg-primary-50 rounded-xl border border-primary-200 p-4">
+                <h3 className="font-semibold text-primary-900 mb-1">{selectedEventData.titleEn}</h3>
                 <p className="text-sm text-primary-700">
-                  {new Date(selectedEventData.eventDate).toLocaleDateString(
-                    "en-US",
-                    {
-                      weekday: "long",
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    },
-                  )}
+                  {new Date(selectedEventData.eventDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
                 </p>
               </div>
             )}
-
-            <QrScanner
-              eventId={selectedEvent}
-              onScanSuccess={handleScanSuccess}
-            />
+            <div className="flex gap-2">
+              {([["scan", "Scan QR"], ["guests", "Guest list"], ["walkin", "Walk-in"]] as const).map(([k, label]) => (
+                <button key={k} onClick={() => setTab(k)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold ${tab === k ? "bg-primary text-white" : "border border-neutral-300 text-neutral-700"}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {tab === "scan" && <QrScanner eventId={selectedEvent} onScanSuccess={handleScanSuccess} />}
+            {tab === "guests" && <GuestList eventId={selectedEvent} onChange={handleScanSuccess} />}
+            {tab === "walkin" && <WalkInForm eventId={selectedEvent} onDone={handleScanSuccess} />}
           </div>
 
-          {/* Check-In List */}
+          {/* Right: checked-in list */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-neutral-900 text-xl">
-                  Checked In ({checkIns.length})
-                </h2>
-              </div>
-              <ManualCheckInSearch eventId={selectedEvent} locale={locale} />
+            <div>
+              <h2 className="font-display font-bold text-neutral-900 text-xl">Checked In ({checkIns.length})</h2>
+              {totals && (
+                <p className="text-sm text-neutral-500">
+                  {totals.checkedInPeople} people checked in · {totals.rsvpPeople} RSVP&apos;d ({totals.rsvpParties} parties)
+                </p>
+              )}
             </div>
-
             <div className="bg-white rounded-xl border border-neutral-200 max-h-[600px] overflow-y-auto">
               {checkIns.length === 0 ? (
                 <div className="p-8 text-center">
@@ -244,11 +237,10 @@ function CheckInItem({ checkIn }: { checkIn: any }) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-neutral-900">
-            {checkIn.patient.profile.firstName}{" "}
-            {checkIn.patient.profile.lastName}
+            {checkIn.name}
           </p>
           <p className="text-sm text-neutral-500">
-            {timeAgo(checkIn.checkInTime)}
+            {checkIn.headcount} {checkIn.headcount === 1 ? "person" : "people"} · {timeAgo(checkIn.checkInTime)}
           </p>
         </div>
       </div>

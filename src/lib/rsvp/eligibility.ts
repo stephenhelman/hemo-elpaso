@@ -29,10 +29,11 @@ export async function checkRsvpEligibility(params: {
   partySize: number;
   excludeRsvpId?: string; // the patient's own current RSVP when editing
   ignoreDeadline?: boolean;
+  ignoreCapacity?: boolean; // board walk-ins at the door
   requirePublished?: boolean;
   now?: Date;
 }): Promise<RsvpEligibility> {
-  const { eventId, partySize, excludeRsvpId, ignoreDeadline = false, requirePublished = true, now = new Date() } = params;
+  const { eventId, partySize, excludeRsvpId, ignoreDeadline = false, ignoreCapacity = false, requirePublished = true, now = new Date() } = params;
   const event = await loadEvent(eventId);
   if (!event) return { ok: false, code: "EVENT_NOT_FOUND", error: "Event not found", status: 404 };
   if (eventHasEnded(event.eventDate, now))
@@ -41,7 +42,7 @@ export async function checkRsvpEligibility(params: {
     return { ok: false, code: "NOT_PUBLISHED", error: "This event is not open for RSVPs", status: 400 };
   if (!ignoreDeadline && event.rsvpDeadline && event.rsvpDeadline < now)
     return { ok: false, code: "DEADLINE_PASSED", error: "Registration is closed", status: 400 };
-  if (event.maxCapacity) {
+  if (event.maxCapacity && !ignoreCapacity) {
     const taken = await activeHeadcount(eventId, excludeRsvpId);
     if (taken + partySize > event.maxCapacity)
       return { ok: false, code: "AT_CAPACITY", error: "This event is full", status: 400 };
