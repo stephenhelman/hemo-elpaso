@@ -18,6 +18,11 @@ const navLinks = [
   { href: "/events", labelEn: "Events", labelEs: "Eventos" },
   { href: "/resources", labelEn: "Resources", labelEs: "Recursos" },
   { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
+  {
+    href: "/register-info",
+    labelEn: "Get Information",
+    labelEs: "Recibir Información",
+  },
   { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
 ];
 

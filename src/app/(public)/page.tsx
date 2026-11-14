@@ -3,7 +3,7 @@
 import Hero from "@/components/home/Hero";
 import ImpactStats from "@/components/home/ImpactStats";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
-import NewsletterSignup from "@/components/home/NewsletterSignup";
+import RegisterInfoSection from "@/components/home/RegisterInfoSection";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
       <Hero locale={locale} />
       <ImpactStats locale={locale} />
       <UpcomingEvents locale={locale} />
-      <NewsletterSignup locale={locale} />
+      <RegisterInfoSection locale={locale} />
     </>
   );
 }

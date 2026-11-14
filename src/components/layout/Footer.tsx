@@ -102,19 +102,12 @@ export default function Footer() {
               {t.newsletter}
             </h3>
             <p className="text-sm text-neutral-400 mb-4">{t.newsletterSub}</p>
-            <form className="flex flex-col gap-2">
-              <input
-                type="email"
-                placeholder={t.emailPlaceholder}
-                className="px-4 py-2.5 rounded-lg bg-neutral-800 border border-neutral-700 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-primary-500 transition-colors"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
-              >
-                {t.subscribe}
-              </button>
-            </form>
+            <Link
+              href="/register-info"
+              className="inline-flex px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
+            >
+              {t.subscribe}
+            </Link>
           </div>
         </div>
       </div>
