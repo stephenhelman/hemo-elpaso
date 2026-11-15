@@ -26,7 +26,7 @@ export default function AdminMobileNav({ locale, canEditSiteContent = false }: P
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200">
+      <div data-admin-chrome className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200">
         <div className="flex items-center justify-between px-4 py-3">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
             <Image
