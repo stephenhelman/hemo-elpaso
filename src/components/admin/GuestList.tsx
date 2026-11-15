@@ -10,15 +10,16 @@ interface Guest {
 }
 
 /** Guest-list mode: search this event's RSVPs by name or phone, one tap to check in (party size as headcount). */
-export default function GuestList({ eventId, onChange }: { eventId: string; onChange: () => void }) {
+export default function GuestList({ eventId, onChange, initialNoPhotosOnly = false }: { eventId: string; onChange: () => void; initialNoPhotosOnly?: boolean }) {
   const [q, setQ] = useState("");
   const [guests, setGuests] = useState<Guest[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [noPhotosOnly, setNoPhotosOnly] = useState(initialNoPhotosOnly);
 
   const load = useCallback(async (query: string) => {
-    const res = await fetch(`/api/admin/checkin/guests?eventId=${eventId}&q=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/admin/checkin/guests?eventId=${eventId}&q=${encodeURIComponent(query)}${noPhotosOnly ? "&noPhotos=1" : ""}`);
     if (res.ok) setGuests((await res.json()).guests ?? []);
-  }, [eventId]);
+  }, [eventId, noPhotosOnly]);
 
   useEffect(() => { const t = setTimeout(() => load(q), 250); return () => clearTimeout(t); }, [q, load]);
 
@@ -45,6 +46,10 @@ export default function GuestList({ eventId, onChange }: { eventId: string; onCh
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name or phone"
           className="w-full pl-9 pr-3 py-3 border border-neutral-300 rounded-xl text-base" />
       </div>
+      <label className="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer w-fit">
+        <input type="checkbox" checked={noPhotosOnly} onChange={(e) => setNoPhotosOnly(e.target.checked)} className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary" />
+        Only families without media consent (NO PHOTOS)
+      </label>
       <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100 max-h-[560px] overflow-y-auto">
         {guests.length === 0 && <p className="p-6 text-center text-neutral-400 text-sm">No RSVPs match.</p>}
         {guests.map((g) => (

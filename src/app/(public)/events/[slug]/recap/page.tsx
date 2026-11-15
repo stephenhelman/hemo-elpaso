@@ -4,6 +4,8 @@ import { getLocaleCookie } from "@/lib/locale";
 import type { Lang } from "@/types";
 import Link from "next/link";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
+import { getApprovedPhotos } from "@/lib/photos/public";
+import PhotoGallery from "@/components/gallery/PhotoGallery";
 
 interface Props {
   params: { slug: string };
@@ -29,20 +31,26 @@ export default async function EventRecapPublicPage({ params }: Props) {
       recapTitleEs: true,
       recapBodyEn: true,
       recapBodyEs: true,
-      recapGalleryEmbedUrl: true,
+      id: true,
+      status: true,
       recapPublishedAt: true,
     },
   });
 
-  if (!event || !event.recapPublishedAt) notFound();
+  // The page exists when the recap text is published OR the event has approved photos (the gallery links here).
+  // recapGalleryEmbedUrl is dormant: the gallery below replaces the external embed.
+  if (!event || event.status === "draft") notFound();
+  const photos = await getApprovedPhotos(event.id);
+  const hasRecap = !!event.recapPublishedAt;
+  if (!hasRecap && photos.length === 0) notFound();
 
-  const title = locale === "es" ? (event.recapTitleEs ?? event.recapTitleEn) : event.recapTitleEn;
-  const body = locale === "es" ? (event.recapBodyEs ?? event.recapBodyEn) : event.recapBodyEn;
+  const title = !hasRecap ? null : locale === "es" ? (event.recapTitleEs ?? event.recapTitleEn) : event.recapTitleEn;
+  const body = !hasRecap ? null : locale === "es" ? (event.recapBodyEs ?? event.recapBodyEn) : event.recapBodyEn;
   const eventTitle = locale === "es" ? event.titleEs : event.titleEn;
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Back */}
         <Link
           href={`/events/${event.slug}`}
@@ -55,7 +63,7 @@ export default async function EventRecapPublicPage({ params }: Props) {
         {/* Header */}
         <div className="mb-8">
           <p className="text-primary font-semibold text-sm uppercase tracking-wide mb-2">
-            {locale === "es" ? "Resumen del Evento" : "Event Recap"}
+            {hasRecap ? (locale === "es" ? "Resumen del Evento" : "Event Recap") : locale === "es" ? "Fotos del Evento" : "Event Photos"}
           </p>
           <h1 className="text-4xl font-display font-bold text-neutral-900 mb-4 leading-tight">
             {title ?? eventTitle}
@@ -92,20 +100,13 @@ export default async function EventRecapPublicPage({ params }: Props) {
           </div>
         )}
 
-        {/* Photo gallery embed */}
-        {event.recapGalleryEmbedUrl && (
+        {/* Photo gallery: approved photos only, in the order set in the admin */}
+        {photos.length > 0 && (
           <div className="mb-8">
             <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
               {locale === "es" ? "Galería de Fotos" : "Photo Gallery"}
             </h2>
-            <div className="rounded-2xl overflow-hidden border border-neutral-200 aspect-video">
-              <iframe
-                src={event.recapGalleryEmbedUrl}
-                className="w-full h-full"
-                allowFullScreen
-                title={locale === "es" ? "Galería de fotos" : "Photo gallery"}
-              />
-            </div>
+            <PhotoGallery photos={photos} locale={locale} />
           </div>
         )}
 

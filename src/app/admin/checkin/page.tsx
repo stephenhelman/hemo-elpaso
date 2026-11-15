@@ -7,7 +7,7 @@ import AdminCheckinClient from "./AdminCheckinClient";
 export default async function AdminCheckinPage({
   searchParams,
 }: {
-  searchParams: { event?: string };
+  searchParams: { event?: string; tab?: string; noPhotos?: string };
 }) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/");
@@ -19,6 +19,8 @@ export default async function AdminCheckinPage({
     <AdminCheckinClient
       locale={locale}
       preselectedEventId={searchParams.event ?? null}
+      initialTab={searchParams.tab === "guests" || searchParams.tab === "walkin" ? searchParams.tab : "scan"}
+      noPhotosOnly={searchParams.noPhotos === "1"}
     />
   );
 }

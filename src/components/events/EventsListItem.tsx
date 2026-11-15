@@ -72,6 +72,11 @@ export function EventListItem({ event, isPast, lang }: Props) {
           )}
         </div>
 
+        {isPast && event.coverPhotoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={event.coverPhotoUrl} alt="" loading="lazy" decoding="async" className="hidden sm:block w-28 h-20 rounded-lg object-cover flex-shrink-0" />
+        )}
+
         {/* Action */}
         <Link
           href={`/events/${event.slug}`}

@@ -22,14 +22,25 @@ export function EventCard({ event, lang, isPast }: Props) {
   return (
     <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-lg transition-all group">
       {/* Date Badge */}
-      <div className="bg-gradient-to-br from-primary to-secondary p-6 text-white">
-        <div className="text-center">
-          <div className="text-4xl font-bold">{eventDate.day}</div>
-          <div className="text-sm font-semibold uppercase tracking-wide">
-            {eventDate.month}
+      {isPast && event.coverPhotoUrl ? (
+        <div className="relative aspect-[16/9] bg-neutral-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={event.coverPhotoUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute top-3 left-3 rounded-lg bg-white/95 px-3 py-1.5 text-center shadow-sm">
+            <div className="text-xl font-bold leading-none text-neutral-900">{eventDate.day}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-600">{eventDate.month}</div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-gradient-to-br from-primary to-secondary p-6 text-white">
+          <div className="text-center">
+            <div className="text-4xl font-bold">{eventDate.day}</div>
+            <div className="text-sm font-semibold uppercase tracking-wide">
+              {eventDate.month}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-6 flex flex-col gap-1">
