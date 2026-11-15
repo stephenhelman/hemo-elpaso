@@ -17,12 +17,12 @@ export const siteSettings = defineType({
       name: "phone",
       type: "object",
       fields: [
-        defineField({ name: "display", type: "string", description: "As shown, e.g. (915) 621-8291", validation: (r) => r.required() }),
+        defineField({ name: "display", type: "string", description: "As shown, e.g. (915) 539-7353", validation: (r) => r.required() }),
         defineField({
           name: "e164",
           title: "International format",
           type: "string",
-          description: "+19156218291 (used for tap-to-call links)",
+          description: "+19155397353 (used for tap-to-call links)",
           validation: (r) => r.required().regex(/^\+1\d{10}$/, "Use +1 and ten digits"),
         }),
       ],

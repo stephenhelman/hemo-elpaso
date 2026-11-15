@@ -166,7 +166,7 @@ export const link = defineType({
           if (!v) return true;
           if (t === "internal") return INTERNAL_ROUTES.some(([p]) => p === v) || "Pick one of the site pages.";
           if (t === "external") return /^https:\/\/[^\s]+$/.test(v) || "Must start with https://";
-          if (t === "phone") return /^\+?[0-9]{10,15}$/.test(v) || "Digits only, e.g. +19156218291";
+          if (t === "phone") return /^\+?[0-9]{10,15}$/.test(v) || "Digits only, e.g. +19155397353";
           if (t === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Not a valid email.";
           return true;
         }),
@@ -260,9 +260,9 @@ export const siteSettings = defineType({
     defineField({
       name: "phone", type: "object",
       fields: [
-        defineField({ name: "display", type: "string", description: "As shown, e.g. (915) 621-8291",
+        defineField({ name: "display", type: "string", description: "As shown, e.g. (915) 539-7353",
           validation: (r) => r.required() }),
-        defineField({ name: "e164", title: "International format", type: "string", description: "+19156218291",
+        defineField({ name: "e164", title: "International format", type: "string", description: "+19155397353",
           validation: (r) => r.required().regex(/^\+1\d{10}$/, "Use +1 and ten digits") }),
       ],
     }),
