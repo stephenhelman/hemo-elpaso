@@ -8,6 +8,10 @@ export type PublicSiteInfo = {
   orgName: string;
   tagline?: Localized;
   phone: { display: string; e164: string };
+  facebookUrl: string;
+  facebookLabel?: Localized;
+  locationLabel?: Localized;
+  contactNote?: Localized;
 };
 
 const Ctx = createContext<PublicSiteInfo | null>(null);

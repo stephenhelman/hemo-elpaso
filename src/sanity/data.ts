@@ -6,8 +6,10 @@ import { siteSettingsQuery, SITE_SETTINGS_TAGS } from "./queries/siteSettings";
 import { scholarshipsPageQuery, SCHOLARSHIPS_TAGS } from "./queries/scholarships";
 import { resourcesPageQuery, RESOURCES_TAGS } from "./queries/resources";
 import { aboutPageQuery, ABOUT_TAGS } from "./queries/about";
-import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "./fallback";
-import type { AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { getInvolvedPageQuery, GET_INVOLVED_TAGS } from "./queries/getInvolved";
+import { contactPageQuery, CONTACT_TAGS } from "./queries/contact";
+import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback, getInvolvedPageFallback, contactPageFallback } from "./fallback";
+import type { ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 const defined = <T extends object>(o: T): Partial<T> =>
   Object.fromEntries(Object.entries(o).filter(([, v]) => v != null)) as Partial<T>;
@@ -55,4 +57,24 @@ export const getAboutPage = cache(async (): Promise<AboutPageData> => {
     fallback: aboutPageFallback,
   });
   return { ...data, sections: data.sections ?? [] };
+});
+
+export const getGetInvolvedPage = cache(async (): Promise<GetInvolvedPageData> => {
+  const { data } = await sanityFetch<GetInvolvedPageData>({
+    query: getInvolvedPageQuery,
+    tags: GET_INVOLVED_TAGS,
+    fallback: getInvolvedPageFallback,
+  });
+  return { ...data, sections: data.sections ?? [] };
+});
+
+export const getContactPage = cache(async (): Promise<ContactPageData> => {
+  const { data } = await sanityFetch<ContactPageData>({
+    query: contactPageQuery,
+    tags: CONTACT_TAGS,
+    fallback: contactPageFallback,
+  });
+  // A half-filled document never blanks the page: missing parts come from the dictionary copy.
+  const fb = contactPageFallback();
+  return { ...fb, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v != null)) } as ContactPageData;
 });

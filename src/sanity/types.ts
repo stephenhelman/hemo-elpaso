@@ -69,6 +69,16 @@ export type ScholarshipData = {
 
 export type ScholarshipsPageData = { seo?: SeoData; sections: Section[]; scholarship?: ScholarshipData };
 
+export type GetInvolvedPageData = { seo?: SeoData; sections: Section[] };
+
+export type ContactPageData = {
+  seo?: SeoData;
+  hero?: Extract<Section, { _type: "pageHero" }> | null;
+  formHeading?: Localized;
+  formSubheading?: Localized;
+  mapHeader?: SectionHeaderData;
+};
+
 export type AboutPageData = { seo?: SeoData; sections: Section[] };
 
 export type ResourcesPageData = { seo?: SeoData; sections: Section[] };

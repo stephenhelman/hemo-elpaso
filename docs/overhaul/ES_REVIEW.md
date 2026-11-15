@@ -215,3 +215,16 @@ No new Spanish copy was written; the About text moved from the dictionary to the
 - Group heading for the hall of fame: `Pasados Presidentes - Salón de la Fama` (existing wording; the hyphen and the word order are probably worth fixing).
 - Existing About copy is a mix: hero and mission are **usted**, the closing banner (`¿Listo para Participar?`, `hay un lugar para ti`, `Participa`, `Contáctanos`) is **tú**.
 - The founder's initials on the spotlight are now computed from the name (`LF`, first and last name); board cards keep the first two words (`TF` for Teresita Fernandez de Robles). If you prefer first+last everywhere it would read `TR`.
+
+## Get Involved and Contact in Sanity (Phase 5D)
+
+No new Spanish copy was written; the text moved from the dictionary to the Studio unchanged. For a fluent reviewer:
+
+- **Get Involved ("Haz una Diferencia" eyebrow vs the rest):** the eyebrow `Haz una Diferencia` and the nav button `Participa` are **tú**; the page heading and card text are **usted** (`Participa con HOEP` heading is tú, `Done su Tiempo`, `Ayúdenos`, `Comparta` are usted).
+- `Done su Tiempo` (card title): `Done` means "donate"; for time a native would more likely say `Dedique su tiempo` or `Ofrezca su tiempo`.
+- `Corra la Voz` (card title): a regional idiom for "spread the word"; check it reads naturally for El Paso (alternatives: `Difunda la Palabra`, `Comparta la Información`).
+- The four cards all end with their own link text (`Contáctenos`, `Contáctenos Sobre Patrocinio`, `Expresar Interés`): the first and last are the same word; `Expresar Interés` (infinitive) is the only one not in command form.
+- Closing banner: both buttons now read `Contáctenos` (EN: both `Contact Us`), a consequence of the content-accuracy pass.
+- **Contact page:** all editable Spanish text is **usted** (`Estamos Aquí Para Usted`, `Envíenos un Mensaje`, `Complete el formulario…`), while the sidebar label `Síguenos` (in code) is **tú**. The note `Servimos a El Paso y la región fronteriza.` (Site settings) is neutral.
+- Map heading `Encuéntrenos` and text `Sirviendo orgullosamente… desde 1993` are usted / literal ("since 1993" is not a computed number).
+- Site settings now holds the Spanish Facebook label `HOEP en Facebook` and location label `El Paso, Texas`; if the Spanish field is left empty the English text is shown.
