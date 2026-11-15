@@ -109,7 +109,7 @@ Recreate these at the new DNS host for `hemoelpaso.org` if you're keeping the sa
 ## Part E: smoke test (run in a private window)
 
 1. `https://hemoelpaso.org` loads over HTTPS. `http://`, `www.hemoelpaso.org`, `hemo-el-paso.org` and `www.hemo-el-paso.org` all redirect to `https://hemoelpaso.org`.
-2. `/events` lists events; open one; the sidebar says **"To RSVP, call 915-621-8291."** (registration closed).
+2. `/events` lists events; open one; the sidebar says **"To RSVP, call 915-539-7353."** (registration closed).
 3. `/register-info` shows the "Online registration isn't open yet" page.
 4. `/sitemap.xml` and `/robots.txt` show `hemoelpaso.org` URLs only (no old domain, no `/register-info`).
 5. View source on the homepage: canonical/og URLs and JSON-LD use `hemoelpaso.org`.
