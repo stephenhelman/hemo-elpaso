@@ -3,6 +3,7 @@
 import { useLocaleRefresh } from "@/hooks/useLocaleRefresh";
 import { useLanguage } from "@/context/LanguageContext";
 import { Globe } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useLanguage();
@@ -10,7 +11,9 @@ export default function LanguageSwitcher() {
 
   const toggleLanguage = () => {
     // Sets the cookie synchronously and updates client pages via context...
-    setLocale(locale === "en" ? "es" : "en");
+    const next = locale === "en" ? "es" : "en";
+    trackEvent({ name: "language_switched", to: next });
+    setLocale(next);
     // ...and re-renders server components. The current page stays on screen
     // until the new render arrives; scroll position is preserved.
     refresh();

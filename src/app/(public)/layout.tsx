@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
+import SiteAnalytics from "@/components/analytics/SiteAnalytics";
 import { inter, poppins } from "@/lib/fonts";
 import { Lang } from "@/types";
 
@@ -146,6 +147,7 @@ export default async function RootLayout({
             contactNote: settings.contactNote,
           }}
         >{children}</SiteLayout>
+        <SiteAnalytics />
       </body>
     </html>
   );

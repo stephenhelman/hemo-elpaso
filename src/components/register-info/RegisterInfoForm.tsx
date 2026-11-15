@@ -7,6 +7,7 @@ import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { useLanguage } from "@/context/LanguageContext";
 import { registerInfoTranslation } from "@/translation/registerInfoPage";
 import { withPhone } from "@/lib/site";
+import { trackEvent } from "@/lib/analytics";
 import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 
@@ -90,6 +91,7 @@ export default function RegisterInfoForm({
         }),
       });
       if (res.ok) {
+        trackEvent(eventId ? { name: "rsvp_submitted", source: "public" } : { name: "register_info_submitted" });
         setDone(true);
         return;
       }

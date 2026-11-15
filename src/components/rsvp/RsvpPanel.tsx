@@ -6,6 +6,7 @@ import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { rsvpPageTranslation } from "@/translation/rsvpPage";
 import { withPhone } from "@/lib/site";
+import { trackEvent } from "@/lib/analytics";
 
 export type RsvpPanelProps =
   | { valid: false }
@@ -64,6 +65,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setMsg(errText(data.error)); return; }
       if (response === "no") { setState(props.confirmed ? "cancelled" : "declined"); return; }
+      if (!props.confirmed) trackEvent({ name: "rsvp_submitted", source: "invite" }); // first confirmation only
       if (data.checkInToken) { router.replace(`/rsvp/${data.checkInToken}`); return; }
       setMsg(t.saved); router.refresh();
     } catch { setMsg(t.genericError); } finally { setBusy(null); }
