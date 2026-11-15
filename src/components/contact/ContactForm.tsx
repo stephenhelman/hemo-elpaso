@@ -8,9 +8,12 @@ import { Lang } from "@/types";
 
 interface Props {
   locale: Lang;
+  /** Editable heading/subheading (from Sanity); the dictionary text is the default. */
+  heading?: string;
+  sub?: string;
 }
 
-export default function ContactForm({ locale }: Props) {
+export default function ContactForm({ locale, heading, sub }: Props) {
   const t = contactFormTranslation[locale];
 
   const [submitted, setSubmitted] = useState(false);
@@ -85,9 +88,9 @@ export default function ContactForm({ locale }: Props) {
   return (
     <HoepCard>
       <h2 className="font-display font-bold text-neutral-900 text-xl mb-1">
-        {t.heading}
+        {heading ?? t.heading}
       </h2>
-      <p className="text-neutral-500 text-sm mb-6">{t.sub}</p>
+      <p className="text-neutral-500 text-sm mb-6">{sub ?? t.sub}</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name + Email */}

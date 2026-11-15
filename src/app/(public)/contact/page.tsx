@@ -1,17 +1,12 @@
-"use client";
+import { getContactPage } from "@/sanity/data";
+import ContactPageView from "@/components/contact/ContactPageView";
 
-import ContactHero from "@/components/contact/ContactHero";
-import ContactMap from "@/components/contact/ContactMap";
-import { ContactBody } from "@/components/contact/ContactBody";
-import { useLanguage } from "@/context/LanguageContext";
-
-export default function ContactPage() {
-  const { locale } = useLanguage();
-  return (
-    <>
-      <ContactHero locale={locale} />
-      <ContactBody locale={locale} />
-      <ContactMap locale={locale} />
-    </>
-  );
+/**
+ * Hero, form heading and map heading come from Sanity (contactPage); the sidebar comes from
+ * Site settings. The dictionary copy is the fallback. The old components in components/contact/*
+ * (ContactHero, ContactBody, ContactInfo, ContactMap) are kept as reference.
+ */
+export default async function ContactPage() {
+  const data = await getContactPage();
+  return <ContactPageView data={data} />;
 }

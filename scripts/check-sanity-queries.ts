@@ -12,7 +12,9 @@ import { resourcesPageQuery } from "../src/sanity/queries/resources";
 import { aboutPageQuery } from "../src/sanity/queries/about";
 import { fillYears } from "../src/lib/site";
 import { pick } from "../src/sanity/helpers/pick";
-import { scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
+import { getInvolvedPageQuery } from "../src/sanity/queries/getInvolved";
+import { contactPageQuery } from "../src/sanity/queries/contact";
+import { getInvolvedPageFallback, contactPageFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
 
 const run = async (q: string, dataset: any[]) => (await (await evaluate(parse(q), { dataset })).get()) as any;
 // Drop nulls/_key/_id and reduce people to what the page shows, so "absent" equals "null".
@@ -76,6 +78,29 @@ const norm = (x: any): any =>
   const orderOk = (rSeeded.sections.find((x: any) => x.category === "condition").items as any[]).map((i) => i.abbreviation).join() === "HA,HB,VWD";
   console.log(orderOk ? "PASS items sorted by order" : "FAIL order");
   ok = ok && orderOk;
+  // ---- Get Involved ----
+  const gSeeded = await run(getInvolvedPageQuery, docs);
+  const ga = JSON.stringify(norm({ sections: gSeeded.sections })), gb = JSON.stringify(norm({ sections: getInvolvedPageFallback().sections }));
+  console.log(ga === gb ? "PASS seeded get-involved page == dictionary fallback" : "FAIL seeded get-involved page differs from fallback");
+  if (ga !== gb) { ok = false; console.log(ga.slice(0, 700), "\n", gb.slice(0, 700)); }
+  const gText = JSON.stringify(gSeeded);
+  const gOk = !/sponsor(ship)? tier|bronze|platinum/i.test(gText) && (gSeeded.sections.find((x: any) => x._type === "cardGrid").cards.length === 4);
+  console.log(gOk ? "PASS get-involved: 4 cards, no sponsorship tiers" : "FAIL get-involved cards/tiers");
+  ok = ok && gOk;
+  const links = (gSeeded.sections.find((x: any) => x._type === "cardGrid").cards as any[]).every((c) => c.link?.type === "internal" && c.link?.value === "/contact");
+  console.log(links ? "PASS all four cards link to /contact" : "FAIL card links");
+  ok = ok && links;
+
+  // ---- Contact ----
+  const cSeeded = await run(contactPageQuery, docs);
+  const ca = JSON.stringify(norm({ ...cSeeded, seo: null })), cb = JSON.stringify(norm(contactPageFallback()));
+  console.log(ca === cb ? "PASS seeded contact page == dictionary fallback" : "FAIL seeded contact page differs from fallback");
+  if (ca !== cb) { ok = false; console.log(ca.slice(0, 900), "\n", cb.slice(0, 900)); }
+  const cText = JSON.stringify(cSeeded);
+  const cOk = !/office hours|horario|9:00|@[a-z0-9-]+\.[a-z]{2,}/i.test(cText) && !("sections" in cSeeded);
+  console.log(cOk ? "PASS contact: no office hours, no email, no free sections array" : "FAIL contact result has hours/email/sections");
+  ok = ok && cOk;
+
   // ---- About page ----
   const aSeeded = await run(aboutPageQuery, docs);
   const aFb = aboutPageFallback();

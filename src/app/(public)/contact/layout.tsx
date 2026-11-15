@@ -1,4 +1,5 @@
-import { getDefaultShareImage } from "@/sanity/data";
+import { getDefaultShareImage, getContactPage } from "@/sanity/data";
+import { pick } from "@/sanity/helpers/pick";
 import { getLocaleCookie } from "@/lib/locale";
 import { siteUrl } from "@/lib/site";
 import type { Metadata } from "next";
@@ -29,15 +30,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const c = content[locale as "en" | "es"];
   // Site-wide default share image from Sanity; when absent, Next serves src/app/opengraph-image.png.
-  const og = await getDefaultShareImage();
+  const defaultOg = await getDefaultShareImage();
+  // Page-level SEO from Sanity wins; the dictionary copy above is the fallback.
+  const page = await getContactPage();
+  const lang = locale === "es" ? "es" : "en";
+  const seoTitle = pick(page.seo?.title, lang);
+  const seoDesc = pick(page.seo?.description, lang);
+  const og = page.seo?.ogImage ?? defaultOg;
 
   return {
-    title: c.title,
-    description: c.description,
+    title: seoTitle ?? c.title,
+    description: seoDesc ?? c.description,
 
     openGraph: {
       title: c.ogTitle,
-      description: c.ogDescription,
+      description: seoDesc ?? c.ogDescription,
       url: `${site}/contact`,
       siteName: "Hemophilia Outreach of El Paso",
       locale: locale === "es" ? "es_MX" : "en_US",

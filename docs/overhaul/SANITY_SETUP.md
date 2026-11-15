@@ -56,7 +56,9 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `resourcesPage` | `page:resources` | Resources page + its SEO |
 | `person` | `person` | any page with a People block (Scholarships contact card today) |
 | `aboutPage` | `page:about` | About page + its SEO (it also reads `person`, so edits to people refresh it) |
-| `homePage`, `getInvolvedPage`, `contactPage` | `page:home`, … | nothing yet (those pages still render from code) |
+| `getInvolvedPage` | `page:get-involved` | Get Involved page + its SEO |
+| `contactPage` | `page:contact` | Contact page hero/headings + SEO. The sidebar reads Site settings, so a `siteSettings` change refreshes Contact too |
+| `homePage` | `page:home` | nothing yet (the home page still renders from code) |
 
 Safety net: even if a webhook is missed, cached Sanity data expires after 1 hour.
 A request with a wrong or missing signature gets **401**; with no secret configured the endpoint returns **500**.
@@ -68,7 +70,7 @@ npm run seed:sanity                                   # dry run: lists the 8 doc
 SANITY_WRITE_TOKEN=<editor token> npm run seed:sanity -- --write
 ```
 
-It writes (published, fixed ids, 24 documents): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
+It writes (published, fixed ids, 26 documents): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
 
 **Safe to re-run:** a document that already exists is **left alone** (edited text and uploaded photos are kept); only missing ones are created. `--overwrite` resets existing documents to the seed text on purpose. If you already created these people by hand in the Studio (with random ids), the seed will create a second copy under its own id: delete the duplicates in the Studio. Delete the write token when you are done.
 
@@ -108,7 +110,7 @@ Remove the board role in the admin (closes layer 1) **and** remove them under Sa
 
 ## 4. Known limits (this phase)
 
-- **Scholarships, Resources and About render from Sanity.** Home, Get Involved and Contact documents exist in the Studio but changing them does nothing yet.
+- **Scholarships, Resources, About, Get Involved and Contact render from Sanity.** Only the Home document exists without effect (the home page still renders from code).
 - **Photos** are served through our own route, `/api/people-photo/<person id>`, which fetches them from the private dataset with the read token (see section 7). A person with no photo, or an inactive person, shows initials.
 - The Studio is embedded in the admin shell; it fills the area to the right of the sidebar. I could not open it logged in from here (it needs an Auth0 board session and a Sanity login), so the embedded layout is **untested in a browser**.
 - Fonts/CSS: Studio injects its own styles; if it ever looks cramped on a phone, use a desktop browser.
@@ -148,3 +150,15 @@ How it works: the dataset is private, so a browser cannot load an image straight
 I could not test with a real photo from here (no token; anonymous queries return no documents, so I could not even find an asset URL). To check the raw-CDN question yourself: in the Studio open the photo → right-click the image → copy image address → paste it in a private window. If that shows the image, the dataset's assets are public; if it shows an authorization error (expected for a private dataset), the proxy is the right design.
 
 **Seed note:** documents the seed wrote earlier are never touched (see section 1.5). If a page document seeded before Phase 5C shows "invalid item" warnings on button or badge rows in the Studio, that is because those rows lacked a `_type`; run `npm run seed:sanity -- --write --overwrite` **only if you have not edited that page**, or just re-add the row.
+
+## 8. Get Involved and Contact (Phase 5D)
+
+**Webhook: nothing to change.** The webhook filter in section 1.4 already lists `getInvolvedPage` and `contactPage`, and the revalidate route maps them to `page:get-involved` and `page:contact`. Edits to **Site settings** also refresh the Contact page.
+
+**Get Involved** (Studio → Pages → Get Involved page): Page hero, a Card grid in the *Icon square with a link* variant (the four "Ways to Get Involved"; each card's link goes to `/contact` today) and a Call to action. The Sponsorship Tiers section is **not** part of the page: it stays hidden and dormant in code until the sponsors catalog exists.
+
+**Contact** (Studio → Pages → Contact page): the layout is fixed in code (hero, then the message form next to the contact-details sidebar, then the map). You edit only: SEO, the hero, the form heading and text, and the map heading and text. The **sidebar** is edited in **Site settings**: phone (display + international format), Facebook link and label, location label and the small note. There are no office hours. The info email (`info@…`) comes from the environment, not the Studio. Form labels, reasons, error messages and the success message are interface text and stay in code; so does the map embed and its "Get Directions" link.
+
+**Seed:** `npm run seed:sanity -- --write` now creates `getInvolvedPage` and `contactPage` if they are missing (26 documents in total).
+
+**`--repair`:** `SANITY_WRITE_TOKEN=… npm run seed:sanity -- --repair --write` adds the missing `_type` markers to list rows (buttons, badges, cards, facts, tags) in documents that already exist, so the Studio stops flagging them as invalid. It changes nothing else (text, photos and edits stay) and only writes documents that need it; a second run changes nothing. (I had not built `--repair` before this phase: there was no such flag. The earlier notes only mentioned `--overwrite`, which resets a document and is not what you want after editing.)

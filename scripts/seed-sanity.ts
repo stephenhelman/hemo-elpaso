@@ -9,6 +9,8 @@
  * - Idempotent and non-destructive: documents have fixed ids and are created only if
  *   missing; existing ones (edited text, uploaded photos) are left alone. Pass
  *   --overwrite to reset them to the seed text on purpose.
+ * - `--repair` (needs the token): adds missing `_type` markers to list rows in existing documents
+ *   (so the Studio stops flagging them) without changing anything else.
  * - No emails, no photos. Nobody is added who is not already shown on the live site.
  */
 import { createClient } from "@sanity/client";
@@ -21,6 +23,8 @@ import { scholarshipsPageFallback } from "../src/sanity/fallback";
 import { ptSimple } from "../src/sanity/helpers/pt";
 import { resourceItems, resourcesSections } from "../src/sanity/resourcesSource";
 import { aboutSections, ABOUT_IDS } from "../src/sanity/aboutSource";
+import { getInvolvedSections } from "../src/sanity/getInvolvedSource";
+import { contactPageFields } from "../src/sanity/contactSource";
 import { projectId, dataset, apiVersion } from "../src/sanity/env";
 
 const WRITE = process.argv.includes("--write");
@@ -180,7 +184,95 @@ docs.push(
   }),
 );
 
+// ---- Get Involved + Contact (Phase 5D) --------------------------------------------------------
+// Today's text. Sponsorship tiers are NOT seeded: that section stays hidden and dormant in code.
+docs.push(
+  withKeys({
+    _id: "getInvolvedPage",
+    _type: "getInvolvedPage",
+    seo: {
+      title: { en: "Get Involved", es: "Involúcrese" },
+      description: {
+        en: "Join the Hemophilia Outreach of El Paso (HOEP) community as a volunteer, sponsor, or supporter. Make a difference in the lives of families affected by bleeding disorders. Explore ways to volunteer and sponsor.",
+        es: "Únase a la comunidad de la Hemophilia Outreach of El Paso (HOEP) como voluntario, patrocinador o colaborador. Haga una diferencia en las vidas de familias afectadas por trastornos hemorrágicos. Explore formas de ser voluntario y patrocinar.",
+      },
+    },
+    sections: getInvolvedSections(),
+  }),
+  withKeys({
+    _id: "contactPage",
+    _type: "contactPage",
+    seo: {
+      title: { en: "Contact Us", es: "Contáctenos" },
+      description: {
+        en: "Get in touch with Hemophilia Outreach of El Paso (HOEP). We are here to help families affected by bleeding disorders. Reach out for support, questions, or to get involved in our community.",
+        es: "Comuníquese con la Hemophilia Outreach of El Paso (HOEP). Estamos aquí para ayudar a familias afectadas por trastornos hemorrágicos. Contáctenos para apoyo, preguntas o para involucrarse en nuestra comunidad.",
+      },
+    },
+    ...contactPageFields(),
+  }),
+);
+
+// ---- --repair: fix existing documents without touching their content --------------------------
+// Older seeds wrote list rows without `_type`, which the Studio flags as invalid items. --repair adds the
+// missing `_type`s to documents that already exist (nothing else changes) and writes only the ones that need it.
+const MEMBER_TYPES: Record<string, Record<string, string>> = {
+  // parent _type -> { array field -> member _type }
+  pageHero: { buttons: "heroButton", badges: "heroBadge" },
+  ctaBanner: { buttons: "ctaButton" },
+  featuredPerson: { badges: "localizedString" },
+  cardGrid: { cards: "card" },
+  resource: { facts: "localizedString", meta: "metaItem" },
+  scholarship: { eligibility: "eligibilityItem" },
+};
+export function repairTypes(node: any, parentType?: string): { value: any; changed: number } {
+  let changed = 0;
+  const walk = (n: any, ptype?: string): any => {
+    if (Array.isArray(n)) return n.map((x) => walk(x, ptype));
+    if (n && typeof n === "object") {
+      const type = typeof n._type === "string" ? n._type : ptype;
+      const out: any = {};
+      for (const [k, v] of Object.entries(n)) {
+        const member = MEMBER_TYPES[n._type ?? ""]?.[k];
+        if (member && Array.isArray(v)) {
+          out[k] = v.map((item: any) => {
+            const fixed = walk(item, member);
+            if (fixed && typeof fixed === "object" && !fixed._type) { changed++; return { ...fixed, _type: member }; }
+            return fixed;
+          });
+        } else out[k] = walk(v, type);
+      }
+      return out;
+    }
+    return n;
+  };
+  return { value: walk(node, parentType), changed };
+}
+
+async function repair() {
+  const token = process.env.SANITY_WRITE_TOKEN;
+  if (!token) throw new Error("SANITY_WRITE_TOKEN is not set");
+  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
+  const existing: any[] = await client.fetch(`*[_id in $ids]`, { ids: docs.map((d) => d._id) });
+  const tx = client.transaction();
+  let touched = 0;
+  for (const d of existing) {
+    const { value, changed } = repairTypes(d);
+    if (changed > 0) { touched++; tx.createOrReplace(value); console.log(`  repaired ${changed} list row(s): ${d._type} ${d._id}`); }
+    else console.log(`  fine: ${d._type} ${d._id}`);
+  }
+  if (touched > 0) await tx.commit();
+  console.log(`Repair done: ${touched} document(s) changed. Content, photos and edits are untouched; only missing _type markers were added.`);
+}
+
 async function main() {
+  if (process.argv.includes("--repair")) {
+    if (!WRITE) {
+      console.log("Repair is a write operation: run with --repair --write and SANITY_WRITE_TOKEN set. It only adds missing _type markers to list rows; nothing else changes.");
+      return;
+    }
+    return repair();
+  }
   console.log(`Sanity seed: project ${projectId}, dataset ${dataset}, ${docs.length} documents`);
   const OVERWRITE = process.argv.includes("--overwrite");
   if (!WRITE) {

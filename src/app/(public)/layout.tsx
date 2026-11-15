@@ -136,7 +136,15 @@ export default async function RootLayout({
         <SiteLayout
           registrationOpen={registrationOpen()}
           initialLocale={locale === "es" ? "es" : "en"}
-          siteInfo={{ orgName: settings.orgName, tagline: settings.tagline, phone: settings.phone }}
+          siteInfo={{
+            orgName: settings.orgName,
+            tagline: settings.tagline,
+            phone: settings.phone,
+            facebookUrl: settings.facebookUrl,
+            facebookLabel: settings.facebookLabel,
+            locationLabel: settings.locationLabel,
+            contactNote: settings.contactNote,
+          }}
         >{children}</SiteLayout>
       </body>
     </html>

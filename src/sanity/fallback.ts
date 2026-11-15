@@ -11,7 +11,9 @@ import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE } from "@/lib/site";
 import { localizedPt } from "./helpers/pt";
 import { resourceItems, resourcesSections } from "./resourcesSource";
 import { aboutSections, aboutFallbackRefs } from "./aboutSource";
-import type { AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { getInvolvedSections } from "./getInvolvedSource";
+import { contactPageFields } from "./contactSource";
+import type { ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 /** Used when Sanity is unreachable. Mirrors the code constants and dictionaries. */
 export function siteSettingsFallback(): SiteSettingsData {
@@ -115,4 +117,14 @@ export function resourcesPageFallback(): ResourcesPageData {
 /** Today's About page, expressed as Sanity-shaped data. */
 export function aboutPageFallback(): AboutPageData {
   return { seo: null, sections: aboutSections(aboutFallbackRefs()) as any };
+}
+
+/** Today's Get Involved page (no sponsorship tiers: that section is hidden). */
+export function getInvolvedPageFallback(): GetInvolvedPageData {
+  return { seo: null, sections: getInvolvedSections() as any };
+}
+
+/** Today's Contact page copy. */
+export function contactPageFallback(): ContactPageData {
+  return { seo: null, ...(contactPageFields() as any) };
 }
