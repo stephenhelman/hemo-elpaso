@@ -205,3 +205,13 @@ New or changed Spanish strings (the rest of the Resources copy is unchanged):
 - Editor-only labels for program tags: `Ages` → `Edades`, `Season` → `Temporada`, `Cost` → `Costo` (not shown on the site)
 - Condition card label `¿Qué es?` (unchanged text, now in code next to the block)
 - The register of the existing Resources copy is **usted** (e.g. `Aprenda`, `Contáctenos`); new resources written in the Studio should follow whatever register you decide on.
+
+## About page in Sanity (Phase 5C)
+
+No new Spanish copy was written; the About text moved from the dictionary to the Studio unchanged. Things for a fluent reviewer:
+
+- **Number words in Spanish** (the `{decades}` token): `una, dos, tres, cuatro, cinco, seis, siete, ocho, nueve`. Today it produces `Tres Décadas de Esperanza` (heading) and `durante tres décadas`. Singular (`una década`) is not handled: it needs a different noun, which only matters at one decade.
+- Spanish text that now contains tokens: `Más de {decadeYears} Años de Servicio` (badge, shows `Más de 30 Años…`), `Más de {decadeYears} años sirviendo a la comunidad…` (founding card), `más de {decadeYears} años apoyando…` (hero), `durante {decades} décadas` (founder story and spotlight).
+- Group heading for the hall of fame: `Pasados Presidentes - Salón de la Fama` (existing wording; the hyphen and the word order are probably worth fixing).
+- Existing About copy is a mix: hero and mission are **usted**, the closing banner (`¿Listo para Participar?`, `hay un lugar para ti`, `Participa`, `Contáctanos`) is **tú**.
+- The founder's initials on the spotlight are now computed from the name (`LF`, first and last name); board cards keep the first two words (`TF` for Teresita Fernandez de Robles). If you prefer first+last everywhere it would read `TR`.

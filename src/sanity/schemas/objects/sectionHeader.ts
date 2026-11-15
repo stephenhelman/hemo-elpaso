@@ -9,6 +9,13 @@ export const sectionHeader = defineType({
     defineField({ name: "heading", type: "localizedHeading" }),
     defineField({ name: "subheading", type: "localizedText" }),
     defineField({
+      name: "subWidth",
+      title: "Subheading width",
+      type: "string",
+      initialValue: "narrow",
+      options: { list: ["narrow", "wide"], layout: "radio" },
+    }),
+    defineField({
       name: "align",
       type: "string",
       initialValue: "center",

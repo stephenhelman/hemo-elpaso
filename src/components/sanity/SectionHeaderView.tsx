@@ -21,11 +21,11 @@ export default function SectionHeaderView({ header, locale }: { header?: Section
         </div>
       )}
       {header.heading && (
-        <h2 className="font-display text-3xl font-bold text-neutral-900 mb-3">
+        <h2 className={`font-display text-3xl font-bold text-neutral-900 ${sub ? "mb-3" : ""}`}>
           <HeadingText field={header.heading} locale={locale} />
         </h2>
       )}
-      {sub && <p className={`text-neutral-500 ${center ? "max-w-xl mx-auto" : ""}`}>{sub}</p>}
+      {sub && <p className={`text-neutral-500 ${center ? (header.subWidth === "wide" ? "max-w-2xl" : "max-w-xl") + " mx-auto" : ""}`}>{sub}</p>}
     </div>
   );
 }

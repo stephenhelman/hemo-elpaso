@@ -66,16 +66,20 @@ const DECADE_WORDS = {
 /**
  * Fill age-of-the-org placeholders in a translated string so it never goes stale:
  *   {years}       33            {decadeYears}  30  (floored to the decade)
- *   {decades}     three / tres  {Decades}      Three / Tres
+ *   {decades}     three / tres (capitalised at the start of a sentence)   {Decades}  always Three / Tres
  */
 export function fillYears(s: string, locale: "en" | "es", now: Date = new Date()): string {
   const d = decadesSinceFounding(now);
   const w = DECADE_WORDS[locale][d] ?? String(d);
+  const cap = w.charAt(0).toUpperCase() + w.slice(1);
   return s
     .replace(/\{years\}/g, String(yearsSinceFounding(now)))
     .replace(/\{decadeYears\}/g, String(d * 10))
-    .replace(/\{decades\}/g, w)
-    .replace(/\{Decades\}/g, w.charAt(0).toUpperCase() + w.slice(1));
+    // {decades}: capitalised at the start of the text or of a sentence ("{decades} Decades of Hope"), lower-case mid-sentence ("over {decades} decades")
+    .replace(/\{decades\}/g, (_m, offset: number, whole: string) =>
+      offset === 0 || /[.!?¿¡]\s*$/.test(whole.slice(0, offset)) ? cap : w,
+    )
+    .replace(/\{Decades\}/g, cap);
 }
 
 /** Append ?lang=en|es (or &lang=) so a link opened from an email renders in the patient's language. */

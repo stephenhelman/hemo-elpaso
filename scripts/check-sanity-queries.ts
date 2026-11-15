@@ -9,7 +9,10 @@ import { parse, evaluate } from "groq-js";
 import { docs } from "./seed-sanity";
 import { scholarshipsPageQuery } from "../src/sanity/queries/scholarships";
 import { resourcesPageQuery } from "../src/sanity/queries/resources";
-import { scholarshipsPageFallback, resourcesPageFallback } from "../src/sanity/fallback";
+import { aboutPageQuery } from "../src/sanity/queries/about";
+import { fillYears } from "../src/lib/site";
+import { pick } from "../src/sanity/helpers/pick";
+import { scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
 
 const run = async (q: string, dataset: any[]) => (await (await evaluate(parse(q), { dataset })).get()) as any;
 // Drop nulls/_key/_id and reduce people to what the page shows, so "absent" equals "null".
@@ -18,7 +21,9 @@ const sortKeys = (x: any): any =>
 const norm = (x: any): any =>
   sortKeys(JSON.parse(
     JSON.stringify(x, (k, v) => {
-      if (k === "_key" || k === "_id" || v === null) return undefined;
+      if (k === "_key" || k === "_id" || k === "order" || k === "bio" || v === null) return undefined;
+      // array-member `_type`s (card, ctaButton, metaItem, localizedString) are needed by Studio but not projected
+      if (k === "_type" && ["card", "ctaButton", "metaItem", "localizedString"].includes(v)) return undefined;
       if (k === "people" && Array.isArray(v)) return v.map((p: any) => ({ name: p.name, group: p.group, office: p.office }));
       return v;
     }),
@@ -71,5 +76,34 @@ const norm = (x: any): any =>
   const orderOk = (rSeeded.sections.find((x: any) => x.category === "condition").items as any[]).map((i) => i.abbreviation).join() === "HA,HB,VWD";
   console.log(orderOk ? "PASS items sorted by order" : "FAIL order");
   ok = ok && orderOk;
+  // ---- About page ----
+  const aSeeded = await run(aboutPageQuery, docs);
+  const aFb = aboutPageFallback();
+  // seeded sections keep _type/_key noise out of the comparison; pastPresidents comes from the people docs.
+  const aa = JSON.stringify(norm({ sections: aSeeded.sections }));
+  const ab = JSON.stringify(norm({ sections: aFb.sections }));
+  console.log(aa === ab ? "PASS seeded about page == dictionary fallback" : "FAIL seeded about page differs from fallback");
+  if (aa !== ab) {
+    ok = false;
+    const A = JSON.parse(aa).sections, B = JSON.parse(ab).sections;
+    A.forEach((sec: any, i: number) => { if (JSON.stringify(sec) !== JSON.stringify(B[i])) console.log(" differing section", i, "\n  seeded  :", JSON.stringify(sec).slice(0, 900), "\n  fallback:", JSON.stringify(B[i]).slice(0, 900)); });
+  }
+  const story = aSeeded.sections.find((x: any) => x._type === "textWithAside");
+  const names = story.pastPresidents.map((p: any) => p.name).join(", ");
+  const namesOk = names === "Lou Anne Fetters, Rosamaria Coles, Felix Garcia, Yolanda Ortiz";
+  console.log(namesOk ? `PASS past presidents list (${names})` : `FAIL past presidents list (${names})`);
+  ok = ok && namesOk;
+  const aText = JSON.stringify(aSeeded);
+  const aboutLeak = /@[a-z0-9-]+\.[a-z]{2,}/i.test(aText) || /Helman/i.test(aText);
+  console.log(!aboutLeak ? "PASS no email / no Helman in about result" : "FAIL about result has an email or Helman");
+  ok = ok && !aboutLeak;
+  // Computed numbers vs today's live page (the dictionary, filled by the same function as before)
+  const tokens = JSON.stringify(aSeeded.sections);
+  console.log("tokens present in seeded About:", ["{decadeYears}", "{decades}", "{years}"].map((t) => `${t}=${(tokens.match(new RegExp(t.replace(/[{}]/g, "\\$&"), "g")) ?? []).length}`).join(" "));
+  const hero = aSeeded.sections[0];
+  const rendered = (loc: "en" | "es") => `${(pick(hero.heading, loc) as any)?.[0]?.children?.[0]?.text} | ${(pick(hero.subheading, loc) as any)?.slice(0, 90)}`;
+  console.log(" EN hero:", rendered("en"));
+  console.log(" ES hero:", rendered("es"));
+  console.log(" stats years (home):", fillYears("{years}", "en"), "| {decadeYears}:", fillYears("{decadeYears}", "en"), "| {decades}:", fillYears("{decades}", "en"), fillYears("{decades}", "es"));
   process.exit(ok ? 0 : 1);
 })();

@@ -18,6 +18,9 @@ export const ICON_OPTIONS = [
   { title: "Sun", value: "sun" },
 ];
 
+/** Emoji an editor may use as a card visual (fixed list). */
+export const EMOJI_OPTIONS = ["🎯", "⭐", "🏆", "❤️", "🤝", "📚", "🏥", "👨‍👩‍👧"].map((e) => ({ title: e, value: e }));
+
 export const COLOR_OPTIONS = [
   { title: "Primary (burgundy)", value: "primary" },
   { title: "Secondary", value: "secondary" },

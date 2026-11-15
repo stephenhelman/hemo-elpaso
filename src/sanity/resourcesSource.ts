@@ -32,7 +32,7 @@ export function resourceItems(): ResourceItem[] {
       _id: `resource-condition-${slug(c.abbr)}`, category: "condition", order: (i + 1) * 10,
       name: c.name, nameEs: es.name, abbreviation: c.abbr, accent: c.color,
       summary: l(c.body, es.body),
-      facts: c.facts.map((f, j) => l(f, es.facts[j])),
+      facts: c.facts.map((f, j) => ({ _type: "localizedString", ...l(f, es.facts[j]) })),
       link: ext(c.link, l(c.linkLabel, es.linkLabel)),
       // the "What is it?" label is UI text and lives in code
     });
@@ -64,9 +64,9 @@ export function resourceItems(): ResourceItem[] {
       _id: `resource-youthProgram-${slug(c.name)}`, category: "youthProgram", order: (i + 1) * 10,
       name: c.name, nameEs: es.name, kicker: l(c.org, es.org), summary: l(c.body, es.body), icon: "sun",
       meta: [
-        { label: l("Ages", "Edades"), value: l(c.ages, es.ages) },
-        { label: l("Season", "Temporada"), value: l(c.season, es.season) },
-        { label: l("Cost", "Costo"), value: l(c.cost, es.cost) },
+        { _type: "metaItem", label: l("Ages", "Edades"), value: l(c.ages, es.ages) },
+        { _type: "metaItem", label: l("Season", "Temporada"), value: l(c.season, es.season) },
+        { _type: "metaItem", label: l("Cost", "Costo"), value: l(c.cost, es.cost) },
       ],
       link: ext(c.link, l("Learn More", "Más información")),
     } as any);

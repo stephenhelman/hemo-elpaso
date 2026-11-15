@@ -5,8 +5,9 @@ import { sanityFetch } from "./fetch";
 import { siteSettingsQuery, SITE_SETTINGS_TAGS } from "./queries/siteSettings";
 import { scholarshipsPageQuery, SCHOLARSHIPS_TAGS } from "./queries/scholarships";
 import { resourcesPageQuery, RESOURCES_TAGS } from "./queries/resources";
-import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback } from "./fallback";
-import type { ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { aboutPageQuery, ABOUT_TAGS } from "./queries/about";
+import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "./fallback";
+import type { AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 const defined = <T extends object>(o: T): Partial<T> =>
   Object.fromEntries(Object.entries(o).filter(([, v]) => v != null)) as Partial<T>;
@@ -43,6 +44,15 @@ export const getResourcesPage = cache(async (): Promise<ResourcesPageData> => {
     query: resourcesPageQuery,
     tags: RESOURCES_TAGS,
     fallback: resourcesPageFallback,
+  });
+  return { ...data, sections: data.sections ?? [] };
+});
+
+export const getAboutPage = cache(async (): Promise<AboutPageData> => {
+  const { data } = await sanityFetch<AboutPageData>({
+    query: aboutPageQuery,
+    tags: ABOUT_TAGS,
+    fallback: aboutPageFallback,
   });
   return { ...data, sections: data.sections ?? [] };
 });

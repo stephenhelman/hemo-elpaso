@@ -3,7 +3,7 @@ import type { Localized } from "./helpers/pick";
 type PT = any[]; // portable text blocks
 
 export type LinkData = { label: Localized; type: "internal" | "external" | "phone" | "email"; value: string };
-export type SectionHeaderData = { eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized; align?: "left" | "center" } | null;
+export type SectionHeaderData = { eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized; align?: "left" | "center"; subWidth?: "narrow" | "wide" } | null;
 
 export type PersonData = {
   _id: string;
@@ -13,7 +13,7 @@ export type PersonData = {
   office?: Localized;
   title?: Localized;
   bio?: Localized<PT>;
-  photo?: { url?: string | null; alt?: Localized } | null;
+  photo?: { v?: string | null; alt?: Localized } | null;
 };
 
 export type ResourceItem = {
@@ -36,11 +36,19 @@ export type ResourceItem = {
 };
 
 export type Section =
-  | { _key: string; _type: "pageHero"; decoration?: "one" | "two"; variant?: "full" | "compact" | "titleOnly"; eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized;
+  | { _key: string; _type: "pageHero"; decoration?: "one" | "two"; width?: "narrow" | "wide"; variant?: "full" | "compact" | "titleOnly"; eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized;
       buttons?: { style?: string; link: LinkData }[]; badges?: { text: Localized; icon?: string }[] }
   | { _key: string; _type: "richText"; header?: SectionHeaderData; body?: Localized<PT>; background?: "white" | "neutral"; width?: "narrow" | "wide" }
   | { _key: string; _type: "ctaBanner"; heading?: Localized; subheading?: Localized; icon?: string; background?: "white" | "neutral" | "primary";
-      showIfRegistrationOpen?: boolean; buttons?: { style?: string; icon?: string; showIfRegistrationOpen?: boolean; link: LinkData }[] }
+      showIfRegistrationOpen?: boolean; buttons?: { _type?: string; style?: string; icon?: string; showIfRegistrationOpen?: boolean; link: LinkData }[] }
+  | { _key: string; _type: "textWithAside"; eyebrow?: Localized; heading?: Localized<PT>; body?: Localized<PT>; credit?: PersonData | null; creditTitle?: Localized;
+      aside?: "foundingYear" | "pastPresidents" | "both"; foundedLabel?: Localized; foundedCaption?: Localized; pastPresidentsHeading?: Localized;
+      pastPresidents?: { _id: string; name: string }[] }
+  | { _key: string; _type: "cardGrid"; header?: SectionHeaderData; variant?: "emojiCard" | "iconCircle" | "iconSquareLink"; columns?: number;
+      background?: "white" | "neutral"; continuesPrevious?: boolean;
+      cards?: { _key?: string; icon?: string | null; emoji?: string | null; title?: Localized; body?: Localized; accent?: string | null;
+                link?: { label?: Localized; type?: string; value?: string } | null }[] }
+  | { _key: string; _type: "featuredPerson"; eyebrow?: Localized; subtitle?: Localized; quote?: Localized; body?: Localized<PT>; badges?: Localized[]; background?: "dark"; person?: PersonData | null }
   | { _key: string; _type: "resourceList"; header?: SectionHeaderData; category: string; layout?: "rich" | "org" | "provider" | "program" | "linkCard";
       columns?: number; items?: ResourceItem[] }
   | { _key: string; _type: "peopleGrid"; header?: SectionHeaderData; layout?: "card" | "compact" | "contact"; people?: PersonData[] };
@@ -60,6 +68,8 @@ export type ScholarshipData = {
 } | null;
 
 export type ScholarshipsPageData = { seo?: SeoData; sections: Section[]; scholarship?: ScholarshipData };
+
+export type AboutPageData = { seo?: SeoData; sections: Section[] };
 
 export type ResourcesPageData = { seo?: SeoData; sections: Section[] };
 

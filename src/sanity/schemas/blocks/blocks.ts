@@ -27,6 +27,13 @@ export const pageHero = defineType({
       },
     }),
     defineField({
+      name: "width",
+      type: "string",
+      initialValue: "narrow",
+      description: "How wide the text column is before it wraps.",
+      options: { layout: "radio", list: [{ title: "Narrow", value: "narrow" }, { title: "Wide", value: "wide" }] },
+    }),
+    defineField({
       name: "decoration",
       type: "string",
       initialValue: "two",
