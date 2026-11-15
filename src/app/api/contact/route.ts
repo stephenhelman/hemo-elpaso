@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import ContactFormNotification from "@/messages/ContactFormNotification";
+import ContactAutoReply from "@/messages/ContactAutoReply";
 import { getContactRecipient } from "@/lib/contact-routing";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -71,37 +72,16 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 2. Auto-reply confirmation to the sender ──────────────────────────────
+    const autoReplyHtml = await render(
+      ContactAutoReply({ name, reasonLabel, lang: isEs ? "es" : "en" }),
+    );
     const autoReply = await resend.emails.send({
       from: `HOEP <${contactEmail()}>`,
       to: email,
       subject: isEs
         ? "Hemos recibido su mensaje — HOEP"
         : "We received your message — HOEP",
-      html: isEs
-        ? `
-          <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
-            <h2 style="color:#8B1538">Gracias, ${name}</h2>
-            <p>Hemos recibido su mensaje sobre <strong>${reasonLabel}</strong>.</p>
-            <p>Nos pondremos en contacto en 1–2 días hábiles.</p>
-            <hr style="border-color:#e5e7eb;margin:24px 0"/>
-            <p style="color:#6b7280;font-size:13px">
-              Hemophilia Outreach of El Paso<br/>
-              ${contactEmail()}
-            </p>
-          </div>
-        `
-        : `
-          <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
-            <h2 style="color:#8B1538">Thank you, ${name}</h2>
-            <p>We received your message regarding <strong>${reasonLabel}</strong>.</p>
-            <p>We'll get back to you within 1–2 business days.</p>
-            <hr style="border-color:#e5e7eb;margin:24px 0"/>
-            <p style="color:#6b7280;font-size:13px">
-              Hemophilia Outreach of El Paso<br/>
-              ${contactEmail()}
-            </p>
-          </div>
-        `,
+      html: autoReplyHtml,
     });
     if (autoReply.error) {
       console.error("contact auto-reply failed", { error: autoReply.error.name });
