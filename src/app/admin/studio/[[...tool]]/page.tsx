@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { NextStudio } from "next-sanity/studio";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import config from "@/sanity/sanity.config";
+import StudioFrame from "@/components/admin/StudioFrame";
 
 export const dynamic = "force-dynamic";
 export { metadata, viewport } from "next-sanity/studio";
@@ -16,10 +17,10 @@ export default async function StudioPage() {
   if (!admin) redirect("/");
   if (!admin.can("canEditSiteContent")) redirect("/admin/dashboard");
 
-  // Fill the content area to the right of the admin sidebar (below the mobile top bar).
+  // StudioFrame places Studio below the admin header(s) with a gap and fills the rest of the viewport.
   return (
-    <div className="fixed inset-x-0 bottom-0 top-16 lg:top-0 lg:left-64 z-10 bg-white">
+    <StudioFrame>
       <NextStudio config={config} />
-    </div>
+    </StudioFrame>
   );
 }

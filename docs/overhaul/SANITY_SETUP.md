@@ -19,6 +19,10 @@ When I checked (2026-11-14) the dataset answered queries with **no token**, i.e.
 2. Name: `hoep-web-read`. Permissions: **Viewer**.
 3. Copy it once (it is not shown again). Put it in the hosting environment as `SANITY_API_READ_TOKEN` (Production and Preview). **Never** prefix it `NEXT_PUBLIC_`; it must stay server-only. (The client file imports `server-only`, so a client component cannot import it.)
 
+### 1.2b Allow the site in Sanity CORS
+
+The embedded Studio talks to Sanity from the browser. In <https://www.sanity.io/manage> → project → **API** → **CORS origins**, add every origin that opens `/admin/studio` (your production domain, any preview domain, and `http://localhost:3000` for development) **with "Allow credentials" ticked**. Without it the Studio shows "Before you continue… add the following URL as a CORS origin".
+
 ### 1.3 Environment variables
 
 | Variable | Where | Value / notes |
