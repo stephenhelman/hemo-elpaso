@@ -62,7 +62,7 @@ Wait for Vercel to show a green check + certificate issued on each domain (usual
 | `REGISTRATION_OPEN` | `false` (leave closed until the smoke test passes) |
 | `NEXT_PUBLIC_EMAIL_DOMAIN` | **don't change yet** (Part C) |
 | `EMAIL_FROM` | **don't change yet** (Part C) |
-| everything else (`AUTH0_ISSUER_BASE_URL`, `AUTH0_SECRET`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `DATABASE_URL`, `RESEND_API_KEY`, `TURNSTILE_*`, `CHECKIN_TOKEN_KEY`, `CRON_SECRET`, `R2_*`, `DEEPL_API_KEY`, `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY`) | unchanged. None of them contains the website's domain. |
+| everything else (`AUTH0_ISSUER_BASE_URL`, `AUTH0_SECRET`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `DATABASE_URL`, `DIRECT_URL`, `RESEND_API_KEY`, `TURNSTILE_*`, `CHECKIN_TOKEN_KEY`, `CRON_SECRET`, `R2_*`, `DEEPL_API_KEY`, `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY`) | unchanged. None of them contains the website's domain. |
 
 Then **Redeploy Production** (no build cache).
 
@@ -119,11 +119,18 @@ Recreate these at the new DNS host for `hemoelpaso.org` if you're keeping the sa
 9. **Form with registration on, on a test basis**: set `REGISTRATION_OPEN=true` in Vercel Production, redeploy, submit `/register-info` with a `+test` address, confirm: success message, confirmation email arrives, patient appears in admin → Patients. **Delete the test patient** (admin → Patients → Delete). Set `REGISTRATION_OPEN=false` again and redeploy until you want to launch.
 10. `https://hemoelpaso.org/api/cron/send-reminders` without credentials returns 401 (cron is protected).
 
+## Database migrations on deploy
+
+Production migrations are **automatic**: each Production deploy runs `prisma migrate deploy` before `next build`
+(`scripts/vercel-build.mjs`, set in `vercel.json`); previews never migrate. Before the first Production deploy make sure
+`DIRECT_URL` is set for Production and that the dashboard Build Command override is off. Full workflow and the manual
+fallback (`npm run db:deploy`, needs `.env.production.local` and a typed confirmation): `docs/DATABASE.md`.
+
 ## After any database reset/restore
 
 Seed the email template catalogue (admin → Settings → Email templates) or it stays empty:
 `npm run db:seed-templates` on a dev DB, or on production (on purpose):
-`ALLOW_PROD_DB=yes npx tsx scripts/seed-templates.ts`. Idempotent. `scripts/bootstrap-admin.ts` also does it.
+`ALLOW_PROD_DB=yes npx tsx scripts/seed-templates.ts` (with the production `DATABASE_URL`/`DIRECT_URL` in your shell). Idempotent. `scripts/bootstrap-admin.ts` also does it.
 
 ## Rollback
 
@@ -142,7 +149,8 @@ The Vercel-provided `https://<project>.vercel.app` URL always keeps working whil
 
 | Variable | Notes |
 | --- | --- |
-| `DATABASE_URL` | production Neon (pooled) |
+| `DATABASE_URL` | production Neon (pooled). Production only: the Preview environment gets the **dev branch** string instead |
+| `DIRECT_URL` | production Neon, **direct** (non-pooled). Needed because every Production build runs `prisma migrate deploy` |
 | `AUTH0_SECRET`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_ISSUER_BASE_URL` | unchanged |
 | `AUTH0_BASE_URL` | site URL |
 | `NEXT_PUBLIC_BASE_URL` | site URL |

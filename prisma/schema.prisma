@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL") // pooled (Neon -pooler host): what the app uses at runtime
+  directUrl = env("DIRECT_URL") // direct, non-pooled: used by `prisma migrate` (Neon needs this for migrations)
 }
 
 enum EventTopic {
