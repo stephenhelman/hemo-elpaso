@@ -7,4 +7,4 @@ export const homePageQuery = groq`
     ${sectionsFragment}
   }`;
 // The events themselves come from Postgres, so only the page and site settings are tagged here.
-export const HOME_TAGS = ["page:home", "siteSettings"];
+export const HOME_TAGS = ["page:home", "siteSettings", "sponsor"];

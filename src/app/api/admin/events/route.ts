@@ -1,3 +1,4 @@
+import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
       liveEnabled: body.liveEnabled || false,
       registrationEnabled: body.registrationEnabled === true,
       createdBy: admin!.email,
+      sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) ?? [],
       targeting: {
         create: {
           targetConditions: Array.isArray(body.targetConditions) ? body.targetConditions : [],

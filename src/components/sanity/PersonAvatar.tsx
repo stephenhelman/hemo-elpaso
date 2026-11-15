@@ -13,7 +13,7 @@ export function initialsOf(name: string, style: "firstTwo" | "firstLast" = "firs
 }
 
 /**
- * Circle with the person's photo (served by /api/people-photo, because the dataset is private)
+ * Circle with the person's photo (served by /api/sanity-image/person, because the dataset is private)
  * or, when there is no photo or it fails to load, their initials. `className` carries size/colour.
  */
 export default function PersonAvatar({
@@ -38,7 +38,7 @@ export default function PersonAvatar({
       {showPhoto && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/api/people-photo/${encodeURIComponent(person._id)}?w=${size}&v=${encodeURIComponent(v!)}`}
+          src={`/api/sanity-image/person/${encodeURIComponent(person._id)}?w=${size}&v=${encodeURIComponent(v!)}`}
           alt={pick(person.photo?.alt, locale) ?? person.name}
           loading="lazy"
           onError={() => setFailed(true)}

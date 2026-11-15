@@ -15,6 +15,8 @@ import { pick } from "../src/sanity/helpers/pick";
 import { getInvolvedPageQuery } from "../src/sanity/queries/getInvolved";
 import { contactPageQuery } from "../src/sanity/queries/contact";
 import { homePageQuery } from "../src/sanity/queries/home";
+import { visibleSponsors } from "../src/sanity/helpers/sponsors";
+import { siteSettingsQuery } from "../src/sanity/queries/siteSettings";
 import { yearsSinceFounding } from "../src/lib/site";
 import { homePageFallback, getInvolvedPageFallback, contactPageFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
 
@@ -160,5 +162,32 @@ const norm = (x: any): any =>
   console.log(" EN hero:", rendered("en"));
   console.log(" ES hero:", rendered("es"));
   console.log(" stats years (home):", fillYears("{years}", "en"), "| {decadeYears}:", fillYears("{decadeYears}", "en"), "| {decades}:", fillYears("{decades}", "en"), fillYears("{decades}", "es"));
+  // ---- Sponsors ----
+  const logo = (ref: string) => ({ _type: "image", asset: { _type: "reference", _ref: ref }, alt: { en: "Logo" } });
+  const sp = (id: string, name: string, order: number, active: boolean) => ({
+    _id: id, _type: "sponsor", name, order, active, logo: logo(`image-${id}-100x100-png`), website: "https://example.org",
+    _updatedAt: "2026-01-01T00:00:00Z",
+    // private data that must never come out of a projection, even if someone typed it into the document
+    contactEmail: "secret@example.org", amount: 5000, tier: "gold",
+  });
+  const sdocs = [sp("s1", "Alpha", 20, true), sp("s2", "Bravo", 10, true), sp("s3", "Hidden", 5, false), sp("s4", "Delta", 30, true)];
+  const homeDoc = (mode: string, extra: any = {}) => ({ _id: "homePage", _type: "homePage", sections: [{ _key: "k", _type: "sponsorStrip", mode, layout: "row", showNames: true, ...extra }] });
+  const all = (await run(homePageQuery, [...sdocs, homeDoc("allActive")])).sections[0].sponsors.map((x: any) => x.name).join(",");
+  console.log(all === "Bravo,Alpha,Delta" ? "PASS sponsor strip allActive: by order, inactive hidden" : `FAIL sponsor strip allActive (${all})`);
+  ok = ok && all === "Bravo,Alpha,Delta";
+  const refs = (ids: string[]) => ids.map((r) => ({ _key: r, _type: "reference", _ref: r }));
+  const sel = visibleSponsors((await run(homePageQuery, [...sdocs, homeDoc("selected", { sponsors: refs(["s4", "s3", "s1"]) })])).sections[0].sponsors).map((x: any) => x.name).join(",");
+  console.log(sel === "Delta,Alpha" ? "PASS sponsor strip selected: editor order kept, inactive skipped" : `FAIL sponsor strip selected (${sel})`);
+  ok = ok && sel === "Delta,Alpha";
+  const leak = /secret@|5000|gold|contactEmail/i.test(JSON.stringify(await run(homePageQuery, [...sdocs, homeDoc("allActive")])));
+  console.log(!leak ? "PASS sponsor projection leaks no private fields" : "FAIL sponsor projection leaked a private field");
+  ok = ok && !leak;
+  const settings = (await run(siteSettingsQuery, [...sdocs, { _id: "siteSettings", _type: "siteSettings", orgName: "x", footerSponsors: refs(["s1", "s3", "s2", "s4"]) }])).footerSponsors.map((x: any) => x.name).join(",");
+  console.log(settings === "Bravo,Alpha,Delta" ? "PASS footerSponsors: active only" : `FAIL footerSponsors (${settings})`);
+  ok = ok && settings === "Bravo,Alpha,Delta";
+  const emptyFooter = (await run(siteSettingsQuery, [...sdocs, { _id: "siteSettings", _type: "siteSettings", orgName: "x" }])).footerSponsors;
+  console.log(Array.isArray(emptyFooter) && emptyFooter.length === 0 ? "PASS footerSponsors empty when unset" : `FAIL footerSponsors unset (${JSON.stringify(emptyFooter)})`);
+  ok = ok && Array.isArray(emptyFooter) && emptyFooter.length === 0;
+
   process.exit(ok ? 0 : 1);
 })();

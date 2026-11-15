@@ -7,6 +7,8 @@ import { EventSlugPage } from "@/components/events/event-page/EventSlugPage";
 import { SerializedEvent } from "@/lib/event-utils";
 import EventSchema from "@/components/seo/EventSchema";
 import type { Lang } from "@/types";
+import { getSponsorsByIds } from "@/sanity/sponsors";
+import SponsoredBy from "@/components/sanity/SponsoredBy";
 import { registrationState, activeHeadcount } from "@/lib/rsvp";
 
 interface Props {
@@ -30,6 +32,8 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   // Drafts are not public.
   if (!event || event.status === "draft") notFound();
+
+  const sponsors = await getSponsorsByIds(event.sponsorSanityIds ?? []);
 
   // people (party sizes), same basis as the capacity check
   const currentRsvpCount = await activeHeadcount(event.id);
@@ -76,6 +80,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         eventId={event.id}
         turnstileSiteKey={process.env.TURNSTILE_SITE_KEY ?? null}
       />
+      <SponsoredBy sponsors={sponsors} locale={locale} />
     </>
   );
 }

@@ -6,4 +6,4 @@ export const aboutPageQuery = groq`
     ${seoFragment},
     ${sectionsFragment}
   }`;
-export const ABOUT_TAGS = ["page:about", "person", "siteSettings"];
+export const ABOUT_TAGS = ["page:about", "person", "siteSettings", "sponsor"];

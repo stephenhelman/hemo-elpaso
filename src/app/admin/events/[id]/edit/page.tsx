@@ -6,6 +6,7 @@ import EventEditForm from "@/components/admin/EventEditForm";
 import type { Lang } from "@/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { getActiveSponsorOptions } from "@/sanity/sponsors";
 import EventQuickActions from "@/components/admin/EventQuickActions";
 
 interface Props {
@@ -27,6 +28,7 @@ export default async function EditEventPage({ params }: Props) {
   });
 
   if (!event) notFound();
+  const sponsorOptions = await getActiveSponsorOptions();
 
   return (
     <div className="p-4 md:p-8">
@@ -50,7 +52,7 @@ export default async function EditEventPage({ params }: Props) {
         <EventQuickActions eventId={event.id} />
       </div>
 
-      <EventEditForm event={event} locale={locale} />
+      <EventEditForm event={event} locale={locale} sponsorOptions={sponsorOptions} />
     </div>
   );
 }

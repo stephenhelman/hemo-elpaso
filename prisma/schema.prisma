@@ -501,6 +501,9 @@ model Event {
   sponsors             EventSponsor[]
   invitations          Invitation[]
 
+  // Sanity sponsor document ids shown on the public event page (public listing only; the Sponsor model above is the private CRM)
+  sponsorSanityIds String[] @default([])
+
   @@map("events")
 }
 

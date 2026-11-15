@@ -5,11 +5,14 @@ import { Facebook, Mail, Phone, Heart } from "lucide-react";
 import { footerTranslation } from "@/translation/layoutPage";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteFlags } from "@/context/SiteFlagsContext";
+import { useSiteInfo } from "@/context/SiteSettingsContext";
+import SponsorLogo from "@/components/sanity/SponsorLogo";
 
 export default function Footer() {
   const { locale } = useLanguage();
   const { registrationOpen } = useSiteFlags();
   const t = footerTranslation[locale];
+  const sponsors = (useSiteInfo().footerSponsors ?? []).slice(0, 4);
 
   return (
     <footer className="bg-neutral-900 text-neutral-300">
@@ -102,6 +105,24 @@ export default function Footer() {
           )}
         </div>
       </div>
+
+      {/* Sponsors (optional; hidden when none are chosen in Site settings) */}
+      {sponsors.length > 0 && (
+        <div className="border-t border-neutral-800">
+          <div className="container-max px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-5">
+              {locale === "es" ? "Gracias a nuestros patrocinadores" : "Thank you to our sponsors"}
+            </h3>
+            <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+              {sponsors.map((s) => (
+                <li key={s._id}>
+                  <SponsorLogo sponsor={s} locale={locale} height={36} width={160} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Bar */}
       <div className="border-t border-neutral-800">
