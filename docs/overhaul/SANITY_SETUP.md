@@ -55,7 +55,8 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `resource` | `resource` | Resources page (all five lists) |
 | `resourcesPage` | `page:resources` | Resources page + its SEO |
 | `person` | `person` | any page with a People block (Scholarships contact card today) |
-| `homePage`, `aboutPage`, `getInvolvedPage`, `contactPage` | `page:home`, `page:about`, … | nothing yet (those pages still render from code) |
+| `aboutPage` | `page:about` | About page + its SEO (it also reads `person`, so edits to people refresh it) |
+| `homePage`, `getInvolvedPage`, `contactPage` | `page:home`, … | nothing yet (those pages still render from code) |
 
 Safety net: even if a webhook is missed, cached Sanity data expires after 1 hour.
 A request with a wrong or missing signature gets **401**; with no secret configured the endpoint returns **500**.
@@ -67,7 +68,7 @@ npm run seed:sanity                                   # dry run: lists the 8 doc
 SANITY_WRITE_TOKEN=<editor token> npm run seed:sanity -- --write
 ```
 
-It writes (published, fixed ids): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
+It writes (published, fixed ids, 24 documents): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
 
 **Safe to re-run:** a document that already exists is **left alone** (edited text and uploaded photos are kept); only missing ones are created. `--overwrite` resets existing documents to the seed text on purpose. If you already created these people by hand in the Studio (with random ids), the seed will create a second copy under its own id: delete the duplicates in the Studio. Delete the write token when you are done.
 
@@ -107,8 +108,8 @@ Remove the board role in the admin (closes layer 1) **and** remove them under Sa
 
 ## 4. Known limits (this phase)
 
-- **Scholarships and Resources render from Sanity.** Home, About, Get Involved and Contact documents exist in the Studio but changing them does nothing yet.
-- **Photos are not displayed.** Assets in a private dataset are not publicly fetchable, so photo URLs would break; people show initials as they do today. Showing photos needs an image proxy route (planned with the About page).
+- **Scholarships, Resources and About render from Sanity.** Home, Get Involved and Contact documents exist in the Studio but changing them does nothing yet.
+- **Photos** are served through our own route, `/api/people-photo/<person id>`, which fetches them from the private dataset with the read token (see section 7). A person with no photo, or an inactive person, shows initials.
 - The Studio is embedded in the admin shell; it fills the area to the right of the sidebar. I could not open it logged in from here (it needs an Auth0 board session and a Sanity login), so the embedded layout is **untested in a browser**.
 - Fonts/CSS: Studio injects its own styles; if it ever looks cramped on a phone, use a desktop browser.
 
@@ -125,3 +126,25 @@ If Sanity is unreachable, the token is missing/expired, or a document is not pub
 - **Phones** on local providers are the provider's own number (type the display form and the +1… form; tap-to-call uses the +1… form). The HOEP phone lives in Site settings.
 - *Last verified* is for editors only; it is never sent to the website.
 - Hiding: untick **Show on site**. As with people, the record is still stored and visible to project members.
+
+## 7. About page and people photos (Phase 5C)
+
+**Editing the About page** (Studio → Pages → About page): sections in order are *Page hero*, *Text with aside* (the founder story), two *Card grids* (Mission/Objective/Goal and What We Do; the second is set to "continues previous" so both sit in one band), *Featured person* (the founder spotlight), *People* (board) and *Call to action*.
+
+**Number tokens** (work in every text field on every page, both languages; the Studio shows the list under each field):
+
+| Type this | Shows today (EN / ES) | Notes |
+| --- | --- | --- |
+| `{years}` | 33 | years since the founding year (1993, set in code) |
+| `{decadeYears}` | 30 | years rounded down to the decade ("Over 30 years") |
+| `{decades}` | three / tres | the decade count as a word; capitalised at the start of a sentence ("Three Decades of Hope") |
+
+They update by themselves every January. Unknown tokens such as `{foo}` are shown exactly as typed. (The brief asked for two tokens; `{decadeYears}` is a third because the live page says "over 30 years", not 33.)
+
+**Past presidents list** (inside *Text with aside*): shows every *active* person whose group is **Past president or Founder**, in their Order (the founder is included because the live list starts with her). To add someone, create a person with that group; there is nothing to pick on the page.
+
+**Photos.** Upload a photo on the person (with English alt text). It appears on the founder spotlight, the board cards and the contact card; people without one show initials.
+How it works: the dataset is private, so a browser cannot load an image straight from `cdn.sanity.io`. `/api/people-photo/<id>` fetches the image with the server-only read token and serves it from our own domain (square crop, 128–640 px, cached). It only serves the photo of an **active person** and nothing else from Sanity. Replacing a photo changes its cache key automatically.
+I could not test with a real photo from here (no token; anonymous queries return no documents, so I could not even find an asset URL). To check the raw-CDN question yourself: in the Studio open the photo → right-click the image → copy image address → paste it in a private window. If that shows the image, the dataset's assets are public; if it shows an authorization error (expected for a private dataset), the proxy is the right design.
+
+**Seed note:** documents the seed wrote earlier are never touched (see section 1.5). If a page document seeded before Phase 5C shows "invalid item" warnings on button or badge rows in the Studio, that is because those rows lacked a `_type`; run `npm run seed:sanity -- --write --overwrite` **only if you have not edited that page**, or just re-add the row.

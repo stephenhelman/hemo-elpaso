@@ -7,6 +7,9 @@ import RichTextBlock from "./RichTextBlock";
 import CtaBannerBlock from "./CtaBannerBlock";
 import PeopleGridBlock from "./PeopleGridBlock";
 import ResourceListBlock from "./ResourceListBlock";
+import TextWithAsideBlock from "./TextWithAsideBlock";
+import CardGridBlock from "./CardGridBlock";
+import FeaturedPersonBlock from "./FeaturedPersonBlock";
 
 /** Maps a Sanity section to its component. Unknown types render nothing. */
 export default function SectionRenderer({ section, locale }: { section: Section; locale: Lang }) {
@@ -17,6 +20,12 @@ export default function SectionRenderer({ section, locale }: { section: Section;
       return <RichTextBlock block={section} locale={locale} />;
     case "ctaBanner":
       return <CtaBannerBlock block={section} locale={locale} />;
+    case "textWithAside":
+      return <TextWithAsideBlock block={section} locale={locale} />;
+    case "cardGrid":
+      return <CardGridBlock blocks={[section]} locale={locale} />;
+    case "featuredPerson":
+      return <FeaturedPersonBlock block={section} locale={locale} />;
     case "resourceList":
       return <ResourceListBlock block={section} locale={locale} />;
     case "peopleGrid":

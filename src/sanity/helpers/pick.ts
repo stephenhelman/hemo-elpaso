@@ -1,4 +1,5 @@
 import type { Lang } from "@/types";
+import { fillYears } from "@/lib/site";
 
 export type Localized<T = string> = { en?: T | null; es?: T | null } | null | undefined;
 
@@ -13,9 +14,27 @@ const isEmptyValue = (v: unknown): boolean => {
   return false;
 };
 
-/** The field in `locale`, falling back to English when the Spanish is missing or empty. */
+/** Replace {years}, {decades} and {decadeYears} in text. Unknown tokens are left as written. */
+export function fillPlaceholders<T>(value: T, locale: Lang): T {
+  if (typeof value === "string") return (value.includes("{") ? fillYears(value, locale) : value) as T;
+  if (Array.isArray(value)) {
+    // portable text: only span text is touched
+    return value.map((b: any) =>
+      b && Array.isArray(b.children)
+        ? { ...b, children: b.children.map((c: any) => (typeof c?.text === "string" ? { ...c, text: fillPlaceholders(c.text, locale) } : c)) }
+        : b,
+    ) as T;
+  }
+  return value;
+}
+
+/**
+ * The field in `locale`, falling back to English when the Spanish is missing or empty,
+ * with {years}/{decades} filled in (after the language is chosen).
+ */
 export function pick<T>(field: Localized<T>, locale: Lang): T | undefined {
   if (!field) return undefined;
   const v = field[locale];
-  return (isEmptyValue(v) ? field.en : v) ?? undefined;
+  const chosen = (isEmptyValue(v) ? field.en : v) ?? undefined;
+  return chosen === undefined ? undefined : fillPlaceholders(chosen as T, locale);
 }

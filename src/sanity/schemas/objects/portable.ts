@@ -40,14 +40,17 @@ const headingBlocks = [
   }),
 ];
 
+const TOKENS =
+  "Tokens you can type: {years} = years since 1993 (33 today), {decades} = the decade count as a word (Three), {decadeYears} = years rounded down to the decade (30). They update every year by themselves.";
+
 const make = (name: string, title: string, of: any[]) =>
   defineType({
     name,
     title,
     type: "object",
     fields: [
-      defineField({ name: "en", title: "English", type: "array", of, validation: (r) => r.required() }),
-      defineField({ name: "es", title: "Español", type: "array", of }),
+      defineField({ name: "en", title: "English", type: "array", of, description: TOKENS, validation: (r) => r.required() }),
+      defineField({ name: "es", title: "Español", type: "array", of, description: TOKENS }),
     ],
   });
 

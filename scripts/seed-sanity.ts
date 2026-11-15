@@ -20,6 +20,7 @@ import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE } from "../src/lib/site";
 import { scholarshipsPageFallback } from "../src/sanity/fallback";
 import { ptSimple } from "../src/sanity/helpers/pt";
 import { resourceItems, resourcesSections } from "../src/sanity/resourcesSource";
+import { aboutSections, ABOUT_IDS } from "../src/sanity/aboutSource";
 import { projectId, dataset, apiVersion } from "../src/sanity/env";
 
 const WRITE = process.argv.includes("--write");
@@ -157,6 +158,25 @@ docs.push(
       },
     },
     sections: resourcesSections(),
+  }),
+);
+
+// ---- About page (Phase 5C) --------------------------------------------------------------------
+// Today's About page. No new people: it references Lou Anne Fetters (founder) and Teresita
+// (president), who are seeded above. Numbers the live page computes use {decadeYears}/{decades}.
+const ref = (_ref: string) => ({ _type: "reference", _ref });
+docs.push(
+  withKeys({
+    _id: "aboutPage",
+    _type: "aboutPage",
+    seo: {
+      title: { en: "About Us", es: "Sobre Nosotros" },
+      description: {
+        en: "Learn about Hemophilia Outreach of El Paso (HOEP), founded in 1993 by Lou Anne Fetters to support families affected by bleeding disorders in the El Paso community.",
+        es: "Conozca la Hemophilia Outreach of El Paso (HOEP), fundada en 1993 por Lou Anne Fetters para apoyar a familias afectadas por trastornos hemorrágicos en la comunidad de El Paso.",
+      },
+    },
+    sections: aboutSections({ founder: ref(ABOUT_IDS.founder), teresita: ref(ABOUT_IDS.teresita), pastPresidents: undefined as any }),
   }),
 );
 

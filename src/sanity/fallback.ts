@@ -10,7 +10,8 @@ import { boardOfDirectors } from "@/translation/aboutPage";
 import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE } from "@/lib/site";
 import { localizedPt } from "./helpers/pt";
 import { resourceItems, resourcesSections } from "./resourcesSource";
-import type { ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { aboutSections, aboutFallbackRefs } from "./aboutSource";
+import type { AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 /** Used when Sanity is unreachable. Mirrors the code constants and dictionaries. */
 export function siteSettingsFallback(): SiteSettingsData {
@@ -80,12 +81,14 @@ export function scholarshipsPageFallback(): ScholarshipsPageData {
         subheading: { en: cta.en.sub, es: cta.es.sub },
         buttons: [
           {
+            _type: "ctaButton",
             style: "primary",
             icon: "bell",
             showIfRegistrationOpen: true,
             link: { type: "internal", value: "/register-info", label: { en: cta.en.cta1, es: cta.es.cta1 } },
           },
           {
+            _type: "ctaButton",
             style: "outline",
             icon: "arrowRight",
             link: { type: "internal", value: "/contact", label: { en: cta.en.cta2, es: cta.es.cta2 } },
@@ -107,4 +110,9 @@ export function resourcesPageFallback(): ResourcesPageData {
         : s,
     ),
   };
+}
+
+/** Today's About page, expressed as Sanity-shaped data. */
+export function aboutPageFallback(): AboutPageData {
+  return { seo: null, sections: aboutSections(aboutFallbackRefs()) as any };
 }

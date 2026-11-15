@@ -28,7 +28,8 @@ export default function CtaBannerBlock({ block, locale }: { block: Cta; locale: 
             <Icon className={`w-7 h-7 ${onPrimary ? "text-white" : "text-primary"}`} />
           </div>
         )}
-        <h2 className={`font-display text-3xl font-bold mb-4 ${onPrimary ? "text-white" : "text-neutral-900"}`}>
+        {/* Banners with an icon use the smaller heading (Scholarships); icon-less ones the larger (About, Get Involved). */}
+        <h2 className={`font-display text-3xl ${Icon ? "" : "sm:text-4xl"} font-bold mb-4 ${onPrimary ? "text-white" : "text-neutral-900"}`}>
           {pick(block.heading, locale)}
         </h2>
         {sub && <p className={`text-lg mb-8 leading-relaxed ${onPrimary ? "text-primary-100" : "text-neutral-500"}`}>{sub}</p>}

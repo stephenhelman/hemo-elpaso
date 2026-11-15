@@ -7,6 +7,7 @@ import { person } from "./documents/person";
 import { resource } from "./documents/resource";
 import { scholarship } from "./documents/scholarship";
 import { pageDocuments } from "./documents/pages";
+import { textWithAside, cardGrid, featuredPerson } from "./blocks/aboutBlocks";
 import { pageHero, richText, ctaButton, ctaBanner, peopleGrid, resourceList } from "./blocks/blocks";
 
 export const schemaTypes = [
@@ -24,6 +25,9 @@ export const schemaTypes = [
   ctaBanner,
   peopleGrid,
   resourceList,
+  textWithAside,
+  cardGrid,
+  featuredPerson,
   siteSettings,
   person,
   scholarship,

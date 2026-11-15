@@ -9,6 +9,7 @@ import type { Lang } from "@/types";
 import { pick } from "@/sanity/helpers/pick";
 import type { PersonData, Section as SectionData } from "@/sanity/types";
 import SectionHeaderView from "./SectionHeaderView";
+import PersonAvatar from "./PersonAvatar";
 
 type Grid = Extract<SectionData, { _type: "peopleGrid" }>;
 
@@ -27,11 +28,7 @@ const UI = {
   es: { send: "Enviar un mensaje" },
 };
 
-const initials = (name: string) =>
-  name.split(" ").map((n) => n[0]).slice(0, 2).join("");
-
-// Photos are intentionally not rendered yet: assets in a private dataset are not
-// publicly fetchable. Initials are shown (as on the live site today).
+// Photos come through /api/people-photo (private dataset); initials are the fallback.
 const subtitle = (p: PersonData, locale: Lang) => pick(p.office, locale) ?? pick(p.title, locale);
 
 export default function PeopleGridBlock({ block, locale }: { block: Grid; locale: Lang }) {
@@ -77,9 +74,11 @@ function Card({ person, locale }: { person: PersonData; locale: Lang }) {
   const sub = subtitle(person, locale);
   return (
     <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-neutral-50 border border-neutral-200 hover:border-primary-200 hover:shadow-sm transition-all duration-200">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-display font-bold text-lg mb-4">
-        {initials(person.name)}
-      </div>
+      <PersonAvatar
+        person={person}
+        locale={locale}
+        className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-display font-bold text-lg mb-4"
+      />
       <h3 className="font-display font-bold text-neutral-900 text-sm mb-0.5">{person.name}</h3>
       {sub && <p className="text-primary-600 text-xs font-semibold mb-3">{sub}</p>}
     </div>
@@ -90,9 +89,12 @@ function CompactCard({ person, locale }: { person: PersonData; locale: Lang }) {
   const sub = subtitle(person, locale);
   return (
     <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-200 hover:border-primary-200 transition-colors">
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/60 to-secondary flex items-center justify-center text-white font-display font-bold text-xs flex-shrink-0">
-        {initials(person.name)}
-      </div>
+      <PersonAvatar
+        person={person}
+        locale={locale}
+        size={128}
+        className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/60 to-secondary flex items-center justify-center text-white font-display font-bold text-xs flex-shrink-0"
+      />
       <div className="min-w-0">
         <p className="font-display font-semibold text-neutral-900 text-sm truncate">{person.name}</p>
         {sub && <p className="text-xs text-neutral-400 truncate">{sub}</p>}
@@ -107,9 +109,11 @@ function ContactCard({ person, locale }: { person: PersonData; locale: Lang }) {
   const office = pick(person.office, locale) ?? pick(person.title, locale);
   return (
     <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-200 hover:shadow-sm transition-all duration-200">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-display font-bold text-lg mb-4">
-        {initials(person.name)}
-      </div>
+      <PersonAvatar
+        person={person}
+        locale={locale}
+        className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-display font-bold text-lg mb-4"
+      />
       <h3 className="font-display font-bold text-neutral-900 mb-0.5">{person.name}</h3>
       {office && <p className="text-primary-600 text-xs font-semibold mb-4">{`${office}, ${ORG_ABBR}`}</p>}
       <div className="space-y-2 w-full">
