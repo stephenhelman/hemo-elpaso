@@ -8,8 +8,9 @@ import { resourcesPageQuery, RESOURCES_TAGS } from "./queries/resources";
 import { aboutPageQuery, ABOUT_TAGS } from "./queries/about";
 import { getInvolvedPageQuery, GET_INVOLVED_TAGS } from "./queries/getInvolved";
 import { contactPageQuery, CONTACT_TAGS } from "./queries/contact";
-import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback, getInvolvedPageFallback, contactPageFallback } from "./fallback";
-import type { ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { homePageQuery, HOME_TAGS } from "./queries/home";
+import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback, getInvolvedPageFallback, contactPageFallback, homePageFallback } from "./fallback";
+import type { HomePageData, ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 const defined = <T extends object>(o: T): Partial<T> =>
   Object.fromEntries(Object.entries(o).filter(([, v]) => v != null)) as Partial<T>;
@@ -77,4 +78,13 @@ export const getContactPage = cache(async (): Promise<ContactPageData> => {
   // A half-filled document never blanks the page: missing parts come from the dictionary copy.
   const fb = contactPageFallback();
   return { ...fb, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v != null)) } as ContactPageData;
+});
+
+export const getHomePage = cache(async (): Promise<HomePageData> => {
+  const { data } = await sanityFetch<HomePageData>({
+    query: homePageQuery,
+    tags: HOME_TAGS,
+    fallback: homePageFallback,
+  });
+  return { ...data, sections: data.sections ?? [] };
 });

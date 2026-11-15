@@ -13,7 +13,8 @@ import { resourceItems, resourcesSections } from "./resourcesSource";
 import { aboutSections, aboutFallbackRefs } from "./aboutSource";
 import { getInvolvedSections } from "./getInvolvedSource";
 import { contactPageFields } from "./contactSource";
-import type { ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
+import { homeSections } from "./homeSource";
+import type { HomePageData, ContactPageData, GetInvolvedPageData, AboutPageData, ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 /** Used when Sanity is unreachable. Mirrors the code constants and dictionaries. */
 export function siteSettingsFallback(): SiteSettingsData {
@@ -127,4 +128,9 @@ export function getInvolvedPageFallback(): GetInvolvedPageData {
 /** Today's Contact page copy. */
 export function contactPageFallback(): ContactPageData {
   return { seo: null, ...(contactPageFields() as any) };
+}
+
+/** Today's home page. */
+export function homePageFallback(): HomePageData {
+  return { seo: null, sections: homeSections() as any };
 }

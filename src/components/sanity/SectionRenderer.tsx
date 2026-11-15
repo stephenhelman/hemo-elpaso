@@ -7,6 +7,8 @@ import RichTextBlock from "./RichTextBlock";
 import CtaBannerBlock from "./CtaBannerBlock";
 import PeopleGridBlock from "./PeopleGridBlock";
 import ResourceListBlock from "./ResourceListBlock";
+import StatsRowBlock from "./StatsRowBlock";
+import EventsFeedBlock from "./EventsFeedBlock";
 import TextWithAsideBlock from "./TextWithAsideBlock";
 import CardGridBlock from "./CardGridBlock";
 import FeaturedPersonBlock from "./FeaturedPersonBlock";
@@ -20,6 +22,10 @@ export default function SectionRenderer({ section, locale }: { section: Section;
       return <RichTextBlock block={section} locale={locale} />;
     case "ctaBanner":
       return <CtaBannerBlock block={section} locale={locale} />;
+    case "statsRow":
+      return <StatsRowBlock block={section} locale={locale} />;
+    case "eventsFeed":
+      return <EventsFeedBlock block={section} locale={locale} />;
     case "textWithAside":
       return <TextWithAsideBlock block={section} locale={locale} />;
     case "cardGrid":

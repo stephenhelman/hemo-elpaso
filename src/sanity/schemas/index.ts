@@ -8,6 +8,7 @@ import { resource } from "./documents/resource";
 import { scholarship } from "./documents/scholarship";
 import { pageDocuments } from "./documents/pages";
 import { textWithAside, cardGrid, featuredPerson } from "./blocks/aboutBlocks";
+import { statsRow, eventsFeed } from "./blocks/homeBlocks";
 import { pageHero, richText, ctaButton, ctaBanner, peopleGrid, resourceList } from "./blocks/blocks";
 
 export const schemaTypes = [
@@ -28,6 +29,8 @@ export const schemaTypes = [
   textWithAside,
   cardGrid,
   featuredPerson,
+  statsRow,
+  eventsFeed,
   siteSettings,
   person,
   scholarship,

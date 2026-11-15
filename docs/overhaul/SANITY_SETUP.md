@@ -58,7 +58,7 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `aboutPage` | `page:about` | About page + its SEO (it also reads `person`, so edits to people refresh it) |
 | `getInvolvedPage` | `page:get-involved` | Get Involved page + its SEO |
 | `contactPage` | `page:contact` | Contact page hero/headings + SEO. The sidebar reads Site settings, so a `siteSettings` change refreshes Contact too |
-| `homePage` | `page:home` | nothing yet (the home page still renders from code) |
+| `homePage` | `page:home` | Home page (hero, stats, events-feed heading, register band) + its title/description. Events themselves are not in Sanity |
 
 Safety net: even if a webhook is missed, cached Sanity data expires after 1 hour.
 A request with a wrong or missing signature gets **401**; with no secret configured the endpoint returns **500**.
@@ -70,7 +70,7 @@ npm run seed:sanity                                   # dry run: lists the 8 doc
 SANITY_WRITE_TOKEN=<editor token> npm run seed:sanity -- --write
 ```
 
-It writes (published, fixed ids, 26 documents): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
+It writes (published, fixed ids, 27 documents): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
 
 **Safe to re-run:** a document that already exists is **left alone** (edited text and uploaded photos are kept); only missing ones are created. `--overwrite` resets existing documents to the seed text on purpose. If you already created these people by hand in the Studio (with random ids), the seed will create a second copy under its own id: delete the duplicates in the Studio. Delete the write token when you are done.
 
@@ -110,7 +110,7 @@ Remove the board role in the admin (closes layer 1) **and** remove them under Sa
 
 ## 4. Known limits (this phase)
 
-- **Scholarships, Resources, About, Get Involved and Contact render from Sanity.** Only the Home document exists without effect (the home page still renders from code).
+- **Every public page renders from Sanity:** Home, About, Resources, Scholarships, Get Involved and Contact. Sponsorship tiers stay hidden and dormant in code; navigation and footer links stay in code.
 - **Photos** are served through our own route, `/api/people-photo/<person id>`, which fetches them from the private dataset with the read token (see section 7). A person with no photo, or an inactive person, shows initials.
 - The Studio is embedded in the admin shell; it fills the area to the right of the sidebar. I could not open it logged in from here (it needs an Auth0 board session and a Sanity login), so the embedded layout is **untested in a browser**.
 - Fonts/CSS: Studio injects its own styles; if it ever looks cramped on a phone, use a desktop browser.
@@ -162,3 +162,17 @@ I could not test with a real photo from here (no token; anonymous queries return
 **Seed:** `npm run seed:sanity -- --write` now creates `getInvolvedPage` and `contactPage` if they are missing (26 documents in total).
 
 **`--repair`:** `SANITY_WRITE_TOKEN=… npm run seed:sanity -- --repair --write` adds the missing `_type` markers to list rows (buttons, badges, cards, facts, tags) in documents that already exist, so the Studio stops flagging them as invalid. It changes nothing else (text, photos and edits stay) and only writes documents that need it; a second run changes nothing. (I had not built `--repair` before this phase: there was no such flag. The earlier notes only mentioned `--overwrite`, which resets a document and is not what you want after editing.)
+
+## 9. Home page (Phase 5E)
+
+**Webhook: nothing to change.** The filter in section 1.4 already contains `homePage`, and the revalidate route maps it to `page:home`. (Site settings changes refresh it too.)
+
+**Editing** (Studio → Pages → Home page): sections in order are *Page hero* (variant *Full*), *Stats row*, *Upcoming events feed* and *Call to action* (the register band).
+
+- **Hero:** eyebrow, heading, subheading, up to 2 buttons, up to 3 badges (each with an icon). To colour a word in the heading, select it and apply the **Accent** mark (today "Hope" / "Esperanza"). The footer tagline is a different field (Site settings → Tagline), so changing one does not change the other. The decorative circles and grid are part of the design and are not editable.
+- **Stats row:** up to 4 stats. *Source* = "A number I type" (needs a value) or "Years of service" (computed from the founding year, 1993, so it never goes stale; the value field is hidden). Suffix is the "+" or "%" after the number. *Animate* makes it count up when scrolled into view.
+- **Events feed:** you edit the heading, the subheading, how many events (1 to 6) and whether the "View All Events" button shows. The events themselves come from the events system (Admin → Events); "no events" and "spots left" wording is fixed in code.
+- **Register band:** the blue call-to-action near the bottom. Keep **"Hide the whole banner unless online registration is open"** ticked: the band then stays hidden while registration is closed, exactly as before.
+- **Title/description** in the page's SEO fields replace the site-wide ones for the home page only; the seed copies today's values, so nothing changes until you edit them.
+
+**Seed:** `npm run seed:sanity -- --write` creates `homePage` if missing (27 documents in total). `--repair` also handles stat rows.

@@ -25,6 +25,7 @@ import { resourceItems, resourcesSections } from "../src/sanity/resourcesSource"
 import { aboutSections, ABOUT_IDS } from "../src/sanity/aboutSource";
 import { getInvolvedSections } from "../src/sanity/getInvolvedSource";
 import { contactPageFields } from "../src/sanity/contactSource";
+import { homeSections } from "../src/sanity/homeSource";
 import { projectId, dataset, apiVersion } from "../src/sanity/env";
 
 const WRITE = process.argv.includes("--write");
@@ -213,12 +214,31 @@ docs.push(
   }),
 );
 
+// ---- Home (Phase 5E) --------------------------------------------------------------------------
+// Today's home page: hero (with the accent word as an "emphasis" mark), stats (years of service computed),
+// events feed (events come from Postgres) and the register band (shown only while registration is open).
+docs.push(
+  withKeys({
+    _id: "homePage",
+    _type: "homePage",
+    seo: {
+      title: { en: "Hemophilia Outreach of El Paso", es: "Hemophilia Outreach of El Paso" },
+      description: {
+        en: "Supporting individuals and families affected by bleeding disorders in the El Paso community since 1993. Educational events, financial assistance, and community support for hemophilia and bleeding disorders.",
+        es: "Apoyando a individuos y familias afectadas por trastornos hemorrágicos en la comunidad de El Paso desde 1993. Eventos educativos, asistencia financiera y apoyo comunitario para hemofilia y trastornos hemorrágicos.",
+      },
+    },
+    sections: homeSections(),
+  }),
+);
+
 // ---- --repair: fix existing documents without touching their content --------------------------
 // Older seeds wrote list rows without `_type`, which the Studio flags as invalid items. --repair adds the
 // missing `_type`s to documents that already exist (nothing else changes) and writes only the ones that need it.
 const MEMBER_TYPES: Record<string, Record<string, string>> = {
   // parent _type -> { array field -> member _type }
   pageHero: { buttons: "heroButton", badges: "heroBadge" },
+  statsRow: { stats: "stat" },
   ctaBanner: { buttons: "ctaButton" },
   featuredPerson: { badges: "localizedString" },
   cardGrid: { cards: "card" },
