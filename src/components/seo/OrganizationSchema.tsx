@@ -6,7 +6,8 @@ export default function OrganizationSchema() {
     name: "Hemophilia Outreach of El Paso",
     alternateName: "HOEP",
     url: siteUrl(),
-    logo: `${siteUrl()}/logo.png`,
+    // full-colour icon (SVG) and a 512px PNG; both are the brand-sheet artwork, unmodified
+    logo: [`${siteUrl()}/brand/hoep-icon-512.png`, `${siteUrl()}/brand/hoep-icon-color.svg`],
     description:
       "Supporting individuals and families affected by bleeding disorders in the El Paso community since 1993.",
     foundingDate: String(FOUNDING_YEAR),

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LogOut, Home, LayoutDashboard } from "lucide-react";
-import Image from "next/image";
+import BrandMark from "@/components/brand/BrandMark";
 import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
@@ -29,13 +29,7 @@ export default function AdminMobileNav({ locale, canEditSiteContent = false }: P
       <div data-admin-chrome className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200">
         <div className="flex items-center justify-between px-4 py-3">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <Image
-              src="/logo.png"
-              alt="Hemophilia Outreach of El Paso"
-              width={40}
-              height={40}
-              className="rounded-full object-contain"
-            />
+            <BrandMark tone="light" iconHeight={40} showText={false} />
             <span className="font-display font-bold text-lg text-neutral-900">
               HOEP Admin
             </span>

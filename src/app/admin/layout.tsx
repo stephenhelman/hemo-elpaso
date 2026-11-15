@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Lang } from "@/types";
 import { PortalLayout } from "@/components/layout/PortalLayout";
-import { inter, poppins } from "@/lib/fonts";
+import { inter, poppins, bonum } from "@/lib/fonts";
 import "@/app/globals.css";
 import { getAdminWithPermissions } from "@/lib/permissions";
 
@@ -28,7 +28,7 @@ export default async function AdminLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} ${poppins.variable}`}>
+      <body className={`${inter.variable} ${poppins.variable} ${bonum.variable}`}>
         <div className="min-h-screen bg-neutral-50 flex">
           <AdminSidebar
             user={session.user}

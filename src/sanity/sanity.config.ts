@@ -5,6 +5,7 @@ import { structureTool } from "sanity/structure";
 import { projectId, dataset } from "./env";
 import { schemaTypes, SINGLETON_TYPES } from "./schemas";
 import { structure } from "./structure";
+import { BrandIcon, BrandLogo } from "./BrandIcon";
 
 /** Studio config. Runs in the browser and talks only to Sanity (no database access). */
 export default defineConfig({
@@ -13,6 +14,8 @@ export default defineConfig({
   projectId,
   dataset,
   basePath: "/admin/studio",
+  icon: BrandIcon,
+  studio: { components: { logo: BrandLogo } },
   plugins: [structureTool({ structure })],
   schema: {
     types: schemaTypes,
