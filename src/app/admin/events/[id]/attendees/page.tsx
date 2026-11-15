@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Users, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Printer, Users, XCircle } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import ManualCheckInButton from "@/components/admin/ManualCheckInButton";
@@ -52,7 +52,16 @@ export default async function EventAttendeesPage({
           <ArrowLeft className="w-4 h-4" /> Back to Events
         </Link>
         <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">{event.titleEn}</h1>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <h1 className="text-3xl font-display font-bold text-neutral-900 mb-2">{event.titleEn}</h1>
+            <Link
+              href={`/admin/events/${event.id}/print`}
+              target="_blank"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-300 text-neutral-700 text-sm font-semibold hover:bg-neutral-50"
+            >
+              <Printer className="w-4 h-4" /> Print sign-in sheet
+            </Link>
+          </div>
           <p className="text-neutral-500">
             {new Date(event.eventDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
           </p>
