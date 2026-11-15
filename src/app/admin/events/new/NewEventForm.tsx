@@ -8,6 +8,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
+import SponsorPicker, { type SponsorOption } from "@/components/admin/SponsorPicker";
 
 const categoryOptions = [
   { value: "EDUCATION", label: "Educational Seminar" },
@@ -20,7 +21,7 @@ const categoryOptions = [
   { value: "FINANCIAL_ASSISTANCE", label: "Financial Assistance" },
 ];
 
-export default function NewEventPage() {
+export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?: SponsorOption[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [flyerEn, setFlyerEn] = useState<File | null>(null);
@@ -55,6 +56,9 @@ export default function NewEventPage() {
     targetConditions: [] as string[],
     targetSeverity: [] as string[],
     targetAgeGroups: [] as string[],
+
+    // Sponsors (Sanity ids)
+    sponsorSanityIds: [] as string[],
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {
@@ -373,6 +377,12 @@ export default function NewEventPage() {
               </span>
             </label>
           </FormField>
+        </Section>
+
+        {/* Sponsors */}
+        <Section title="Sponsors (Optional)">
+          <p className="text-sm text-neutral-600 -mt-2">Shown as &ldquo;Sponsored by&rdquo; on the public event page. Manage sponsors in the Studio.</p>
+          <SponsorPicker options={sponsorOptions} value={formData.sponsorSanityIds} onChange={(ids) => updateFormData({ sponsorSanityIds: ids })} />
         </Section>
 
         {/* Targeting */}

@@ -145,6 +145,7 @@ export default async function RootLayout({
             facebookLabel: settings.facebookLabel,
             locationLabel: settings.locationLabel,
             contactNote: settings.contactNote,
+            footerSponsors: settings.footerSponsors ?? [],
           }}
         >{children}</SiteLayout>
         <SiteAnalytics />

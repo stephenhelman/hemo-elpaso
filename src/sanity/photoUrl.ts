@@ -18,3 +18,11 @@ export type SanityImageField = {
 export function personPhotoUrl(photo: SanityImageField, size: number): string {
   return builder.image(photo as any).width(size).height(size).fit("crop").auto("format").quality(80).url();
 }
+
+/**
+ * Sponsor logo at a fixed width, aspect ratio kept (`fit("max")`: a logo must never be cropped to a square).
+ * The Studio crop rectangle is honoured because the whole image object goes through the builder.
+ */
+export function sponsorLogoUrl(logo: SanityImageField, width: number): string {
+  return builder.image(logo as any).width(width).fit("max").auto("format").quality(85).url();
+}

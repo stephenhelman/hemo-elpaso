@@ -41,6 +41,13 @@ export const siteSettings = defineType({
     defineField({ name: "contactNote", type: "localizedText", description: "Small note under the contact details." }),
     defineField({ name: "footerText", type: "localizedString", description: "Footer line, e.g. 'All rights reserved.'" }),
     defineField({
+      name: "footerSponsors",
+      type: "array",
+      description: "Optional 'Thank you to our sponsors' row in the footer (up to 4). Hidden when empty.",
+      of: [{ type: "reference", to: [{ type: "sponsor" }], options: { filter: "active == true" } }],
+      validation: (r) => r.max(4),
+    }),
+    defineField({
       name: "defaultSeo",
       type: "pageSeo",
       description: "Default title, description and share image (used when a page has none).",

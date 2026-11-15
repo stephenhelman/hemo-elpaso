@@ -33,6 +33,7 @@ export const publicEventSelect = {
   recapBodyEs: true,
   recapGalleryEmbedUrl: true,
   recapPublishedAt: true,
+  sponsorSanityIds: true, // public Sanity document ids; the page resolves them to ACTIVE sponsors only
   updatedAt: true,
 } satisfies Prisma.EventSelect;
 

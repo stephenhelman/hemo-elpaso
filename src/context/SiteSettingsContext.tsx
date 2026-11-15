@@ -2,6 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 import type { Localized } from "@/sanity/helpers/pick";
+import type { SponsorData } from "@/sanity/types";
 
 /** The few site settings client components need (error page, etc.). Fetched on the server. */
 export type PublicSiteInfo = {
@@ -12,6 +13,7 @@ export type PublicSiteInfo = {
   facebookLabel?: Localized;
   locationLabel?: Localized;
   contactNote?: Localized;
+  footerSponsors?: SponsorData[];
 };
 
 const Ctx = createContext<PublicSiteInfo | null>(null);

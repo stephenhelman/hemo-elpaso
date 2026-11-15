@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
+import { getActiveSponsorOptions } from "@/sanity/sponsors";
 import NewEventForm from "./NewEventForm";
 
 export default async function NewEventPage() {
@@ -7,5 +8,5 @@ export default async function NewEventPage() {
   if (!admin) redirect("/");
   if (!admin.can("canManageEvents")) redirect("/admin/events");
 
-  return <NewEventForm />;
+  return <NewEventForm sponsorOptions={await getActiveSponsorOptions()} />;
 }

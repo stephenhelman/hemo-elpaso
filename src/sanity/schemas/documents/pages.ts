@@ -3,6 +3,9 @@ import { defineField, defineType } from "sanity";
 /** Blocks available in this phase. More arrive page by page. */
 export const SECTION_TYPES = ["pageHero", "richText", "ctaBanner", "peopleGrid", "resourceList", "textWithAside", "cardGrid", "featuredPerson", "statsRow", "eventsFeed"];
 
+/** Pages that may show a sponsor strip (the others do not offer the block in the Studio). */
+const SPONSOR_PAGES = ["homePage", "aboutPage", "getInvolvedPage"];
+
 export const PAGE_TYPES = [
   { name: "homePage", title: "Home" },
   { name: "aboutPage", title: "About" },
@@ -20,7 +23,11 @@ const page = (name: string, title: string, extra: any[] = []) =>
     fields: [
       defineField({ name: "seo", type: "pageSeo" }),
       ...extra,
-      defineField({ name: "sections", type: "array", of: SECTION_TYPES.map((type) => ({ type })) }),
+      defineField({
+        name: "sections",
+        type: "array",
+        of: [...SECTION_TYPES, ...(SPONSOR_PAGES.includes(name) ? ["sponsorStrip"] : [])].map((type) => ({ type })),
+      }),
     ],
     preview: { prepare: () => ({ title: `${title} page` }) },
   });

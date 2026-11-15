@@ -11,6 +11,7 @@ import BilingualInput from "@/components/form/BilingualInput";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { adminEventEditTranslation } from "@/translation/adminPages";
 import type { Lang } from "@/types";
+import SponsorPicker, { type SponsorOption } from "./SponsorPicker";
 
 interface Event {
   id: string;
@@ -33,6 +34,7 @@ interface Event {
   isPriority: boolean;
   liveEnabled: boolean;
   registrationEnabled: boolean;
+  sponsorSanityIds: string[];
   targeting: {
     targetConditions: string[];
     targetSeverity: string[];
@@ -47,9 +49,10 @@ const toLocalInput = (d: Date) =>
 interface Props {
   event: Event;
   locale: Lang;
+  sponsorOptions?: SponsorOption[];
 }
 
-export default function EventEditForm({ event, locale }: Props) {
+export default function EventEditForm({ event, locale, sponsorOptions = [] }: Props) {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
@@ -84,6 +87,7 @@ export default function EventEditForm({ event, locale }: Props) {
     liveEnabled: event.liveEnabled,
     registrationEnabled: event.registrationEnabled,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
+    sponsorSanityIds: event.sponsorSanityIds ?? ([] as string[]),
   });
 
   const handleFlyerUploadComplete = () => {
@@ -116,6 +120,7 @@ export default function EventEditForm({ event, locale }: Props) {
         liveEnabled: formData.liveEnabled,
         registrationEnabled: formData.registrationEnabled,
         targetConditions: formData.targetConditions,
+        sponsorSanityIds: formData.sponsorSanityIds,
       };
       const response = await fetch(`/api/admin/events/${event.id}`, {
         method: "PATCH",
@@ -356,6 +361,11 @@ export default function EventEditForm({ event, locale }: Props) {
                 </span>
               </label>
             </div>
+          </div>
+          <div className="border-t mt-4 border-neutral-200 pt-8 mb-8">
+            <h3 className="text-xl font-display font-bold text-neutral-900 mb-1">Sponsors</h3>
+            <p className="text-sm text-neutral-600 mb-4">Shown as &ldquo;Sponsored by&rdquo; on the public event page. Manage sponsors in the Studio.</p>
+            <SponsorPicker options={sponsorOptions} value={formData.sponsorSanityIds} onChange={(ids) => setFormData((f) => ({ ...f, sponsorSanityIds: ids }))} />
           </div>
           <div className="border-t mt-4 border-neutral-200 pt-8">
             <h3 className="text-xl font-display font-bold text-neutral-900 mb-1">

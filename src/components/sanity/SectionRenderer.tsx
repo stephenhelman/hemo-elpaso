@@ -12,6 +12,7 @@ import EventsFeedBlock from "./EventsFeedBlock";
 import TextWithAsideBlock from "./TextWithAsideBlock";
 import CardGridBlock from "./CardGridBlock";
 import FeaturedPersonBlock from "./FeaturedPersonBlock";
+import SponsorStripBlock from "./SponsorStripBlock";
 
 /** Maps a Sanity section to its component. Unknown types render nothing. */
 export default function SectionRenderer({ section, locale }: { section: Section; locale: Lang }) {
@@ -36,6 +37,8 @@ export default function SectionRenderer({ section, locale }: { section: Section;
       return <ResourceListBlock block={section} locale={locale} />;
     case "peopleGrid":
       return <PeopleGridBlock block={section} locale={locale} />;
+    case "sponsorStrip":
+      return <SponsorStripBlock block={section} locale={locale} />;
     default:
       return null;
   }
