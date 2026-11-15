@@ -100,8 +100,8 @@ async function main() {
   fs.writeFileSync(path.join(root, "brand/og-default.png"), og);
   fs.writeFileSync(path.join(root, "src/app/opengraph-image.png"), og);
 
-  // letterhead logo (3.5in at 400dpi)
-  fs.writeFileSync(path.join(root, "brand/letterhead-logo.png"), await lockupOnWhite("hoep-lockup-horizontal-tagline.svg", 1400));
+  // letterhead logo: 6in wide at 400dpi, centred in the header (the lockup carries its own clear space)
+  fs.writeFileSync(path.join(root, "brand/letterhead-logo.png"), await lockupOnWhite("hoep-lockup-horizontal-tagline.svg", 2400));
 
   console.log("brand assets written");
 }

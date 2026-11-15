@@ -14,7 +14,7 @@ Source of truth: the brand sheet, [`public/brand/hoep-brand-sheet.pdf`](../publi
 | Sanity Studio | `hoep-favicon.svg` | project icon and navbar logo |
 | Social share image | `brand/og-default.png` (1200 × 630), also `src/app/opengraph-image.png` | lockup + tagline on white, nothing else; upload the same file to Site settings → SEO |
 | Email header | `public/brand/email-header.png` (1200 px wide, shown at 600) | lockup + tagline on **solid white** so dark-mode clients cannot blend it into the background |
-| Letters / board correspondence | `brand/HOEP-letterhead.docx` (PDF preview: `brand/HOEP-letterhead.pdf`) | lockup + tagline about 3.5 in wide, maroon rule, footer with phone, website, Facebook group |
+| Letters / board correspondence | `brand/HOEP-letterhead.docx` (PDF preview: `brand/HOEP-letterhead.pdf`) | large centered lockup + tagline (6 in wide) at the top of the page with a thin maroon rule under it, footer centered in 11 pt with phone, website, Facebook group; body Georgia 12 pt. Top margin is about 3 in to leave room for the header |
 | Printed sign-in sheet | `hoep-lockup-horizontal-tagline.svg` | 3.1 in wide on paper |
 | Structured data / search "logo" | `public/brand/hoep-icon-512.png` and `hoep-icon-color.svg` | |
 | Print, one-color jobs (stamps, embroidery, pens) | `hoep-icon-1c-maroon.svg`, or `hoep-icon-small.svg` under 1 in tall | |
