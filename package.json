@@ -19,7 +19,8 @@
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
     "check:event-save": "tsx scripts/check-event-save.ts",
     "db:whoami": "tsx scripts/db-guard.ts whoami",
-    "db:deploy": "ALLOW_PROD_DB=yes tsx scripts/db-guard.ts whoami && prisma migrate deploy"
+    "db:deploy": "tsx scripts/db-deploy-prod.ts",
+    "build:vercel": "node scripts/vercel-build.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
