@@ -8,7 +8,8 @@
 import { parse, evaluate } from "groq-js";
 import { docs } from "./seed-sanity";
 import { scholarshipsPageQuery } from "../src/sanity/queries/scholarships";
-import { scholarshipsPageFallback } from "../src/sanity/fallback";
+import { resourcesPageQuery } from "../src/sanity/queries/resources";
+import { scholarshipsPageFallback, resourcesPageFallback } from "../src/sanity/fallback";
 
 const run = async (q: string, dataset: any[]) => (await (await evaluate(parse(q), { dataset })).get()) as any;
 // Drop nulls/_key/_id and reduce people to what the page shows, so "absent" equals "null".
@@ -44,5 +45,31 @@ const norm = (x: any): any =>
   const leaks = /@[a-z0-9-]+\.[a-z]{2,}/i.test(text) || /email/i.test(Object.keys(seeded).join());
   console.log(!leaks ? "PASS no email in query result" : "FAIL email-like text in query result");
   ok = ok && !leaks;
+  // ---- Resources page ----
+  const rSeeded = await run(resourcesPageQuery, docs);
+  const rFb = resourcesPageFallback();
+  const ra = JSON.stringify(norm({ sections: rSeeded.sections }));
+  const rb = JSON.stringify(norm({ sections: rFb.sections }));
+  console.log(ra === rb ? "PASS seeded resources page == dictionary fallback" : "FAIL seeded resources page differs from fallback");
+  if (ra !== rb) {
+    ok = false;
+    const A = JSON.parse(ra).sections, B = JSON.parse(rb).sections;
+    A.forEach((sec: any, i: number) => { if (JSON.stringify(sec) !== JSON.stringify(B[i])) console.log(" first differing section:", i, JSON.stringify(sec).slice(0, 600), "\n vs", JSON.stringify(B[i]).slice(0, 600)); });
+  }
+  const counts = (rSeeded.sections as any[]).filter((x) => x._type === "resourceList").map((x) => `${x.category}:${x.items.length}`).join(" ");
+  const countsOk = counts === "condition:3 nationalOrg:3 localCare:3 youthProgram:2 financialHelp:3";
+  console.log(countsOk ? `PASS resource counts (${counts})` : `FAIL resource counts (${counts})`);
+  ok = ok && countsOk;
+  const hiddenR = await run(resourcesPageQuery, docs.map((d: any) => (d._type === "resource" && d._id.endsWith("-cdc") ? { ...d, active: false } : d)));
+  const natl = hiddenR.sections.find((x: any) => x.category === "nationalOrg").items.length;
+  console.log(natl === 2 ? "PASS inactive resource hidden" : "FAIL inactive resource shown");
+  ok = ok && natl === 2;
+  const rText = JSON.stringify(rSeeded);
+  const noVerified = !/lastVerified/.test(rText) && !/"active"/.test(rText);
+  console.log(noVerified ? "PASS editor-only fields (lastVerified, active) not projected" : "FAIL editor-only field leaked");
+  ok = ok && noVerified;
+  const orderOk = (rSeeded.sections.find((x: any) => x.category === "condition").items as any[]).map((i) => i.abbreviation).join() === "HA,HB,VWD";
+  console.log(orderOk ? "PASS items sorted by order" : "FAIL order");
+  ok = ok && orderOk;
   process.exit(ok ? 0 : 1);
 })();

@@ -14,6 +14,7 @@ const TAGS_BY_TYPE: Record<string, string[]> = {
   siteSettings: ["siteSettings"],
   person: ["person"],
   scholarship: ["scholarship"],
+  resource: ["resource"],
   homePage: ["page:home"],
   aboutPage: ["page:about"],
   resourcesPage: ["page:resources"],

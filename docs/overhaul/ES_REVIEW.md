@@ -194,3 +194,14 @@ New pages written in **usted** (formal), unlike the register/RSVP flow which is 
 - `src/components/layout/NotFoundContent.tsx` (404): `Página no encontrada`, `No pudimos encontrar esa página…`, `Volver al inicio`, `Ver eventos`, `Contáctenos`, `¿Preguntas? Llámenos al`
 - `src/app/(public)/error.tsx`: `Algo salió mal`, `Tuvimos un problema inesperado…`, `Intentar de nuevo`, `Si sigue ocurriendo, llámenos al`
 - Scholarships card labels (`translation/scholarshipsPage.ts`): `Aceptando Solicitudes`, `Plazo Vencido`, `Monto del Premio`, `Beneficiarios`, `Estudiantes`, `Fecha Límite`, `Tema del Ensayo`
+
+## Resources page in Sanity (Phase 5B)
+
+New or changed Spanish strings (the rest of the Resources copy is unchanged):
+
+- Provider card link: was English in Spanish (`Visit Website`), now `Visitar sitio web`
+- Youth program link: was English in Spanish (`Learn More`), now `Más información`
+- Default link label when none is set: `Learn more` → `Más información`
+- Editor-only labels for program tags: `Ages` → `Edades`, `Season` → `Temporada`, `Cost` → `Costo` (not shown on the site)
+- Condition card label `¿Qué es?` (unchanged text, now in code next to the block)
+- The register of the existing Resources copy is **usted** (e.g. `Aprenda`, `Contáctenos`); new resources written in the Studio should follow whatever register you decide on.

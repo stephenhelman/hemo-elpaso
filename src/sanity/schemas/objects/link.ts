@@ -1,12 +1,18 @@
 import { defineField, defineType } from "sanity";
 import { INTERNAL_ROUTES } from "../../options";
 
-export const link = defineType({
-  name: "link",
-  title: "Link",
+const makeLink = (name: string, title: string, labelRequired: boolean) =>
+  defineType({
+  name,
+  title,
   type: "object",
   fields: [
-    defineField({ name: "label", type: "localizedString", validation: (r) => r.required() }),
+    defineField({
+      name: "label",
+      type: "localizedString",
+      description: labelRequired ? undefined : "Optional. Leave empty for the default (Learn more / Más información).",
+      validation: labelRequired ? (r) => r.required() : undefined,
+    }),
     defineField({
       name: "type",
       type: "string",
@@ -41,3 +47,7 @@ export const link = defineType({
   ],
   preview: { select: { title: "label.en", subtitle: "value" } },
 });
+
+export const link = makeLink("link", "Link", true);
+/** Same as `link` but the label may be empty (resources fall back to a default). */
+export const resourceLink = makeLink("resourceLink", "Link", false);

@@ -20,7 +20,9 @@ export default function PageHeroBlock({ block, locale }: { block: Hero; locale: 
   return (
     <div className={`relative bg-gradient-to-br from-neutral-900 via-primary-900 to-neutral-900 ${titleOnly ? "py-16" : full ? "py-32" : "py-24"}`}>
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary-500/10 -translate-y-1/2 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-secondary/10 translate-y-1/2 -translate-x-1/3" />
+      {block.decoration !== "one" && (
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-secondary/10 translate-y-1/2 -translate-x-1/3" />
+      )}
       <div className="container-max px-4 sm:px-6 lg:px-8 relative z-10">
         <div className={titleOnly ? "max-w-3xl" : full ? "max-w-3xl" : "max-w-2xl"}>
           {eyebrow && !titleOnly && (

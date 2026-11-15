@@ -39,7 +39,7 @@ When I checked (2026-11-14) the dataset answered queries with **no token**, i.e.
 | URL | `https://<your-domain>/api/revalidate` |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
-| Filter | `_type in ["siteSettings","person","scholarship","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
+| Filter | `_type in ["siteSettings","person","scholarship","resource","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
 | Projection | `{_type, _id}` |
 | HTTP method | `POST` |
 | Drafts | leave **off** (only published changes matter) |
@@ -52,8 +52,10 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `siteSettings` | `siteSettings` | footer-independent settings, 404/error pages, default share image, every page that reads settings |
 | `scholarshipsPage` | `page:scholarships` | Scholarships page + its SEO |
 | `scholarship` | `scholarship` | Scholarships page |
+| `resource` | `resource` | Resources page (all five lists) |
+| `resourcesPage` | `page:resources` | Resources page + its SEO |
 | `person` | `person` | any page with a People block (Scholarships contact card today) |
-| `homePage`, `aboutPage`, `resourcesPage`, `getInvolvedPage`, `contactPage` | `page:home`, `page:about`, … | nothing yet (those pages still render from code) |
+| `homePage`, `aboutPage`, `getInvolvedPage`, `contactPage` | `page:home`, `page:about`, … | nothing yet (those pages still render from code) |
 
 Safety net: even if a webhook is missed, cached Sanity data expires after 1 hour.
 A request with a wrong or missing signature gets **401**; with no secret configured the endpoint returns **500**.
@@ -65,9 +67,11 @@ npm run seed:sanity                                   # dry run: lists the 8 doc
 SANITY_WRITE_TOKEN=<editor token> npm run seed:sanity -- --write
 ```
 
-It writes (published, fixed ids): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, and the Scholarships page. No emails, no photos. **Re-running resets those documents to the seed text**, so do not re-run after editors start working. Delete the write token afterwards.
+It writes (published, fixed ids): Site settings, 5 people (Teresita as Officer / President·Presidenta, Lou Anne Fetters as Founder, Rosamaria Coles, Felix Garcia and Yolanda Ortiz as Past president), the memorial scholarship in **Coming soon**, the Scholarships page, **14 resources** (3 conditions, 3 national organizations, 3 local providers, 2 youth programs, 3 financial-help items; `lastVerified` = the day you run it) and the Resources page. No emails, no photos.
 
-`npm run check:sanity` is an offline test (no token, no network): it runs the real GROQ queries against the seed documents and checks that the seeded Scholarships page equals today's dictionary copy, that inactive people are hidden and that no email appears in a result.
+**Safe to re-run:** a document that already exists is **left alone** (edited text and uploaded photos are kept); only missing ones are created. `--overwrite` resets existing documents to the seed text on purpose. If you already created these people by hand in the Studio (with random ids), the seed will create a second copy under its own id: delete the duplicates in the Studio. Delete the write token when you are done.
+
+`npm run check:sanity` is an offline test (no token, no network): it runs the real GROQ queries against the seed documents and checks that the seeded Scholarships and Resources pages equal today's dictionary copy, that inactive people and resources are hidden, that items are sorted by `order`, and that no email or editor-only field (`lastVerified`, `active`) appears in a result.
 
 ### 1.6 Upload the default share image (optional)
 
@@ -103,7 +107,7 @@ Remove the board role in the admin (closes layer 1) **and** remove them under Sa
 
 ## 4. Known limits (this phase)
 
-- **Only the Scholarships page renders from Sanity.** Home, About, Resources, Get Involved and Contact documents exist in the Studio but changing them does nothing yet.
+- **Scholarships and Resources render from Sanity.** Home, About, Get Involved and Contact documents exist in the Studio but changing them does nothing yet.
 - **Photos are not displayed.** Assets in a private dataset are not publicly fetchable, so photo URLs would break; people show initials as they do today. Showing photos needs an image proxy route (planned with the About page).
 - The Studio is embedded in the admin shell; it fills the area to the right of the sidebar. I could not open it logged in from here (it needs an Auth0 board session and a Sanity login), so the embedded layout is **untested in a browser**.
 - Fonts/CSS: Studio injects its own styles; if it ever looks cramped on a phone, use a desktop browser.
@@ -111,3 +115,13 @@ Remove the board role in the admin (closes layer 1) **and** remove them under Sa
 ## 5. Fallback behaviour
 
 If Sanity is unreachable, the token is missing/expired, or a document is not published, the site renders today's dictionary copy (identical pixels, checked at 375 px and 1200 px, EN and ES) and logs `[sanity] fetch failed, using dictionary fallback` to the server log. Site settings fall back field by field to the constants in `src/lib/site.ts`.
+
+## 6. Resources (Phase 5B)
+
+- **Studio:** *Resources* groups every item by category (Condition information, National organization, Local care, Youth program, Financial help). The subtitle shows the category, the last verified date and **⚠ STALE** when it is more than 12 months old (the date field also shows a yellow "Check this is still accurate." warning).
+- **Adding a resource:** open the category, click **+**, fill in the name (English; add the Spanish name only if it differs), summary (EN, ES), link and the *Last verified* date. It appears on /resources automatically, sorted by *Order* (lower first). There is nothing to pick on the page itself: each list shows every *active* resource of its category.
+- **Conditions are medical content:** the date is labelled *Last medically reviewed* with the note "Check wording against bleeding.org before editing."
+- **Link label:** leave it empty to get "Learn more" / "Más información".
+- **Phones** on local providers are the provider's own number (type the display form and the +1… form; tap-to-call uses the +1… form). The HOEP phone lives in Site settings.
+- *Last verified* is for editors only; it is never sent to the website.
+- Hiding: untick **Show on site**. As with people, the record is still stored and visible to project members.
