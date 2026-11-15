@@ -5,7 +5,7 @@ export const seoFragment = groq`seo{ title, description, "ogImage": ogImage.asse
 export const linkFragment = groq`{ label, type, value }`;
 export const personFragment = groq`
   _id, name, group, order, office, title, bio,
-  "photo": photo{ "v": asset._ref, alt }`;  // asset ref only: images are served by /api/people-photo (private dataset)
+  "photo": photo{ "v": asset._ref + "." + ^._updatedAt, alt }`;  // asset ref only: images are served by /api/people-photo (private dataset)
 export const resourceFragment = groq`
   _id, name, nameEs, abbreviation, category, kicker, summary, body, facts,
   address, "phone": phone{ display, e164 },

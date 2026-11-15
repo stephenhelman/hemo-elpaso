@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client } from "@/sanity/client";
+import { personPhotoUrl, type SanityImageField } from "@/sanity/photoUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,11 @@ export const dynamic = "force-dynamic";
  * Browsers cannot fetch private-dataset asset URLs, so this route does it with the
  * server-only read token and re-serves the image from our own domain.
  * Allow-list: only the photo of an ACTIVE `person` document, only fixed square sizes,
- * and nothing else from Sanity is reachable through it. The `v` query parameter (the
- * asset reference) is only a cache-buster for the CDN; it is not trusted.
+ * and nothing else from Sanity is reachable through it. The `v` query parameter is only a
+ * cache-buster for the CDN; it is not trusted.
+ *
+ * The square crop honours the crop rectangle and hotspot (focal point) chosen in the Studio:
+ * the whole image object (asset, crop, hotspot) goes through the image-url builder.
  */
 const SIZES = [128, 256, 400, 640];
 
@@ -21,14 +25,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const w = SIZES.includes(requested) ? requested : 256;
 
   try {
-    const asset = await client.fetch<{ url?: string } | null>(
-      `*[_type == "person" && _id == $id && active == true][0].photo.asset->{ url }`,
+    const photo = await client.fetch<SanityImageField | null>(
+      `*[_type == "person" && _id == $id && active == true][0].photo{ asset, crop, hotspot }`,
       { id },
       { next: { tags: ["person"], revalidate: 3600 } },
     );
-    if (!asset?.url || !/^https:\/\/cdn\.sanity\.io\//.test(asset.url)) return new NextResponse(null, { status: 404 });
+    if (!photo?.asset?._ref) return new NextResponse(null, { status: 404 });
 
-    const upstream = await fetch(`${asset.url}?w=${w}&h=${w}&fit=crop&auto=format&q=80`, {
+    const url = personPhotoUrl(photo, w);
+    if (!/^https:\/\/cdn\.sanity\.io\//.test(url)) return new NextResponse(null, { status: 404 });
+
+    const upstream = await fetch(url, {
       headers: { Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN ?? ""}` },
       cache: "no-store",
     });
