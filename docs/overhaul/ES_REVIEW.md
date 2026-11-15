@@ -228,3 +228,14 @@ No new Spanish copy was written; the text moved from the dictionary to the Studi
 - **Contact page:** all editable Spanish text is **usted** (`Estamos Aquí Para Usted`, `Envíenos un Mensaje`, `Complete el formulario…`), while the sidebar label `Síguenos` (in code) is **tú**. The note `Servimos a El Paso y la región fronteriza.` (Site settings) is neutral.
 - Map heading `Encuéntrenos` and text `Sirviendo orgullosamente… desde 1993` are usted / literal ("since 1993" is not a computed number).
 - Site settings now holds the Spanish Facebook label `HOEP en Facebook` and location label `El Paso, Texas`; if the Spanish field is left empty the English text is shown.
+
+## Home page in Sanity (Phase 5E)
+
+The Spanish text moved from the dictionary to the Studio unchanged. For a fluent reviewer:
+
+- **Hero heading** `Dando Esperanza A Nuestra Comunidad`: the accent word is now the marked text `Esperanza` (previously matched by string). Title Case ("A", "Nuestra") is unusual in Spanish; sentence case would be `Dando esperanza a nuestra comunidad`. The footer tagline has the same text but is a separate field now.
+- **Hero sub** `No estás solo.` is **tú** and gendered (masculine); `No estás sola` / `No estás solo/a` / `No estás solo ni sola` are alternatives, or a neutral rephrasing.
+- **Hero buttons/badges:** `Participa` (tú), `Próximos Eventos`, `Apoyo Gratuito`, `Impulsado por la Comunidad`.
+- **Stats labels:** `Familias Atendidas`, `Años de Servicio` (now computed: 33), `Eventos Realizados`, `Gratuito`.
+- **Events header** `Únase a nosotros…` is **usted**, while the register band right below it (`Regístrate para Recibir Información`, `Cuéntanos sobre tu hogar…`, `Regístrate ahora`) is **tú**: a register switch on the same page.
+- **In code (not editable):** `No hay eventos próximos en este momento. ¡Vuelva pronto!` (usted), `Ver Todos los Eventos`, `lugares disponibles`, `Evento lleno`.

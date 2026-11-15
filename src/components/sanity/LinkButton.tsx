@@ -49,7 +49,9 @@ export default function LinkButton({
   const label = pick(link.label, locale);
   if (!label) return null;
   const Icon = iconFor(icon);
-  const cls = `inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-display font-semibold transition-colors ${
+  // On a primary-coloured band the button is the compact white pill used by the home register band.
+  const size = tone === "onPrimary" ? "px-8 py-3.5 font-bold text-sm" : "px-7 py-3.5 font-semibold";
+  const cls = `inline-flex ${tone === "onPrimary" ? "" : "items-center gap-2 "}${size} rounded-full font-display transition-colors ${
     STYLES[tone][style === "outline" ? "outline" : "primary"]
   }`;
   const inner = (

@@ -41,6 +41,9 @@ export type Section =
   | { _key: string; _type: "richText"; header?: SectionHeaderData; body?: Localized<PT>; background?: "white" | "neutral"; width?: "narrow" | "wide" }
   | { _key: string; _type: "ctaBanner"; heading?: Localized; subheading?: Localized; icon?: string; background?: "white" | "neutral" | "primary";
       showIfRegistrationOpen?: boolean; buttons?: { _type?: string; style?: string; icon?: string; showIfRegistrationOpen?: boolean; link: LinkData }[] }
+  | { _key: string; _type: "statsRow"; header?: SectionHeaderData;
+      stats?: { _key?: string; source?: "manual" | "yearsOfService"; value?: number | null; suffix?: string | null; label?: Localized; animate?: boolean | null }[] }
+  | { _key: string; _type: "eventsFeed"; header?: SectionHeaderData; limit?: number | null; showViewAllLink?: boolean | null }
   | { _key: string; _type: "textWithAside"; eyebrow?: Localized; heading?: Localized<PT>; body?: Localized<PT>; credit?: PersonData | null; creditTitle?: Localized;
       aside?: "foundingYear" | "pastPresidents" | "both"; foundedLabel?: Localized; foundedCaption?: Localized; pastPresidentsHeading?: Localized;
       pastPresidents?: { _id: string; name: string }[] }
@@ -68,6 +71,8 @@ export type ScholarshipData = {
 } | null;
 
 export type ScholarshipsPageData = { seo?: SeoData; sections: Section[]; scholarship?: ScholarshipData };
+
+export type HomePageData = { seo?: SeoData; sections: Section[] };
 
 export type GetInvolvedPageData = { seo?: SeoData; sections: Section[] };
 

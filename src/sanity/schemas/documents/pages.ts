@@ -1,7 +1,7 @@
 import { defineField, defineType } from "sanity";
 
 /** Blocks available in this phase. More arrive page by page. */
-export const SECTION_TYPES = ["pageHero", "richText", "ctaBanner", "peopleGrid", "resourceList", "textWithAside", "cardGrid", "featuredPerson"];
+export const SECTION_TYPES = ["pageHero", "richText", "ctaBanner", "peopleGrid", "resourceList", "textWithAside", "cardGrid", "featuredPerson", "statsRow", "eventsFeed"];
 
 export const PAGE_TYPES = [
   { name: "homePage", title: "Home" },

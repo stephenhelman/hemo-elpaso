@@ -14,7 +14,9 @@ import { fillYears } from "../src/lib/site";
 import { pick } from "../src/sanity/helpers/pick";
 import { getInvolvedPageQuery } from "../src/sanity/queries/getInvolved";
 import { contactPageQuery } from "../src/sanity/queries/contact";
-import { getInvolvedPageFallback, contactPageFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
+import { homePageQuery } from "../src/sanity/queries/home";
+import { yearsSinceFounding } from "../src/lib/site";
+import { homePageFallback, getInvolvedPageFallback, contactPageFallback, scholarshipsPageFallback, resourcesPageFallback, aboutPageFallback } from "../src/sanity/fallback";
 
 const run = async (q: string, dataset: any[]) => (await (await evaluate(parse(q), { dataset })).get()) as any;
 // Drop nulls/_key/_id and reduce people to what the page shows, so "absent" equals "null".
@@ -25,7 +27,7 @@ const norm = (x: any): any =>
     JSON.stringify(x, (k, v) => {
       if (k === "_key" || k === "_id" || k === "order" || k === "bio" || v === null) return undefined;
       // array-member `_type`s (card, ctaButton, metaItem, localizedString) are needed by Studio but not projected
-      if (k === "_type" && ["card", "ctaButton", "metaItem", "localizedString"].includes(v)) return undefined;
+      if (k === "_type" && ["card", "ctaButton", "heroButton", "heroBadge", "stat", "metaItem", "localizedString"].includes(v)) return undefined;
       if (k === "people" && Array.isArray(v)) return v.map((p: any) => ({ name: p.name, group: p.group, office: p.office }));
       return v;
     }),
@@ -78,6 +80,34 @@ const norm = (x: any): any =>
   const orderOk = (rSeeded.sections.find((x: any) => x.category === "condition").items as any[]).map((i) => i.abbreviation).join() === "HA,HB,VWD";
   console.log(orderOk ? "PASS items sorted by order" : "FAIL order");
   ok = ok && orderOk;
+  // ---- Home ----
+  const hSeeded = await run(homePageQuery, docs);
+  const ha = JSON.stringify(norm({ sections: hSeeded.sections })), hb = JSON.stringify(norm({ sections: homePageFallback().sections }));
+  console.log(ha === hb ? "PASS seeded home page == dictionary fallback" : "FAIL seeded home page differs from fallback");
+  if (ha !== hb) { ok = false; console.log(ha.slice(0, 900), "\n", hb.slice(0, 900)); }
+  const order = hSeeded.sections.map((x: any) => x._type).join(",");
+  const homeOrderOk = order === "pageHero,statsRow,eventsFeed,ctaBanner";
+  console.log(homeOrderOk ? `PASS home sections in today's order (${order})` : `FAIL home order (${order})`);
+  ok = ok && homeOrderOk;
+  const stats = hSeeded.sections.find((x: any) => x._type === "statsRow").stats as any[];
+  const shown = stats.map((st) => `${st.source === "yearsOfService" ? yearsSinceFounding() : st.value}${st.suffix ?? ""} ${st.label.en}`);
+  const statsOk = shown.join("|") === "150+ Families Served|33 Years of Service|50+ Events Hosted|100% Free of Charge" && stats[1].value == null;
+  console.log(statsOk ? `PASS stats compute 33 (${shown.join(" | ")})` : `FAIL stats (${shown.join(" | ")})`);
+  ok = ok && statsOk;
+  const heroH = hSeeded.sections[0].heading;
+  const mark = (pt: any[]) => (pt ?? []).flatMap((b: any) => b.children).filter((c: any) => (c.marks ?? []).includes("emphasis")).map((c: any) => c.text).join();
+  const markOk = mark(heroH.en) === "Hope" && mark(heroH.es) === "Esperanza";
+  console.log(markOk ? "PASS heading emphasis marks: EN 'Hope', ES 'Esperanza'" : `FAIL emphasis marks (${mark(heroH.en)} / ${mark(heroH.es)})`);
+  ok = ok && markOk;
+  const band = hSeeded.sections.find((x: any) => x._type === "ctaBanner");
+  const bandOk = band.background === "primary" && band.icon === "clipboardList" && band.showIfRegistrationOpen === true;
+  console.log(bandOk ? "PASS register band: primary, icon, showIfRegistrationOpen" : "FAIL register band");
+  ok = ok && bandOk;
+  const flatText = (pt: any[]) => (pt ?? []).flatMap((b: any) => b.children).map((c: any) => c.text).join("");
+  const sameText = flatText(heroH.en) === "Giving Hope To Our Community" && flatText(heroH.es) === "Dando Esperanza A Nuestra Comunidad";
+  console.log(sameText ? "PASS hero heading text unchanged (EN/ES)" : "FAIL hero heading text");
+  ok = ok && sameText;
+
   // ---- Get Involved ----
   const gSeeded = await run(getInvolvedPageQuery, docs);
   const ga = JSON.stringify(norm({ sections: gSeeded.sections })), gb = JSON.stringify(norm({ sections: getInvolvedPageFallback().sections }));

@@ -23,6 +23,8 @@ export const sectionsFragment = groq`sections[]{
                              buttons[]{ style, icon, showIfRegistrationOpen, link${linkFragment} } },
   _type == "resourceList" => { header, category, layout, columns,
                              "items": *[_type == "resource" && category == ^.category && active == true]|order(order asc){ ${resourceFragment} } },
+  _type == "statsRow"   => { header, stats[]{ _key, source, value, suffix, label, animate } },
+  _type == "eventsFeed" => { header, limit, showViewAllLink },
   _type == "textWithAside" => { eyebrow, heading, body, creditTitle, aside, foundedLabel, foundedCaption, pastPresidentsHeading,
                              "credit": credit->{ ${personFragment} },
                              "pastPresidents": *[_type == "person" && active == true && group in ["founder", "pastPresident"]]|order(order asc){ _id, name } },
