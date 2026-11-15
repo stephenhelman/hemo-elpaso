@@ -6,9 +6,9 @@
  *
  * - Needs a token with WRITE access (Editor role). It is used by this script ONLY:
  *   never put it in the app's environment or in a NEXT_PUBLIC_ variable.
- * - Idempotent: documents have fixed ids and are written with createOrReplace, so
- *   re-running RESETS those documents to the seed content. Do not re-run after
- *   editors have changed them unless that is what you want.
+ * - Idempotent and non-destructive: documents have fixed ids and are created only if
+ *   missing; existing ones (edited text, uploaded photos) are left alone. Pass
+ *   --overwrite to reset them to the seed text on purpose.
  * - No emails, no photos. Nobody is added who is not already shown on the live site.
  */
 import { createClient } from "@sanity/client";
@@ -19,6 +19,7 @@ import { scholarshipCardTranslation } from "../src/translation/scholarshipsPage"
 import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE } from "../src/lib/site";
 import { scholarshipsPageFallback } from "../src/sanity/fallback";
 import { ptSimple } from "../src/sanity/helpers/pt";
+import { resourceItems, resourcesSections } from "../src/sanity/resourcesSource";
 import { projectId, dataset, apiVersion } from "../src/sanity/env";
 
 const WRITE = process.argv.includes("--write");
@@ -130,20 +131,57 @@ export const docs: any[] = [
   }),
 ];
 
+// ---- Resources (Phase 5B) -------------------------------------------------------------------
+// Every current resource, with today's EN/ES text. lastVerified = the day the seed runs
+// (the people who maintain the site have just reviewed this content).
+const today = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+})();
+
+docs.push(
+  ...resourceItems().map((r: any) => ({
+    _type: "resource",
+    ...r,
+    active: true,
+    lastVerified: today,
+  })),
+  withKeys({
+    _id: "resourcesPage",
+    _type: "resourcesPage",
+    seo: {
+      title: { en: "Resources", es: "Recursos" },
+      description: {
+        en: "Access educational resources, connect with national hemophilia organizations, find local healthcare providers, and discover support services for families affected by bleeding disorders in El Paso, Texas.",
+        es: "Acceda a recursos educativos, conéctese con organizaciones nacionales de hemofilia, encuentre proveedores de atención médica locales y descubra servicios de apoyo para familias afectadas por trastornos hemorrágicos en El Paso, Texas.",
+      },
+    },
+    sections: resourcesSections(),
+  }),
+);
+
 async function main() {
   console.log(`Sanity seed: project ${projectId}, dataset ${dataset}, ${docs.length} documents`);
-  for (const d of docs) console.log(`  ${WRITE ? "write" : "would write"}: ${d._type} ${d._id}`);
+  const OVERWRITE = process.argv.includes("--overwrite");
   if (!WRITE) {
+    for (const d of docs) console.log(`  would ${OVERWRITE ? "create or REPLACE" : "create if missing"}: ${d._type} ${d._id}`);
     console.log("\nDry run. Re-run with --write and SANITY_WRITE_TOKEN set to apply.");
+    console.log("By default existing documents are LEFT ALONE (editors' changes and uploads are safe). --overwrite resets them to the seed text.");
     return;
   }
   const token = process.env.SANITY_WRITE_TOKEN;
   if (!token) throw new Error("SANITY_WRITE_TOKEN is not set");
   const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
+  const existing = new Set<string>(await client.fetch(`*[_id in $ids]._id`, { ids: docs.map((d) => d._id) }));
   const tx = client.transaction();
-  for (const d of docs) tx.createOrReplace(d);
+  let created = 0, skipped = 0, replaced = 0;
+  for (const d of docs) {
+    if (existing.has(d._id) && !OVERWRITE) { skipped++; console.log(`  exists, left alone: ${d._type} ${d._id}`); continue; }
+    if (existing.has(d._id)) { replaced++; tx.createOrReplace(d); console.log(`  REPLACED: ${d._type} ${d._id}`); }
+    else { created++; tx.create(d); console.log(`  created: ${d._type} ${d._id}`); }
+  }
   await tx.commit();
-  console.log("Done. Documents were written as published. Open /admin/studio to review them.");
+  console.log(`Done: ${created} created, ${skipped} left alone, ${replaced} replaced. Documents are written as published; review them in /admin/studio.`);
 }
 
 if (process.argv[1]?.endsWith("seed-sanity.ts")) {

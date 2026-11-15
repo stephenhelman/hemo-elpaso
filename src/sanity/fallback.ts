@@ -9,7 +9,8 @@ import {
 import { boardOfDirectors } from "@/translation/aboutPage";
 import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE } from "@/lib/site";
 import { localizedPt } from "./helpers/pt";
-import type { ScholarshipsPageData, SiteSettingsData } from "./types";
+import { resourceItems, resourcesSections } from "./resourcesSource";
+import type { ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 /** Used when Sanity is unreachable. Mirrors the code constants and dictionaries. */
 export function siteSettingsFallback(): SiteSettingsData {
@@ -92,5 +93,18 @@ export function scholarshipsPageFallback(): ScholarshipsPageData {
         ],
       },
     ],
+  };
+}
+
+/** Today's Resources page, expressed as Sanity-shaped data (resource lists filled in). */
+export function resourcesPageFallback(): ResourcesPageData {
+  const items = resourceItems();
+  return {
+    seo: null,
+    sections: resourcesSections().map((s: any) =>
+      s._type === "resourceList"
+        ? { ...s, items: items.filter((i) => i.category === s.category).sort((a, b) => (a.order ?? 100) - (b.order ?? 100)) }
+        : s,
+    ),
   };
 }

@@ -4,8 +4,9 @@ import { siteUrl } from "@/lib/site";
 import { sanityFetch } from "./fetch";
 import { siteSettingsQuery, SITE_SETTINGS_TAGS } from "./queries/siteSettings";
 import { scholarshipsPageQuery, SCHOLARSHIPS_TAGS } from "./queries/scholarships";
-import { siteSettingsFallback, scholarshipsPageFallback } from "./fallback";
-import type { ScholarshipsPageData, SiteSettingsData } from "./types";
+import { resourcesPageQuery, RESOURCES_TAGS } from "./queries/resources";
+import { siteSettingsFallback, scholarshipsPageFallback, resourcesPageFallback } from "./fallback";
+import type { ResourcesPageData, ScholarshipsPageData, SiteSettingsData } from "./types";
 
 const defined = <T extends object>(o: T): Partial<T> =>
   Object.fromEntries(Object.entries(o).filter(([, v]) => v != null)) as Partial<T>;
@@ -36,3 +37,12 @@ export const getScholarshipsPage = cache(async (): Promise<ScholarshipsPageData>
 export async function getDefaultShareImage(): Promise<string> {
   return (await getSiteSettings()).seo?.ogImage ?? `${siteUrl()}/opengraph-image.png`;
 }
+
+export const getResourcesPage = cache(async (): Promise<ResourcesPageData> => {
+  const { data } = await sanityFetch<ResourcesPageData>({
+    query: resourcesPageQuery,
+    tags: RESOURCES_TAGS,
+    fallback: resourcesPageFallback,
+  });
+  return { ...data, sections: data.sections ?? [] };
+});

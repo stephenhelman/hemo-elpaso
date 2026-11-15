@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { ICON_OPTIONS } from "../../options";
+import { ICON_OPTIONS, RESOURCE_CATEGORIES } from "../../options";
 
 const styleField = defineField({
   name: "style",
@@ -25,6 +25,13 @@ export const pageHero = defineType({
           { title: "Title only", value: "titleOnly" },
         ],
       },
+    }),
+    defineField({
+      name: "decoration",
+      type: "string",
+      initialValue: "two",
+      description: "Background accent circles.",
+      options: { layout: "radio", list: [{ title: "Two circles", value: "two" }, { title: "One circle", value: "one" }] },
     }),
     defineField({ name: "eyebrow", type: "localizedString", hidden: ({ parent }) => parent?.variant === "titleOnly" }),
     defineField({ name: "heading", type: "localizedHeading", validation: (r) => r.required() }),
@@ -144,4 +151,48 @@ export const peopleGrid = defineType({
     }),
   ],
   preview: { select: { title: "header.heading.en.0.children.0.text", subtitle: "layout" }, prepare: ({ title, subtitle }) => ({ title: title || "People", subtitle }) },
+});
+
+export const resourceList = defineType({
+  name: "resourceList",
+  title: "Resource list",
+  type: "object",
+  description:
+    "Shows ALL active resources of the chosen category, sorted by their order. Add or edit the resources themselves under Resources.",
+  fields: [
+    defineField({ name: "header", type: "sectionHeader" }),
+    defineField({
+      name: "category",
+      type: "string",
+      validation: (r) => r.required(),
+      options: { list: RESOURCE_CATEGORIES },
+    }),
+    defineField({
+      name: "layout",
+      type: "string",
+      initialValue: "org",
+      validation: (r) => r.required(),
+      options: {
+        layout: "radio",
+        list: [
+          { title: "Rich card (badge, text, bullet facts, link): conditions", value: "rich" },
+          { title: "Organization (whole card is a link)", value: "org" },
+          { title: "Provider (type, address, phone, website)", value: "provider" },
+          { title: "Program (name, organization, tags, link)", value: "program" },
+          { title: "Link card (icon, text, link)", value: "linkCard" },
+        ],
+      },
+    }),
+    defineField({
+      name: "columns",
+      type: "number",
+      initialValue: 3,
+      options: { list: [2, 3], layout: "radio" },
+      validation: (r) => r.required(),
+    }),
+  ],
+  preview: {
+    select: { title: "header.heading.en.0.children.0.text", category: "category", layout: "layout" },
+    prepare: ({ title, category, layout }: any) => ({ title: title || "Resource list", subtitle: `${category} · ${layout}` }),
+  },
 });

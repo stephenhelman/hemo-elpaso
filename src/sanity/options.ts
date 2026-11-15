@@ -15,6 +15,7 @@ export const ICON_OPTIONS = [
   { title: "Bell", value: "bell" },
   { title: "Star", value: "star" },
   { title: "Arrow", value: "arrowRight" },
+  { title: "Sun", value: "sun" },
 ];
 
 export const COLOR_OPTIONS = [
@@ -35,3 +36,21 @@ export const INTERNAL_ROUTES: readonly (readonly [string, string])[] = [
   ["/contact", "Contact"],
   ["/register-info", "Register for Information"],
 ];
+
+export const RESOURCE_CATEGORIES = [
+  { title: "Condition information", value: "condition" },
+  { title: "National organization", value: "nationalOrg" },
+  { title: "Local care", value: "localCare" },
+  { title: "Youth program", value: "youthProgram" },
+  { title: "Financial help", value: "financialHelp" },
+];
+
+/** A resource not re-checked within this many months is shown as stale in the Studio. */
+export const STALE_AFTER_MONTHS = 12;
+export const isStale = (iso?: string | null, now: Date = new Date()) => {
+  if (!iso) return true;
+  const d = new Date(`${iso}T12:00:00`);
+  const limit = new Date(now);
+  limit.setMonth(limit.getMonth() - STALE_AFTER_MONTHS);
+  return d < limit;
+};

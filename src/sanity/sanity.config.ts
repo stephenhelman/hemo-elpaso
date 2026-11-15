@@ -17,7 +17,17 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
     // Singletons are never created from the "new document" menu.
-    templates: (templates) => templates.filter(({ schemaType }) => !SINGLETON_TYPES.includes(schemaType)),
+    templates: (templates) => [
+      ...templates.filter(({ schemaType }) => !SINGLETON_TYPES.includes(schemaType)),
+      // "New" inside a category list pre-fills the category.
+      {
+        id: "resource-in-category",
+        title: "Resource",
+        schemaType: "resource",
+        parameters: [{ name: "category", type: "string" }],
+        value: (params: { category?: string }) => ({ category: params.category, active: true }),
+      },
+    ],
   },
   document: {
     // Singletons cannot be deleted, duplicated or unpublished.

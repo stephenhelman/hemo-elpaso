@@ -18,9 +18,14 @@ export async function sanityFetch<T>({
   fallback: () => T;
 }): Promise<{ data: T; fromFallback: boolean }> {
   try {
-    const data = await client.fetch<T | null>(query, params, {
+    let data = await client.fetch<T | null>(query, params, {
       next: { tags, revalidate: 3600 }, // webhook revalidates by tag; 1h is the safety net
     });
+    if (data == null) {
+      // A "not found" must never stick in the data cache for an hour (e.g. a request that raced the
+      // first publish). Retry once, uncached, before giving up.
+      data = await client.fetch<T | null>(query, params, { cache: "no-store" });
+    }
     if (data == null) throw new Error("document not found (is it published? has the seed run?)");
     return { data, fromFallback: false };
   } catch (err) {
