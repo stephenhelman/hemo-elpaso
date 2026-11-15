@@ -1,16 +1,12 @@
 import { contactEmail, SITE_PHONE } from "@/lib/site";
 import {
-  Body,
   Button,
-  Container,
-  Head,
   Heading,
-  Html,
   Img,
   Link,
-  Preview,
   Text,
 } from "@react-email/components";
+import EmailLayout, { EMAIL_COLORS, emailH1, emailButton } from "./EmailLayout";
 
 /**
  * Transactional RSVP emails (confirmation / day-before reminder / cancellation).
@@ -79,12 +75,8 @@ export default function RsvpEmail({
   const t = copy[lang];
   const k = t[kind];
   return (
-    <Html>
-      <Head />
-      <Preview>{`${k.pre}: ${eventTitle}`}</Preview>
-      <Body style={{ backgroundColor: "#f6f6f6", fontFamily: "sans-serif" }}>
-        <Container style={{ backgroundColor: "#fff", padding: 32, maxWidth: 560 }}>
-          <Heading style={{ color: "#8B1538", fontSize: 24 }}>{k.h}</Heading>
+    <EmailLayout preview={`${k.pre}: ${eventTitle}`} lang={lang}>
+          <Heading style={emailH1}>{k.h}</Heading>
           <Text>{t.hi(firstName)}</Text>
           <Text>{k.p}</Text>
           <Text>
@@ -103,14 +95,14 @@ export default function RsvpEmail({
           {kind !== "cancelled" && qrUrl && (
             <>
               <Heading as="h2" style={{ fontSize: 18 }}>{t.qrTitle}</Heading>
-              <Img src={qrUrl} width={220} height={220} alt="QR" />
+              <Img src={qrUrl} width={220} height={220} alt={lang === "es" ? "Tu código QR de registro" : "Your check-in QR code"} />
               <Text style={{ fontSize: 13 }}>
                 {t.qrHelp}
                 {rsvpUrl && (
                   <>
                     <br />
                     {t.qrFallback}{" "}
-                    <Link href={rsvpUrl} style={{ color: "#8B1538" }}>{t.qrFallbackLink}</Link>
+                    <Link href={rsvpUrl} style={{ color: EMAIL_COLORS.maroon }}>{t.qrFallbackLink}</Link>
                   </>
                 )}
               </Text>
@@ -119,15 +111,13 @@ export default function RsvpEmail({
           {kind !== "cancelled" && rsvpUrl && (
             <Button
               href={rsvpUrl}
-              style={{ backgroundColor: "#8B1538", color: "#fff", padding: "12px 24px", borderRadius: 24, fontWeight: 600 }}
+              style={emailButton}
             >
               {t.manage}
             </Button>
           )}
           <Text style={{ fontSize: 13, color: "#555" }}>{t.questions}</Text>
           <Text>{t.sign}</Text>
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   );
 }

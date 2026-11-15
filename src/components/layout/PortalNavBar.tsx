@@ -3,7 +3,7 @@
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import BrandMark from "@/components/brand/BrandMark";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -37,22 +37,8 @@ export default function PortalNavbar({ locale }: Props) {
       <div className="container-max">
         <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <Image
-              src="/logo.png"
-              alt="Hemophilia Outreach of El Paso"
-              width={40}
-              height={40}
-              className="rounded-full object-contain"
-            />
-            <div className="hidden sm:block">
-              <p className="font-display font-bold text-neutral-900 text-sm leading-tight">
-                Hemophilia Outreach
-              </p>
-              <p className="font-display font-bold text-primary text-sm leading-tight">
-                of El Paso
-              </p>
-            </div>
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <BrandMark tone="light" iconHeight={40} hideTextBelowSm />
           </Link>
 
           {/* Desktop Nav */}

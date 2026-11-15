@@ -7,7 +7,7 @@ import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import SiteAnalytics from "@/components/analytics/SiteAnalytics";
-import { inter, poppins } from "@/lib/fonts";
+import { inter, poppins, bonum } from "@/lib/fonts";
 import { Lang } from "@/types";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -133,7 +133,7 @@ export default async function RootLayout({
       <head>
         <OrganizationSchema />
       </head>
-      <body className={`${inter.variable} ${poppins.variable}`}>
+      <body className={`${inter.variable} ${poppins.variable} ${bonum.variable}`}>
         <SiteLayout
           registrationOpen={registrationOpen()}
           initialLocale={locale === "es" ? "es" : "en"}

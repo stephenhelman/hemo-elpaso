@@ -9,7 +9,7 @@ import {
   adminSidebarTranslation,
   adminNavItemsTranslation,
 } from "@/translation/adminSidebar";
-import Image from "next/image";
+import BrandMark from "@/components/brand/BrandMark";
 import type { Permission } from "@/lib/permissions";
 
 interface Props {
@@ -57,13 +57,8 @@ export default function AdminSidebar({
         <div className="flex flex-col flex-1">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 py-5 border-b border-neutral-800">
-            <Image
-              src="/logo.png"
-              alt="Hemophilia Outreach of El Paso"
-              width={40}
-              height={40}
-              className="rounded-full object-contain"
-            />
+            {/* Dark sidebar: reversed (white) icon */}
+            <BrandMark tone="dark" iconHeight={44} showText={false} />
             <div>
               <p className="font-display font-bold text-white text-sm leading-tight">
                 {t.adminPortal}

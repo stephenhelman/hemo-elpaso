@@ -1,13 +1,9 @@
 import { contactEmail } from "@/lib/site";
 import {
-  Body,
-  Container,
-  Head,
   Heading,
-  Html,
-  Preview,
   Text,
 } from "@react-email/components";
+import EmailLayout, { emailH1 } from "./EmailLayout";
 
 /**
  * Sent after "Register for Information". Deliberately generic: it must NOT
@@ -43,22 +39,12 @@ export default function RegistrationInfoConfirmation({
 }: Props) {
   const t = copy[lang];
   return (
-    <Html>
-      <Head />
-      <Preview>{t.preview}</Preview>
-      <Body style={{ backgroundColor: "#f6f6f6", fontFamily: "sans-serif" }}>
-        <Container
-          style={{ backgroundColor: "#fff", padding: "32px", maxWidth: 560 }}
-        >
-          <Heading style={{ color: "#8B1538", fontSize: 24 }}>
-            {t.heading}
-          </Heading>
+    <EmailLayout preview={t.preview} lang={lang}>
+          <Heading style={emailH1}>{t.heading}</Heading>
           <Text>{lang === "es" ? `Hola ${firstName},` : `Hi ${firstName},`}</Text>
           <Text>{t.body}</Text>
           <Text>{t.change}</Text>
           <Text>{t.sign}</Text>
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   );
 }

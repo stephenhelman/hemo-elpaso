@@ -12,6 +12,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // HOEP brand sheet colours (docs/BRAND.md). NB: the site's `primary` below is the older red; the logo maroon is brand.maroon.
+        brand: { pink: "#FACED2", coral: "#F57C86", ink: "#2A2426", maroon: "#8B1538" },
         // HOEP Brand Colors
         primary: {
           50: "#fef2f2",
@@ -68,6 +70,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         display: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        bonum: ["var(--font-bonum)", "Georgia", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -1,6 +1,6 @@
 import { contactEmail, SITE_PHONE, FACEBOOK_URL, FACEBOOK_LABEL } from "@/lib/site";
 import Link from "next/link";
-import Image from "next/image";
+import BrandMark from "@/components/brand/BrandMark";
 import { Facebook, Mail, Phone, Heart } from "lucide-react";
 import { footerTranslation } from "@/translation/layoutPage";
 import { Lang } from "@/types";
@@ -20,22 +20,8 @@ export default function PortalFooter({ locale, registrationOpen = false }: Props
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <Image
-                src="/logo.png"
-                alt="Hemophilia Outreach of El Paso"
-                width={40}
-                height={40}
-                className="rounded-full object-contain"
-              />
-              <div>
-                <p className="font-display font-bold text-white text-sm leading-tight">
-                  Hemophilia Outreach
-                </p>
-                <p className="font-display font-bold text-primary-400 text-sm leading-tight">
-                  of El Paso
-                </p>
-              </div>
+            <div className="mb-4">
+              <BrandMark tone="dark" iconHeight={48} iconAlt="" />
             </div>
             <p className="text-sm text-neutral-400 leading-relaxed">
               {t.tagline}

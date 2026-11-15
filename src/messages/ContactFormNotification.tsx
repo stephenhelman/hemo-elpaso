@@ -1,15 +1,11 @@
 import { siteHost } from "@/lib/site";
 import {
-  Body,
-  Container,
-  Head,
   Heading,
-  Html,
-  Preview,
   Section,
   Text,
   Hr,
 } from "@react-email/components";
+import EmailLayout from "./EmailLayout";
 
 interface Props {
   name: string;
@@ -42,21 +38,13 @@ export default function ContactFormNotification({
     reasonLabels[reason]?.[locale] ?? reason;
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        {isEs
+    <EmailLayout preview={isEs
           ? `Nuevo mensaje de contacto de ${name} — ${reasonLabel}`
-          : `New contact form message from ${name} — ${reasonLabel}`}
-      </Preview>
-      <Body style={main}>
-        <Container style={container}>
+          : `New contact form message from ${name} — ${reasonLabel}`} lang={isEs ? "es" : "en"}>
           {/* Header */}
-          <Section style={header}>
-            <Heading style={h1}>
+          <Heading style={h1}>
               {isEs ? "Nuevo Mensaje de Contacto" : "New Contact Form Message"}
             </Heading>
-          </Section>
 
           {/* Reason badge */}
           <Section style={badgeSection}>
@@ -118,46 +106,19 @@ export default function ContactFormNotification({
               ? `Para responder, envíe un correo directamente a ${email}`
               : `To reply, email ${email} directly or hit reply on this message.`}
           </Text>
-
-          {/* Footer */}
-          <Section style={footer}>
-            <Text style={footerText}>
-              {isEs
-                ? `Este mensaje fue enviado desde el formulario de contacto en ${siteHost()}`
-                : `This message was submitted via the contact form at ${siteHost()}`}
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        </EmailLayout>
   );
 }
 
-const main = {
-  backgroundColor: "#f6f9fc",
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
 
-const container = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "20px 0 48px",
-  marginBottom: "64px",
-  maxWidth: "600px",
-};
 
-const header = {
-  background: "linear-gradient(135deg, #8B1538 0%, #D4AF37 100%)",
-  padding: "32px 20px",
-  textAlign: "center" as const,
-};
 
 const h1 = {
-  color: "#ffffff",
-  fontSize: "28px",
+  color: "#8B1538",
+  fontSize: "24px",
+  lineHeight: "30px",
   fontWeight: "bold",
-  margin: "0",
+  margin: "0 0 16px 0",
 };
 
 const h2 = {
@@ -175,12 +136,12 @@ const badgeSection = {
 const badge = {
   display: "inline-block",
   padding: "4px 14px",
-  backgroundColor: "#fef3c7",
-  color: "#92400e",
+  backgroundColor: "#FFF5F6",
+  color: "#2A2426",
   borderRadius: "999px",
   fontSize: "13px",
   fontWeight: "600",
-  border: "1px solid #fde68a",
+  border: "1px solid #FACED2",
 };
 
 const detailsBox = {
@@ -214,9 +175,9 @@ const detailValue = {
 const messageBox = {
   margin: "16px 20px 0",
   padding: "20px",
-  backgroundColor: "#fff7ed",
+  backgroundColor: "#FFF5F6",
   borderRadius: "8px",
-  border: "1px solid #fed7aa",
+  border: "1px solid #FACED2",
 };
 
 const messageText = {
@@ -239,15 +200,7 @@ const replyNote = {
   fontWeight: "500",
 };
 
-const footer = {
-  margin: "16px 20px 0",
-};
 
-const footerText = {
-  color: "#9ca3af",
-  fontSize: "12px",
-  margin: "0",
-};
 
 const link = {
   color: "#8B1538",

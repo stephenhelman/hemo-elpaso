@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import BrandMark from "@/components/brand/BrandMark";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteInfo } from "@/context/SiteSettingsContext";
 
@@ -36,8 +36,8 @@ export default function PublicError({ error, reset }: { error: Error & { digest?
   return (
     <div className="min-h-[70vh] bg-neutral-50 flex items-center justify-center px-4 py-16">
       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-10 max-w-md w-full text-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-          <AlertTriangle className="w-8 h-8 text-primary" />
+        <div className="flex justify-center mb-5">
+          <BrandMark tone="light" iconHeight={72} showText={false} />
         </div>
         <h1 className="font-display font-bold text-neutral-900 text-2xl mb-3">{c.title}</h1>
         <p className="text-neutral-500 text-sm leading-relaxed mb-6">{c.body}</p>

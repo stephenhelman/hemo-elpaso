@@ -1,15 +1,10 @@
 import { contactEmail } from "@/lib/site";
 import {
-  Body,
-  Button,
-  Container,
-  Head,
   Heading,
-  Html,
-  Preview,
   Section,
   Text,
 } from "@react-email/components";
+import EmailLayout from "./EmailLayout";
 
 interface Props {
   patientName: string;
@@ -29,15 +24,9 @@ export default function CheckInConfirmation({
   checkInTime = "5:45 PM",
 }: Props) {
   return (
-    <Html>
-      <Head />
-      <Preview>Welcome to {eventTitle}!</Preview>
-      <Body style={main}>
-        <Container style={container}>
+    <EmailLayout preview={`Welcome to ${eventTitle}!`} lang={"en"}>
           {/* Header */}
-          <Section style={header}>
-            <Heading style={h1}>🎉 You're Checked In!</Heading>
-          </Section>
+          <Heading style={h1}>🎉 You're Checked In!</Heading>
 
           {/* Greeting */}
           <Text style={text}>Hi {patientName},</Text>
@@ -70,54 +59,24 @@ export default function CheckInConfirmation({
               </tr>
             </table>
           </Section>
-
-          {/* Footer */}
-          <Section style={footer}>
-            <Text style={footerText}>
-              Questions? Contact event staff or email{" "}
-              <a href={`mailto:${contactEmail()}`} style={link}>
-                {contactEmail()}
-              </a>
-            </Text>
-            <Text style={footerText}>Enjoy the event! 🎊</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        </EmailLayout>
   );
 }
 
 // Styles (same as RSVP email)
-const main = {
-  backgroundColor: "#f6f9fc",
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
 
-const container = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "20px 0 48px",
-  marginBottom: "64px",
-  maxWidth: "600px",
-};
 
-const header = {
-  background: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
-  padding: "32px 20px",
-  textAlign: "center" as const,
-};
 
 const h1 = {
-  color: "#ffffff",
-  fontSize: "32px",
+  color: "#8B1538",
+  fontSize: "24px",
+  lineHeight: "30px",
   fontWeight: "bold",
-  margin: "0",
-  padding: "0",
+  margin: "0 0 16px 0",
 };
 
 const h2 = {
-  color: "#16a34a",
+  color: "#8B1538",
   fontSize: "24px",
   fontWeight: "bold",
   margin: "0 0 16px",
@@ -180,7 +139,7 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#16a34a",
+  backgroundColor: "#8B1538",
   borderRadius: "8px",
   color: "#ffffff",
   fontSize: "16px",
@@ -192,21 +151,9 @@ const button = {
   margin: "16px 0",
 };
 
-const footer = {
-  margin: "32px 20px 0",
-  padding: "24px 0 0",
-  borderTop: "1px solid #e5e7eb",
-  textAlign: "center" as const,
-};
 
-const footerText = {
-  color: "#666666",
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "8px 0",
-};
 
 const link = {
-  color: "#16a34a",
+  color: "#8B1538",
   textDecoration: "underline",
 };

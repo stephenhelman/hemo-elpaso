@@ -1,15 +1,11 @@
 import { contactEmail } from "@/lib/site";
 import {
-  Body,
-  Container,
-  Head,
   Heading,
-  Html,
   Link,
-  Preview,
   Section,
   Text,
 } from "@react-email/components";
+import EmailLayout from "./EmailLayout";
 
 interface Props {
   patientName: string;
@@ -64,15 +60,8 @@ export default function BoardRoleAssigned({
   const t = copy[lang] ?? copy.en;
 
   return (
-    <Html>
-      <Head />
-      <Preview>{t.preview}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Section style={headerSection}>
-            <Text style={emoji}>🎉</Text>
-            <Heading style={h1}>{t.heading}</Heading>
-          </Section>
+    <EmailLayout preview={t.preview} lang={lang === "es" ? "es" : "en"}>
+          <Heading style={h1}>{t.heading}</Heading>
 
           <Section style={content}>
             <Text style={text}>{t.greeting(patientName)}</Text>
@@ -108,59 +97,24 @@ export default function BoardRoleAssigned({
               <strong>{t.signature}</strong>
             </Text>
           </Section>
-
-          <Section style={footer}>
-            <Text style={footerText}>
-              Hemophilia Outreach of El Paso
-              <br />
-              El Paso, Texas
-            </Text>
-            <Text style={footerTextSmall}>
-              <Link href={`mailto:${contactEmail()}`} style={footerLink}>
-                {contactEmail()}
-              </Link>
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        </EmailLayout>
   );
 }
 
-const main = {
-  backgroundColor: "#f5f5f5",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-};
 
-const container = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "0",
-  maxWidth: "600px",
-};
 
-const headerSection = {
-  background: "linear-gradient(135deg, #D4AF37 0%, #C5A028 100%)",
-  padding: "40px 20px",
-  textAlign: "center" as const,
-};
 
-const emoji = {
-  fontSize: "48px",
+
+const h1 = {
+  color: "#8B1538",
+  fontSize: "24px",
+  lineHeight: "30px",
+  fontWeight: "bold",
   margin: "0 0 16px 0",
 };
 
-const h1 = {
-  color: "#ffffff",
-  fontSize: "28px",
-  fontWeight: "bold",
-  margin: "0",
-  padding: "0",
-};
-
 const content = {
-  padding: "40px 30px",
+  padding: "8px 0 0",
 };
 
 const text = {
@@ -171,15 +125,15 @@ const text = {
 };
 
 const infoBox = {
-  backgroundColor: "#fffbeb",
-  border: "2px solid #D4AF37",
+  backgroundColor: "#FFF5F6",
+  border: "2px solid #8B1538",
   borderRadius: "12px",
   padding: "24px",
   margin: "24px 0",
 };
 
 const infoLabel = {
-  color: "#92400e",
+  color: "#2A2426",
   fontSize: "11px",
   fontWeight: "bold",
   textTransform: "uppercase" as const,
@@ -195,7 +149,7 @@ const infoValue = {
 };
 
 const infoNote = {
-  color: "#78350f",
+  color: "#2A2426",
   fontSize: "13px",
   lineHeight: "20px",
   margin: "8px 0 0 0",
@@ -217,22 +171,22 @@ const step = {
 };
 
 const optionalBox = {
-  backgroundColor: "#f0f9ff",
-  border: "1px solid #bae6fd",
+  backgroundColor: "#FFF5F6",
+  border: "1px solid #FACED2",
   borderRadius: "8px",
   padding: "20px",
   margin: "20px 0",
 };
 
 const optionalTitle = {
-  color: "#0c4a6e",
+  color: "#2A2426",
   fontSize: "14px",
   fontWeight: "bold",
   margin: "0 0 8px 0",
 };
 
 const optionalBody = {
-  color: "#0369a1",
+  color: "#8B1538",
   fontSize: "14px",
   lineHeight: "20px",
   margin: "0",
@@ -244,7 +198,7 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#D4AF37",
+  backgroundColor: "#8B1538",
   color: "#ffffff",
   fontSize: "16px",
   fontWeight: "bold",
@@ -261,26 +215,6 @@ const signatureText = {
   margin: "24px 0 0 0",
 };
 
-const footer = {
-  backgroundColor: "#f9fafb",
-  padding: "30px",
-  textAlign: "center" as const,
-};
 
-const footerText = {
-  color: "#6b7280",
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "0 0 8px 0",
-};
 
-const footerTextSmall = {
-  color: "#9ca3af",
-  fontSize: "12px",
-  margin: "0",
-};
 
-const footerLink = {
-  color: "#D4AF37",
-  textDecoration: "underline",
-};

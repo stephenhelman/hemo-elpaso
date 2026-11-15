@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldAlert } from "lucide-react";
+import BrandMark from "@/components/brand/BrandMark";
 import { getLocaleCookie } from "@/lib/locale";
 import type { Lang } from "@/types";
 
@@ -62,8 +62,8 @@ export default async function AccessDeniedPage({
   return (
     <div className="min-h-[70vh] bg-neutral-50 flex items-center justify-center px-4 py-16">
       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-10 max-w-md w-full text-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-          <ShieldAlert className="w-8 h-8 text-primary" />
+        <div className="flex justify-center mb-5">
+          <BrandMark tone="light" iconHeight={72} showText={false} />
         </div>
         <h1 className="font-display font-bold text-neutral-900 text-2xl mb-3">
           {isError ? c.errorTitle : c.deniedTitle}

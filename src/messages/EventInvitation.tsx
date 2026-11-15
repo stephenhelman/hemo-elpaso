@@ -1,13 +1,9 @@
 import {
-  Body,
   Button,
-  Container,
-  Head,
   Heading,
-  Html,
-  Preview,
   Text,
 } from "@react-email/components";
+import EmailLayout, { emailH1, emailButton } from "./EmailLayout";
 
 /**
  * Invitation email. Contains event details, a personal RSVP link and an
@@ -66,14 +62,15 @@ export default function EventInvitation({
 }: Props) {
   const t = copy[lang];
   return (
-    <Html>
-      <Head />
-      <Preview>{t.preview(eventTitle)}</Preview>
-      <Body style={{ backgroundColor: "#f6f6f6", fontFamily: "sans-serif" }}>
-        <Container style={{ backgroundColor: "#fff", padding: 32, maxWidth: 560 }}>
+    <EmailLayout
+      preview={t.preview(eventTitle)}
+      lang={lang}
+      unsubscribeUrl={unsubscribeUrl}
+      unsubscribeText={{ prompt: t.unsub, link: t.unsubLink }}
+    >
           <Text>{t.hi(firstName)}</Text>
           <Text>{t.intro}</Text>
-          <Heading style={{ color: "#8B1538", fontSize: 24 }}>{eventTitle}</Heading>
+          <Heading style={emailH1}>{eventTitle}</Heading>
           <Text>
             <strong>{t.when}:</strong> {eventDate}, {eventTime}
             <br />
@@ -83,16 +80,11 @@ export default function EventInvitation({
           <Text>{t.ctaHint}</Text>
           <Button
             href={rsvpUrl}
-            style={{ backgroundColor: "#8B1538", color: "#fff", padding: "12px 24px", borderRadius: 24, fontWeight: 600 }}
+            style={emailButton}
           >
             {t.cta}
           </Button>
           <Text>{t.sign}</Text>
-          <Text style={{ fontSize: 12, color: "#777" }}>
-            {t.unsub} <a href={unsubscribeUrl}>{t.unsubLink}</a>
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   );
 }

@@ -1,15 +1,11 @@
 import { mailbox } from "@/lib/site";
 import {
-  Body,
-  Container,
-  Head,
   Heading,
-  Html,
   Link,
-  Preview,
   Section,
   Text,
 } from "@react-email/components";
+import EmailLayout from "./EmailLayout";
 
 interface Props {
   patientName: string;
@@ -29,16 +25,9 @@ export default function EventCancelled({
   cancellationReason,
 }: Props) {
   return (
-    <Html>
-      <Head />
-      <Preview>Event cancelled: {eventTitle}</Preview>
-      <Body style={main}>
-        <Container style={container}>
+    <EmailLayout preview={`Event cancelled: ${eventTitle}`} lang={"en"}>
           {/* Header */}
-          <Section style={headerSection}>
-            <Text style={emoji}>⚠️</Text>
-            <Heading style={h1}>Event Cancelled</Heading>
-          </Section>
+          <Heading style={h1}>Event Cancelled</Heading>
 
           {/* Main content */}
           <Section style={content}>
@@ -107,62 +96,25 @@ export default function EventCancelled({
               </Link>
             </Section>
           </Section>
-
-          {/* Footer */}
-          <Section style={footer}>
-            <Text style={footerText}>
-              Hemophilia Outreach of El Paso
-              <br />
-              Supporting our community through every challenge
-            </Text>
-            <Text style={footerTextSmall}>
-              Questions? Contact us at{" "}
-              <Link href={`mailto:${mailbox("events")}`} style={footerLink}>
-                {mailbox("events")}
-              </Link>
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        </EmailLayout>
   );
 }
 
 // Styles
-const main = {
-  backgroundColor: "#f5f5f5",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-};
 
-const container = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "0",
-  maxWidth: "600px",
-};
 
-const headerSection = {
-  background: "linear-gradient(135deg, #ea580c 0%, #c2410c 100%)",
-  padding: "40px 20px",
-  textAlign: "center" as const,
-};
 
-const emoji = {
-  fontSize: "48px",
+
+const h1 = {
+  color: "#8B1538",
+  fontSize: "24px",
+  lineHeight: "30px",
+  fontWeight: "bold",
   margin: "0 0 16px 0",
 };
 
-const h1 = {
-  color: "#ffffff",
-  fontSize: "28px",
-  fontWeight: "bold",
-  margin: "0",
-  padding: "0",
-};
-
 const content = {
-  padding: "40px 30px",
+  padding: "8px 0 0",
 };
 
 const text = {
@@ -173,15 +125,15 @@ const text = {
 };
 
 const eventBox = {
-  backgroundColor: "#fff7ed",
-  border: "2px solid #ea580c",
+  backgroundColor: "#FFF5F6",
+  border: "2px solid #8B1538",
   borderRadius: "12px",
   padding: "24px",
   margin: "24px 0",
 };
 
 const eventTitleStyle = {
-  color: "#c2410c",
+  color: "#8B1538",
   fontSize: "24px",
   fontWeight: "bold",
   margin: "0 0 20px 0",
@@ -192,7 +144,7 @@ const detailRow = {
 };
 
 const detailLabel = {
-  color: "#ea580c",
+  color: "#8B1538",
   fontSize: "12px",
   fontWeight: "bold",
   textTransform: "uppercase" as const,
@@ -208,15 +160,15 @@ const detailValue = {
 };
 
 const reasonBox = {
-  backgroundColor: "#fed7aa",
-  border: "1px solid #fdba74",
+  backgroundColor: "#FACED2",
+  border: "1px solid #FACED2",
   borderRadius: "8px",
   padding: "16px",
   marginTop: "20px",
 };
 
 const reasonLabel = {
-  color: "#9a3412",
+  color: "#2A2426",
   fontSize: "12px",
   fontWeight: "bold",
   textTransform: "uppercase" as const,
@@ -224,7 +176,7 @@ const reasonLabel = {
 };
 
 const reasonText = {
-  color: "#7c2d12",
+  color: "#2A2426",
   fontSize: "14px",
   lineHeight: "20px",
   margin: "0",
@@ -236,7 +188,7 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#ea580c",
+  backgroundColor: "#8B1538",
   color: "#ffffff",
   fontSize: "16px",
   fontWeight: "bold",
@@ -246,26 +198,6 @@ const button = {
   display: "inline-block",
 };
 
-const footer = {
-  backgroundColor: "#f9fafb",
-  padding: "30px",
-  textAlign: "center" as const,
-};
 
-const footerText = {
-  color: "#6b7280",
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "0 0 8px 0",
-};
 
-const footerTextSmall = {
-  color: "#9ca3af",
-  fontSize: "12px",
-  margin: "0",
-};
 
-const footerLink = {
-  color: "#ea580c",
-  textDecoration: "underline",
-};
