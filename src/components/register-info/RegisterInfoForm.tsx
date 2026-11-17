@@ -243,6 +243,13 @@ export default function RegisterInfoForm({
           {t.consentHeading}
         </legend>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
+          <input type="checkbox" className="mt-1" checked={attestation}
+            onChange={(e) => setAttestation(e.target.checked)} required />
+          <span>
+            <strong>{h.attestationLabel}.</strong> {consentText.age_guardian_attestation[locale]}
+          </span>
+        </label>
+        <label className="flex items-start gap-3 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={consentData}
             onChange={(e) => setConsentData(e.target.checked)} required />
           <span>
@@ -255,13 +262,6 @@ export default function RegisterInfoForm({
             onChange={(e) => setConsentMedia(e.target.checked)} />
           <span>
             <strong>{t.consentMediaLabel}.</strong> {consentText.media[locale]}
-          </span>
-        </label>
-        <label className="flex items-start gap-3 text-sm text-neutral-700">
-          <input type="checkbox" className="mt-1" checked={attestation}
-            onChange={(e) => setAttestation(e.target.checked)} required />
-          <span>
-            <strong>{h.attestationLabel}.</strong> {consentText.age_guardian_attestation[locale]}
           </span>
         </label>
         <p className="text-[11px] text-neutral-400">v: {CONSENT_TEXT_VERSION}</p>

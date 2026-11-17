@@ -242,7 +242,7 @@ The Spanish text moved from the dictionary to the Studio unchanged. For a fluent
 
 ## Household registration, adult confirmation, household admin (new, 2026-11-16)
 
-All new Spanish below is written in **tú** form for the public flow (registration, confirmation email, `/confirm/[token]`), matching the existing registration/RSVP strings, and **needs a fluent reviewer and the register decision above**. Admin strings (household panel) are in the same file and follow the admin dictionary's informal style. The consent texts are **draft-2, pending board approval** (EN and ES).
+All new Spanish below is written in **tú** form for the public flow (registration, confirmation email, `/confirm/[token]`), matching the existing registration/RSVP strings, and **needs a fluent reviewer and the register decision above**. Admin strings (household panel) are in the same file and follow the admin dictionary's informal style. The consent texts are **v1, approved by the board** (draft markers removed); the ES wording still needs the fluent-reviewer pass.
 Gendered forms to review: `Hijo/a`, `Hermano/a`, `Portadora/portador`, `confirmado/a`, `quedaste confirmado/a`.
 
 ### `src/translation/household.ts`
@@ -340,14 +340,14 @@ Gendered forms to review: `Hijo/a`, `Hermano/a`, `Portadora/portador`, `confirma
 - L34: `expires: "Este enlace funciona durante 30 días.",`
 - L35: `sign: "El equipo de HOEP",`
 
-### `src/content/consent.ts`
+### `src/content/consent.ts` (v1, board-approved)
 
-- L34: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y sobre los menores de mi hogar, y se comunique conmigo por correo electrónico, teléfono o correo postal sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine esta información en cualquier momento. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
-- L38: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezcamos yo o los menores de mi hogar en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto no cubre a otros adultos, que responden por sí mismos. Esto es opcional. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
-- L42: `es: "Tengo 18 años o más, y soy el padre, la madre o el tutor legal de los menores que incluí, o tengo el permiso de su tutor. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
-- L47: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y se comunique conmigo sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine mi información en cualquier momento. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
-- L51: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezca yo en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto es opcional. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
-- L55: `es: "Tengo 18 años o más. [BORRADOR 2 - TEXTO NUEVO, pendiente de aprobación de la junta]",`
+- L62: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y sobre los menores de mi hogar, y se comunique conmigo por correo electrónico, teléfono o correo postal sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine esta información en cualquier momento.",`
+- L66: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezcamos yo o los menores de mi hogar en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto no cubre a otros adultos, que responden por sí mismos. Esto es opcional.",`
+- L70: `es: "Tengo 18 años o más, y soy el padre, la madre o el tutor legal de los menores que incluí, o tengo el permiso de su tutor.",`
+- L75: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y se comunique conmigo sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine mi información en cualquier momento.",`
+- L79: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezca yo en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto es opcional.",`
+- L83: `es: "Tengo 18 años o más.",`
 
 ### Labels in `src/lib/households/constants.ts`
 

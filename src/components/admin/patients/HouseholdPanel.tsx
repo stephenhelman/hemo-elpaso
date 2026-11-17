@@ -132,9 +132,9 @@ export default function HouseholdPanel({
                       <div className="mt-2 text-left rounded-lg border border-neutral-200 bg-neutral-50 p-3 space-y-2 whitespace-normal">
                         <p className="text-xs font-semibold text-neutral-700">{t.phoneTitle}</p>
                         <p className="text-xs text-neutral-500">{t.phoneNoHealth}</p>
+                        <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />{t.phoneAdultLabel}</label>
                         <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={data} onChange={(e) => setData(e.target.checked)} />{t.phoneDataLabel}</label>
                         <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={media} onChange={(e) => setMedia(e.target.checked)} />{t.phoneMediaLabel}</label>
-                        <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />{t.phoneAdultLabel}</label>
                         <div className="flex gap-3">
                           <button className={link} disabled={!data || !adult || busy === m.id}
                             onClick={() => call(m.id, base(m.id), { method: "POST", body: JSON.stringify({ action: "phone_confirm", consentData: data, consentMedia: media, adult }) }, t.phoneConfirmed, t.resendFailed)}>
