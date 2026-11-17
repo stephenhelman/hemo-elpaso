@@ -47,6 +47,7 @@ export async function sendRsvpEmail(params: {
       cancelled: lang === "es" ? `Asistencia cancelada: ${title}` : `RSVP cancelled: ${title}`,
     }[kind];
     const res = await sendLoggedEmail({
+      sender: "events",
       kind: { confirmation: "RSVP_CONFIRMATION", reminder: "RSVP_REMINDER", cancelled: "RSVP_CANCELLATION" }[kind] as "RSVP_CONFIRMATION" | "RSVP_REMINDER" | "RSVP_CANCELLATION",
       to: patient.email,
       subject,
