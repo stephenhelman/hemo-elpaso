@@ -39,6 +39,7 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
     language: p.preferredLanguage === "es" ? "es" : "en",
     familySize: p.familySize,
     diagnoses: canPHI ? p.statedDiagnoses : [],
+    confirmFor: match?.confirmFor.get(p.id) ?? [],
   }));
 
   return (
