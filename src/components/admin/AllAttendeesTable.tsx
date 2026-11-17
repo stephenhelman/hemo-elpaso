@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import ExportButton from "@/components/ui/ExportButton";
@@ -83,13 +84,13 @@ export default function AllAttendeesTable({
   }, [checkIns, searchQuery, selectedEventId, selectedRole, dateRange]);
 
   const exportRows = filteredCheckIns.map((checkIn) => [
-    new Date(checkIn.event.eventDate).toLocaleDateString(),
+    new Date(checkIn.event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE }),
     checkIn.event.titleEn,
     `${checkIn.patient.contactProfile?.firstName ?? ""} ${checkIn.patient.contactProfile?.lastName ?? ""}`.trim(),
     checkIn.patient.email,
     checkIn.patient.contactProfile?.phone ?? "N/A",
     t.roleLabels[checkIn.attendeeRole] ?? checkIn.attendeeRole,
-    new Date(checkIn.checkInTime).toLocaleString(),
+    new Date(checkIn.checkInTime).toLocaleString("en-US", { timeZone: SITE_TIMEZONE }),
   ]);
 
   const inputClasses =
@@ -133,7 +134,7 @@ export default function AllAttendeesTable({
             {events.map((event) => (
               <option key={event.id} value={event.id}>
                 {event.titleEn} (
-                {new Date(event.eventDate).toLocaleDateString()})
+                {new Date(event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })})
               </option>
             ))}
           </select>
@@ -229,7 +230,7 @@ export default function AllAttendeesTable({
                     <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-900">
                       {new Date(checkIn.event.eventDate).toLocaleDateString(
                         "en-US",
-                        {
+                        { timeZone: SITE_TIMEZONE,
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -263,7 +264,7 @@ export default function AllAttendeesTable({
                     <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-600">
                       {new Date(checkIn.checkInTime).toLocaleTimeString(
                         "en-US",
-                        {
+                        { timeZone: SITE_TIMEZONE,
                           hour: "numeric",
                           minute: "2-digit",
                         },

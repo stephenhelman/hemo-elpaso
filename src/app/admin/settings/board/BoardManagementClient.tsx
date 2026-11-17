@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { mailbox } from "@/lib/site";
 
 import { useState, useCallback } from "react";
@@ -308,7 +309,7 @@ export default function BoardManagementClient({
                     </div>
                     <p className="text-xs text-neutral-400">
                       Until{" "}
-                      {new Date(record.assignedAt).toLocaleDateString("en-US", {
+                      {new Date(record.assignedAt).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE,
                         month: "short",
                         year: "numeric",
                       })}
@@ -466,7 +467,7 @@ function BoardRoleCard({
 
           <p className="text-xs text-neutral-400 mt-2">
             Assigned{" "}
-            {new Date(record.assignedAt).toLocaleDateString("en-US", {
+            {new Date(record.assignedAt).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE,
               month: "long",
               day: "numeric",
               year: "numeric",

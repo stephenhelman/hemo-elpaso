@@ -10,8 +10,8 @@ import { scholarshipCardTranslation } from "@/translation/scholarshipsPage";
 type Status = "comingSoon" | "open" | "closed";
 
 const fmtDeadline = (iso: string, locale: Lang) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString(locale === "es" ? "es-US" : "en-US", {
-    year: "numeric", month: "long", day: "numeric",
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString(locale === "es" ? "es-US" : "en-US", {
+    timeZone: "UTC", year: "numeric", month: "long", day: "numeric",
   });
 
 /** Scholarship document card. `status` is already the effective status (closed after the deadline). */

@@ -1,3 +1,4 @@
+import { SITE_TIMEZONE } from "@/lib/site";
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
@@ -244,7 +245,7 @@ export default async function AdminDashboardPage() {
                       {new Date(event.eventDate).toLocaleDateString(
                         locale === "es" ? "es-MX" : "en-US",
                         {
-                          month: "short",
+                          timeZone: SITE_TIMEZONE, month: "short",
                           day: "numeric",
                         },
                       )}
@@ -293,7 +294,7 @@ export default async function AdminDashboardPage() {
                       {new Date(rsvp.rsvpDate).toLocaleDateString(
                         locale === "es" ? "es-MX" : "en-US",
                         {
-                          month: "short",
+                          timeZone: SITE_TIMEZONE, month: "short",
                           day: "numeric",
                           hour: "numeric",
                           minute: "2-digit",

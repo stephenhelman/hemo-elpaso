@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { eventHasEnded } from "@/lib/rsvp/window";
 import { useState, useMemo } from "react";
 import {
@@ -87,7 +88,7 @@ export default function EventsDisplay({ events, locale }: Props) {
 
   const exportRows = [...upcomingEvents, ...pastEvents].map((event) => [
     locale === "es" ? event.titleEs : event.titleEn,
-    new Date(event.eventDate).toLocaleDateString(),
+    new Date(event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE }),
     event.location,
     t.statusLabels[event.status as keyof typeof t.statusLabels] ?? event.status,
     t.categoryLabels[event.category as keyof typeof t.categoryLabels] ??
@@ -324,7 +325,7 @@ function EventTableRow({
         className={`hover:bg-neutral-50 transition-colors ${isPast ? "opacity-75" : ""}`}
       >
         <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-neutral-900">
-          {eventDate.toLocaleDateString("en-US", {
+          {eventDate.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE,
             month: "short",
             day: "numeric",
             year: "numeric",

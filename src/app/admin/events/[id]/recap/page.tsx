@@ -1,3 +1,4 @@
+import { SITE_TIMEZONE } from "@/lib/site";
 import { notFound, redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
@@ -48,7 +49,7 @@ export default async function EventRecapPage({ params }: Props) {
           Event Recap
         </h1>
         <p className="text-neutral-500">
-          {event.titleEn} — {new Date(event.eventDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          {event.titleEn} — {new Date(event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, month: "long", day: "numeric", year: "numeric" })}
         </p>
       </div>
 

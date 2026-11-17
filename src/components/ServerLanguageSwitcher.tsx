@@ -9,10 +9,13 @@ import { setLocaleCookie } from "@/lib/locale";
 
 interface ServerLanguageSwitcherProps {
   currentLocale: "en" | "es";
+  /** "dark" for the dark admin sidebar. */
+  tone?: "light" | "dark";
 }
 
 export default function ServerLanguageSwitcher({
   currentLocale,
+  tone = "light",
 }: ServerLanguageSwitcherProps) {
   const [isChanging, setIsChanging] = useState(false);
   const [locale, setLocale] = useState(currentLocale);
@@ -42,12 +45,16 @@ export default function ServerLanguageSwitcher({
     <button
       onClick={toggleLanguage}
       disabled={isChanging}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-300 hover:border-primary hover:bg-primary-50 transition-colors ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors ${
+        tone === "dark"
+          ? "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800"
+          : "border-neutral-300 hover:border-primary hover:bg-primary-50"
+      } ${
         isChanging ? "opacity-50 cursor-wait" : ""
       }`}
     >
-      <Globe className="w-4 h-4 text-neutral-600" />
-      <span className="text-sm font-semibold text-neutral-900 uppercase">
+      <Globe className={`w-4 h-4 ${tone === "dark" ? "text-neutral-400" : "text-neutral-600"}`} />
+      <span className={`text-sm font-semibold uppercase ${tone === "dark" ? "text-white" : "text-neutral-900"}`}>
         {locale}
       </span>
     </button>

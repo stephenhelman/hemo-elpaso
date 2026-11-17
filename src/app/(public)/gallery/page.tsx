@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_TIMEZONE } from "@/lib/site";
 import type { Metadata } from "next";
 import { Camera, Calendar } from "lucide-react";
 import { getLocaleCookie } from "@/lib/locale";
@@ -61,7 +62,7 @@ export default async function GalleryPage() {
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((e) => {
               const title = locale === "es" ? e.titleEs : e.titleEn;
-              const date = e.eventDate.toLocaleDateString(locale === "es" ? "es-MX" : "en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "America/Denver" });
+              const date = e.eventDate.toLocaleDateString(locale === "es" ? "es-MX" : "en-US", { month: "long", day: "numeric", year: "numeric", timeZone: SITE_TIMEZONE });
               return (
                 <li key={e.id}>
                   <Link href={`/events/${e.slug}/recap`} className="group block bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">

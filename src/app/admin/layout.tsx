@@ -3,7 +3,7 @@ import { getLocaleCookie } from "@/lib/locale";
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Lang } from "@/types";
-import { PortalLayout } from "@/components/layout/PortalLayout";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { inter, poppins, bonum } from "@/lib/fonts";
 import "@/app/globals.css";
 import { getAdminWithPermissions } from "@/lib/permissions";
@@ -36,8 +36,9 @@ export default async function AdminLayout({
             permissions={Array.from(admin.permissions)}
             isSuperAdmin={admin.isSuperAdmin}
           />
-          <main className="flex-1 min-w-0 lg:ml-64">
-            <PortalLayout locale={locale}>{children}</PortalLayout>
+          {/* Admin chrome only: the sidebar (lg+) or the fixed admin bar (below lg, hence pt-14). Never the public Navbar/Footer. */}
+          <main className="flex-1 min-w-0 pt-14 lg:pt-0 lg:ml-64 overflow-x-clip">
+            <UserProvider>{children}</UserProvider>
           </main>
         </div>
       </body>

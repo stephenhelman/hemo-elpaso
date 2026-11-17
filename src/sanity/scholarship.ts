@@ -1,10 +1,10 @@
+import { siteDateKey } from "@/lib/datetime";
 import type { ScholarshipData } from "./types";
 
 type Status = "comingSoon" | "open" | "closed";
 
 /** Today's date (YYYY-MM-DD) in El Paso's time zone. */
-const todayInElPaso = (now: Date) =>
-  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+const todayInElPaso = (now: Date) => siteDateKey(now);
 
 /**
  * What the page should show. An "open" scholarship becomes "closed" the day after

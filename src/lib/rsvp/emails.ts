@@ -1,4 +1,5 @@
 import { siteUrl, withLang } from "@/lib/site";
+import { formatEventDate, formatEventTime } from "@/lib/datetime";
 import { render } from "@react-email/render";
 import { sendLoggedEmail } from "@/lib/email/send";
 import RsvpEmail, { type RsvpEmailKind } from "@/messages/RsvpEmail";
@@ -24,7 +25,6 @@ export async function sendRsvpEmail(params: {
   const { kind, patient, event, partySize, token } = params;
   if (!patient.email) return false;
   const lang = patient.preferredLanguage === "es" ? "es" : "en";
-  const loc = lang === "es" ? "es-US" : "en-US";
   try {
     const html = await render(
       RsvpEmail({
@@ -32,8 +32,8 @@ export async function sendRsvpEmail(params: {
         lang,
         firstName: patient.contactProfile?.firstName ?? "",
         eventTitle: lang === "es" ? event.titleEs : event.titleEn,
-        eventDate: event.eventDate.toLocaleDateString(loc, { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
-        eventTime: event.eventDate.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" }),
+        eventDate: formatEventDate(event.eventDate, lang),
+        eventTime: formatEventTime(event.eventDate, lang),
         location: event.location ?? "",
         partySize,
         rsvpUrl: token ? withLang(`${baseUrl()}/rsvp/${token}`, lang) : undefined,

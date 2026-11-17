@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { tomorrowRangeUtc } from "@/lib/datetime";
 import { reissueCheckInToken } from "@/lib/rsvp";
 
 /**
@@ -15,11 +16,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const dayAfter = new Date(tomorrow);
-    dayAfter.setDate(dayAfter.getDate() + 1);
+    // "Tomorrow" is tomorrow's calendar date in Mountain Time, converted to UTC for the query
+    // (the server runs in UTC: setHours(0,0,0,0) there is 6pm/5pm the evening before in El Paso).
+    const { start: tomorrow, end: dayAfter } = tomorrowRangeUtc();
 
     const rsvps = await prisma.rsvp.findMany({
       where: {
@@ -34,11 +33,18 @@ export async function GET(request: NextRequest) {
     let emailsSent = 0;
     let emailsFailed = 0;
     for (const r of rsvps) {
+      // Claim the RSVP atomically BEFORE sending: an overlapping or retried run sees count 0 and skips,
+      // so a family can never get two reminders. If the send fails, release the claim for the next run.
+      const claim = await prisma.rsvp.updateMany({
+        where: { id: r.id, reminderSent: false, cancelledAt: null },
+        data: { reminderSent: true },
+      });
+      if (claim.count === 0) continue;
       const res = await reissueCheckInToken(r.id, "reminder");
       if (res?.sent) {
-        await prisma.rsvp.update({ where: { id: r.id }, data: { reminderSent: true } });
         emailsSent++;
       } else {
+        await prisma.rsvp.update({ where: { id: r.id }, data: { reminderSent: false } });
         emailsFailed++;
       }
     }

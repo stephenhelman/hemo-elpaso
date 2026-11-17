@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -37,7 +38,7 @@ export default function ExportAllButton({
       // Header
       csv.push(`COMPREHENSIVE EVENT REPORT - ${eventTitle}`);
       csv.push(`Event ID: ${eventId}`);
-      csv.push(`Generated: ${new Date().toLocaleString()}`);
+      csv.push(`Generated: ${new Date().toLocaleString("en-US", { timeZone: SITE_TIMEZONE })}`);
       csv.push("");
       csv.push("⚠️ PHI-FREE REPORT - Safe for sponsor/donor sharing");
       csv.push("=====================================");

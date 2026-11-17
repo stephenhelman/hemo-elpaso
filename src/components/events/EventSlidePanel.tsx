@@ -1,5 +1,6 @@
 "use client";
 
+import { formatEventDateTime } from "@/lib/datetime";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, Calendar, MapPin, Users, ArrowRight, Check } from "lucide-react";
@@ -130,12 +131,7 @@ export function PublicEventSlidePanel({
               <div className="flex items-start gap-2">
                 <Calendar className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <span>
-                  {eventDate.toLocaleDateString(lang === "es" ? "es-MX" : "en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {formatEventDateTime(eventDate, lang)}
                 </span>
               </div>
               <div className="flex items-start gap-2">
@@ -211,12 +207,7 @@ export function PortalEventSlidePanel({
               <div className="flex items-start gap-2">
                 <Calendar className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <span>
-                  {eventDate.toLocaleDateString(lang === "es" ? "es-MX" : "en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {formatEventDateTime(eventDate, lang)}
                 </span>
               </div>
               <div className="flex items-start gap-2">

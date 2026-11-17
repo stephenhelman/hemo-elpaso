@@ -1,3 +1,4 @@
+import { SITE_TIMEZONE } from "@/lib/site";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getLocaleCookie } from "@/lib/locale";
@@ -73,7 +74,7 @@ export default async function EventRecapPublicPage({ params }: Props) {
               <Calendar className="w-4 h-4" />
               {new Date(event.eventDate).toLocaleDateString(
                 locale === "es" ? "es-MX" : "en-US",
-                { weekday: "long", month: "long", day: "numeric", year: "numeric" },
+                { timeZone: SITE_TIMEZONE, weekday: "long", month: "long", day: "numeric", year: "numeric" },
               )}
             </span>
             <span className="flex items-center gap-1.5">

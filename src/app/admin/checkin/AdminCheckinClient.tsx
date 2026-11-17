@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
@@ -123,7 +124,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId, initial
                       {event.titleEn}
                     </h3>
                     <p className="text-sm text-neutral-500 mb-3">
-                      {new Date(event.eventDate).toLocaleDateString("en-US", {
+                      {new Date(event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE,
                         weekday: "long",
                         year: "numeric",
                         month: "long",
@@ -171,7 +172,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId, initial
               <div className="bg-primary-50 rounded-xl border border-primary-200 p-4">
                 <h3 className="font-semibold text-primary-900 mb-1">{selectedEventData.titleEn}</h3>
                 <p className="text-sm text-primary-700">
-                  {new Date(selectedEventData.eventDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                  {new Date(selectedEventData.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, weekday: "long", month: "long", day: "numeric", year: "numeric" })}
                 </p>
               </div>
             )}

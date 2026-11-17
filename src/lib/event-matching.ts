@@ -1,3 +1,4 @@
+import { siteWeekdayHour } from "@/lib/datetime";
 import { prisma } from "./db";
 
 interface Reason {
@@ -108,8 +109,7 @@ export function scoreEventForPatient(
 
   // Time preference match (15 points)
   const eventDate = new Date(event.eventDate);
-  const dayOfWeek = eventDate.getDay();
-  const hour = eventDate.getHours();
+  const { weekday: dayOfWeek, hour } = siteWeekdayHour(eventDate); // Mountain Time wall clock, not the server's
 
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
   const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";

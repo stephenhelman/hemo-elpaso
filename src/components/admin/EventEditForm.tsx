@@ -4,6 +4,7 @@ import { useState } from "react";
 import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
+import { toSiteDatetimeLocal, fromSiteDatetimeLocal } from "@/lib/datetime";
 
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -44,8 +45,9 @@ interface Event {
   } | null;
 }
 
-const toLocalInput = (d: Date) =>
-  new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+// datetime-local fields are Mountain Time (the site zone), whatever zone the admin's browser is in
+const toLocalInput = (d: Date) => toSiteDatetimeLocal(d);
+const fromLocalInput = (v: string) => (fromSiteDatetimeLocal(v) ?? new Date(NaN)).toISOString();
 
 interface Props {
   event: Event;
@@ -60,8 +62,6 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
   const [deleting, setDeleting] = useState(false);
   const t = adminEventEditTranslation[locale];
 
-  console.log(locale);
-
   const [formData, setFormData] = useState({
     title: {
       en: event?.titleEn,
@@ -71,11 +71,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
       en: event.descriptionEn || "",
       es: event.descriptionEs || "",
     },
-    eventDate: new Date(
-      event.eventDate.getTime() - event.eventDate.getTimezoneOffset() * 60000,
-    )
-      .toISOString()
-      .slice(0, 16),
+    eventDate: toLocalInput(new Date(event.eventDate)),
     location: event.location,
     maxCapacity: event.maxCapacity?.toString() || "",
     rsvpDeadline: event.rsvpDeadline ? toLocalInput(new Date(event.rsvpDeadline)) : "",
@@ -106,14 +102,14 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
         titleEs: formData.title.es,
         descriptionEn: formData.description.en,
         descriptionEs: formData.description.es,
-        // datetime-local values are LOCAL time: send ISO so the server doesn't reinterpret them in its own timezone
-        eventDate: new Date(formData.eventDate).toISOString(),
-        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+        // datetime-local values are Mountain Time: send UTC ISO so the server doesn't reinterpret them in its own timezone
+        eventDate: fromLocalInput(formData.eventDate),
+        endDate: formData.endDate ? fromLocalInput(formData.endDate) : null,
         location: formData.location,
         maxCapacity: formData.maxCapacity
           ? parseInt(formData.maxCapacity)
           : null,
-        rsvpDeadline: formData.rsvpDeadline ? new Date(formData.rsvpDeadline).toISOString() : null,
+        rsvpDeadline: formData.rsvpDeadline ? fromLocalInput(formData.rsvpDeadline) : null,
         status: formData.status,
         category: formData.category,
         targetAudience: formData.targetAudience,
