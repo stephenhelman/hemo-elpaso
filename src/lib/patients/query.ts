@@ -34,6 +34,7 @@ export interface PatientFilters {
   language?: string;
   consent?: string; // data_yes | data_no | media_yes | media_no
   duplicates?: boolean;
+  pendingConfirmations?: boolean;
 }
 
 export async function listPatients(f: PatientFilters, limit = 2000) {
@@ -60,6 +61,7 @@ export async function listPatients(f: PatientFilters, limit = 2000) {
     include: {
       contactProfile: true,
       consentRecords: true,
+      householdMembers: { select: { status: true } },
       possibleDuplicateOf: { include: { contactProfile: true } },
       emailLogs: {
         where: { templateType: "REGISTRATION_INFO_CONFIRMATION" },
@@ -76,7 +78,9 @@ export async function listPatients(f: PatientFilters, limit = 2000) {
     ...r,
     consents: currentConsents(r.consentRecords),
     confirmation: confirmationStatus(r),
+    pendingMembers: r.householdMembers.filter((m) => m.status === "pending").length,
   }));
+  if (f.pendingConfirmations) out = out.filter((r) => r.pendingMembers > 0);
   if (f.consent) {
     const [type, val] = f.consent.split("_");
     const key = type === "data" ? "data_and_contact" : type === "media" ? "media" : null;

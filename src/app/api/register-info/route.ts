@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { registrationOpen } from "@/lib/registration";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
+import { sendMemberConfirmations } from "@/lib/households/confirmation";
 import { sendRegistrationConfirmation } from "@/lib/patients/confirmation";
 
 /**
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
     language: body.language,
     familySize: body.familySize,
     diagnoses: body.diagnoses,
+    members: body.members,
+    attestation: body.attestation,
     consentDataAndContact: body.consentDataAndContact,
     consentMedia: body.consentMedia,
   });
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { id } = await createPatient(v.value, { source: "web", method: "web" });
+    const { id, invites } = await createPatient(v.value, { source: "web", method: "web" });
 
     // Awaited, result checked and logged (EmailLog: kind/status/error name only).
     // A failed send never fails the registration; the admin Patients list shows
@@ -64,6 +67,7 @@ export async function POST(req: NextRequest) {
         language: v.value.language,
       });
     }
+    await sendMemberConfirmations(id, v.value.firstName, v.value.language, invites);
   } catch {
     // No details: the payload contains PII and PHI.
     console.error("register-info: failed to store registration");

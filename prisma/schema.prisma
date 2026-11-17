@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled (Neon -pooler host): what the app uses at runtime
+  directUrl = env("DIRECT_URL") // direct, non-pooled: used by `prisma migrate` (Neon needs this for migrations)
 }
 
 enum EventTopic {
@@ -81,6 +82,7 @@ enum EmailTemplateType {
   BOARD_ROLE_ASSIGNED
   FAMILY_MEMBER_INVITE
   REGISTRATION_INFO_CONFIRMATION
+  MEMBER_CONFIRMATION
   EVENT_INVITATION
 }
 
@@ -318,17 +320,19 @@ model Patient {
   volunteerProfile                VolunteerProfile?
 
   // Thin patient record (Phase 3)
-  familySize            Int             @default(1)
-  statedDiagnoses       String[]        @default([]) // PHI: hemophilia_a, hemophilia_b, von_willebrand, other, carrier, family_caregiver
-  source                String          @default("web") // web | phone
+  familySize            Int               @default(1)
+  statedDiagnoses       String[]          @default([]) // PHI. Household union (primary + minors + confirmed adults), recomputed on every write
+  primaryDiagnoses      String[]          @default([]) // PHI. The primary person's own
+  householdMembers      HouseholdMember[]
+  source                String            @default("web") // web | phone
   possibleDuplicateOfId String?
-  possibleDuplicateOf   Patient?        @relation("PatientDuplicate", fields: [possibleDuplicateOfId], references: [id], onDelete: SetNull)
-  possibleDuplicates    Patient[]       @relation("PatientDuplicate")
-  consentRecords        ConsentRecord[] @relation("ConsentSubject")
-  consentsRecorded      ConsentRecord[] @relation("ConsentRecorder")
-  emailOptOut           Boolean         @default(false) // invitations only; transactional emails still sent
-  invitations           Invitation[]    @relation("InvitationPatient")
-  invitationsSent       Invitation[]    @relation("InvitationSender")
+  possibleDuplicateOf   Patient?          @relation("PatientDuplicate", fields: [possibleDuplicateOfId], references: [id], onDelete: SetNull)
+  possibleDuplicates    Patient[]         @relation("PatientDuplicate")
+  consentRecords        ConsentRecord[]   @relation("ConsentSubject")
+  consentsRecorded      ConsentRecord[]   @relation("ConsentRecorder")
+  emailOptOut           Boolean           @default(false) // invitations only; transactional emails still sent
+  invitations           Invitation[]      @relation("InvitationPatient")
+  invitationsSent       Invitation[]      @relation("InvitationSender")
 
   @@index([email])
   @@index([possibleDuplicateOfId])
@@ -355,19 +359,50 @@ model Invitation {
 }
 
 model ConsentRecord {
-  id                    String   @id @default(uuid())
-  patientId             String
-  patient               Patient  @relation("ConsentSubject", fields: [patientId], references: [id], onDelete: Cascade)
-  type                  String // data_and_contact | media
+  id                    String           @id @default(uuid())
+  patientId             String?
+  patient               Patient?         @relation("ConsentSubject", fields: [patientId], references: [id], onDelete: Cascade)
+  householdMemberId     String?
+  householdMember       HouseholdMember? @relation(fields: [householdMemberId], references: [id], onDelete: Cascade)
+  type                  String // data_and_contact | media | age_guardian_attestation
   granted               Boolean
   textVersion           String
   method                String // web | phone
   recordedByBoardUserId String?
-  recordedBy            Patient? @relation("ConsentRecorder", fields: [recordedByBoardUserId], references: [id], onDelete: SetNull)
-  createdAt             DateTime @default(now())
+  recordedBy            Patient?         @relation("ConsentRecorder", fields: [recordedByBoardUserId], references: [id], onDelete: SetNull)
+  createdAt             DateTime         @default(now())
 
   @@index([patientId, type, createdAt])
+  @@index([householdMemberId, type, createdAt])
   @@map("consent_records")
+}
+
+// People in a primary's household. The primary stays the Patient record.
+// Adults (18_plus) confirm for themselves via a token link; minors are not_required.
+// A declined/expired member is purged to a placeholder (counted in familySize).
+// CHECK constraints live in the migration (Prisma does not model them).
+model HouseholdMember {
+  id                    String          @id @default(uuid())
+  patientId             String
+  patient               Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName             String?
+  lastName              String?
+  relationship          String // child | spouse_partner | parent | sibling | other
+  ageGroup              String // 0_5 | 6_12 | 13_17 | 18_plus
+  statedDiagnoses       String[]        @default([]) // PHI
+  email                 String?
+  confirmByPhone        Boolean         @default(false)
+  status                String          @default("not_required") // not_required | pending | confirmed | declined | expired
+  confirmTokenHash      String?         @unique
+  confirmTokenExpiresAt DateTime?
+  confirmedAt           DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  consentRecords        ConsentRecord[]
+
+  @@index([patientId])
+  @@index([status, createdAt])
+  @@map("household_members")
 }
 
 model ContactProfile {
@@ -501,6 +536,9 @@ model Event {
   timecards            VolunteerTimecard[]
   sponsors             EventSponsor[]
   invitations          Invitation[]
+
+  // Sanity sponsor document ids shown on the public event page (public listing only; the Sponsor model above is the private CRM)
+  sponsorSanityIds String[] @default([])
 
   @@map("events")
 }
@@ -661,7 +699,7 @@ model EventTargeting {
   event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   targetConditions  String[] // hemophilia_a, hemophilia_b, von_willebrand, other
   targetSeverity    String[] // mild, moderate, severe
-  targetAgeGroups   String[] // children, teens, adults, seniors
+  targetAgeGroups   String[] // 0_5, 6_12, 13_17, 18_plus (empty = any age)
   targetInterests   String[] // Can map to EventTopic enum values
   requireInhibitors Boolean?
 
@@ -967,6 +1005,11 @@ enum AuditAction {
   INVITATIONS_SENT
   PATIENT_UPDATED
   SIGNIN_SHEET_PRINTED
+  HOUSEHOLD_MEMBER_CONFIRMED
+  HOUSEHOLD_MEMBER_DECLINED
+  HOUSEHOLD_MEMBER_EXPIRED
+  HOUSEHOLD_MEMBER_PHONE_CONFIRMED
+  HOUSEHOLD_MEMBER_CONFIRMATION_RESENT
 }
 
 model AuditLog {

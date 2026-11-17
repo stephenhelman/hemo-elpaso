@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     firstName: b.firstName, lastName: b.lastName, email: b.email, phone: b.phone,
     address: b.address, language: b.language, familySize: headcount, diagnoses: [],
     consentDataAndContact: b.consentDataAndContact, consentMedia: b.consentMedia,
-  });
+  }, { requireConsent: true, household: false });
   if (!v.ok) return NextResponse.json({ error: "invalid", field: v.field }, { status: 400 });
 
   const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true } });

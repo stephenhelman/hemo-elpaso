@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { scoreEventForPatient } from "@/lib/event-matching";
+import { eligiblePeople, householdMatchesTargeting } from "@/lib/households/eligibility";
 import { currentConsents, PATIENT_ONLY } from "@/lib/patients/query";
 
 /** Same bar lib/event-matching uses for "recommend". */
@@ -34,21 +35,24 @@ export async function matchPatientsForEvent(eventId: string) {
 
   const patients = await prisma.patient.findMany({
     where: PATIENT_ONLY,
-    include: { contactProfile: true, preferences: true, consentRecords: true },
+    include: { contactProfile: true, preferences: true, consentRecords: true, householdMembers: true },
     orderBy: { createdAt: "asc" },
   });
 
   const emailMatches: typeof patients = [];
   const callList: typeof patients = [];
+  // household members to confirm by phone, keyed by patient id (first names only: not PHI)
+  const confirmFor = new Map<string, string[]>();
   const seenEmails = new Set<string>();
 
   for (const p of patients) {
     const consents = currentConsents(p.consentRecords);
     if (consents.data_and_contact !== true) continue;
-    // Targeted events: a diagnosis overlap is REQUIRED (the score alone can reach
-    // the threshold from language/capacity/audience points).
-    const targets = event.targeting?.targetConditions ?? [];
-    if (targets.length > 0 && !p.statedDiagnoses.some((d) => targets.includes(d))) continue;
+    // Targeted events: ANY eligible person (primary, minors, confirmed adults) must
+    // satisfy the targeting: diagnosis overlap if targeted AND age group if targeted.
+    // Pending/declined/expired adults never count. (The score alone can reach the
+    // threshold from language/capacity/audience points, so this gate is required.)
+    if (!householdMatchesTargeting(eligiblePeople(p.primaryDiagnoses, p.householdMembers), event.targeting)) continue;
     const { score } = scoreEventForPatient(p, event);
     if (score < MATCH_THRESHOLD) continue;
 
@@ -62,6 +66,14 @@ export async function matchPatientsForEvent(eventId: string) {
     } else if (blocker === "no_email" && p.contactProfile?.phone) {
       callList.push(p);
     }
+    // Adults still pending who confirm by phone: the board calls the household.
+    const toCall = p.householdMembers
+      .filter((m) => m.status === "pending" && m.confirmByPhone && m.firstName)
+      .map((m) => m.firstName!);
+    if (toCall.length && p.contactProfile?.phone) {
+      confirmFor.set(p.id, toCall);
+      if (!callList.includes(p)) callList.push(p);
+    }
   }
-  return { event, emailMatches, callList };
+  return { event, emailMatches, callList, confirmFor };
 }

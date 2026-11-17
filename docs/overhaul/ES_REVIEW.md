@@ -239,3 +239,120 @@ The Spanish text moved from the dictionary to the Studio unchanged. For a fluent
 - **Stats labels:** `Familias Atendidas`, `Años de Servicio` (now computed: 33), `Eventos Realizados`, `Gratuito`.
 - **Events header** `Únase a nosotros…` is **usted**, while the register band right below it (`Regístrate para Recibir Información`, `Cuéntanos sobre tu hogar…`, `Regístrate ahora`) is **tú**: a register switch on the same page.
 - **In code (not editable):** `No hay eventos próximos en este momento. ¡Vuelva pronto!` (usted), `Ver Todos los Eventos`, `lugares disponibles`, `Evento lleno`.
+
+## Household registration, adult confirmation, household admin (new, 2026-11-16)
+
+All new Spanish below is written in **tú** form for the public flow (registration, confirmation email, `/confirm/[token]`), matching the existing registration/RSVP strings, and **needs a fluent reviewer and the register decision above**. Admin strings (household panel) are in the same file and follow the admin dictionary's informal style. The consent texts are **v1, approved by the board** (draft markers removed); the ES wording still needs the fluent-reviewer pass.
+Gendered forms to review: `Hijo/a`, `Hermano/a`, `Portadora/portador`, `confirmado/a`, `quedaste confirmado/a`.
+
+### `src/translation/household.ts`
+
+- L59: `householdSize: "Número de personas en tu hogar (contándote)",`
+- L60: `membersHeading: "Otras personas en tu hogar",`
+- L61: `membersHint: "Agrega a todas las demás personas de tu hogar. Cada persona necesita nombre, parentesco y grupo de edad.",`
+- L63: `firstName: "Nombre",`
+- L64: `lastName: "Apellido",`
+- L65: `optional: "opcional",`
+- L66: `relationship: "Parentesco",`
+- L67: `ageGroup: "Grupo de edad",`
+- L68: `choose: "Elegir…",`
+- L69: `add: "Agregar una persona",`
+- L70: `remove: "Quitar",`
+- L71: `email: "Correo electrónico",`
+- L72: `noEmail: "Sin correo: confirmaremos por teléfono",`
+- L73: `adultNote: "Esta persona responderá las preguntas de salud por sí misma cuando confirme.",`
+- L74: `adultNeedsContact: "Agrega un correo o marca “Sin correo”.",`
+- L75: `minorDx: "¿Esta persona tiene un trastorno hemorrágico? (opcional)",`
+- L76: `incomplete: "Por favor completa a cada persona de tu hogar antes de continuar.",`
+- L77: `primaryDxTitle: "¿Tienes un trastorno hemorrágico, o eres portadora/portador o cuidador? (opcional)",`
+- L78: `primaryDxHint: "Responde solo por ti. Selecciona todas las que apliquen. Nos ayuda a sugerirte eventos relevantes. Nunca lo incluimos en correos.",`
+- L79: `attestationLabel: "Confirmo (obligatorio)",`
+- L80: `consentDataLabel: "Acepto (obligatorio)",`
+- L81: `consentMediaLabel: "Acepto (opcional)",`
+- L82: `errMembers: "Por favor completa a cada persona de tu hogar.",`
+- L83: `errAttestation: "Debes confirmar la declaración sobre edad y tutela para continuar.",`
+- L84: `panelTitle: "Hogar",`
+- L85: `primaryRow: "Principal",`
+- L86: `noMembers: "No hay otras personas en el hogar.",`
+- L87: `declinedPlaceholder: "Se quitó del registro",`
+- L88: `expiredPlaceholder: "Nunca confirmó",`
+- L89: `byPhone: "Confirma por teléfono",`
+- L90: `colName: "Nombre",`
+- L91: `colRelationship: "Parentesco",`
+- L92: `colAge: "Grupo de edad",`
+- L93: `colStatus: "Estado",`
+- L94: `colDx: "Diagnósticos",`
+- L95: `resend: "Reenviar confirmación",`
+- L96: `phoneConfirm: "Marcar confirmado por teléfono",`
+- L97: `removeMember: "Quitar persona",`
+- L98: `removeAsk: "¿Quitar a esta persona del hogar? Se borran sus datos y sus registros de consentimiento.",`
+- L99: `resent: "Confirmación enviada",`
+- L100: `resendFailed: "No se pudo enviar",`
+- L101: `phoneConfirmed: "Marcado como confirmado",`
+- L102: `removed: "Persona quitada",`
+- L103: `phoneTitle: "Registrar una confirmación por teléfono",`
+- L104: `phoneDataLabel: "Aceptó por teléfono: datos y contacto (obligatorio)",`
+- L105: `phoneMediaLabel: "Aceptó por teléfono: fotos y video (opcional)",`
+- L106: `phoneAdultLabel: "Confirmó que tiene 18 años o más (obligatorio)",`
+- L107: `phoneNoHealth: "No registres información de salud de otro adulto.",`
+- L108: `save: "Guardar",`
+- L109: `cancel: "Cancelar",`
+- L110: `pendingFilter: "Confirmaciones pendientes",`
+- L111: `pendingBadge: (n: number) => `${n} pendiente${n === 1 ? "" : "s"}`,`
+
+### `src/translation/confirmPage.ts`
+
+- L37: `title: "Confirma tus datos",`
+- L40: `youAre: "Te agregaron como",`
+- L41: `firstName: "Nombre",`
+- L42: `lastName: "Apellido",`
+- L43: `email: "Correo electrónico",`
+- L44: `dxTitle: "¿Tienes un trastorno hemorrágico, o eres portadora/portador o cuidador? (opcional)",`
+- L45: `dxHint: "Solo tú puedes responder esto por ti. Nos ayuda a sugerirte eventos relevantes. Nunca lo incluimos en correos.",`
+- L46: `consentHeading: "Tu consentimiento",`
+- L47: `consentRequired: "Acepto (obligatorio)",`
+- L48: `consentOptional: "Acepto (opcional)",`
+- L49: `adultLabel: "Confirmo (obligatorio)",`
+- L50: `confirm: "Confirmar",`
+- L51: `decline: "Quitarme de este registro",`
+- L52: `declineAsk: "¿Quitarte? Borraremos tus datos de este registro.",`
+- L53: `declineYes: "Sí, quitarme",`
+- L54: `cancel: "Cancelar",`
+- L55: `working: "Procesando…",`
+- L56: `doneTitle: "Gracias, quedaste confirmado/a",`
+- L57: `doneBody: "Guardamos tus datos y preferencias. Puedes cerrar esta página.",`
+- L58: `declinedTitle: "Te quitamos del registro",`
+- L59: `declinedBody: "Borramos tus datos de este registro. Puedes cerrar esta página.",`
+- L60: `invalidTitle: "Este enlace no es válido",`
+- L61: `invalidBody: "Puede haber vencido o ya se usó. Llámanos al {phone} y te ayudamos.",`
+- L63: `firstName: "Por favor escribe tu nombre.",`
+- L64: `email: "Por favor escribe un correo electrónico válido.",`
+- L65: `consentData: "Debes aceptar el consentimiento de datos y contacto para confirmar.",`
+- L66: `adult: "Debes confirmar que tienes 18 años o más.",`
+- L67: `generic: "Algo salió mal. Inténtalo de nuevo.",`
+
+### `src/messages/MemberConfirmation.tsx`
+
+- L28: `preview: "Por favor confirma tus datos con HOEP",`
+- L29: `heading: "Por favor confirma tus datos",`
+- L32: `ask: "Tómate un minuto para confirmar tus datos y elegir tus propias preferencias. También puedes pedir que te quitemos.",`
+- L33: `button: "Revisar y confirmar",`
+- L34: `expires: "Este enlace funciona durante 30 días.",`
+- L35: `sign: "El equipo de HOEP",`
+
+### `src/content/consent.ts` (v1, board-approved)
+
+- L62: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y sobre los menores de mi hogar, y se comunique conmigo por correo electrónico, teléfono o correo postal sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine esta información en cualquier momento.",`
+- L66: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezcamos yo o los menores de mi hogar en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto no cubre a otros adultos, que responden por sí mismos. Esto es opcional.",`
+- L70: `es: "Tengo 18 años o más, y soy el padre, la madre o el tutor legal de los menores que incluí, o tengo el permiso de su tutor.",`
+- L75: `es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y se comunique conmigo sobre eventos y servicios de HOEP. Puedo pedir a HOEP que elimine mi información en cualquier momento.",`
+- L79: `es: "Acepto que HOEP pueda usar fotos o videos en los que aparezca yo en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto es opcional.",`
+- L83: `es: "Tengo 18 años o más.",`
+
+### Labels in `src/lib/households/constants.ts`
+
+- Relationship, age-group and status labels (`Hijo/a`, `Cónyuge / pareja`, `Padre / madre`, `0–5 años`, `18 años o más`, `Pendiente`, `Confirmado`, `Rechazó`, `Venció`).
+
+### Email subject (`src/lib/households/confirmation.ts`)
+
+- `Por favor confirma tus datos con HOEP`

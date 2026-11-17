@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { PATIENT_ONLY, currentConsents } from "@/lib/patients/query";
 import { auditPatient } from "@/lib/patients/audit";
 import PatientForm from "@/components/admin/patients/PatientForm";
+import HouseholdPanel from "@/components/admin/patients/HouseholdPanel";
 import DeletePatientPanel from "@/components/admin/patients/DeletePatientPanel";
 import NotDuplicateButton from "@/components/admin/patients/NotDuplicateButton";
 import ResendConfirmationButton from "@/components/admin/patients/ResendConfirmationButton";
@@ -28,6 +29,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
     include: {
       contactProfile: true,
       consentRecords: { orderBy: { createdAt: "desc" } },
+      householdMembers: { orderBy: { createdAt: "asc" } },
       rsvps: { include: { event: { select: { titleEn: true, titleEs: true, eventDate: true } } }, orderBy: { rsvpDate: "desc" } },
       checkIns: { select: { id: true, checkInTime: true, event: { select: { titleEn: true, titleEs: true } } }, orderBy: { checkInTime: "desc" } },
       possibleDuplicateOf: { include: { contactProfile: true } },
@@ -103,10 +105,29 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           address: p.contactProfile?.addressLine1 ?? "",
           language: p.preferredLanguage === "es" ? "es" : "en",
           familySize: p.familySize,
-          diagnoses: canPHI ? p.statedDiagnoses : [],
+          diagnoses: canPHI ? p.primaryDiagnoses : [],
+          members: [],
           consentData: cur.data_and_contact === true,
           consentMedia: cur.media === true,
+          attestation: false,
         }}
+      />
+
+      <HouseholdPanel
+        patientId={p.id}
+        locale={locale}
+        canViewPHI={canPHI}
+        members={p.householdMembers.map((m) => ({
+          id: m.id,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          relationship: m.relationship,
+          ageGroup: m.ageGroup,
+          status: m.status,
+          confirmByPhone: m.confirmByPhone,
+          hasEmail: !!m.email,
+          diagnoses: canPHI ? m.statedDiagnoses : [], // PHI: server-side gate
+        }))}
       />
 
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">

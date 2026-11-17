@@ -17,11 +17,13 @@
     "seed:sanity": "tsx scripts/seed-sanity.ts",
     "check:sanity": "tsx scripts/check-sanity-queries.ts",
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
+    "check:household": "tsx scripts/db-guard.ts && tsx scripts/check-household.ts",
     "check:event-save": "tsx scripts/check-event-save.ts",
     "check:photo-pipeline": "tsx scripts/db-guard.ts && tsx scripts/check-photo-pipeline.ts",
     "photos:backfill": "tsx scripts/db-guard.ts && tsx scripts/backfill-event-photos.ts",
     "db:whoami": "tsx scripts/db-guard.ts whoami",
-    "db:deploy": "ALLOW_PROD_DB=yes tsx scripts/db-guard.ts whoami && prisma migrate deploy"
+    "db:deploy": "tsx scripts/db-deploy-prod.ts",
+    "build:vercel": "node scripts/vercel-build.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

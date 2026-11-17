@@ -6,9 +6,11 @@ import { siteSettings } from "./documents/siteSettings";
 import { person } from "./documents/person";
 import { resource } from "./documents/resource";
 import { scholarship } from "./documents/scholarship";
+import { sponsor } from "./documents/sponsor";
 import { pageDocuments } from "./documents/pages";
 import { textWithAside, cardGrid, featuredPerson } from "./blocks/aboutBlocks";
 import { statsRow, eventsFeed } from "./blocks/homeBlocks";
+import { sponsorStrip } from "./blocks/sponsorBlocks";
 import { pageHero, richText, ctaButton, ctaBanner, peopleGrid, resourceList } from "./blocks/blocks";
 
 export const schemaTypes = [
@@ -31,9 +33,11 @@ export const schemaTypes = [
   featuredPerson,
   statsRow,
   eventsFeed,
+  sponsorStrip,
   siteSettings,
   person,
   scholarship,
+  sponsor,
   resource,
   ...pageDocuments,
 ];

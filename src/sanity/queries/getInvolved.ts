@@ -6,4 +6,4 @@ export const getInvolvedPageQuery = groq`
     ${seoFragment},
     ${sectionsFragment}
   }`;
-export const GET_INVOLVED_TAGS = ["page:get-involved", "siteSettings"];
+export const GET_INVOLVED_TAGS = ["page:get-involved", "siteSettings", "sponsor"];

@@ -1,3 +1,4 @@
+import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -5,6 +6,7 @@ import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 import { generateInvitations } from "@/lib/invitations/generate";
 import { eventTextFields } from "@/lib/events/text-fields";
+import { cleanAgeGroups } from "@/lib/households/constants";
 
 export async function GET() {
   const { admin, error } = await requirePermission("canViewAdminDashboard");
@@ -47,11 +49,12 @@ export async function POST(req: NextRequest) {
       liveEnabled: body.liveEnabled || false,
       registrationEnabled: body.registrationEnabled === true,
       createdBy: admin!.email,
+      sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) ?? [],
       targeting: {
         create: {
           targetConditions: Array.isArray(body.targetConditions) ? body.targetConditions : [],
           targetSeverity: Array.isArray(body.targetSeverity) ? body.targetSeverity : [],
-          targetAgeGroups: Array.isArray(body.targetAgeGroups) ? body.targetAgeGroups : [],
+          targetAgeGroups: cleanAgeGroups(body.targetAgeGroups) ?? [],
           targetInterests: [],
         },
       },

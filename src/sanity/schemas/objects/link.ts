@@ -39,7 +39,7 @@ const makeLink = (name: string, title: string, labelRequired: boolean) =>
           if (t === "internal")
             return INTERNAL_ROUTES.some(([p]) => p === v) || "Use one of: " + INTERNAL_ROUTES.map(([p]) => p).join(", ");
           if (t === "external") return /^https:\/\/[^\s]+$/.test(v) || "Must start with https://";
-          if (t === "phone") return /^\+?[0-9]{10,15}$/.test(v) || "Digits only, e.g. +19156218291";
+          if (t === "phone") return /^\+?[0-9]{10,15}$/.test(v) || "Digits only, e.g. +19155397353";
           if (t === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Not a valid email.";
           return true;
         }),

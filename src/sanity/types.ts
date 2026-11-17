@@ -16,6 +16,17 @@ export type PersonData = {
   photo?: { v?: string | null; alt?: Localized } | null;
 };
 
+export type SponsorData = {
+  _id: string;
+  name: string;
+  website?: string | null;
+  description?: Localized | null;
+  sinceYear?: number | null;
+  order?: number | null;
+  active?: boolean | null; // only present for editor-picked sponsors (see visibleSponsors)
+  logo?: { v?: string | null; alt?: Localized } | null;
+};
+
 export type ResourceItem = {
   _id: string;
   name: string;
@@ -54,6 +65,7 @@ export type Section =
   | { _key: string; _type: "featuredPerson"; eyebrow?: Localized; subtitle?: Localized; quote?: Localized; body?: Localized<PT>; badges?: Localized[]; background?: "dark"; person?: PersonData | null }
   | { _key: string; _type: "resourceList"; header?: SectionHeaderData; category: string; layout?: "rich" | "org" | "provider" | "program" | "linkCard";
       columns?: number; items?: ResourceItem[] }
+  | { _key: string; _type: "sponsorStrip"; header?: SectionHeaderData; mode?: "allActive" | "selected"; layout?: "grid" | "row"; showNames?: boolean; sponsors?: SponsorData[] | null }
   | { _key: string; _type: "peopleGrid"; header?: SectionHeaderData; layout?: "card" | "compact" | "contact"; people?: PersonData[] };
 
 export type SeoData = { title?: Localized; description?: Localized; ogImage?: string | null } | null;
@@ -97,5 +109,6 @@ export type SiteSettingsData = {
   locationLabel?: Localized;
   contactNote?: Localized;
   footerText?: Localized;
+  footerSponsors?: SponsorData[] | null;
   seo?: SeoData;
 };

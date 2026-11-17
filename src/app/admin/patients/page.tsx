@@ -33,6 +33,7 @@ export default async function AdminPatientsPage() {
     source: p.source,
     createdAt: p.createdAt.toISOString(),
     confirmation: p.confirmation,
+    pendingMembers: p.pendingMembers,
     duplicateOfId: p.possibleDuplicateOfId,
     duplicateOfName: p.possibleDuplicateOf
       ? `${p.possibleDuplicateOf.contactProfile?.firstName ?? ""} ${p.possibleDuplicateOf.contactProfile?.lastName ?? ""}`.trim()

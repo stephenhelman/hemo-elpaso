@@ -1,6 +1,7 @@
 "use client";
 
 import { siteHost } from "@/lib/site";
+import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Upload, FileText, X } from "lucide-react";
@@ -8,6 +9,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
+import SponsorPicker, { type SponsorOption } from "@/components/admin/SponsorPicker";
 
 const categoryOptions = [
   { value: "EDUCATION", label: "Educational Seminar" },
@@ -20,7 +22,7 @@ const categoryOptions = [
   { value: "FINANCIAL_ASSISTANCE", label: "Financial Assistance" },
 ];
 
-export default function NewEventPage() {
+export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?: SponsorOption[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [flyerEn, setFlyerEn] = useState<File | null>(null);
@@ -55,6 +57,9 @@ export default function NewEventPage() {
     targetConditions: [] as string[],
     targetSeverity: [] as string[],
     targetAgeGroups: [] as string[],
+
+    // Sponsors (Sanity ids)
+    sponsorSanityIds: [] as string[],
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {
@@ -375,6 +380,12 @@ export default function NewEventPage() {
           </FormField>
         </Section>
 
+        {/* Sponsors */}
+        <Section title="Sponsors (Optional)">
+          <p className="text-sm text-neutral-600 -mt-2">Shown as &ldquo;Sponsored by&rdquo; on the public event page. Manage sponsors in the Studio.</p>
+          <SponsorPicker options={sponsorOptions} value={formData.sponsorSanityIds} onChange={(ids) => updateFormData({ sponsorSanityIds: ids })} />
+        </Section>
+
         {/* Targeting */}
         <Section title="Targeting (Optional)">
           <FormField label="Target Conditions">
@@ -427,22 +438,13 @@ export default function NewEventPage() {
           </FormField>
 
           <FormField label="Target Age Groups">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {["children", "teens", "adults", "seniors"].map((age) => (
-                <button
-                  key={age}
-                  type="button"
-                  onClick={() => toggleArrayValue("targetAgeGroups", age)}
-                  className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                    formData.targetAgeGroups.includes(age)
-                      ? "border-primary bg-primary-50 text-primary"
-                      : "border-neutral-200 hover:border-primary-200"
-                  }`}
-                >
-                  {age.charAt(0).toUpperCase() + age.slice(1)}
-                </button>
-              ))}
-            </div>
+            <p className="text-xs text-neutral-500 mb-2">
+              Leave empty for any age. A household matches if any eligible person (primary, minors, confirmed adults) is in a selected group.
+            </p>
+            <AgeGroupPicker
+              value={formData.targetAgeGroups}
+              onChange={(v) => setFormData((f) => ({ ...f, targetAgeGroups: v }))}
+            />
           </FormField>
         </Section>
 

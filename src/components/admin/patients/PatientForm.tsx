@@ -7,6 +7,13 @@ import { Loader2 } from "lucide-react";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
+import HouseholdSection, {
+  householdComplete,
+  membersPayload,
+  type MemberDraft,
+} from "@/components/household/HouseholdSection";
+import { householdTranslation } from "@/translation/household";
+import { consentText } from "@/content/consent";
 import type { Lang } from "@/types";
 
 export interface PatientFormValues {
@@ -17,9 +24,11 @@ export interface PatientFormValues {
   address: string;
   language: "en" | "es";
   familySize: number;
-  diagnoses: string[];
+  diagnoses: string[]; // the PRIMARY's own
+  members?: MemberDraft[]; // create mode only; edit mode manages members on the detail page
   consentData: boolean;
   consentMedia: boolean;
+  attestation?: boolean;
 }
 
 const input =
@@ -41,15 +50,18 @@ export default function PatientForm({
   locale: Lang;
 }) {
   const t = adminPatientsTranslation[locale];
+  const h = householdTranslation[locale];
   const router = useRouter();
-  const [v, setV] = useState<PatientFormValues>(initial);
+  const [v, setV] = useState<Required<PatientFormValues>>({ members: [], attestation: false, ...initial });
   const [saving, setSaving] = useState(false);
-  const set = <K extends keyof PatientFormValues>(k: K, val: PatientFormValues[K]) =>
+  const set = <K extends keyof Required<PatientFormValues>>(k: K, val: Required<PatientFormValues>[K]) =>
     setV((cur) => ({ ...cur, [k]: val }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!v.email.trim() && !v.phone.trim()) return toast.error(t.contactError);
+    if (mode === "create" && !householdComplete(v.members)) return toast.error(h.errMembers);
+    if (mode === "create" && !v.attestation) return toast.error(h.errAttestation);
     setSaving(true);
     try {
       const res = await fetch(
@@ -64,7 +76,13 @@ export default function PatientForm({
             phone: v.phone,
             address: v.address,
             language: v.language,
-            familySize: v.familySize,
+            ...(mode === "create"
+              ? {
+                  familySize: v.members.length + 1,
+                  members: membersPayload(v.members, canViewPHI),
+                  attestation: v.attestation,
+                }
+              : {}),
             diagnoses: v.diagnoses,
             consentDataAndContact: v.consentData,
             consentMedia: v.consentMedia,
@@ -73,7 +91,15 @@ export default function PatientForm({
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(data.field === "contact" ? t.contactError : `${t.genericError}${data.field ? ` (${data.field})` : ""}`);
+        toast.error(
+          data.field === "contact"
+            ? t.contactError
+            : data.field === "members" || data.field === "familySize"
+              ? h.errMembers
+              : data.field === "attestation"
+                ? h.errAttestation
+                : `${t.genericError}${data.field ? ` (${data.field})` : ""}`,
+        );
         return;
       }
       toast.success(mode === "create" ? t.created : t.saved);
@@ -123,16 +149,23 @@ export default function PatientForm({
             <option value="es">Español</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">{t.familySize}</label>
-          <input type="number" min={1} max={30} className={input} value={v.familySize}
-            onChange={(e) => set("familySize", Number(e.target.value))} />
-        </div>
       </div>
+      {mode === "create" ? (
+        <HouseholdSection
+          locale={locale}
+          members={v.members}
+          onChange={(m) => set("members", m)}
+          showDiagnoses={canViewPHI}
+        />
+      ) : (
+        <p className="text-sm text-neutral-600">
+          {t.familySize}: <strong>{v.familySize}</strong>
+        </p>
+      )}
 
       {canViewPHI && (
         <fieldset>
-          <legend className="text-sm font-medium text-neutral-700">{t.diagnoses}</legend>
+          <legend className="text-sm font-medium text-neutral-700">{h.primaryDxTitle}</legend>
           <p className="text-xs text-neutral-500 mb-2">{t.diagnosesNote}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {DIAGNOSIS_VALUES.map((d) => (
@@ -147,6 +180,12 @@ export default function PatientForm({
       )}
 
       <fieldset className="space-y-2">
+        {mode === "create" && (
+          <label className="flex items-start gap-2 text-sm text-neutral-700">
+            <input type="checkbox" className="mt-1" checked={v.attestation} onChange={(e) => set("attestation", e.target.checked)} />
+            <span>{consentText.age_guardian_attestation[locale]}</span>
+          </label>
+        )}
         <label className="flex items-start gap-2 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={v.consentData} onChange={(e) => set("consentData", e.target.checked)} />
           {t.consentData}
@@ -158,7 +197,7 @@ export default function PatientForm({
       </fieldset>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving}
+        <button type="submit" disabled={saving || (mode === "create" && !householdComplete(v.members))}
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 disabled:opacity-60">
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           {saving ? t.saving : mode === "create" ? t.create : t.save}

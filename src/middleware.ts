@@ -83,6 +83,7 @@ export const config = {
     "/api/admin/:path*",
     // ?lang= from email links
     "/rsvp/:path*",
+    "/confirm/:path*",
     "/unsubscribe",
     "/api/unsubscribe",
     "/events/:path*",

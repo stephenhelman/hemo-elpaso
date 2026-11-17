@@ -41,11 +41,11 @@ export const decadesSinceFounding = (now: Date = new Date()) =>
 
 /** Org phone, one source. */
 export const SITE_PHONE = {
-  display: "(915) 621-8291",
-  dashed: "915-621-8291",
-  tel: "tel:+19156218291",
-  e164: "+19156218291",
-  schema: "+1-915-621-8291",
+  display: "(915) 539-7353",
+  dashed: "915-539-7353",
+  tel: "tel:+19155397353",
+  e164: "+19155397353",
+  schema: "+1-915-539-7353",
 } as const;
 
 /** The only correct Facebook URL. */
