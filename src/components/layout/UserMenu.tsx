@@ -40,29 +40,21 @@ export default function UserMenu({ lang }: Props) {
     );
   }
 
-  if (!user) {
-    return (
-      <Link
-        href="/api/auth/login?returnTo=/admin"
-        className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
-      >
-        {t.login}
-      </Link>
-    );
-  }
+  // Board sign-in is not offered in the public header; it lives in the footer.
+  if (!user) return null;
 
   return (
     <div className="relative user-menu-container">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 hover:border-primary transition-colors"
+        className="flex items-center gap-2 p-1 xl:px-3 xl:py-1.5 rounded-full border border-neutral-200 hover:border-primary transition-colors"
       >
         <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
           <span className="text-white text-xs font-bold">
             {user.name?.charAt(0).toUpperCase() || "U"}
           </span>
         </div>
-        <span className="hidden sm:block text-sm font-medium text-neutral-700 max-w-[100px] truncate">
+        <span className="hidden xl:block text-sm font-medium text-neutral-700 max-w-[100px] truncate">
           {user.name?.split(" ")[0] || "User"}
         </span>
       </button>

@@ -375,3 +375,8 @@ New Spanish for the RSVP checklist (tú form, same register question as above) a
 ### `src/messages/RsvpEmail.tsx`
 
 - Total line: `{n} persona asistirá` / `{n} personas asistirán` (replaces the `Personas: N` label). Gendered/plural forms to confirm.
+
+## Header navigation regroup (new, 2026-11-17)
+
+- `src/components/layout/Navbar.tsx`: dropdown labels `Eventos` (items `Todos los eventos`, `Fotos`) and `Recursos` (items `Guía de recursos`, `Becas`). `Todos los eventos` and `Guía de recursos` are new labels. Existing labels kept: `Nosotros`, `Recibir Información`, `Contacto`, `Participa`.
+- `src/translation/layoutPage.ts` (footer): `Acceso de la junta` (board sign-in link). The header no longer has a sign-in button.

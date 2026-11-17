@@ -1,10 +1,9 @@
 "use client";
 
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import BrandMark from "@/components/brand/BrandMark";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
@@ -13,24 +12,111 @@ import { useLanguage } from "@/context/LanguageContext";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
 import { useSiteFlags } from "@/context/SiteFlagsContext";
 
-const navLinks = [
-  { href: "/", labelEn: "Home", labelEs: "Inicio" },
+type NavLeaf = { href: string; labelEn: string; labelEs: string };
+type NavItem = NavLeaf | { labelEn: string; labelEs: string; children: NavLeaf[] };
+
+/**
+ * Top-level items stay few enough to fit a 1024px laptop: Photos live under
+ * Events, Scholarships under Resources. "Home" is the logo. Sign-in is not here
+ * (board only): it appears as the avatar menu once signed in, and in the footer.
+ */
+const navItems: NavItem[] = [
   { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
-  { href: "/events", labelEn: "Events", labelEs: "Eventos" },
-  { href: "/gallery", labelEn: "Photos", labelEs: "Fotos" },
-  { href: "/resources", labelEn: "Resources", labelEs: "Recursos" },
-  { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
   {
-    href: "/register-info",
-    labelEn: "Get Information",
-    labelEs: "Recibir Información",
+    labelEn: "Events",
+    labelEs: "Eventos",
+    children: [
+      { href: "/events", labelEn: "All events", labelEs: "Todos los eventos" },
+      { href: "/gallery", labelEn: "Photos", labelEs: "Fotos" },
+    ],
   },
+  {
+    labelEn: "Resources",
+    labelEs: "Recursos",
+    children: [
+      { href: "/resources", labelEn: "Resource guide", labelEs: "Guía de recursos" },
+      { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
+    ],
+  },
+  { href: "/register-info", labelEn: "Get Information", labelEs: "Recibir Información" },
   { href: "/contact", labelEn: "Contact", labelEs: "Contacto" },
 ];
 
+const isGroup = (i: NavItem): i is Extract<NavItem, { children: NavLeaf[] }> => "children" in i;
+const matches = (pathname: string, href: string) => pathname === href || pathname.startsWith(href + "/");
+
+const linkBase = "px-2 xl:px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-200";
+const linkState = (active: boolean) =>
+  active ? "text-primary bg-primary-50 font-semibold" : "text-neutral-600 hover:text-primary hover:bg-primary-50";
+
+/**
+ * Desktop dropdown. Opens on click, Enter/Space/ArrowDown (keyboard and touch),
+ * and on mouse hover as a convenience. Esc or clicking elsewhere closes it.
+ */
+function NavDropdown({ item, pathname, locale }: { item: Extract<NavItem, { children: NavLeaf[] }>; pathname: string; locale: "en" | "es" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = item.children.some((c) => matches(pathname, c.href));
+  const label = locale === "en" ? item.labelEn : item.labelEs;
+
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", away);
+    return () => document.removeEventListener("mousedown", away);
+  }, [open]);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onPointerEnter={(e) => { if (e.pointerType === "mouse") setOpen(true); }}
+      onPointerLeave={(e) => { if (e.pointerType === "mouse") setOpen(false); }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") { setOpen(false); (ref.current?.querySelector("button") as HTMLElement | null)?.focus(); }
+        if (e.key === "ArrowDown" && !open) { e.preventDefault(); setOpen(true); }
+      }}
+      onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget as Node)) setOpen(false); }}
+    >
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className={cn(linkBase, "inline-flex items-center gap-1", linkState(active))}
+      >
+        {label}
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        // pt-1 bridges the gap so moving the mouse down doesn't close the menu
+        <div className="absolute left-0 top-full pt-1 z-50 min-w-[11rem]">
+          <ul role="menu" className="rounded-xl border border-neutral-200 bg-white shadow-lg py-1.5">
+            {item.children.map((c) => (
+              <li key={c.href} role="none">
+                <Link
+                  role="menuitem"
+                  href={c.href}
+                  className={cn(
+                    "block px-4 py-2 text-sm whitespace-nowrap",
+                    matches(pathname, c.href) ? "text-primary font-semibold bg-primary-50" : "text-neutral-700 hover:bg-neutral-50 hover:text-primary",
+                  )}
+                >
+                  {locale === "en" ? c.labelEn : c.labelEs}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const { registrationOpen } = useSiteFlags();
-  const links = navLinks.filter((l) => registrationOpen || l.href !== "/register-info");
+  const items = navItems.filter((i) => isGroup(i) || registrationOpen || i.href !== "/register-info");
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { locale } = useLanguage();
@@ -45,28 +131,23 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">
       <div className="container-max">
-        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-6 xl:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <BrandMark tone="light" iconHeight={40} hideTextBelowSm />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200",
-                  pathname === link.href
-                    ? "text-primary bg-primary-50 font-semibold"
-                    : "text-neutral-600 hover:text-primary hover:bg-primary-50",
-                )}
-              >
-                {locale === "en" ? link.labelEn : link.labelEs}
-              </Link>
-            ))}
+          {/* Desktop nav (laptops and up). Below lg the same items live in the menu. */}
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 ml-2 xl:ml-8" aria-label={locale === "en" ? "Main" : "Principal"}>
+            {items.map((item) =>
+              isGroup(item) ? (
+                <NavDropdown key={item.labelEn} item={item} pathname={pathname} locale={locale} />
+              ) : (
+                <Link key={item.href} href={item.href} className={cn(linkBase, linkState(pathname === item.href))}>
+                  {locale === "en" ? item.labelEn : item.labelEs}
+                </Link>
+              ),
+            )}
           </nav>
 
           {/* Right side */}
@@ -82,7 +163,7 @@ export default function Navbar() {
             {/* Get Involved CTA */}
             <Link
               href="/get-involved"
-              className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors duration-200"
+              className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold whitespace-nowrap hover:bg-primary-600 transition-colors duration-200"
             >
               {locale === "en" ? "Get Involved" : "Participa"}
             </Link>
@@ -105,60 +186,39 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="lg:hidden border-t border-neutral-200 bg-white">
-            <nav className="flex flex-col px-4 py-3 gap-1">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="px-3 py-2.5 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors"
-                >
-                  {locale === "en" ? link.labelEn : link.labelEs}
-                </Link>
-              ))}
-              <div className="pt-2 border-t border-neutral-100 mt-1 space-y-2">
-                {/* Sign In Button - Only show if not logged in */}
-                <MobileSignInButton
-                  lang={locale}
-                  onClose={() => setMobileOpen(false)}
-                />
-
-                <Link
-                  href="/get-involved"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
-                >
-                  {locale === "en" ? "Get Involved" : "Participa"}
-                </Link>
-              </div>
+            <nav className="flex flex-col px-4 py-3 gap-1" aria-label={locale === "en" ? "Main" : "Principal"}>
+              {items.map((item) =>
+                isGroup(item) ? (
+                  <div key={item.labelEn} className="pt-1">
+                    <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                      {locale === "en" ? item.labelEn : item.labelEs}
+                    </p>
+                    {item.children.map((c) => (
+                      <Link
+                        key={c.href}
+                        href={c.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block px-3 py-2.5 pl-6 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors"
+                      >
+                        {locale === "en" ? c.labelEn : c.labelEs}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-3 py-2.5 rounded-md text-sm font-medium text-neutral-600 hover:text-primary hover:bg-primary-50 transition-colors"
+                  >
+                    {locale === "en" ? item.labelEn : item.labelEs}
+                  </Link>
+                ),
+              )}
             </nav>
           </div>
         )}
       </div>
     </header>
-  );
-}
-
-function MobileSignInButton({
-  lang,
-  onClose,
-}: {
-  lang: "en" | "es";
-  onClose: () => void;
-}) {
-  const { user, isLoading } = useUser();
-
-  if (isLoading || user) {
-    return null; // Don't show if loading or already logged in
-  }
-
-  return (
-    <Link
-      href="/api/auth/login?returnTo=/admin"
-      onClick={onClose}
-      className="flex items-center justify-center px-4 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
-    >
-      {lang === "en" ? "Sign In" : "Iniciar Sesión"}
-    </Link>
   );
 }
