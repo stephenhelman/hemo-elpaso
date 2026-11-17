@@ -6,6 +6,7 @@ import { cleanText, isValidEmail, normalizeEmail } from "@/lib/patients/normaliz
 import { sanitizeDiagnoses } from "@/lib/patients/diagnoses";
 import { CONFIRM_TOKEN_DAYS } from "./constants";
 import { purgedMemberData, recomputeHousehold } from "./sync";
+import { dropMemberFromRsvps } from "@/lib/rsvp/attendees";
 import { generateToken } from "@/lib/tokens";
 
 /** The member behind a still-valid link (pending, token not expired), or null. */
@@ -95,6 +96,7 @@ export async function declineMember(raw: string): Promise<boolean> {
       data: purgedMemberData("declined"),
     });
     if (res.count !== 1) return false;
+    await dropMemberFromRsvps(tx, m.id);
     await recomputeHousehold(tx, m.patientId);
     return true;
   });
@@ -123,6 +125,7 @@ export async function expirePendingMembers(now = new Date()): Promise<number> {
         data: purgedMemberData("expired"),
       });
       if (res.count !== 1) return false;
+      await dropMemberFromRsvps(tx, m.id);
       await recomputeHousehold(tx, m.patientId);
       return true;
     });

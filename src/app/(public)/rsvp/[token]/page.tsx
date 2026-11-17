@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { resolveRsvpToken } from "@/lib/rsvp";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
+import { selectableMembers } from "@/lib/rsvp/attendees";
+import { prisma } from "@/lib/db";
 import RsvpPanel, { type RsvpPanelProps } from "@/components/rsvp/RsvpPanel";
 
 // Personal link: never index, never leak the token via Referer.
@@ -13,6 +15,10 @@ export const dynamic = "force-dynamic";
 
 export default async function RsvpTokenPage({ params }: { params: { token: string } }) {
   const ctx = await resolveRsvpToken(params.token);
+
+  // Household people for the "who is coming" checklist (names/relationship/age group only; no diagnoses).
+  const members = ctx ? await selectableMembers(ctx.patient.id) : [];
+  const attendees = ctx?.rsvp ? await prisma.rsvpAttendee.findMany({ where: { rsvpId: ctx.rsvp.id }, select: { isPrimary: true, householdMemberId: true } }) : [];
 
   const props: RsvpPanelProps = ctx
     ? {
@@ -31,6 +37,10 @@ export default async function RsvpTokenPage({ params }: { params: { token: strin
         },
         ended: ctx.ended,
         partySize: ctx.rsvp?.attendeeCount ?? Math.max(1, ctx.patient.familySize),
+        options: members.map((m) => ({ id: m.id, label: m.firstName ?? "", relationship: m.relationship, ageGroup: m.ageGroup, status: m.status })),
+        selected: ctx.rsvp
+          ? { primary: attendees.some((a) => a.isPrimary), memberIds: attendees.map((a) => a.householdMemberId).filter((x): x is string => !!x), guests: ctx.rsvp.guestCount }
+          : { primary: true, memberIds: members.map((m) => m.id), guests: 0 }, // all checked by default
         confirmed: !!ctx.rsvp,
         declined: ctx.invitation?.status === "rsvp_no" && !ctx.rsvp,
       }

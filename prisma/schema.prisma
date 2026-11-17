@@ -399,6 +399,7 @@ model HouseholdMember {
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   consentRecords        ConsentRecord[]
+  rsvpAttendees         RsvpAttendee[]
 
   @@index([patientId])
   @@index([status, createdAt])
@@ -667,8 +668,8 @@ model EventPhoto {
   eventId String
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  url     String // R2 URL
-  key     String // R2 key for deletion
+  url       String // R2 URL
+  key       String // R2 key for deletion
   caption   String? // English
   captionEs String? // Spanish; the English caption is shown when this is empty
 
@@ -707,28 +708,47 @@ model EventTargeting {
 }
 
 model Rsvp {
-  id                  String    @id @default(uuid())
+  id                  String         @id @default(uuid())
   eventId             String
   patientId           String
   familyId            String?
-  event               Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  patient             Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  family              Family?   @relation(fields: [familyId], references: [id], onDelete: SetNull)
-  status              String    @default("confirmed")
-  attendeeCount       Int
+  event               Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patient             Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  family              Family?        @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  status              String         @default("confirmed")
+  attendeeCount       Int // DERIVED: attendee rows + guestCount. Kept in sync on every write; capacity code reads this.
+  guestCount          Int            @default(0) // "guests not listed"
+  attendees           RsvpAttendee[]
   dietaryRestrictions String?
   specialNeeds        String?
-  rsvpDate            DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  reminderSent        Boolean   @default(false)
-  familyMembershipIds String[]  @default([])
+  rsvpDate            DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  reminderSent        Boolean        @default(false)
+  familyMembershipIds String[]       @default([])
   // Phase 4. Party size is attendeeCount.
-  source              String    @default("manual") // invite | public | manual
-  checkInTokenHash    String?   @unique // SHA-256 of the raw token (used for lookup)
+  source              String         @default("manual") // invite | public | manual
+  checkInTokenHash    String?        @unique // SHA-256 of the raw token (used for lookup)
   checkInTokenEnc     String? // AES-256-GCM copy (CHECKIN_TOKEN_KEY) so the same QR can be re-sent
   cancelledAt         DateTime?
 
   @@unique([eventId, patientId])
+}
+
+// One row per person attending on an RSVP. isPrimary = the Patient themself (no member).
+// Partial unique index "rsvp_attendees_one_primary_per_rsvp" (migration) allows one primary per RSVP.
+model RsvpAttendee {
+  id                String           @id @default(uuid())
+  rsvpId            String
+  rsvp              Rsvp             @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
+  householdMemberId String?
+  householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id], onDelete: SetNull)
+  isPrimary         Boolean          @default(false)
+  checkedInAt       DateTime?
+  createdAt         DateTime         @default(now())
+
+  @@unique([rsvpId, householdMemberId])
+  @@index([householdMemberId])
+  @@map("rsvp_attendees")
 }
 
 model CheckIn {
@@ -745,7 +765,8 @@ model CheckIn {
   attendeeRole        String    @default("patient") // patient, sponsor, donor, admin, volunteer
   familyMembershipIds String[]  @default([])
   timecardId          String? // no FK — set after VolunteerTimecard created
-  headcount           Int? // people actually checked in (may differ from the RSVP party size)
+  headcount           Int? // people actually checked in: checked attendees + guestsCheckedIn (kept in sync)
+  guestsCheckedIn     Int       @default(0) // unlisted guests confirmed at the door
 
   @@unique([eventId, patientId])
   @@map("check_ins")

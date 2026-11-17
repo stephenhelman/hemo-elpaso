@@ -2,6 +2,7 @@ import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { CONSENT_TEXT_VERSION, type ConsentType } from "@/content/consent";
 import { sanitizeDiagnoses } from "./diagnoses";
+import { randomUUID } from "crypto";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { validateMembers, type ValidatedMember } from "@/lib/households/members";
 import { recomputeHousehold } from "@/lib/households/sync";
@@ -168,6 +169,7 @@ export async function createPatient(
       invites.push({ memberId: "", email: m.email, firstName: m.firstName, rawToken });
     }
     return {
+      id: randomUUID(), // known up front so callers can map form positions to member ids
       firstName: m.firstName,
       lastName: m.lastName,
       relationship: m.relationship,
@@ -233,5 +235,5 @@ export async function createPatient(
     },
   });
 
-  return { id: patientId, duplicateOfId, invites };
+  return { id: patientId, duplicateOfId, invites, memberIds: memberRows.map((r) => r.id) };
 }

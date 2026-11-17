@@ -2,27 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { Camera, CheckCircle, Loader2, Minus, Plus, XCircle } from "lucide-react";
-import { MAX_HEADCOUNT } from "@/lib/checkin-constants";
+import { Camera, CheckCircle, Loader2, XCircle } from "lucide-react";
+import CheckInPeople, { checkInHeadcount, defaultCheckInSelection, type CheckInPerson, type CheckInSelection } from "@/components/admin/CheckInPeople";
 
 interface Resolved {
   rsvpId: string;
   name: string;
   partySize: number;
   noPhotos: boolean;
+  people: CheckInPerson[];
+  guestCount: number;
+  guestsCheckedIn: number;
   alreadyCheckedIn: boolean;
 }
 
 /**
  * Scan the attendee's QR (payload = raw check-in token), show who it is, a
- * NO PHOTOS badge when media consent isn't granted, and confirm check-in with
- * an editable headcount.
+ * per-person checklist (checked by default) with a NO PHOTOS badge per person,
+ * and confirm check-in. Headcount = checked people + confirmed guests.
  */
 export default function QrScanner({ eventId, onScanSuccess }: { eventId: string; onScanSuccess: () => void }) {
   const [scanning, setScanning] = useState(false);
   const [busy, setBusy] = useState(false);
   const [resolved, setResolved] = useState<Resolved | null>(null);
-  const [headcount, setHeadcount] = useState(1);
+  const [sel, setSel] = useState<CheckInSelection>({ attendeeIds: [], guests: 0 });
   const [flash, setFlash] = useState<{ ok: boolean; text: string } | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const pausedRef = useRef(false);
@@ -51,7 +54,7 @@ export default function QrScanner({ eventId, onScanSuccess }: { eventId: string;
       if (!res.ok) { showFlash(false, data.error ?? "Scan failed"); pausedRef.current = false; return; }
       if (data.alreadyCheckedIn) { showFlash(false, `Already checked in: ${data.name}`); pausedRef.current = false; return; }
       setResolved(data);
-      setHeadcount(data.partySize);
+      setSel(defaultCheckInSelection(data.people, data.guestCount, data.guestsCheckedIn));
     } catch {
       showFlash(false, "Network error");
       pausedRef.current = false;
@@ -65,10 +68,10 @@ export default function QrScanner({ eventId, onScanSuccess }: { eventId: string;
       const res = await fetch("/api/admin/checkin/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId, rsvpId: resolved.rsvpId, headcount }),
+        body: JSON.stringify({ eventId, rsvpId: resolved.rsvpId, attendeeIds: sel.attendeeIds, guests: sel.guests }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) { showFlash(true, `Checked in: ${resolved.name} (${headcount})`); onScanSuccess(); }
+      if (res.ok) { showFlash(true, `Checked in: ${resolved.name} (${data.headcount})`); onScanSuccess(); }
       else showFlash(false, data.error ?? "Check-in failed");
     } finally {
       setBusy(false); setResolved(null); pausedRef.current = false;
@@ -121,22 +124,10 @@ export default function QrScanner({ eventId, onScanSuccess }: { eventId: string;
             <p className="text-xl font-display font-bold text-neutral-900">{resolved.name}</p>
             <p className="text-sm text-neutral-500">RSVP party of {resolved.partySize}</p>
           </div>
-          {resolved.noPhotos && (
-            <div className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-white font-extrabold tracking-wider">
-              NO PHOTOS
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">How many are here?</label>
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setHeadcount((h) => Math.max(1, h - 1))} className="p-2 rounded-lg border border-neutral-300"><Minus className="w-4 h-4" /></button>
-              <input type="number" min={1} max={MAX_HEADCOUNT} value={headcount} onChange={(e) => setHeadcount(Number(e.target.value))}
-                className="w-20 text-center px-2 py-2 border border-neutral-300 rounded-lg text-lg font-semibold" />
-              <button type="button" onClick={() => setHeadcount((h) => Math.min(MAX_HEADCOUNT, h + 1))} className="p-2 rounded-lg border border-neutral-300"><Plus className="w-4 h-4" /></button>
-            </div>
-          </div>
+          <CheckInPeople people={resolved.people} guestCount={resolved.guestCount} value={sel} onChange={setSel} />
+          <p className="text-sm font-semibold text-neutral-700">{checkInHeadcount(resolved.people, sel)} here</p>
           <div className="flex gap-3">
-            <button onClick={confirm} disabled={busy} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white font-semibold text-sm hover:bg-green-700 disabled:opacity-60">
+            <button onClick={confirm} disabled={busy || checkInHeadcount(resolved.people, sel) < 1} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white font-semibold text-sm hover:bg-green-700 disabled:opacity-60">
               {busy && <Loader2 className="w-4 h-4 animate-spin" />} Confirm check-in
             </button>
             <button onClick={cancel} className="px-5 py-2.5 rounded-lg border border-neutral-300 text-sm font-semibold text-neutral-700">Cancel</button>

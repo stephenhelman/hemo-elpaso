@@ -356,3 +356,22 @@ Gendered forms to review: `Hijo/a`, `Hermano/a`, `Portadora/portador`, `confirma
 ### Email subject (`src/lib/households/confirmation.ts`)
 
 - `Por favor confirma tus datos con HOEP`
+
+## Per-person RSVP and check-in (new, 2026-11-17)
+
+New Spanish for the RSVP checklist (tú form, same register question as above) and the RSVP email total. Admin/check-in screens are English-only today, so they add no ES strings.
+
+### `src/translation/household.ts` (RSVP checklist)
+
+- L118: `attendeesTitle: "¿Quiénes vienen?",`
+- L119: `attendeesHint: "Desmarca a quien no pueda venir. Puedes cambiarlo después con el mismo enlace.",`
+- L120: `youLabel: (n: string) => (n ? `${n} (tú)` : "Tú"),`
+- L121: `notConfirmedYet: "aún no ha confirmado",`
+- L122: `guestsLabel: "Invitados no listados",`
+- L123: `guestsHint: "Personas que vienen contigo y no están en la lista de tu hogar (0 a 10).",`
+- L124: `attendeesTotal: (n: number) => `${n} ${n === 1 ? "persona" : "personas"} en total`,`
+- L125: `attendeesNone: "Elige al menos una persona o un invitado.",`
+
+### `src/messages/RsvpEmail.tsx`
+
+- Total line: `{n} persona asistirá` / `{n} personas asistirán` (replaces the `Personas: N` label). Gendered/plural forms to confirm.

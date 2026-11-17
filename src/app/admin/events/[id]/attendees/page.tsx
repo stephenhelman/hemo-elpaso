@@ -7,6 +7,8 @@ import ManualCheckInButton from "@/components/admin/ManualCheckInButton";
 import AddRsvpPanel from "@/components/admin/AddRsvpPanel";
 import { StatCard } from "@/components/ui/StatCard";
 import { PATIENT_ONLY } from "@/lib/patients/query";
+import { ATTENDEE_WITH_MEMBER, mapPeople, type RsvpPerson } from "@/lib/rsvp/people";
+import { relationshipLabels, type Relationship } from "@/lib/households/constants";
 
 export default async function EventAttendeesPage({
   params,
@@ -24,7 +26,11 @@ export default async function EventAttendeesPage({
     include: {
       rsvps: {
         where: { cancelledAt: null },
-        include: { patient: { include: { contactProfile: true } } },
+        include: {
+          // media consent only (for the per-person NO PHOTOS marker); no diagnoses, emails or addresses are used below
+          patient: { include: { contactProfile: true, consentRecords: { where: { type: "media" }, orderBy: { createdAt: "desc" }, take: 1 } } },
+          attendees: { include: ATTENDEE_WITH_MEMBER, orderBy: { createdAt: "asc" } },
+        },
         orderBy: { rsvpDate: "desc" },
       },
       checkIns: { include: { patient: { include: { contactProfile: true } } }, orderBy: { checkInTime: "desc" } },
@@ -39,6 +45,9 @@ export default async function EventAttendeesPage({
   const checkedInIds = new Set(event.checkIns.map((c) => c.patientId));
   const notCheckedIn = event.rsvps.filter((r) => !checkedInIds.has(r.patientId));
   const rsvpPeople = event.rsvps.reduce((n, r) => n + r.attendeeCount, 0);
+  const rsvpGuests = event.rsvps.reduce((n, r) => n + r.guestCount, 0);
+  const peopleOf = (r: (typeof event.rsvps)[number]) =>
+    mapPeople(r.attendees, r.patient.contactProfile?.firstName ?? "", r.patient.consentRecords[0]?.granted);
   const rsvpOf = new Map(event.rsvps.map((r) => [r.patientId, r]));
   // People actually present: the headcount confirmed at the door (fallback: RSVP party size)
   const headcount = event.checkIns.reduce((n, c) => n + (c.headcount ?? rsvpOf.get(c.patientId)?.attendeeCount ?? 1), 0);
@@ -68,10 +77,10 @@ export default async function EventAttendeesPage({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatCard icon={<Users className="w-6 h-6" />} label="RSVP'd (parties)" value={event.rsvps.length.toString()} color="blue" />
-          <StatCard icon={<Users className="w-6 h-6" />} label="RSVP'd (people)" value={rsvpPeople.toString()} subtitle={event.maxCapacity ? `of ${event.maxCapacity} capacity` : undefined} color="purple" />
-          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Checked in (parties)" value={event.checkIns.length.toString()} color="green" />
-          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Checked in (people)" value={headcount.toString()} color="teal" />
+          <StatCard icon={<Users className="w-6 h-6" />} label="Households" value={event.rsvps.length.toString()} color="blue" />
+          <StatCard icon={<Users className="w-6 h-6" />} label="People (incl. guests)" value={rsvpPeople.toString()} subtitle={event.maxCapacity ? `of ${event.maxCapacity} capacity` : undefined} color="purple" />
+          <StatCard icon={<Users className="w-6 h-6" />} label="Guests not listed" value={rsvpGuests.toString()} color="amber" />
+          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Checked in (people)" value={headcount.toString()} subtitle={`${event.checkIns.length} households`} color="teal" />
         </div>
 
         <AddRsvpPanel
@@ -100,6 +109,7 @@ export default async function EventAttendeesPage({
                           Party of {r.attendeeCount} · {r.source}
                           {r.patient.contactProfile?.phone ? ` · ${r.patient.contactProfile.phone}` : ""}
                         </p>
+                        <PeopleLine people={peopleOf(r)} guests={r.guestCount} />
                         <p className="text-xs text-neutral-400 mt-1">RSVP&apos;d {new Date(r.rsvpDate).toLocaleDateString()}</p>
                       </div>
                       <ManualCheckInButton rsvpId={r.id} eventId={event.id} isCheckedIn={false} patientName={nm(r.patient)} />
@@ -131,6 +141,7 @@ export default async function EventAttendeesPage({
                           <p className="text-sm text-neutral-500">
                             {c.headcount ?? r?.attendeeCount ?? 1} present{r ? ` (RSVP'd ${r.attendeeCount})` : " (walk-in)"}
                           </p>
+                          {r && <PeopleLine people={peopleOf(r)} guests={r.guestCount} showCheckedIn guestsIn={c.guestsCheckedIn} />}
                           <p className="text-xs text-neutral-400 mt-1">
                             Checked in {new Date(c.checkInTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                           </p>
@@ -146,5 +157,22 @@ export default async function EventAttendeesPage({
         </div>
       </div>
     </div>
+  );
+}
+
+/** First names, relationship and a NO PHOTOS marker per person; guests as a count. */
+function PeopleLine({ people, guests, showCheckedIn = false, guestsIn = 0 }: { people: RsvpPerson[]; guests: number; showCheckedIn?: boolean; guestsIn?: number }) {
+  return (
+    <ul className="mt-1 text-sm text-neutral-600 space-y-0.5">
+      {people.map((p) => (
+        <li key={p.attendeeId} className="flex items-center gap-2 flex-wrap">
+          {showCheckedIn && <span className={p.checkedIn ? "text-green-600" : "text-neutral-300"}>{p.checkedIn ? "✔" : "○"}</span>}
+          <span>{p.name}</span>
+          {p.relationship && <span className="text-neutral-400">{relationshipLabels[p.relationship as Relationship]?.en ?? p.relationship}</span>}
+          {p.noPhotos && <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">NO PHOTOS</span>}
+        </li>
+      ))}
+      {guests > 0 && <li className="text-neutral-500">+{guests} guest{guests === 1 ? "" : "s"}{showCheckedIn ? ` (${guestsIn} here)` : ""}</li>}
+    </ul>
   );
 }

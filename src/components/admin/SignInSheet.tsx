@@ -1,8 +1,8 @@
 import { paginate, type SheetAttendee } from "@/lib/signin-sheet";
 
 /**
- * Printable sign-in sheet (US Letter). Contains NO diagnoses, emails or addresses: only name, party size, a
- * check-in box and a "no photos" marker. Phone appears only in the blank walk-in rows (written by hand).
+ * Printable sign-in sheet (US Letter). Contains NO diagnoses, emails or addresses: only first names, relationship, party size, a
+ * check-in box per person and a "no photos" marker per person. Phone appears only in the blank walk-in rows (written by hand).
  * Pages are laid out by lib/signin-sheet.ts so each one can say "Page X of N".
  */
 export default function SignInSheet({
@@ -10,7 +10,9 @@ export default function SignInSheet({
   dateLine,
   location,
   attendees,
+  totals,
 }: {
+  totals: { households: number; people: number; guests: number };
   title: string;
   dateLine: string;
   location: string;
@@ -33,6 +35,9 @@ export default function SignInSheet({
                 <h1>{title}</h1>
                 <div>{dateLine}</div>
                 <div>{location}</div>
+                <div className="sheet-totals">
+                  {totals.households} household{totals.households === 1 ? "" : "s"} · {totals.people} people · {totals.guests} guest{totals.guests === 1 ? "" : "s"} · ____ checked in
+                </div>
               </div>
             </header>
           ) : (
@@ -80,26 +85,45 @@ function Table({ items }: { items: ReturnType<typeof paginate>[number] }) {
             <thead>
               <tr>
                 <th className="c-box">In</th>
-                <th>Name</th>
+                <th>Household / person</th>
                 <th className="c-party">Party</th>
                 <th className="c-photo">Photos</th>
               </tr>
             </thead>
           )}
-          <tbody>
-            {run.map((it, n) =>
-              it.kind === "attendee" ? (
-                <tr key={n}>
-                  <td className="c-box"><span className="box" /></td>
-                  <td className="name">
+          {run.map((it, n) =>
+            it.kind === "attendee" ? (
+              <tbody key={n} className="household">
+                <tr className="hh">
+                  <td className="c-box" />
+                  <td className="name" colSpan={1}>
                     <strong>{it.row.lastName}</strong>, {it.row.firstName}
                   </td>
                   <td className="c-party">{it.row.partySize}</td>
-                  <td className="c-photo">{it.row.noPhotos ? <span className="nophoto">NO PHOTOS</span> : null}</td>
+                  <td className="c-photo" />
                 </tr>
-              ) : null,
-            )}
-          </tbody>
+                {it.row.people.map((p, k) => (
+                  <tr key={k} className="person">
+                    <td className="c-box"><span className="box" /></td>
+                    <td className="name sub">
+                      {p.name}
+                      {p.relationship ? <span className="rel"> · {p.relationship}</span> : null}
+                    </td>
+                    <td className="c-party" />
+                    <td className="c-photo">{p.noPhotos ? <span className="nophoto">NO PHOTOS</span> : null}</td>
+                  </tr>
+                ))}
+                {it.row.guests > 0 && (
+                  <tr className="person">
+                    <td className="c-box"><span className="box" /></td>
+                    <td className="name sub">+{it.row.guests} guest{it.row.guests === 1 ? "" : "s"} <span className="rel">(count here: ____)</span></td>
+                    <td className="c-party" />
+                    <td className="c-photo" />
+                  </tr>
+                )}
+              </tbody>
+            ) : null,
+          )}
         </table>
       ) : (
         <table key={key++} className="sheet-table walkin">
@@ -135,12 +159,18 @@ const CSS = `
 .sheet-lockup { width: 3.1in; height: auto; display: block; margin-left: -0.1in; }
 .sheet-event h1 { font-size: 20pt; line-height: 1.15; margin: 0 0 4px; color: #8B1538; font-weight: 700; }
 .sheet-event { font-size: 10.5pt; line-height: 1.4; }
+.sheet-totals { margin-top: 4px; font-size: 9.5pt; opacity: .85; }
 .sheet-kicker { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .12em; color: #2A2426; opacity: .7; margin-bottom: 2px; }
 .sheet-cont { font-size: 9pt; color: #2A2426; opacity: .75; border-bottom: 2px solid #8B1538; padding-bottom: 6px; margin-bottom: 8px; }
 .sheet-cont span { opacity: .7; }
 .sheet-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11pt; }
 .sheet-table th { text-align: left; font-size: 8pt; text-transform: uppercase; letter-spacing: .08em; padding: 0 6px 4px; border-bottom: 2px solid #8B1538; height: 0.35in; vertical-align: bottom; }
 .sheet-table td { height: 0.4in; padding: 0 6px; border-bottom: 1px solid #FACED2; vertical-align: middle; }
+.sheet-table tr.hh td { height: 0.32in; font-size: 11pt; border-bottom: 1px solid #2A2426; padding-top: 4px; }
+.sheet-table tr.person td { height: 0.34in; font-size: 10pt; }
+.sheet-table .sub { padding-left: 14px; }
+.sheet-table .rel { opacity: .6; }
+.sheet-table tbody.household { break-inside: avoid; }
 .sheet-table .c-box { width: 0.5in; text-align: center; }
 .sheet-table .c-party { width: 0.7in; text-align: center; }
 .sheet-table .c-photo { width: 1.2in; text-align: center; }

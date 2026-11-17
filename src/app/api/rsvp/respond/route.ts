@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveRsvpToken, rsvpYes, cancelRsvp, declineInvitation } from "@/lib/rsvp";
+import { resolveRsvpToken, rsvpYes, cancelRsvp, declineInvitation, defaultSelection } from "@/lib/rsvp";
 
 /**
  * Self-service RSVP from a personal link (/rsvp/[token]).
- * Body: { token, response: "yes" | "no", partySize? }
+ * Body: { token, response: "yes" | "no", selection?: { primary, memberIds, guests } }
+ * (no selection = everyone checked, no guests). A later yes through the same link
+ * replaces the selection and re-runs the capacity and deadline checks on the new total.
  * Works until the event ends. Unknown tokens get one generic 404.
  * On a NEW yes the raw check-in token is returned once (the page then moves
  * to /rsvp/<checkInToken> to show the QR); it is also emailed.
@@ -29,7 +31,7 @@ export async function POST(req: NextRequest) {
   const r = await rsvpYes({
     eventId: ctx.event.id,
     patientId: ctx.patient.id,
-    partySize: Number(body.partySize) || 1,
+    selection: body.selection ?? (await defaultSelection(ctx.patient.id)),
     source: ctx.rsvp?.source === "public" || ctx.rsvp?.source === "manual" ? (ctx.rsvp.source as "public" | "manual") : "invite",
   });
   if (!r.ok) return NextResponse.json({ ok: false, error: r.code === "AT_CAPACITY" ? "full" : r.code === "DEADLINE_PASSED" ? "closed" : r.error }, { status: r.status });

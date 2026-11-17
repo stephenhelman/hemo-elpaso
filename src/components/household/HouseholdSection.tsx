@@ -13,6 +13,7 @@ import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { householdTranslation } from "@/translation/household";
 
 export interface MemberDraft {
+  uid: string; // stable key for UI state (RSVP checklist); never sent
   firstName: string;
   lastName: string;
   relationship: string;
@@ -22,7 +23,9 @@ export interface MemberDraft {
   diagnoses: string[];
 }
 
+let uidSeq = 0;
 export const blankMember = (): MemberDraft => ({
+  uid: `m${++uidSeq}-${Math.random().toString(36).slice(2, 7)}`,
   firstName: "", lastName: "", relationship: "", ageGroup: "", email: "", confirmByPhone: false, diagnoses: [],
 });
 

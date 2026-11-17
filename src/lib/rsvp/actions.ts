@@ -5,7 +5,9 @@ import { decryptCheckInToken, encryptCheckInToken } from "@/lib/crypto/checkin-t
 import { checkRsvpEligibility, type RsvpBlock } from "./eligibility";
 import { eventHasEnded } from "./window";
 import { sendRsvpEmail } from "./emails";
+import { applyAttendees, parseSelection, selectableMembers, selectionTotal, type AttendeeSelection } from "./attendees";
 
+const MAX_PARTY_LEGACY = 30;
 export type RsvpSource = "invite" | "public" | "manual";
 
 type Fail = { ok: false; code: RsvpBlock | "NOT_FOUND"; error: string; status: number };
@@ -22,7 +24,10 @@ async function audit(actorId: string | null, action: AuditAction, rsvpId: string
 }
 
 /**
- * Create / reactivate / update a YES RSVP.
+ * Create / reactivate / update a YES RSVP for a chosen set of people.
+ * `selection` = who is coming (primary, household members, unlisted guests); the
+ * legacy `partySize` means "the primary plus (partySize - 1) guests" (walk-ins).
+ * attendeeCount is DERIVED (attendee rows + guests) and written with them.
  * - New or reactivated RSVP: mints a check-in token (hash stored, raw returned
  *   ONCE) and sends the confirmation email with the QR.
  * - Existing active RSVP: updates party size only (token untouched, so no raw
@@ -33,7 +38,8 @@ async function audit(actorId: string | null, action: AuditAction, rsvpId: string
 export async function rsvpYes(params: {
   eventId: string;
   patientId: string;
-  partySize: number;
+  selection?: unknown; // AttendeeSelection-shaped, validated here
+  partySize?: number;
   source: RsvpSource;
   actorId?: string;
   ignoreDeadline?: boolean;
@@ -43,9 +49,16 @@ export async function rsvpYes(params: {
   | { ok: true; rsvpId: string; token: string | null; created: boolean }
   | Fail
 > {
-  const partySize = Math.floor(params.partySize);
-  if (!Number.isInteger(partySize) || partySize < 1 || partySize > 30)
-    return { ok: false, code: "NOT_FOUND", error: "Invalid party size", status: 400 };
+  let sel: AttendeeSelection | null;
+  if (params.selection !== undefined) {
+    const members = await selectableMembers(params.patientId);
+    sel = parseSelection(params.selection, members.map((m) => m.id));
+  } else {
+    const n = Math.floor(params.partySize ?? 0);
+    sel = Number.isInteger(n) && n >= 1 && n <= MAX_PARTY_LEGACY ? { primary: true, memberIds: [], guests: n - 1 } : null;
+  }
+  if (!sel) return { ok: false, code: "NOT_FOUND", error: "Choose at least one person (guests 0 to 10)", status: 400 };
+  const partySize = selectionTotal(sel);
 
   const existing = await prisma.rsvp.findUnique({
     where: { eventId_patientId: { eventId: params.eventId, patientId: params.patientId } },
@@ -71,7 +84,7 @@ export async function rsvpYes(params: {
   if (!patient) return { ok: false, code: "NOT_FOUND", error: "Patient not found", status: 404 };
 
   if (active) {
-    await prisma.rsvp.update({ where: { id: existing!.id }, data: { attendeeCount: partySize } });
+    await prisma.$transaction((tx) => applyAttendees(tx, existing!.id, sel!));
     await markInvitation(params.eventId, params.patientId, "rsvp_yes");
     await audit(params.actorId ?? params.patientId, AuditAction.RSVP_UPDATED, existing!.id, `Party size set to ${partySize}`);
     return { ok: true, rsvpId: existing!.id, token: null, created: false };
@@ -88,9 +101,13 @@ export async function rsvpYes(params: {
     reminderSent: false,
     rsvpDate: new Date(),
   };
-  const rsvp = existing
-    ? await prisma.rsvp.update({ where: { id: existing.id }, data })
-    : await prisma.rsvp.create({ data: { eventId: params.eventId, patientId: params.patientId, ...data } });
+  const rsvp = await prisma.$transaction(async (tx) => {
+    const row = existing
+      ? await tx.rsvp.update({ where: { id: existing.id }, data })
+      : await tx.rsvp.create({ data: { eventId: params.eventId, patientId: params.patientId, ...data } });
+    await applyAttendees(tx, row.id, sel!);
+    return row;
+  });
 
   await markInvitation(params.eventId, params.patientId, "rsvp_yes");
   await audit(params.actorId ?? params.patientId, AuditAction.RSVP_CREATED, rsvp.id, `RSVP yes via ${params.source}, party of ${partySize}`);

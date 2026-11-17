@@ -15,6 +15,7 @@ import HouseholdSection, {
   membersPayload,
   type MemberDraft,
 } from "@/components/household/HouseholdSection";
+import AttendeeChecklist, { attendeesValid, type AttendeeOption, type AttendeeState } from "@/components/household/AttendeeChecklist";
 import { householdTranslation } from "@/translation/household";
 
 const input =
@@ -40,8 +41,10 @@ export default function RegisterInfoForm({
   const [language, setLanguage] = useState<"en" | "es">(locale);
   const [members, setMembers] = useState<MemberDraft[]>([]);
   const householdSize = members.length + 1; // primary + members: always in sync
-  const [partySize, setPartySize] = useState("1");
-  const [partyTouched, setPartyTouched] = useState(false);
+  // RSVP mode: who is coming. Everyone is checked by default, so we track who was UNchecked.
+  const [excluded, setExcluded] = useState<string[]>([]);
+  const [primaryComing, setPrimaryComing] = useState(true);
+  const [guests, setGuests] = useState(0);
   const [attestation, setAttestation] = useState(false);
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [consentData, setConsentData] = useState(false);
@@ -70,10 +73,20 @@ export default function RegisterInfoForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // RSVP party size defaults to the household size until the person changes it.
-  useEffect(() => {
-    if (!partyTouched) setPartySize(String(householdSize));
-  }, [householdSize, partyTouched]);
+  const listed = members.filter((m) => m.firstName.trim());
+  const options: AttendeeOption[] = listed.map((m) => ({
+    id: m.uid, label: m.firstName.trim(), relationship: m.relationship, ageGroup: m.ageGroup,
+    status: m.ageGroup === "18_plus" ? "pending" : "not_required",
+  }));
+  const attendeeState: AttendeeState = {
+    primary: primaryComing, guests,
+    memberIds: options.filter((o) => !excluded.includes(o.id)).map((o) => o.id),
+  };
+  const setAttendees = (v: AttendeeState) => {
+    setPrimaryComing(v.primary);
+    setGuests(v.guests);
+    setExcluded(options.filter((o) => !v.memberIds.includes(o.id)).map((o) => o.id));
+  };
 
   const toggleDiagnosis = (d: string) =>
     setDiagnoses((cur) =>
@@ -99,7 +112,17 @@ export default function RegisterInfoForm({
           familySize: householdSize,
           members: membersPayload(members),
           attestation,
-          ...(eventId ? { eventId, partySize: Number(partySize) } : {}),
+          ...(eventId
+            ? {
+                eventId,
+                // positions in `members` (the server maps them to the new member ids)
+                attendees: {
+                  primary: primaryComing,
+                  memberIndexes: members.map((m, i) => (!excluded.includes(m.uid) && m.firstName.trim() ? i : -1)).filter((i) => i >= 0),
+                  guests,
+                },
+              }
+            : {}),
           diagnoses,
           consentDataAndContact: consentData,
           consentMedia,
@@ -215,11 +238,7 @@ export default function RegisterInfoForm({
       <HouseholdSection locale={locale} members={members} onChange={setMembers} />
 
       {eventId && (
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">{t.partySize} *</label>
-          <input type="number" min={1} max={30} className={input} value={partySize}
-            onChange={(e) => { setPartySize(e.target.value); setPartyTouched(true); }} required />
-        </div>
+        <AttendeeChecklist locale={locale} primaryName={firstName.trim()} options={options} value={attendeeState} onChange={setAttendees} />
       )}
 
       <fieldset>
@@ -284,7 +303,7 @@ export default function RegisterInfoForm({
 
       <button
         type="submit"
-        disabled={submitting || !householdComplete(members) || !attestation || (!!turnstileSiteKey && !token)}
+        disabled={submitting || !householdComplete(members) || !attestation || (!!eventId && !attendeesValid(attendeeState)) || (!!turnstileSiteKey && !token)}
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-60"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

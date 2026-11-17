@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { rsvpPageTranslation } from "@/translation/rsvpPage";
 import { withPhone } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
+import AttendeeChecklist, { attendeesValid, type AttendeeOption, type AttendeeState } from "@/components/household/AttendeeChecklist";
 
 export type RsvpPanelProps =
   | { valid: false }
@@ -20,6 +21,8 @@ export type RsvpPanelProps =
       event: { titleEn: string; titleEs: string; eventDate: string; location: string };
       ended: boolean;
       partySize: number;
+      options: AttendeeOption[];
+      selected: AttendeeState;
       confirmed: boolean;
       declined: boolean;
     };
@@ -30,7 +33,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const { locale } = useLanguage();
   const t = rsvpPageTranslation[locale];
   const router = useRouter();
-  const [size, setSize] = useState(props.valid ? props.partySize : 1);
+  const [sel, setSel] = useState<AttendeeState>(props.valid ? props.selected : { primary: true, memberIds: [], guests: 0 });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [state, setState] = useState<"normal" | "cancelled" | "declined">(
@@ -60,7 +63,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
       const res = await fetch("/api/rsvp/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, response, partySize: size }),
+        body: JSON.stringify({ token, response, selection: sel }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setMsg(errText(data.error)); return; }
@@ -109,11 +112,11 @@ export default function RsvpPanel(props: RsvpPanelProps) {
 
   const partyInput = (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-neutral-700 mb-1.5">{t.partySize}</label>
-      <input type="number" min={1} max={30} value={size} onChange={(e) => setSize(Number(e.target.value))}
-        className="w-28 px-3 py-2 border border-neutral-300 rounded-lg text-sm" />
+      <AttendeeChecklist locale={locale} primaryName={props.firstName} options={props.options} value={sel} onChange={setSel} />
     </div>
   );
+  const unchanged = JSON.stringify({ p: sel.primary, m: [...sel.memberIds].sort(), g: sel.guests }) ===
+    JSON.stringify({ p: props.selected.primary, m: [...props.selected.memberIds].sort(), g: props.selected.guests });
 
   if (!props.confirmed) {
     return (
@@ -121,7 +124,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
         {header}
         {partyInput}
         <div className="flex flex-wrap gap-3">
-          <button disabled={busy !== null} onClick={() => respond("yes")} className={`${btn} bg-primary text-white hover:bg-primary-600`}>
+          <button disabled={busy !== null || !attendeesValid(sel)} onClick={() => respond("yes")} className={`${btn} bg-primary text-white hover:bg-primary-600`}>
             {busy === "yes" && <Loader2 className="w-4 h-4 animate-spin" />}{t.yes}
           </button>
           <button disabled={busy !== null} onClick={() => respond("no")} className={`${btn} border border-neutral-300 text-neutral-700 hover:bg-neutral-50`}>
@@ -158,7 +161,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
       <div className="border-t border-neutral-100 pt-5">
         {partyInput}
         <div className="flex flex-wrap gap-3">
-          <button disabled={busy !== null || size === props.partySize} onClick={() => respond("yes")} className={`${btn} border border-primary text-primary hover:bg-primary-50`}>
+          <button disabled={busy !== null || unchanged || !attendeesValid(sel)} onClick={() => respond("yes")} className={`${btn} border border-primary text-primary hover:bg-primary-50`}>
             {busy === "yes" && <Loader2 className="w-4 h-4 animate-spin" />}{t.savePartySize}
           </button>
           <button disabled={busy !== null} onClick={() => { if (window.confirm(t.cancelConfirm)) respond("no"); }} className={`${btn} text-red-600 hover:bg-red-50`}>
