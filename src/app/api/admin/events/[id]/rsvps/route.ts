@@ -9,14 +9,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { admin, error } = await requirePermission("canManageEvents");
   if (error) return error;
 
-  const { patientId, partySize } = await req.json().catch(() => ({}));
+  const { patientId, selection, partySize } = await req.json().catch(() => ({}));
   const p = await prisma.patient.findFirst({ where: { id: patientId, ...PATIENT_ONLY }, select: { id: true } });
   if (!p) return NextResponse.json({ error: "Patient not found" }, { status: 404 });
 
   const r = await rsvpYes({
     eventId: params.id,
     patientId: p.id,
-    partySize: Number(partySize) || 1,
+    ...(selection ? { selection } : { partySize: Number(partySize) || 1 }),
     source: "manual",
     actorId: admin!.id,
     ignoreDeadline: true,

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2, UserPlus } from "lucide-react";
+import AttendeeChecklist, { attendeesValid, type AttendeeOption, type AttendeeState } from "@/components/household/AttendeeChecklist";
 
 interface Hit { id: string; name: string; email: string | null; phone: string | null }
 
@@ -14,7 +15,19 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Hit[]>([]);
   const [picked, setPicked] = useState<Hit | null>(preselect ?? null);
-  const [party, setParty] = useState(1);
+  const [options, setOptions] = useState<AttendeeOption[]>([]);
+  const [primaryName, setPrimaryName] = useState("");
+  const [sel, setSel] = useState<AttendeeState>({ primary: true, memberIds: [], guests: 0 });
+
+  // Load the household's people for whoever is picked (everyone checked by default).
+  useEffect(() => {
+    if (!picked) return;
+    let live = true;
+    fetch(`/api/admin/patients/${picked.id}/rsvp-options?eventId=${eventId}`)
+      .then((r) => r.json())
+      .then((d) => { if (live && d.options) { setOptions(d.options); setPrimaryName(d.primaryName); setSel(d.selected); } });
+    return () => { live = false; };
+  }, [picked, eventId]);
   const [busy, setBusy] = useState(false);
 
   const search = async (v: string) => {
@@ -31,12 +44,12 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
       const res = await fetch(`/api/admin/events/${eventId}/rsvps`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientId: picked.id, partySize: party }),
+        body: JSON.stringify({ patientId: picked.id, selection: sel }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { toast.error(data.error ?? "Could not add RSVP"); return; }
       toast.success(data.created ? "RSVP added" : "RSVP updated");
-      setPicked(null); setQ(""); setParty(1);
+      setPicked(null); setQ("");
       router.replace(`/admin/events/${eventId}/attendees`);
       router.refresh();
     } finally { setBusy(false); }
@@ -48,21 +61,19 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
         <UserPlus className="w-5 h-5" /> Add RSVP (phone call-in)
       </h2>
       {picked ? (
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-4 max-w-lg">
           <div>
             <p className="text-sm font-semibold">{picked.name}</p>
             <p className="text-xs text-neutral-500">{picked.email ?? picked.phone ?? ""}</p>
           </div>
-          <div>
-            <label className="block text-xs text-neutral-500">People</label>
-            <input type="number" min={1} max={30} value={party} onChange={(e) => setParty(Number(e.target.value))}
-              className="w-20 px-2 py-1.5 border border-neutral-300 rounded-lg text-sm" />
+          <AttendeeChecklist locale="en" primaryName={primaryName} options={options} value={sel} onChange={setSel} />
+          <div className="flex gap-3 items-center">
+            <button onClick={add} disabled={busy || !attendeesValid(sel)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 disabled:opacity-60">
+              {busy && <Loader2 className="w-4 h-4 animate-spin" />} Add RSVP
+            </button>
+            <button onClick={() => setPicked(null)} className="text-sm text-neutral-500 hover:underline">Change</button>
           </div>
-          <button onClick={add} disabled={busy}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-600 disabled:opacity-60">
-            {busy && <Loader2 className="w-4 h-4 animate-spin" />} Add RSVP
-          </button>
-          <button onClick={() => setPicked(null)} className="text-sm text-neutral-500 hover:underline">Change</button>
         </div>
       ) : (
         <div className="relative max-w-md">

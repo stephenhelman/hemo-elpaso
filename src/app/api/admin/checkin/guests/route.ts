@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { noPhotosFlag } from "@/lib/checkin";
+import { ATTENDEE_WITH_MEMBER, mapPeople } from "@/lib/rsvp/people";
 
-/** Guest list: this event's ACTIVE RSVPs, searchable by name or phone. */
+/** Guest list: this event's ACTIVE RSVPs with their people, searchable by name or phone. */
 export async function GET(req: NextRequest) {
   const { error } = await requirePermission("canManageEvents");
   if (error) return error;
@@ -31,27 +31,35 @@ export async function GET(req: NextRequest) {
           }
         : {}),
     },
-    include: { patient: { include: { contactProfile: true, consentRecords: true } } },
+    include: {
+      patient: { select: { contactProfile: true, consentRecords: { where: { type: "media" }, orderBy: { createdAt: "desc" }, take: 1, select: { granted: true } } } },
+      attendees: { include: ATTENDEE_WITH_MEMBER, orderBy: { createdAt: "asc" } },
+    },
     orderBy: { rsvpDate: "asc" },
-    // the NO PHOTOS rule is evaluated in code (latest record wins), so the filtered list is not cut off at 60
+    // the NO PHOTOS rule is evaluated in code, so the filtered list is not cut off at 60
     take: noPhotosOnly ? 500 : 60,
   });
-  const rsvps = noPhotosOnly ? all.filter((r) => noPhotosFlag(r.patient.consentRecords)) : all;
   const checkIns = await prisma.checkIn.findMany({
-    where: { eventId, patientId: { in: rsvps.map((r) => r.patientId) } },
-    select: { id: true, patientId: true, headcount: true },
+    where: { eventId, patientId: { in: all.map((r) => r.patientId) } },
+    select: { id: true, patientId: true, headcount: true, guestsCheckedIn: true },
   });
   const ci = new Map(checkIns.map((c) => [c.patientId, c]));
 
-  return NextResponse.json({
-    guests: rsvps.map((r) => ({
+  const guests = all.map((r) => {
+    const people = mapPeople(r.attendees, r.patient.contactProfile?.firstName ?? "", r.patient.consentRecords[0]?.granted);
+    const c = ci.get(r.patientId);
+    return {
       rsvpId: r.id,
       name: `${r.patient.contactProfile?.firstName ?? ""} ${r.patient.contactProfile?.lastName ?? ""}`.trim(),
       phone: r.patient.contactProfile?.phone ?? null,
       partySize: r.attendeeCount,
-      noPhotos: noPhotosFlag(r.patient.consentRecords),
-      checkInId: ci.get(r.patientId)?.id ?? null,
-      headcount: ci.get(r.patientId)?.headcount ?? null,
-    })),
+      people,
+      guestCount: r.guestCount,
+      guestsCheckedIn: c?.guestsCheckedIn ?? 0,
+      noPhotos: people.some((p) => p.noPhotos),
+      checkInId: c?.id ?? null,
+      headcount: c?.headcount ?? null,
+    };
   });
+  return NextResponse.json({ guests: noPhotosOnly ? guests.filter((g) => g.noPhotos) : guests });
 }

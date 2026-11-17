@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { hashToken, looksLikeToken } from "@/lib/tokens";
-import { noPhotosFlag } from "@/lib/checkin";
+import { ATTENDEE_WITH_MEMBER, mapPeople } from "@/lib/rsvp/people";
 
 /**
  * Resolve a scanned QR (the raw check-in token) to its RSVP for THIS event.
- * Returns name, party size, NO PHOTOS flag, and whether already checked in.
+ * Returns the household's people (first name, relationship, per-person NO PHOTOS,
+ * checked-in state), the guest counts, and whether everyone is already in.
  * No diagnoses, no contact details.
  */
 export async function POST(req: NextRequest) {
@@ -21,7 +22,8 @@ export async function POST(req: NextRequest) {
     where: { checkInTokenHash: hashToken(token) },
     include: {
       event: { select: { titleEn: true } },
-      patient: { include: { contactProfile: true, consentRecords: true } },
+      patient: { select: { contactProfile: true, consentRecords: { where: { type: "media" }, orderBy: { createdAt: "desc" }, take: 1, select: { granted: true } } } },
+      attendees: { include: ATTENDEE_WITH_MEMBER, orderBy: { createdAt: "asc" } },
     },
   });
   if (!rsvp || rsvp.cancelledAt)
@@ -31,13 +33,18 @@ export async function POST(req: NextRequest) {
 
   const checkIn = await prisma.checkIn.findUnique({
     where: { eventId_patientId: { eventId, patientId: rsvp.patientId } },
-    select: { id: true },
+    select: { id: true, guestsCheckedIn: true },
   });
+  const people = mapPeople(rsvp.attendees, rsvp.patient.contactProfile?.firstName ?? "", rsvp.patient.consentRecords[0]?.granted);
+  const everyoneIn = people.every((p) => p.checkedIn) && (checkIn?.guestsCheckedIn ?? 0) >= rsvp.guestCount;
   return NextResponse.json({
     rsvpId: rsvp.id,
     name: `${rsvp.patient.contactProfile?.firstName ?? ""} ${rsvp.patient.contactProfile?.lastName ?? ""}`.trim(),
     partySize: rsvp.attendeeCount,
-    noPhotos: noPhotosFlag(rsvp.patient.consentRecords),
-    alreadyCheckedIn: !!checkIn,
+    people,
+    guestCount: rsvp.guestCount,
+    guestsCheckedIn: checkIn?.guestsCheckedIn ?? 0,
+    noPhotos: people.some((p) => p.noPhotos),
+    alreadyCheckedIn: !!checkIn && everyoneIn,
   });
 }

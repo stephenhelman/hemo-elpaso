@@ -35,7 +35,7 @@ const copy = {
     reminder: { h: "See you tomorrow!", p: "A quick reminder about tomorrow's event.", pre: "Reminder" },
     cancelled: { h: "RSVP cancelled", p: "Your RSVP has been cancelled. We hope to see you at a future event.", pre: "RSVP cancelled" },
     hi: (n: string) => `Hi ${n},`,
-    when: "When", where: "Where", party: "People",
+    when: "When", where: "Where", attending: (n: number) => `${n} ${n === 1 ? "person" : "people"} attending`,
     qrTitle: "Your check-in QR code",
     qrHelp: "Show this at the door.",
     qrFallback: "Can't see your QR code?",
@@ -49,7 +49,7 @@ const copy = {
     reminder: { h: "¡Nos vemos mañana!", p: "Un recordatorio rápido sobre el evento de mañana.", pre: "Recordatorio" },
     cancelled: { h: "Asistencia cancelada", p: "Tu confirmación fue cancelada. Esperamos verte en un próximo evento.", pre: "Asistencia cancelada" },
     hi: (n: string) => `Hola ${n},`,
-    when: "Cuándo", where: "Dónde", party: "Personas",
+    when: "Cuándo", where: "Dónde", attending: (n: number) => `${n} ${n === 1 ? "persona asistirá" : "personas asistirán"}`,
     qrTitle: "Tu código QR de registro",
     qrHelp: "Muéstralo en la entrada.",
     qrFallback: "¿No ves tu código QR?",
@@ -88,7 +88,7 @@ export default function RsvpEmail({
             {kind !== "cancelled" && (
               <>
                 <br />
-                <strong>{t.party}:</strong> {partySize}
+                {t.attending(partySize)}
               </>
             )}
           </Text>

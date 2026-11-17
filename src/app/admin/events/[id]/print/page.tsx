@@ -5,6 +5,8 @@ import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import SignInSheet from "@/components/admin/SignInSheet";
 import PrintButton from "@/components/admin/PrintButton";
+import { ATTENDEE_WITH_MEMBER, mapPeople } from "@/lib/rsvp/people";
+import { relationshipLabels, type Relationship } from "@/lib/households/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,9 @@ export default async function EventPrintPage({ params }: { params: { id: string 
         where: { cancelledAt: null },
         select: {
           attendeeCount: true,
+          guestCount: true,
+          // first names, relationship and consent flags only: nothing is selected that could carry a diagnosis
+          attendees: { include: ATTENDEE_WITH_MEMBER, orderBy: { createdAt: "asc" } },
           patient: {
             select: {
               contactProfile: { select: { firstName: true, lastName: true } },
@@ -50,9 +55,19 @@ export default async function EventPrintPage({ params }: { params: { id: string 
     lastName: r.patient.contactProfile?.lastName ?? "—",
     firstName: r.patient.contactProfile?.firstName ?? "",
     partySize: r.attendeeCount,
-    // "latest media consent isn't granted": refused OR no record at all
-    noPhotos: r.patient.consentRecords[0]?.granted !== true,
+    guests: r.guestCount,
+    // per person; "latest media consent isn't granted" (refused OR none) rules, see lib/rsvp/people.ts
+    people: mapPeople(r.attendees, r.patient.contactProfile?.firstName ?? "", r.patient.consentRecords[0]?.granted).map((p) => ({
+      name: p.name,
+      relationship: p.relationship ? relationshipLabels[p.relationship as Relationship]?.en ?? p.relationship : null,
+      noPhotos: p.noPhotos,
+    })),
   }));
+  const totals = {
+    households: event.rsvps.length,
+    guests: event.rsvps.reduce((n, r) => n + r.guestCount, 0),
+    people: event.rsvps.reduce((n, r) => n + r.attendeeCount, 0),
+  };
 
   const tz = "America/Denver"; // El Paso
   const d = new Date(event.eventDate);
@@ -66,7 +81,7 @@ export default async function EventPrintPage({ params }: { params: { id: string 
         </Link>
         <PrintButton />
       </div>
-      <SignInSheet title={event.titleEn} dateLine={dateLine} location={event.location} attendees={attendees} />
+      <SignInSheet totals={totals} title={event.titleEn} dateLine={dateLine} location={event.location} attendees={attendees} />
     </div>
   );
 }

@@ -4,3 +4,5 @@ export * from "./emails";
 export * from "./window";
 export * from "./resolve";
 export * from "./capacity";
+export * from "./attendees";
+export * from "./people";

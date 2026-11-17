@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuditAction } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
-import { prisma } from "@/lib/db";
-import { checkInRsvp } from "@/lib/checkin";
+import { checkInRsvp, undoAttendeeCheckIn, undoCheckIn } from "@/lib/checkin";
 
-/** Confirm a check-in (QR scan with edited headcount, or a guest-list tap). */
+/**
+ * Confirm a check-in (QR scan, guest-list tap, manual button).
+ * Body: { rsvpId, eventId, attendeeIds?: string[], guests?: number, headcount?: number, manual? }
+ * No attendeeIds/guests = everyone not yet in plus the RSVP's guest count.
+ */
 export async function POST(req: NextRequest) {
   const { admin, error } = await requirePermission("canManageEvents");
   if (error) return error;
@@ -12,6 +14,8 @@ export async function POST(req: NextRequest) {
   const r = await checkInRsvp({
     rsvpId: b.rsvpId,
     eventId: b.eventId,
+    attendeeIds: Array.isArray(b.attendeeIds) ? b.attendeeIds.filter((x: unknown) => typeof x === "string") : undefined,
+    guests: b.guests === undefined ? undefined : Number(b.guests),
     headcount: b.headcount === undefined ? undefined : Number(b.headcount),
     admin: { id: admin!.id, email: admin!.email },
     manual: b.manual === true,
@@ -20,16 +24,15 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, checkInId: r.checkInId, headcount: r.headcount });
 }
 
-/** Undo a check-in (mistaken tap). */
+/** Undo: ?attendeeId= undoes ONE person; ?checkInId= undoes the whole household's check-in. */
 export async function DELETE(req: NextRequest) {
   const { admin, error } = await requirePermission("canManageEvents");
   if (error) return error;
-  const checkInId = new URL(req.url).searchParams.get("checkInId");
-  if (!checkInId) return NextResponse.json({ error: "checkInId required" }, { status: 400 });
-  const res = await prisma.checkIn.deleteMany({ where: { id: checkInId } });
-  if (res.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await prisma.auditLog.create({
-    data: { patientId: admin!.id, action: AuditAction.CHECKIN_REMOVED, resourceType: "CheckIn", resourceId: checkInId, details: "Check-in undone" },
-  });
+  const sp = new URL(req.url).searchParams;
+  const attendeeId = sp.get("attendeeId");
+  const checkInId = sp.get("checkInId");
+  if (!attendeeId && !checkInId) return NextResponse.json({ error: "attendeeId or checkInId required" }, { status: 400 });
+  const r = attendeeId ? await undoAttendeeCheckIn(attendeeId, { id: admin!.id }) : await undoCheckIn(checkInId!, { id: admin!.id });
+  if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
   return NextResponse.json({ ok: true });
 }

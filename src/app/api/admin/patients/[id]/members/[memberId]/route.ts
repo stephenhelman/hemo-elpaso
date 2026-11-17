@@ -3,6 +3,7 @@ import { AuditAction } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { PATIENT_ONLY } from "@/lib/patients/query";
+import { dropMemberFromRsvps } from "@/lib/rsvp/attendees";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
 import { phoneConfirmMember, reissueMemberToken } from "@/lib/households/confirm";
@@ -67,6 +68,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
   if (!m) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await prisma.$transaction(async (tx) => {
+    await dropMemberFromRsvps(tx, m.id); // off upcoming RSVPs first (the FK would only null the link)
     await tx.householdMember.delete({ where: { id: m.id } });
     await recomputeHousehold(tx, params.id);
   });
