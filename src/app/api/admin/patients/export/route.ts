@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     language: typeof f.language === "string" ? f.language : undefined,
     consent: typeof f.consent === "string" ? f.consent : undefined,
     duplicates: f.duplicates === true,
+    pendingConfirmations: f.pendingConfirmations === true,
   });
 
   const withDx = admin!.isSuperAdmin;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Download, Loader2 } from "lucide-react";
+import { householdTranslation } from "@/translation/household";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import type { Lang } from "@/types";
@@ -24,6 +25,7 @@ export interface PatientRow {
   duplicateOfId: string | null;
   duplicateOfName: string | null;
   confirmation: "sent" | "failed" | "missing" | "n/a";
+  pendingMembers: number;
 }
 
 const field =
@@ -45,6 +47,7 @@ export default function PatientsTable({
   const [language, setLanguage] = useState("");
   const [consent, setConsent] = useState("");
   const [duplicates, setDuplicates] = useState(false);
+  const [pendingOnly, setPendingOnly] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -62,6 +65,7 @@ export default function PatientsTable({
       if (diagnosis && !r.diagnoses.includes(diagnosis)) return false;
       if (language && r.language !== language) return false;
       if (duplicates && !r.duplicateOfId) return false;
+      if (pendingOnly && r.pendingMembers === 0) return false;
       if (consent) {
         const [type, val] = consent.split("_");
         const cur = type === "data" ? r.consentData : r.consentMedia;
@@ -69,7 +73,7 @@ export default function PatientsTable({
       }
       return true;
     });
-  }, [rows, q, diagnosis, language, consent, duplicates]);
+  }, [rows, q, diagnosis, language, consent, duplicates, pendingOnly]);
 
   const merge = async (id: string) => {
     if (!window.confirm(t.mergeConfirm)) return;
@@ -120,7 +124,7 @@ export default function PatientsTable({
       const res = await fetch("/api/admin/patients/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q, diagnosis, language, consent, duplicates }),
+        body: JSON.stringify({ q, diagnosis, language, consent, duplicates, pendingConfirmations: pendingOnly }),
       });
       if (!res.ok) throw new Error();
       const blob = await res.blob();
@@ -166,6 +170,10 @@ export default function PatientsTable({
         <label className="flex items-center gap-2 text-sm text-neutral-700">
           <input type="checkbox" checked={duplicates} onChange={(e) => setDuplicates(e.target.checked)} />
           {t.duplicatesOnly}
+        </label>
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
+          <input type="checkbox" checked={pendingOnly} onChange={(e) => setPendingOnly(e.target.checked)} />
+          {householdTranslation[locale].pendingFilter}
         </label>
         <button onClick={exportCsv} disabled={exporting}
           className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50">
@@ -224,7 +232,14 @@ export default function PatientsTable({
                 <td className="px-4 py-3 whitespace-nowrap">{r.phone ?? "—"}</td>
                 <td className="px-4 py-3">{r.email ?? "—"}</td>
                 <td className="px-4 py-3 uppercase">{r.language}</td>
-                <td className="px-4 py-3">{r.familySize}</td>
+                <td className="px-4 py-3">
+                  {r.familySize}
+                  {r.pendingMembers > 0 && (
+                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                      {householdTranslation[locale].pendingBadge(r.pendingMembers)}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   {canViewPHI
                     ? r.diagnoses.length

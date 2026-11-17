@@ -22,6 +22,8 @@ export interface CallRow {
   language: "en" | "es";
   familySize: number;
   diagnoses: string[];
+  /** first names of adults still to confirm by phone */
+  confirmFor: string[];
 }
 
 const statusStyle: Record<string, string> = {
@@ -150,7 +152,7 @@ export default function InvitationsManager({
 
       <section>
         <h2 className="font-semibold text-neutral-900 mb-1">Call list ({callList.length})</h2>
-        <p className="text-xs text-neutral-500 mb-2">Matched people with a phone number but no email. Reach out by phone.</p>
+        <p className="text-xs text-neutral-500 mb-2">Matched people with a phone number but no email, plus households with an adult still to confirm by phone. Reach out by phone.</p>
         <div className="bg-white rounded-xl border border-neutral-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
@@ -160,7 +162,7 @@ export default function InvitationsManager({
               {callList.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-neutral-400">Nobody to call.</td></tr>}
               {callList.map((c) => (
                 <tr key={c.id}>
-                  <td className="px-4 py-3 font-medium">{c.name}</td>
+                  <td className="px-4 py-3 font-medium">{c.name}{c.confirmFor.length > 0 && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-normal text-amber-800">Confirm by phone: {c.confirmFor.join(", ")}</span>}</td>
                   <td className="px-4 py-3"><a className="text-primary hover:underline" href={`tel:${c.phone}`}>{c.phone}</a></td>
                   <td className="px-4 py-3 uppercase">{c.language}</td>
                   <td className="px-4 py-3">{c.familySize}</td>
