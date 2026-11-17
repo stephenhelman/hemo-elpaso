@@ -1,6 +1,7 @@
 "use client";
 
 import { siteHost } from "@/lib/site";
+import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Upload, FileText, X } from "lucide-react";
@@ -437,22 +438,13 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
           </FormField>
 
           <FormField label="Target Age Groups">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {["children", "teens", "adults", "seniors"].map((age) => (
-                <button
-                  key={age}
-                  type="button"
-                  onClick={() => toggleArrayValue("targetAgeGroups", age)}
-                  className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                    formData.targetAgeGroups.includes(age)
-                      ? "border-primary bg-primary-50 text-primary"
-                      : "border-neutral-200 hover:border-primary-200"
-                  }`}
-                >
-                  {age.charAt(0).toUpperCase() + age.slice(1)}
-                </button>
-              ))}
-            </div>
+            <p className="text-xs text-neutral-500 mb-2">
+              Leave empty for any age. A household matches if any eligible person (primary, minors, confirmed adults) is in a selected group.
+            </p>
+            <AgeGroupPicker
+              value={formData.targetAgeGroups}
+              onChange={(v) => setFormData((f) => ({ ...f, targetAgeGroups: v }))}
+            />
           </FormField>
         </Section>
 

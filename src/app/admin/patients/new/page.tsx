@@ -26,7 +26,7 @@ export default async function NewPatientPage({ searchParams }: { searchParams: {
         returnEventId={searchParams.eventId}
         canViewPHI={admin.can("canViewPHI")}
         locale={locale}
-        initial={{ firstName: "", lastName: "", email: "", phone: "", address: "", language: "en", familySize: 1, diagnoses: [], consentData: false, consentMedia: false }}
+        initial={{ firstName: "", lastName: "", email: "", phone: "", address: "", language: "en", familySize: 1, diagnoses: [], members: [], consentData: false, consentMedia: false, attestation: false }}
       />
     </div>
   );

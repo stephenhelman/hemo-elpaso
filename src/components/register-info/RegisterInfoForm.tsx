@@ -10,6 +10,12 @@ import { withPhone } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
+import HouseholdSection, {
+  householdComplete,
+  membersPayload,
+  type MemberDraft,
+} from "@/components/household/HouseholdSection";
+import { householdTranslation } from "@/translation/household";
 
 const input =
   "w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary";
@@ -24,6 +30,7 @@ export default function RegisterInfoForm({
 }) {
   const { locale } = useLanguage();
   const t = registerInfoTranslation[locale];
+  const h = householdTranslation[locale];
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -31,8 +38,11 @@ export default function RegisterInfoForm({
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [language, setLanguage] = useState<"en" | "es">(locale);
-  const [familySize, setFamilySize] = useState("1");
+  const [members, setMembers] = useState<MemberDraft[]>([]);
+  const householdSize = members.length + 1; // primary + members: always in sync
   const [partySize, setPartySize] = useState("1");
+  const [partyTouched, setPartyTouched] = useState(false);
+  const [attestation, setAttestation] = useState(false);
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [consentData, setConsentData] = useState(false);
   const [consentMedia, setConsentMedia] = useState(false);
@@ -60,6 +70,11 @@ export default function RegisterInfoForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // RSVP party size defaults to the household size until the person changes it.
+  useEffect(() => {
+    if (!partyTouched) setPartySize(String(householdSize));
+  }, [householdSize, partyTouched]);
+
   const toggleDiagnosis = (d: string) =>
     setDiagnoses((cur) =>
       cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d],
@@ -81,8 +96,10 @@ export default function RegisterInfoForm({
           phone,
           address,
           language,
-          familySize: Number(familySize),
-          ...(eventId ? { eventId, partySize: Number(partySize), familySize: Number(partySize) } : {}),
+          familySize: householdSize,
+          members: membersPayload(members),
+          attestation,
+          ...(eventId ? { eventId, partySize: Number(partySize) } : {}),
           diagnoses,
           consentDataAndContact: consentData,
           consentMedia,
@@ -99,6 +116,8 @@ export default function RegisterInfoForm({
       if (data.error === "captcha") setError(t.errors.captcha);
       else if (data.error === "full") setError(withPhone(t.full));
       else if (data.error === "closed" || data.error === "disabled") setError(withPhone(t.closed));
+      else if (data.field === "members" || data.field === "familySize") setError(h.errMembers);
+      else if (data.field === "attestation") setError(h.errAttestation);
       else if (data.field && data.field in t.errors)
         setError((t.errors as Record<string, string>)[data.field]);
       else setError(t.errors.generic);
@@ -191,30 +210,23 @@ export default function RegisterInfoForm({
             <option value="es">{t.spanish}</option>
           </select>
         </div>
-        {eventId ? (
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              {t.partySize} *
-            </label>
-            <input type="number" min={1} max={30} className={input} value={partySize}
-              onChange={(e) => setPartySize(e.target.value)} required />
-          </div>
-        ) : (
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              {t.familySize} *
-            </label>
-            <input type="number" min={1} max={30} className={input} value={familySize}
-              onChange={(e) => setFamilySize(e.target.value)} required />
-          </div>
-        )}
       </div>
+
+      <HouseholdSection locale={locale} members={members} onChange={setMembers} />
+
+      {eventId && (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">{t.partySize} *</label>
+          <input type="number" min={1} max={30} className={input} value={partySize}
+            onChange={(e) => { setPartySize(e.target.value); setPartyTouched(true); }} required />
+        </div>
+      )}
 
       <fieldset>
         <legend className="block text-sm font-medium text-neutral-700 mb-1">
-          {t.diagnosesTitle}
+          {h.primaryDxTitle}
         </legend>
-        <p className="text-xs text-neutral-500 mb-3">{t.diagnosesHint}</p>
+        <p className="text-xs text-neutral-500 mb-3">{h.primaryDxHint}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {DIAGNOSIS_VALUES.map((d) => (
             <label key={d} className="flex items-center gap-2 text-sm text-neutral-700 p-2 rounded-lg border border-neutral-200 cursor-pointer hover:border-primary-200">
@@ -245,6 +257,13 @@ export default function RegisterInfoForm({
             <strong>{t.consentMediaLabel}.</strong> {consentText.media[locale]}
           </span>
         </label>
+        <label className="flex items-start gap-3 text-sm text-neutral-700">
+          <input type="checkbox" className="mt-1" checked={attestation}
+            onChange={(e) => setAttestation(e.target.checked)} required />
+          <span>
+            <strong>{h.attestationLabel}.</strong> {consentText.age_guardian_attestation[locale]}
+          </span>
+        </label>
         <p className="text-[11px] text-neutral-400">v: {CONSENT_TEXT_VERSION}</p>
       </fieldset>
 
@@ -265,7 +284,7 @@ export default function RegisterInfoForm({
 
       <button
         type="submit"
-        disabled={submitting || (!!turnstileSiteKey && !token)}
+        disabled={submitting || !householdComplete(members) || !attestation || (!!turnstileSiteKey && !token)}
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-60"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
