@@ -2,7 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { headers } from "next/headers";
+import { noMediaConsentCount } from "@/lib/photos/consent";
 import EventPhotosClient from "./EventPhotosClient";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: { id: string };
@@ -21,17 +24,19 @@ export default async function EventPhotosPage({ params }: Props) {
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
-      photos: { orderBy: { uploadedAt: "desc" } },
+      photos: { orderBy: [{ sortOrder: "asc" }, { uploadedAt: "asc" }] },
     },
   });
 
   if (!event) notFound();
+  const consent = await noMediaConsentCount(event.id);
 
   return (
     <EventPhotosClient
-      event={{ id: event.id, titleEn: event.titleEn }}
+      event={{ id: event.id, titleEn: event.titleEn, coverPhotoId: event.coverPhotoId }}
       photos={event.photos}
-      adminEmail={admin.email}
+      noPhotosFamilies={consent.noPhotos}
+      totalFamilies={consent.families}
       cameFromEvents={cameFromEvents}
     />
   );

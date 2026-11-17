@@ -37,6 +37,8 @@ export interface Event {
   /** people (sum of party sizes) with an active RSVP; drives "spots left" */
   rsvpPeople: number;
   endDate?: string | Date | null;
+  /** approved cover photo, past events only */
+  coverPhotoUrl?: string | null;
 }
 
 interface Props {

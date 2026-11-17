@@ -16,9 +16,11 @@ import { Lang } from "@/types";
 interface Props {
   locale: Lang;
   preselectedEventId: string | null;
+  initialTab?: "scan" | "guests" | "walkin";
+  noPhotosOnly?: boolean;
 }
 
-export default function AdminCheckinClient({ locale, preselectedEventId }: Props) {
+export default function AdminCheckinClient({ locale, preselectedEventId, initialTab = "scan", noPhotosOnly = false }: Props) {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(
     preselectedEventId,
@@ -27,7 +29,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
   const [loading, setLoading] = useState(true);
   const [selectedEventData, setSelectedEventData] = useState<any>(null);
   const [totals, setTotals] = useState<any>(null);
-  const [tab, setTab] = useState<"scan" | "guests" | "walkin">("scan");
+  const [tab, setTab] = useState<"scan" | "guests" | "walkin">(initialTab);
 
   useEffect(() => {
     // Fetch upcoming events
@@ -182,7 +184,7 @@ export default function AdminCheckinClient({ locale, preselectedEventId }: Props
               ))}
             </div>
             {tab === "scan" && <QrScanner eventId={selectedEvent} onScanSuccess={handleScanSuccess} />}
-            {tab === "guests" && <GuestList eventId={selectedEvent} onChange={handleScanSuccess} />}
+            {tab === "guests" && <GuestList eventId={selectedEvent} onChange={handleScanSuccess} initialNoPhotosOnly={noPhotosOnly} />}
             {tab === "walkin" && <WalkInForm eventId={selectedEvent} onDone={handleScanSuccess} />}
           </div>
 

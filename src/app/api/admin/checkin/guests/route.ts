@@ -11,10 +11,11 @@ export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams;
   const eventId = sp.get("eventId");
   const q = (sp.get("q") ?? "").trim();
+  const noPhotosOnly = sp.get("noPhotos") === "1";
   if (!eventId) return NextResponse.json({ error: "eventId required" }, { status: 400 });
   const digits = q.replace(/\D/g, "");
 
-  const rsvps = await prisma.rsvp.findMany({
+  const all = await prisma.rsvp.findMany({
     where: {
       eventId,
       cancelledAt: null,
@@ -32,8 +33,10 @@ export async function GET(req: NextRequest) {
     },
     include: { patient: { include: { contactProfile: true, consentRecords: true } } },
     orderBy: { rsvpDate: "asc" },
-    take: 60,
+    // the NO PHOTOS rule is evaluated in code (latest record wins), so the filtered list is not cut off at 60
+    take: noPhotosOnly ? 500 : 60,
   });
+  const rsvps = noPhotosOnly ? all.filter((r) => noPhotosFlag(r.patient.consentRecords)) : all;
   const checkIns = await prisma.checkIn.findMany({
     where: { eventId, patientId: { in: rsvps.map((r) => r.patientId) } },
     select: { id: true, patientId: true, headcount: true },

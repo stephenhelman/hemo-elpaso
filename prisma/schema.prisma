@@ -511,7 +511,8 @@ model Event {
   recapTitleEs         String?
   recapBodyEn          String?
   recapBodyEs          String?
-  recapGalleryEmbedUrl String?
+  recapGalleryEmbedUrl String? // dormant: the recap page now shows the approved EventPhoto gallery instead
+  coverPhotoId         String? // EventPhoto.id; only used while that photo is approved
   recapPublishedAt     DateTime?
 
   createdBy String?
@@ -668,7 +669,14 @@ model EventPhoto {
 
   url     String // R2 URL
   key     String // R2 key for deletion
-  caption String?
+  caption   String? // English
+  captionEs String? // Spanish; the English caption is shown when this is empty
+
+  thumbUrl  String? // 400px webp
+  thumbKey  String?
+  width     Int? // of the 1920px image
+  height    Int?
+  sortOrder Int     @default(0) // gallery order, lowest first
 
   approved              Boolean @default(false)
   selectedForNewsletter Boolean @default(false)
@@ -679,6 +687,7 @@ model EventPhoto {
   uploadedAt DateTime @default(now())
 
   @@index([approved])
+  @@index([eventId, approved, sortOrder])
   @@index([selectedForNewsletter])
   @@index([source])
   @@map("event_photos")
@@ -871,6 +880,7 @@ enum AuditAction {
   EVENT_DELETED
   EVENT_PHOTOS_UPLOADED
   EVENT_PHOTO_DELETED
+  EVENT_PHOTO_APPROVAL_CHANGED
   EVENT_FLYERS_UPDATED
 
   // Announcements & Itinerary

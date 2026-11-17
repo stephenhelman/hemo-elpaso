@@ -19,6 +19,8 @@
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
     "check:household": "tsx scripts/db-guard.ts && tsx scripts/check-household.ts",
     "check:event-save": "tsx scripts/check-event-save.ts",
+    "check:photo-pipeline": "tsx scripts/db-guard.ts && tsx scripts/check-photo-pipeline.ts",
+    "photos:backfill": "tsx scripts/db-guard.ts && tsx scripts/backfill-event-photos.ts",
     "db:whoami": "tsx scripts/db-guard.ts whoami",
     "db:deploy": "tsx scripts/db-deploy-prod.ts",
     "build:vercel": "node scripts/vercel-build.mjs"
@@ -29,6 +31,7 @@
   "dependencies": {
     "@auth0/nextjs-auth0": "^3.8.0",
     "@aws-sdk/client-s3": "^3.991.0",
+    "@aws-sdk/s3-request-presigner": "^3.991.0",
     "@fullcalendar/core": "^6.1.20",
     "@fullcalendar/daygrid": "^6.1.20",
     "@fullcalendar/interaction": "^6.1.20",

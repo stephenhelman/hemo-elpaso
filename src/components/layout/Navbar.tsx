@@ -17,6 +17,7 @@ const navLinks = [
   { href: "/", labelEn: "Home", labelEs: "Inicio" },
   { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
   { href: "/events", labelEn: "Events", labelEs: "Eventos" },
+  { href: "/gallery", labelEn: "Photos", labelEs: "Fotos" },
   { href: "/resources", labelEn: "Resources", labelEs: "Recursos" },
   { href: "/scholarships", labelEn: "Scholarships", labelEs: "Becas" },
   {
