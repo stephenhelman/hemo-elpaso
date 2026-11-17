@@ -3,6 +3,7 @@ import { registrationOpen } from "@/lib/registration";
 import { prisma } from "@/lib/db";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
+import { sendMemberConfirmations } from "@/lib/households/confirmation";
 import { registrationState, rsvpYes } from "@/lib/rsvp";
 
 /**
@@ -36,8 +37,9 @@ export async function POST(req: NextRequest) {
   const v = validatePatientInput({
     firstName: body.firstName, lastName: body.lastName, email: body.email, phone: body.phone,
     address: body.address, language: body.language,
-    familySize: body.familySize ?? partySize,
+    familySize: body.familySize,
     diagnoses: body.diagnoses,
+    members: body.members, attestation: body.attestation,
     consentDataAndContact: body.consentDataAndContact, consentMedia: body.consentMedia,
   });
   if (!v.ok) return NextResponse.json({ ok: false, error: "invalid", field: v.field }, { status: 400 });
@@ -46,7 +48,8 @@ export async function POST(req: NextRequest) {
   if (state !== "open") return NextResponse.json({ ok: false, error: state }, { status: 409 });
 
   try {
-    const { id } = await createPatient(v.value, { source: "web", method: "web" });
+    const { id, invites } = await createPatient(v.value, { source: "web", method: "web" });
+    await sendMemberConfirmations(id, v.value.firstName, v.value.language, invites);
     const r = await rsvpYes({ eventId: event.id, patientId: id, partySize, source: "public" });
     if (!r.ok) {
       const code = r.code === "AT_CAPACITY" ? "full" : r.code === "DEADLINE_PASSED" || r.code === "ENDED" ? "closed" : "server";

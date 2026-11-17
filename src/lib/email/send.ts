@@ -16,6 +16,7 @@ import { Resend } from "resend";
  */
 export type CodeEmailKind =
   | "REGISTRATION_INFO_CONFIRMATION"
+  | "MEMBER_CONFIRMATION"
   | "EVENT_INVITATION"
   | "RSVP_CONFIRMATION"
   | "RSVP_REMINDER"

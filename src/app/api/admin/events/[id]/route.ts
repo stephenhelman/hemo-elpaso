@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 import { generateInvitations } from "@/lib/invitations/generate";
 import { eventTextFields } from "@/lib/events/text-fields";
+import { cleanAgeGroups } from "@/lib/households/constants";
 
 export async function PATCH(
   request: NextRequest,
@@ -45,14 +46,15 @@ export async function PATCH(
 
     // Targeting is only touched when the form sends it.
     if (Array.isArray(body.targetConditions)) {
+      const ages = cleanAgeGroups(body.targetAgeGroups);
       await prisma.eventTargeting.upsert({
         where: { eventId: updatedEvent.id },
-        update: { targetConditions: body.targetConditions },
+        update: { targetConditions: body.targetConditions, ...(ages ? { targetAgeGroups: ages } : {}) },
         create: {
           eventId: updatedEvent.id,
           targetConditions: body.targetConditions,
           targetSeverity: [],
-          targetAgeGroups: [],
+          targetAgeGroups: ages ?? [],
           targetInterests: [],
         },
       });

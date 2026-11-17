@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
 
@@ -87,6 +88,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
     liveEnabled: event.liveEnabled,
     registrationEnabled: event.registrationEnabled,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
+    targetAgeGroups: event.targeting?.targetAgeGroups ?? ([] as string[]),
     sponsorSanityIds: event.sponsorSanityIds ?? ([] as string[]),
   });
 
@@ -120,6 +122,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
         liveEnabled: formData.liveEnabled,
         registrationEnabled: formData.registrationEnabled,
         targetConditions: formData.targetConditions,
+        targetAgeGroups: formData.targetAgeGroups,
         sponsorSanityIds: formData.sponsorSanityIds,
       };
       const response = await fetch(`/api/admin/events/${event.id}`, {
@@ -396,6 +399,17 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
                   {cond.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                 </button>
               ))}
+            </div>
+            <h4 className="text-sm font-semibold text-neutral-900 mb-1">Age groups</h4>
+            <p className="text-xs text-neutral-500 mb-2">
+              Leave empty for any age. A household matches if any eligible person (primary, minors, confirmed adults) is in a selected group
+              {formData.targetConditions.length > 0 ? " and has a targeted diagnosis" : ""}.
+            </p>
+            <div className="mb-8">
+              <AgeGroupPicker
+                value={formData.targetAgeGroups}
+                onChange={(v) => setFormData((f) => ({ ...f, targetAgeGroups: v }))}
+              />
             </div>
           </div>
           <div className="border-t mt-4 border-neutral-200 pt-8">

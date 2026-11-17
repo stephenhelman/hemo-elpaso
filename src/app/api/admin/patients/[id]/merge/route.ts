@@ -3,6 +3,7 @@ import { AuditAction } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { PATIENT_ONLY } from "@/lib/patients/query";
+import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
 
 /**
@@ -62,6 +63,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         })),
       });
     }
+
+    // Household members (and their consents) move with the merge; denormalized fields recomputed.
+    await tx.householdMember.updateMany({ where: { patientId: drop.id }, data: { patientId: keep.id } });
+    await recomputeHousehold(tx, keep.id);
 
     // Fill gaps only
     if (!keep.email && drop.email) await tx.patient.update({ where: { id: keep.id }, data: { email: drop.email } });

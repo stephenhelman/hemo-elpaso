@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { validatePatientInput } from "@/lib/patients/create";
 import { currentConsents, PATIENT_ONLY } from "@/lib/patients/query";
+import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
 
@@ -37,10 +38,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   if ((cp?.phone ?? null) !== n.phone) changed.push("phone");
   if ((cp?.addressLine1 ?? null) !== n.address) changed.push("address");
   if (existing.preferredLanguage !== n.language) changed.push("language");
-  if (existing.familySize !== n.familySize) changed.push("familySize");
+  // familySize is derived (1 + household members); diagnoses edited here are the PRIMARY's own.
   const sameDx =
-    existing.statedDiagnoses.length === n.diagnoses.length &&
-    existing.statedDiagnoses.every((d) => n.diagnoses.includes(d));
+    existing.primaryDiagnoses.length === n.diagnoses.length &&
+    existing.primaryDiagnoses.every((d) => n.diagnoses.includes(d));
   const updateDx = canPHI && !sameDx;
   if (updateDx) changed.push("diagnoses"); // field name only; never the values
 
@@ -59,10 +60,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       data: {
         email: n.email,
         preferredLanguage: n.language,
-        familySize: n.familySize,
-        ...(updateDx ? { statedDiagnoses: n.diagnoses } : {}),
+        ...(updateDx ? { primaryDiagnoses: n.diagnoses } : {}),
       },
     });
+    if (updateDx) await recomputeHousehold(tx, existing.id);
     await tx.contactProfile.upsert({
       where: { patientId: existing.id },
       update: { firstName: n.firstName, lastName: n.lastName, phone: n.phone, addressLine1: n.address },
