@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 import AdminMobileNav from "../layout/AdminMobileNav";
 import {
   adminSidebarTranslation,
-  adminNavItemsTranslation,
+  visibleAdminNavItems,
 } from "@/translation/adminSidebar";
+import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
 import BrandMark from "@/components/brand/BrandMark";
 import type { Permission } from "@/lib/permissions";
 
@@ -21,14 +22,6 @@ interface Props {
   permissions: Permission[];
   isSuperAdmin: boolean;
 }
-
-// Map nav items to the permission needed to see them
-const NAV_PERMISSIONS: Record<string, Permission> = {
-  "/admin/attendance": "canViewEventStats",
-  "/admin/patients": "canManageUsers",
-  "/admin/audit-logs": "canViewAuditLogs",
-  "/admin/studio": "canEditSiteContent",
-};
 
 export default function AdminSidebar({
   user,
@@ -43,16 +36,11 @@ export default function AdminSidebar({
   const can = (permission: Permission) =>
     isSuperAdmin || permSet.has(permission);
 
-  const visibleItems = adminNavItemsTranslation.filter((item) => {
-    const required = NAV_PERMISSIONS[item.href];
-    // No permission required = always visible (dashboard, events, settings)
-    if (!required) return true;
-    return can(required);
-  });
+  const visibleItems = visibleAdminNavItems((p) => can(p as Permission));
 
   return (
     <>
-      <AdminMobileNav locale={locale} canEditSiteContent={can("canEditSiteContent")} />
+      <AdminMobileNav locale={locale} items={visibleItems} />
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-neutral-900 border-r border-neutral-800">
         <div className="flex flex-col flex-1">
           {/* Logo */}
@@ -111,6 +99,9 @@ export default function AdminSidebar({
 
           {/* Bottom actions */}
           <div className="p-3 border-t border-neutral-800 space-y-1">
+            <div className="px-3 py-2">
+              <ServerLanguageSwitcher currentLocale={locale} tone="dark" />
+            </div>
             <Link
               href="/"
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"

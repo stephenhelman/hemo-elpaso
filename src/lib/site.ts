@@ -31,6 +31,13 @@ export function emailDomain(): string {
 export const mailbox = (local: string) => `${local}@${emailDomain()}`;
 export const contactEmail = () => mailbox("info");
 
+/**
+ * HOEP operates in Mountain Time. An IANA zone (never a fixed offset) so daylight
+ * saving is handled. Every date or time shown on the server, in an email or on a
+ * page must be formatted with this zone (see lib/datetime.ts): servers run in UTC.
+ */
+export const SITE_TIMEZONE = "America/Denver";
+
 /** Year HOEP was founded. Derive every "N years" claim from this. */
 export const FOUNDING_YEAR = 1993;
 export const yearsSinceFounding = (now: Date = new Date()) =>

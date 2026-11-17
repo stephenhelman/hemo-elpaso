@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -251,7 +252,7 @@ export default function PatientsTable({
                   {cs.data}: {tri(r.consentData)}<br />{cs.media}: {tri(r.consentMedia)}
                 </td>
                 <td className="px-4 py-3">{r.source}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{new Date(r.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3 whitespace-nowrap">{new Date(r.createdAt).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })}</td>
               </tr>
             ))}
           </tbody>

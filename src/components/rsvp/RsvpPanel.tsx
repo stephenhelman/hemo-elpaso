@@ -1,5 +1,6 @@
 "use client";
 
+import { formatEventDateTime } from "@/lib/datetime";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
@@ -53,8 +54,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const { event, via, token } = props;
   const title = locale === "es" ? event.titleEs : event.titleEn;
   const d = new Date(event.eventDate);
-  const loc = locale === "es" ? "es-US" : "en-US";
-  const when = `${d.toLocaleDateString(loc, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}, ${d.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" })}`;
+  const when = formatEventDateTime(d, locale);
   const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "ended" ? t.ended : t.genericError);
 
   const respond = async (response: "yes" | "no") => {

@@ -17,6 +17,7 @@
     "seed:sanity": "tsx scripts/seed-sanity.ts",
     "check:sanity": "tsx scripts/check-sanity-queries.ts",
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
+    "check:timezone": "tsx --test scripts/check-timezone.ts",
     "check:rsvp": "tsx scripts/db-guard.ts && tsx scripts/check-rsvp-attendees.ts",
     "check:household": "tsx scripts/db-guard.ts && tsx scripts/check-household.ts",
     "check:event-save": "tsx scripts/check-event-save.ts",

@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ChevronLeft, ChevronRight, Shield } from "lucide-react";
@@ -220,8 +221,8 @@ export default function AuditLogsClient({
                     return (
                       <tr key={log.id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 whitespace-nowrap text-neutral-500 text-xs">
-                          <div>{ts.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-                          <div className="text-neutral-400">{ts.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</div>
+                          <div>{ts.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, month: "short", day: "numeric", year: "numeric" })}</div>
+                          <div className="text-neutral-400">{ts.toLocaleTimeString("en-US", { timeZone: SITE_TIMEZONE, hour: "numeric", minute: "2-digit" })}</div>
                         </td>
                         <td className="px-4 py-3">
                           <span className="inline-block px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-xs font-mono">

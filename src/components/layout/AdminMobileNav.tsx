@@ -5,19 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LogOut, Home, LayoutDashboard } from "lucide-react";
 import BrandMark from "@/components/brand/BrandMark";
-import {
-  adminSidebarTranslation,
-  adminNavItemsTranslation,
-} from "@/translation/adminSidebar";
+import { adminSidebarTranslation, type adminNavItemsTranslation } from "@/translation/adminSidebar";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
 import { Lang } from "@/types";
 
 interface Props {
   locale: Lang;
-  canEditSiteContent?: boolean;
+  /** The permission-filtered sections, same list the desktop sidebar renders. */
+  items: typeof adminNavItemsTranslation;
 }
 
-export default function AdminMobileNav({ locale, canEditSiteContent = false }: Props) {
+export default function AdminMobileNav({ locale, items }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -82,10 +80,8 @@ export default function AdminMobileNav({ locale, canEditSiteContent = false }: P
 
           {/* Navigation Links */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {adminNavItemsTranslation
-              .filter((item) => item.href !== "/admin/studio" || canEditSiteContent)
-              .map((item) => {
-              const isActive = pathname.startsWith(item.href);
+            {items.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
 
               return (
@@ -128,9 +124,6 @@ export default function AdminMobileNav({ locale, canEditSiteContent = false }: P
           </div>
         </div>
       </div>
-
-      {/* Spacer */}
-      <div className="lg:hidden h-14" />
     </>
   );
 }

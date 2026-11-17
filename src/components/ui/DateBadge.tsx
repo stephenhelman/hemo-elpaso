@@ -1,3 +1,5 @@
+import { formatInSiteZone, siteDayOfMonth } from "@/lib/datetime";
+
 interface DateBadgeProps {
   date: Date;
   variant?: "primary" | "neutral";
@@ -10,8 +12,8 @@ export default function DateBadge({
   size = "md",
 }: DateBadgeProps) {
   const d = new Date(date);
-  const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-  const day = d.getDate();
+  const month = formatInSiteZone(d, "en", { month: "short" }).toUpperCase();
+  const day = siteDayOfMonth(d);
 
   const sizeClasses = {
     sm: "w-12 h-12",

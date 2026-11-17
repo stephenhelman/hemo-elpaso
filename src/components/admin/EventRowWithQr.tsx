@@ -1,5 +1,7 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
+import { siteDayOfMonth } from "@/lib/datetime";
 import { useState } from "react";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { formatEventDate } from "@/lib/event-utils";
@@ -51,11 +53,11 @@ export default function EventRowWithQr({ event, isPast }: Props) {
               <div className={`w-14 h-14 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0 ${isPast ? "opacity-60" : ""}`}>
                 <span className="text-xs text-primary-600 font-semibold leading-none mb-0.5">
                   {eventDate
-                    .toLocaleDateString("en-US", { month: "short" })
+                    .toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, month: "short" })
                     .toUpperCase()}
                 </span>
                 <span className="text-2xl font-bold text-primary leading-none">
-                  {eventDate.getDate()}
+                  {siteDayOfMonth(eventDate)}
                 </span>
               </div>
               <EventRowActions event={event} />
@@ -103,11 +105,11 @@ export default function EventRowWithQr({ event, isPast }: Props) {
               <div className="w-16 h-16 rounded-xl bg-primary-50 flex flex-col items-center justify-center flex-shrink-0">
                 <span className="text-xs text-primary-600 font-semibold">
                   {eventDate
-                    .toLocaleDateString("en-US", { month: "short" })
+                    .toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, month: "short" })
                     .toUpperCase()}
                 </span>
                 <span className="text-2xl font-bold text-primary">
-                  {eventDate.getDate()}
+                  {siteDayOfMonth(eventDate)}
                 </span>
               </div>
 

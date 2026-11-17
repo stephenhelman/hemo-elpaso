@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { useState } from "react";
 import { ChevronDown, ChevronUp, FileDown, Users } from "lucide-react";
 
@@ -60,7 +61,7 @@ export default function AttendeeListExport({
   const handleExportCSV = () => {
     const csv = [
       `Attendee Contact List - ${eventTitle}`,
-      `Generated: ${new Date().toLocaleString()}`,
+      `Generated: ${new Date().toLocaleString("en-US", { timeZone: SITE_TIMEZONE })}`,
       "",
       "⚠️ PRIVACY-SAFE FORMAT - Names abbreviated",
       "",
@@ -75,7 +76,7 @@ export default function AttendeeListExport({
       );
       const phone = attendee.phone || "N/A";
       const role = getExportRole(attendee.attendeeRole);
-      const checkInTime = new Date(attendee.checkInTime).toLocaleString();
+      const checkInTime = new Date(attendee.checkInTime).toLocaleString("en-US", { timeZone: SITE_TIMEZONE });
 
       csv.push(
         [

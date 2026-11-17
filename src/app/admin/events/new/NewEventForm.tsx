@@ -1,6 +1,7 @@
 "use client";
 
 import { siteHost } from "@/lib/site";
+import { fromSiteDatetimeLocal } from "@/lib/datetime";
 import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -98,12 +99,14 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
 
     try {
       // Combine date and time
-      const eventDateTime = new Date(
-        `${formData.eventDate}T${formData.eventTime}`,
-      );
-      const rsvpDeadlineDate = formData.rsvpDeadline
-        ? new Date(formData.rsvpDeadline)
-        : null;
+      // all admin-entered times are Mountain Time, whatever zone this browser is in
+      const eventDateTime = fromSiteDatetimeLocal(`${formData.eventDate}T${formData.eventTime}`);
+      const rsvpDeadlineDate = formData.rsvpDeadline ? fromSiteDatetimeLocal(formData.rsvpDeadline) : null;
+      if (!eventDateTime) {
+        toast.error("Pick an event date and time");
+        setLoading(false);
+        return;
+      }
 
       const response = await fetch("/api/admin/events", {
         method: "POST",
@@ -111,8 +114,8 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
         body: JSON.stringify({
           ...formData,
           eventDate: eventDateTime.toISOString(),
-          // optional end (local time -> ISO); without it the event is treated as ending 12h after it starts
-          endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+          // optional end (Mountain Time -> UTC ISO); without it the event is treated as ending 12h after it starts
+          endDate: formData.endDate ? (fromSiteDatetimeLocal(formData.endDate)?.toISOString() ?? null) : null,
           rsvpDeadline: rsvpDeadlineDate?.toISOString(),
           maxCapacity: formData.maxCapacity
             ? parseInt(formData.maxCapacity)

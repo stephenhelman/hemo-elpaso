@@ -1,3 +1,4 @@
+import { formatEventDate, formatEventTime } from "@/lib/datetime";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -69,9 +70,8 @@ export default async function EventPrintPage({ params }: { params: { id: string 
     people: event.rsvps.reduce((n, r) => n + r.attendeeCount, 0),
   };
 
-  const tz = "America/Denver"; // El Paso
   const d = new Date(event.eventDate);
-  const dateLine = `${d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: tz })} · ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz })}`;
+  const dateLine = `${formatEventDate(d, "en")} · ${formatEventTime(d, "en")}`; // Mountain Time
 
   return (
     <div className="p-4 md:p-8 bg-neutral-100 min-h-screen">

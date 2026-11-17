@@ -1,3 +1,4 @@
+import { SITE_TIMEZONE } from "@/lib/site";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, Printer, Users, XCircle } from "lucide-react";
@@ -72,7 +73,7 @@ export default async function EventAttendeesPage({
             </Link>
           </div>
           <p className="text-neutral-500">
-            {new Date(event.eventDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+            {new Date(event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE, weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
           </p>
         </div>
 
@@ -110,7 +111,7 @@ export default async function EventAttendeesPage({
                           {r.patient.contactProfile?.phone ? ` · ${r.patient.contactProfile.phone}` : ""}
                         </p>
                         <PeopleLine people={peopleOf(r)} guests={r.guestCount} />
-                        <p className="text-xs text-neutral-400 mt-1">RSVP&apos;d {new Date(r.rsvpDate).toLocaleDateString()}</p>
+                        <p className="text-xs text-neutral-400 mt-1">RSVP&apos;d {new Date(r.rsvpDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })}</p>
                       </div>
                       <ManualCheckInButton rsvpId={r.id} eventId={event.id} isCheckedIn={false} patientName={nm(r.patient)} />
                     </div>
@@ -143,7 +144,7 @@ export default async function EventAttendeesPage({
                           </p>
                           {r && <PeopleLine people={peopleOf(r)} guests={r.guestCount} showCheckedIn guestsIn={c.guestsCheckedIn} />}
                           <p className="text-xs text-neutral-400 mt-1">
-                            Checked in {new Date(c.checkInTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                            Checked in {new Date(c.checkInTime).toLocaleTimeString("en-US", { timeZone: SITE_TIMEZONE, hour: "numeric", minute: "2-digit" })}
                           </p>
                         </div>
                         <ManualCheckInButton checkInId={c.id} eventId={c.eventId} patientName={nm(c.patient)} isCheckedIn={true} />

@@ -1,3 +1,4 @@
+import { SITE_TIMEZONE } from "@/lib/site";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -54,7 +55,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       <div>
         <h1 className="text-3xl font-display font-bold text-neutral-900">{nm(p)}</h1>
         <p className="text-xs text-neutral-400 mt-1">
-          {t.detailsViewed} · {p.source} · {p.createdAt.toLocaleDateString()}
+          {t.detailsViewed} · {p.source} · {p.createdAt.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })}
         </p>
       </div>
 
@@ -141,7 +142,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           <tbody className="divide-y divide-neutral-100">
             {p.consentRecords.map((c) => (
               <tr key={c.id}>
-                <td className="py-2">{c.createdAt.toLocaleString()}</td>
+                <td className="py-2">{c.createdAt.toLocaleString("en-US", { timeZone: SITE_TIMEZONE })}</td>
                 <td>{c.type}</td>
                 <td>{c.granted ? "yes" : "no"}</td>
                 <td>{c.method}</td>
@@ -157,7 +158,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
         <p className="text-sm text-neutral-700 mb-2">{t.rsvps}: {p.rsvps.length} · {t.checkIns}: {p.checkIns.length}</p>
         <ul className="text-sm text-neutral-600 space-y-1">
           {p.rsvps.map((r) => (
-            <li key={r.id}>{locale === "es" ? r.event.titleEs : r.event.titleEn} — {r.event.eventDate.toLocaleDateString()} ({r.attendeeCount})</li>
+            <li key={r.id}>{locale === "es" ? r.event.titleEs : r.event.titleEn} — {r.event.eventDate.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })} ({r.attendeeCount})</li>
           ))}
         </ul>
       </div>

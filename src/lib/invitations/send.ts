@@ -1,3 +1,4 @@
+import { formatEventDate, formatEventTime } from "@/lib/datetime";
 import { siteUrl, withLang } from "@/lib/site";
 import { render } from "@react-email/render";
 import { AuditAction } from "@prisma/client";
@@ -52,12 +53,8 @@ export async function sendInvitations(eventId: string, adminId: string) {
           lang,
           firstName: p.contactProfile?.firstName ?? "",
           eventTitle: lang === "es" ? event.titleEs : event.titleEn,
-          eventDate: date.toLocaleDateString(lang === "es" ? "es-US" : "en-US", {
-            weekday: "long", year: "numeric", month: "long", day: "numeric",
-          }),
-          eventTime: date.toLocaleTimeString(lang === "es" ? "es-US" : "en-US", {
-            hour: "numeric", minute: "2-digit",
-          }),
+          eventDate: formatEventDate(date, lang),
+          eventTime: formatEventTime(date, lang),
           location: event.location,
           description:
             (lang === "es" ? event.descriptionEs : event.descriptionEn)?.slice(0, 500) ?? undefined,

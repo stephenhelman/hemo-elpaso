@@ -1,5 +1,6 @@
 "use client";
 
+import { siteDateKey } from "@/lib/datetime";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -29,7 +30,7 @@ export function EventsCalendar({ events, pastEvents = [], lang, onEventClick }: 
   const toCalendarEvent = (e: Event, isPast = false) => ({
     id: e.id,
     title: lang === "es" ? e.titleEs : e.titleEn,
-    date: new Date(e.eventDate).toISOString().split("T")[0],
+    date: siteDateKey(e.eventDate),
     backgroundColor: isPast ? "#9ca3af" : (CATEGORY_COLORS[e.category] ?? "#6b7280"),
     borderColor: "transparent",
     textColor: "#ffffff",

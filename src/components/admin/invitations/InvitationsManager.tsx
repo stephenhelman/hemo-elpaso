@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_TIMEZONE } from "@/lib/site";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -133,7 +134,7 @@ export default function InvitationsManager({
                   {canViewPHI && <td className="px-4 py-3">{dx(r.diagnoses)}</td>}
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusStyle[r.status] ?? ""}`}>{statusLabel[r.status] ?? r.status}</span>
-                    {r.sentAt && <span className="ml-2 text-xs text-neutral-400">{new Date(r.sentAt).toLocaleDateString()}</span>}
+                    {r.sentAt && <span className="ml-2 text-xs text-neutral-400">{new Date(r.sentAt).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })}</span>}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {r.status === "pending" && (

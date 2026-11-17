@@ -78,3 +78,19 @@ export const adminNavItemsTranslation = [
     icon: Settings,
   },
 ];
+
+/** Permission needed to see a nav item. No entry = always visible (dashboard, events, settings). */
+export const ADMIN_NAV_PERMISSIONS: Record<string, string> = {
+  "/admin/attendance": "canViewEventStats",
+  "/admin/patients": "canManageUsers",
+  "/admin/audit-logs": "canViewAuditLogs",
+  "/admin/studio": "canEditSiteContent",
+};
+
+/** The one filter used by BOTH the desktop sidebar and the mobile drawer, so they can never drift apart. */
+export function visibleAdminNavItems(can: (permission: string) => boolean) {
+  return adminNavItemsTranslation.filter((item) => {
+    const required = ADMIN_NAV_PERMISSIONS[item.href];
+    return !required || can(required);
+  });
+}
