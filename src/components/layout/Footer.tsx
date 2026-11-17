@@ -132,6 +132,10 @@ export default function Footer() {
             {t.rights}
           </p>
 
+          <a href="/api/auth/login?returnTo=/admin" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            {t.boardSignIn}
+          </a>
+
           <p className="text-xs text-neutral-500 flex items-center gap-1">
             {t.madeWith}{" "}
             <Heart className="w-3 h-3 text-primary-500 fill-primary-500" />{" "}
