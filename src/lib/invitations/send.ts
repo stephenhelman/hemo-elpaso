@@ -71,6 +71,7 @@ export async function sendInvitations(eventId: string, adminId: string) {
         data: { tokenHash: hashToken(token) },
       });
       const res = await sendLoggedEmail({
+      sender: "events",
         kind: "EVENT_INVITATION",
         to: p.email!,
         subject:

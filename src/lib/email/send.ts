@@ -1,4 +1,4 @@
-import { contactEmail } from "@/lib/site";
+import { contactEmail, mailbox } from "@/lib/site";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
 
@@ -43,8 +43,17 @@ async function record(kind: CodeEmailKind, patientId: string | null | undefined,
   }
 }
 
+/**
+ * Which mailbox an email comes from (and where replies go):
+ *   "info"   (default) EMAIL_FROM, e.g. "HOEP <info@hemo-el-paso.org>": registration, confirmations
+ *   "events" "HOEP Events <events@<email domain>>": invitations, RSVP confirmations, reminders, cancellations
+ * Both must live on the Resend-verified domain. Without EMAIL_FROM (dev only) both use Resend's sandbox sender.
+ */
+export type EmailSender = "info" | "events";
+
 export async function sendLoggedEmail(params: {
   kind: CodeEmailKind;
+  sender?: EmailSender;
   to: string;
   subject: string;
   html: string;
@@ -59,15 +68,21 @@ export async function sendLoggedEmail(params: {
 
   // Fail loudly instead of silently using Resend's sandbox sender / no key.
   if (!process.env.RESEND_API_KEY) return fail("missing_resend_api_key");
-  const from = process.env.EMAIL_FROM;
-  if (!from && process.env.NODE_ENV === "production") return fail("missing_email_from");
+  const configured = process.env.EMAIL_FROM;
+  if (!configured && process.env.NODE_ENV === "production") return fail("missing_email_from");
+  const events = params.sender === "events";
+  const from = configured
+    ? events
+      ? `HOEP Events <${mailbox("events")}>`
+      : configured
+    : "HOEP Events <onboarding@resend.dev>"; // non-production only
 
   try {
     // Client built per call so it always sees the runtime env (and a bad key shows up as
     // Resend's own error instead of a stale import-time value).
     const res = await new Resend(process.env.RESEND_API_KEY).emails.send({
-      from: from || "HOEP Events <onboarding@resend.dev>", // non-production only
-      replyTo: params.replyTo ?? contactEmail(),
+      from,
+      replyTo: params.replyTo ?? (events ? mailbox("events") : contactEmail()),
       to: params.to,
       subject: params.subject,
       html: params.html,
