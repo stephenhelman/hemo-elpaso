@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Script from "next/script";
 import { Send, CheckCircle, AlertCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
 import { contactFormTranslation } from "@/translation/contactPage";
@@ -11,9 +12,11 @@ interface Props {
   /** Editable heading/subheading (from Sanity); the dictionary text is the default. */
   heading?: string;
   sub?: string;
+  /** Public Cloudflare Turnstile site key; null disables the widget (local dev). */
+  turnstileSiteKey?: string | null;
 }
 
-export default function ContactForm({ locale, heading, sub }: Props) {
+export default function ContactForm({ locale, heading, sub, turnstileSiteKey = null }: Props) {
   const t = contactFormTranslation[locale];
 
   const [submitted, setSubmitted] = useState(false);
@@ -26,6 +29,27 @@ export default function ContactForm({ locale, heading, sub }: Props) {
     reason: "",
     message: "",
   });
+
+  const [website, setWebsite] = useState(""); // honeypot
+  const [token, setToken] = useState("");
+  const loadedAt = useRef(Date.now());
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+
+  const renderWidget = () => {
+    const ts = (window as any).turnstile;
+    if (!turnstileSiteKey || !ts || !widgetRef.current || widgetId.current) return;
+    widgetId.current = ts.render(widgetRef.current, {
+      sitekey: turnstileSiteKey,
+      callback: (tk: string) => setToken(tk),
+      "expired-callback": () => setToken(""),
+    });
+  };
+
+  useEffect(() => {
+    renderWidget();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -45,7 +69,13 @@ export default function ContactForm({ locale, heading, sub }: Props) {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, locale }),
+        body: JSON.stringify({
+          ...form,
+          locale,
+          website,
+          turnstileToken: token,
+          elapsedMs: Date.now() - loadedAt.current,
+        }),
       });
 
       const data = await res.json();
@@ -53,6 +83,8 @@ export default function ContactForm({ locale, heading, sub }: Props) {
       if (res.ok) {
         setSubmitted(true);
       } else {
+        (window as any).turnstile?.reset(widgetId.current ?? undefined);
+        setToken("");
         setError(
           data.error ||
             (locale === "es"
@@ -93,6 +125,13 @@ export default function ContactForm({ locale, heading, sub }: Props) {
       <p className="text-neutral-500 text-sm mb-6">{sub ?? t.sub}</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {turnstileSiteKey && (
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onReady={renderWidget}
+          />
+        )}
         {/* Name + Email */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label={t.name} required>
@@ -161,6 +200,17 @@ export default function ContactForm({ locale, heading, sub }: Props) {
           />
         </FormField>
 
+        {/* Honeypot: hidden from people and assistive tech */}
+        <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", height: 0, overflow: "hidden" }}>
+          <label>
+            Website
+            <input tabIndex={-1} autoComplete="off" value={website}
+              onChange={(e) => setWebsite(e.target.value)} />
+          </label>
+        </div>
+
+        {turnstileSiteKey && <div ref={widgetRef} />}
+
         {/* Error message */}
         {error && (
           <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200">
@@ -171,7 +221,7 @@ export default function ContactForm({ locale, heading, sub }: Props) {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (!!turnstileSiteKey && !token)}
           className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-primary text-white font-display font-semibold hover:bg-primary-600 transition-colors disabled:opacity-70"
         >
           <Send className="w-4 h-4" />
