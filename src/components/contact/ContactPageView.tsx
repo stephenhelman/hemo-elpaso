@@ -12,7 +12,13 @@ import ContactForm from "./ContactForm";
  * Sanity supplies the hero, the form heading/subheading and the map heading, and Site
  * settings supply the sidebar. Both languages are already in `data`.
  */
-export default function ContactPageView({ data }: { data: ContactPageData }) {
+export default function ContactPageView({
+  data,
+  turnstileSiteKey = null,
+}: {
+  data: ContactPageData;
+  turnstileSiteKey?: string | null;
+}) {
   const { locale } = useLanguage();
   return (
     <>
@@ -21,7 +27,7 @@ export default function ContactPageView({ data }: { data: ContactPageData }) {
         <div className="container-max px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <ContactForm locale={locale} heading={pick(data.formHeading, locale)} sub={pick(data.formSubheading, locale)} />
+              <ContactForm locale={locale} heading={pick(data.formHeading, locale)} sub={pick(data.formSubheading, locale)} turnstileSiteKey={turnstileSiteKey} />
             </div>
             <div>
               <ContactInfoCard locale={locale} />

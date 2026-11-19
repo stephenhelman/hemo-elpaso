@@ -6,7 +6,11 @@ import ContactPageView from "@/components/contact/ContactPageView";
  * Site settings. The dictionary copy is the fallback. The old components in components/contact/*
  * (ContactHero, ContactBody, ContactInfo, ContactMap) are kept as reference.
  */
+export const dynamic = "force-dynamic"; // TURNSTILE_SITE_KEY is read at request time
+
 export default async function ContactPage() {
   const data = await getContactPage();
-  return <ContactPageView data={data} />;
+  // Public site key, read at request time and handed to the client form.
+  const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY ?? null;
+  return <ContactPageView data={data} turnstileSiteKey={turnstileSiteKey} />;
 }

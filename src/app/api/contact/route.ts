@@ -5,8 +5,14 @@ import { render } from "@react-email/render";
 import ContactFormNotification from "@/messages/ContactFormNotification";
 import ContactAutoReply from "@/messages/ContactAutoReply";
 import { getContactRecipient } from "@/lib/contact-routing";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const MIN_SUBMIT_MS = 3000;
+const LINK_RE = /https?:\/\/|www\.|\b[a-z0-9-]+\.(?:com|net|org|io|ru|xyz|info|biz|top|site|online|link|co|us|me|ly)\b/i;
+const LINK_FLAG = "[Contains links: please verify]";
+const FAKE_OK = () => NextResponse.json({ success: true });
 
 const reasonLabels: Record<string, { en: string; es: string }> = {
   general: { en: "General Inquiry", es: "Consulta General" },
@@ -21,6 +27,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, phone, reason, message, locale = "en" } = body;
+
+    // Honeypot: bots fill it. Pretend success, send nothing.
+    if (typeof body.website === "string" && body.website.trim() !== "") return FAKE_OK();
+
+    // Too fast to be a person (missing/invalid timing counts as a bot). Same fake success.
+    const elapsed = Number(body.elapsedMs);
+    if (!Number.isFinite(elapsed) || elapsed < MIN_SUBMIT_MS) return FAKE_OK();
+
+    if (!(await verifyTurnstile(body.turnstileToken))) {
+      return NextResponse.json({ error: "captcha" }, { status: 400 });
+    }
 
     // Basic validation
     if (
@@ -50,6 +67,9 @@ export async function POST(req: NextRequest) {
     // Determine the correct recipient based on reason
     const toEmail = await getContactRecipient(reason);
 
+    // Still delivered, but flagged so a human looks before clicking anything.
+    const hasLinks = LINK_RE.test(`${message} ${name}`);
+
     // ── 1. Notification email routed by reason ────────────────────────────────
     const notificationHtml = await render(
       ContactFormNotification({ name, email, phone, reason, message, locale }),
@@ -59,9 +79,11 @@ export async function POST(req: NextRequest) {
       from: `HOEP Contact Form <${mailbox("noreply")}>`,
       to: toEmail,
       replyTo: email, // clicking reply in Gmail goes straight to the sender
-      subject: isEs
-        ? `Nuevo mensaje: ${reasonLabel} — ${name}`
-        : `New message: ${reasonLabel} — ${name}`,
+      subject:
+        (isEs
+          ? `Nuevo mensaje: ${reasonLabel} — ${name}`
+          : `New message: ${reasonLabel} — ${name}`) +
+        (hasLinks ? ` ${LINK_FLAG}` : ""),
       html: notificationHtml,
     });
     // The SDK returns errors instead of throwing. If the board notification
