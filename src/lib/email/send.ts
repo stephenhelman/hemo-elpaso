@@ -1,6 +1,7 @@
 import { contactEmail, mailbox } from "@/lib/site";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
+import { blockedByWithdrawal, isEssentialEmail } from "@/lib/email/policy";
 
 /**
  * The ONE way code-built emails (registration confirmation, invitations, RSVP
@@ -60,6 +61,16 @@ export async function sendLoggedEmail(params: {
   patientId?: string | null;
   replyTo?: string;
 }): Promise<SendResult> {
+  // Withdrawn contact consent stops every non-essential email (lib/email/policy.ts). Not logged as a failure:
+  // nothing is wrong, and "Confirmation not sent" must not nag the board to re-send to someone who opted out.
+  if (params.patientId && !isEssentialEmail(params.kind)) {
+    const records = await prisma.consentRecord.findMany({
+      where: { patientId: params.patientId, type: "data_and_contact" },
+      select: { type: true, granted: true, createdAt: true },
+    });
+    if (blockedByWithdrawal(params.kind, records)) return { ok: false, errorName: "consent_withdrawn" };
+  }
+
   const fail = async (errorName: string, status?: number): Promise<SendResult> => {
     console.error("email send failed", { kind: params.kind, error: errorName, status });
     await record(params.kind, params.patientId, false, errorName);

@@ -1,6 +1,7 @@
 import { SITE_TIMEZONE } from "@/lib/site";
 import { notFound, redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
+import { canSeeAttendeeContact, maskAttendeeContact } from "@/lib/attendee-contact";
 import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +21,7 @@ export default async function EventStatsPage({ params }: Props) {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/");
   if (!admin.can("canViewEventStats")) redirect("/admin/dashboard");
+  const showContact = canSeeAttendeeContact(admin);
 
   const locale = (await getLocaleCookie()) as Lang;
 
@@ -46,8 +48,11 @@ export default async function EventStatsPage({ params }: Props) {
     id: checkIn.id,
     firstName: checkIn.patient.contactProfile?.firstName || "Unknown",
     lastName: checkIn.patient.contactProfile?.lastName || "User",
-    email: checkIn.patient.email,
-    phone: checkIn.patient.contactProfile?.phone || null,
+    // Contact details only for President/VP (lib/attendee-contact.ts); masked server-side for everyone else.
+    ...maskAttendeeContact(
+      { email: checkIn.patient.email, phone: checkIn.patient.contactProfile?.phone || null },
+      showContact,
+    ),
     checkInTime: checkIn.checkInTime,
     attendeeRole: checkIn.attendeeRole,
   }));
@@ -140,6 +145,7 @@ export default async function EventStatsPage({ params }: Props) {
         eventSlug={event.slug}
         eventTitle={event.titleEn}
         attendees={attendeesForExport}
+        showContact={showContact}
       />
     </div>
   );

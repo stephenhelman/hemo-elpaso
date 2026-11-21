@@ -169,3 +169,25 @@ export async function deleteManyFromR2(keys: string[]): Promise<void> {
     new DeleteObjectsCommand({ Bucket: process.env.R2_BUCKET_NAME, Delete: { Objects: unique.map((Key) => ({ Key })), Quiet: true } }),
   );
 }
+
+/**
+ * Deletes EVERY object under a prefix (paginated). Returns how many were deleted; throws on a storage error so the
+ * caller can log it. Used when an event is deleted, so nothing under its folders outlives it.
+ */
+export async function deleteR2Prefix(prefix: string): Promise<number> {
+  if (!prefix || !prefix.endsWith("/")) throw new Error("deleteR2Prefix needs a prefix ending in '/'");
+  let deleted = 0;
+  let token: string | undefined;
+  do {
+    const page = await r2Client.send(
+      new ListObjectsV2Command({ Bucket: process.env.R2_BUCKET_NAME, Prefix: prefix, ContinuationToken: token }),
+    );
+    const keys = (page.Contents ?? []).map((o) => o.Key!).filter(Boolean);
+    if (keys.length) {
+      await deleteManyFromR2(keys);
+      deleted += keys.length;
+    }
+    token = page.IsTruncated ? page.NextContinuationToken : undefined;
+  } while (token);
+  return deleted;
+}

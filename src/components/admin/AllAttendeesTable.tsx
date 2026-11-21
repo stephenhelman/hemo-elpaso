@@ -19,7 +19,7 @@ interface CheckIn {
   };
   patient: {
     id: string;
-    email: string;
+    email?: string | null;
     contactProfile: {
       firstName: string;
       lastName: string;
@@ -39,6 +39,8 @@ interface Props {
   events: Event[];
   children: React.ReactNode;
   locale: Lang;
+  /** President/VP only (lib/attendee-contact.ts). When false the data is not even sent. */
+  showContact?: boolean;
 }
 
 export default function AllAttendeesTable({
@@ -46,6 +48,7 @@ export default function AllAttendeesTable({
   events,
   children,
   locale,
+  showContact = false,
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string>("all");
@@ -66,7 +69,7 @@ export default function AllAttendeesTable({
           .toLowerCase()
           .includes(searchLower) ||
         checkIn.patient.contactProfile?.lastName.toLowerCase().includes(searchLower) ||
-        checkIn.patient.email.toLowerCase().includes(searchLower);
+        (showContact && (checkIn.patient.email ?? "").toLowerCase().includes(searchLower));
 
       const matchesEvent =
         selectedEventId === "all" || checkIn.event.id === selectedEventId;
@@ -87,8 +90,7 @@ export default function AllAttendeesTable({
     new Date(checkIn.event.eventDate).toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE }),
     checkIn.event.titleEn,
     `${checkIn.patient.contactProfile?.firstName ?? ""} ${checkIn.patient.contactProfile?.lastName ?? ""}`.trim(),
-    checkIn.patient.email,
-    checkIn.patient.contactProfile?.phone ?? "N/A",
+    ...(showContact ? [checkIn.patient.email ?? "", checkIn.patient.contactProfile?.phone ?? "N/A"] : []),
     t.roleLabels[checkIn.attendeeRole] ?? checkIn.attendeeRole,
     new Date(checkIn.checkInTime).toLocaleString("en-US", { timeZone: SITE_TIMEZONE }),
   ]);
@@ -102,7 +104,7 @@ export default function AllAttendeesTable({
       <FilterBar
         exportButton={
           <ExportButton
-            headers={t.exportHeaders}
+            headers={showContact ? t.exportHeaders : t.exportHeaders.filter((_, i) => i !== 3 && i !== 4)}
             rows={exportRows}
             filename={`attendance-report-${new Date().toISOString().split("T")[0]}.csv`}
           />
@@ -200,9 +202,11 @@ export default function AllAttendeesTable({
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                   {t.tableHeaders.attendee}
                 </th>
+                {showContact && (
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                   {t.tableHeaders.contact}
                 </th>
+                )}
                 <th className="px-3 py-3 md:px-6 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                   {t.tableHeaders.role}
                 </th>
@@ -215,7 +219,7 @@ export default function AllAttendeesTable({
               {filteredCheckIns.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={showContact ? 6 : 5}
                     className="px-6 py-12 text-center text-neutral-400"
                   >
                     {t.noCheckIns}
@@ -246,6 +250,7 @@ export default function AllAttendeesTable({
                       {checkIn.patient.contactProfile?.firstName}{" "}
                       {checkIn.patient.contactProfile?.lastName}
                     </td>
+                    {showContact && (
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-neutral-600">
                       <div className="max-w-xs">
                         <div className="truncate">{checkIn.patient.email}</div>
@@ -256,6 +261,7 @@ export default function AllAttendeesTable({
                         )}
                       </div>
                     </td>
+                    )}
                     <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${t.roleBadgeColors[checkIn.attendeeRole] ?? "bg-neutral-100 text-neutral-700"}`}>
                         {t.roleLabels[checkIn.attendeeRole] ?? checkIn.attendeeRole}

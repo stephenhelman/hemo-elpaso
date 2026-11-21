@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getAdminWithPermissions } from "@/lib/permissions";
+import { canSeeAttendeeContact } from "@/lib/attendee-contact";
 import { redirect } from "next/navigation";
 import AllAttendeesTable from "@/components/admin/AllAttendeesTable";
 import { Calendar, Users, TrendingUp, CheckCircle, Clock } from "lucide-react";
@@ -17,11 +18,12 @@ export default async function AllAttendeesPage() {
   const t = adminAttendanceTranslation[locale];
   const tTable = adminAttendanceTableTranslation[locale];
 
-  // Get all check-ins with related data
+  // Emails and phones are only SELECTED for President/VP; for everyone else they never leave the database.
+  const showContact = canSeeAttendeeContact(admin);
   const checkIns = await prisma.checkIn.findMany({
     include: {
       event: { select: { id: true, titleEn: true, eventDate: true } },
-      patient: { select: { id: true, email: true, contactProfile: { select: { firstName: true, lastName: true, phone: true } } } },
+      patient: { select: { id: true, ...(showContact ? { email: true } : {}), contactProfile: { select: { firstName: true, lastName: true, ...(showContact ? { phone: true } : {}) } } } },
     },
     orderBy: {
       checkInTime: "desc",
@@ -62,7 +64,7 @@ export default async function AllAttendeesPage() {
 
       {/* Table */}
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <AllAttendeesTable checkIns={checkIns as any} events={events} locale={locale}>
+      <AllAttendeesTable checkIns={checkIns as any} events={events} locale={locale} showContact={showContact}>
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <StatCard

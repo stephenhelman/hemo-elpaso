@@ -1,4 +1,5 @@
 import {
+  Hourglass,
   LayoutDashboard,
   Calendar,
   Users,
@@ -60,6 +61,12 @@ export const adminNavItemsTranslation = [
     icon: Users,
   },
   {
+    href: "/admin/inactive-households",
+    en: "Inactive households",
+    es: "Hogares inactivos",
+    icon: Hourglass,
+  },
+  {
     href: "/admin/audit-logs",
     en: "Audit Log",
     es: "Registro de Auditoría",
@@ -83,6 +90,7 @@ export const adminNavItemsTranslation = [
 export const ADMIN_NAV_PERMISSIONS: Record<string, string> = {
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
+  "/admin/inactive-households": "canManageUsers",
   "/admin/audit-logs": "canViewAuditLogs",
   "/admin/studio": "canEditSiteContent",
 };
