@@ -2,18 +2,25 @@
  * Single source for "where does this site live" and "which mailbox domain do we
  * use". Nothing else in the app should hardcode a domain.
  *
- *   NEXT_PUBLIC_BASE_URL     the site's public URL (https://hemoelpaso.org)
+ *   NEXT_PUBLIC_SITE_URL     the site's public URL, https://hemoelpaso.org in production (apex, no www).
+ *                            NEXT_PUBLIC_BASE_URL is the old name and is still read as a fallback.
+ *                            Production with neither set throws; previews fall back to VERCEL_URL so their
+ *                            links work; local dev falls back to http://localhost:3000.
  *   NEXT_PUBLIC_EMAIL_DOMAIN domain of the org's mailboxes (info@, events@, ...).
  *                            Kept separate because the website can move to a new
  *                            domain before mail does. Default: hemo-el-paso.org
  *                            (the Resend-verified sending domain).
  */
 export function siteUrl(): string {
-  const raw =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:3000";
-  return raw.replace(/\/+$/, "");
+  const configured = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL;
+  if (configured) return configured.replace(/\/+$/, "");
+  // Production must never guess: a *.vercel.app link in an email to a family would be a broken, off-brand link.
+  if (process.env.VERCEL_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_SITE_URL is not set for Production (the site's public URL, e.g. https://hemoelpaso.org)");
+  }
+  // Previews build working links to themselves.
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
 }
 
 export function siteHost(): string {
@@ -24,6 +31,11 @@ export function siteHost(): string {
   }
 }
 
+/**
+ * TODO(resend): mailboxes and every "from" address still use the old, Resend-verified domain. When hemoelpaso.org is
+ * verified in Resend, set NEXT_PUBLIC_EMAIL_DOMAIN=hemoelpaso.org and EMAIL_FROM to a hemoelpaso.org sender (and
+ * switch PRIVACY_EMAIL below). Until then, do not change this default.
+ */
 export function emailDomain(): string {
   return process.env.NEXT_PUBLIC_EMAIL_DOMAIN || "hemo-el-paso.org";
 }

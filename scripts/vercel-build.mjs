@@ -43,6 +43,7 @@ log(`DATABASE_URL host: ${hostOf(process.env.DATABASE_URL)}`);
 log(`DIRECT_URL   host: ${hostOf(process.env.DIRECT_URL)}`);
 
 if (isProduction) {
+  if (!process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_BASE_URL) fail("NEXT_PUBLIC_SITE_URL is not set for Production (the public site URL, e.g. https://hemoelpaso.org).");
   if (!process.env.DATABASE_URL) fail("DATABASE_URL is not set for Production.");
   if (!process.env.DIRECT_URL) fail("DIRECT_URL is not set for Production (the non-pooled Neon connection string; migrations need it).");
   if (/-pooler\./.test(process.env.DIRECT_URL)) fail("DIRECT_URL points at a pooled (-pooler) host. Use the direct connection string.");

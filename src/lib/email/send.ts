@@ -46,7 +46,7 @@ async function record(kind: CodeEmailKind, patientId: string | null | undefined,
 
 /**
  * Which mailbox an email comes from (and where replies go):
- *   "info"   (default) EMAIL_FROM, e.g. "HOEP <info@hemo-el-paso.org>": registration, confirmations
+ *   "info"   (default) EMAIL_FROM, e.g. "HOEP <info@<mail domain>>": registration, confirmations
  *   "events" "HOEP Events <events@<email domain>>": invitations, RSVP confirmations, reminders, cancellations
  * Both must live on the Resend-verified domain. Without EMAIL_FROM (dev only) both use Resend's sandbox sender.
  */

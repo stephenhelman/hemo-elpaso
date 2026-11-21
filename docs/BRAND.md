@@ -20,7 +20,7 @@ Source of truth: the brand sheet, [`public/brand/hoep-brand-sheet.pdf`](../publi
 | Print, one-color jobs (stamps, embroidery, pens) | `hoep-icon-1c-maroon.svg`, or `hoep-icon-small.svg` under 1 in tall | |
 | Stacked layouts (square spaces) | `hoep-lockup-stacked.svg` / `-stacked-tagline.svg` | |
 
-Regenerate every raster asset from the SVGs with `npx tsx scripts/build-brand-assets.ts`. Rebuild the letterhead with `NEXT_PUBLIC_BASE_URL=https://<public site> npx tsx scripts/make-letterhead.ts` (it refuses to run with a localhost URL).
+Regenerate every raster asset from the SVGs with `npx tsx scripts/build-brand-assets.ts`. Rebuild the letterhead with `NEXT_PUBLIC_SITE_URL=https://<public site> npx tsx scripts/make-letterhead.ts` (it refuses to run with a localhost URL).
 
 ## Colors
 

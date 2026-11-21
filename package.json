@@ -19,6 +19,7 @@
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
     "check:timezone": "tsx --test scripts/check-timezone.ts",
     "check:retention": "tsx scripts/db-guard.ts && tsx --test scripts/check-retention.ts",
+    "check:host-redirects": "tsx --test scripts/check-host-redirects.ts",
     "check:invitation-guard": "tsx --test scripts/check-invitation-guard.ts",
     "check:withdrawal": "tsx scripts/db-guard.ts && tsx --test scripts/check-withdrawal.ts",
     "check:rsvp": "tsx scripts/db-guard.ts && tsx scripts/check-rsvp-attendees.ts",

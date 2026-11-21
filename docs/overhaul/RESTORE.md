@@ -50,7 +50,7 @@ Dirs are relative to `src/`. "Merge SHA" is filled in as each cut lands.
 
 ## Shared env vars that stay (not cut-specific)
 
-`NEXT_PUBLIC_BASE_URL`, `R2_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `DEEPL_API_KEY`, `CRON_SECRET`, `ADMIN_NOTIFY_EMAIL`, Auth0 vars (`AUTH0_*`, read by the SDK, not via `process.env` in `src/`).
+`NEXT_PUBLIC_SITE_URL` (was `NEXT_PUBLIC_BASE_URL`), `R2_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `DEEPL_API_KEY`, `CRON_SECRET`, `ADMIN_NOTIFY_EMAIL`, Auth0 vars (`AUTH0_*`, read by the SDK, not via `process.env` in `src/`).
 
 ## Phase 2 log
 

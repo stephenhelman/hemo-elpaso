@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import {
   Heading,
   Img,
@@ -86,13 +87,13 @@ export default function EventPublished({
             {/* CTA Buttons */}
             <Section style={buttonSection}>
               <Link
-                href={`${process.env.NEXT_PUBLIC_BASE_URL}/events/${eventSlug}`}
+                href={`${siteUrl()}/events/${eventSlug}`}
                 style={primaryButton}
               >
                 RSVP Now
               </Link>
               <Link
-                href={`${process.env.NEXT_PUBLIC_BASE_URL}/events`}
+                href={`${siteUrl()}/events`}
                 style={secondaryButton}
               >
                 View All Events
