@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 import { generateInvitations } from "@/lib/invitations/generate";
 import { eventTextFields } from "@/lib/events/text-fields";
+import { deleteEventStorage } from "@/lib/events/storage";
 import { cleanAgeGroups } from "@/lib/households/constants";
 
 export async function PATCH(
@@ -98,6 +99,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    // Storage first, then the rows: the rows are how we know what the folders are. A storage failure is logged
+    // (ids and counts only) and does not block the delete, so the board can finish; the run log tells us what to retry.
+    const removed = await deleteEventStorage(params.id);
+
     await prisma.event.delete({ where: { id: params.id } });
 
     await prisma.auditLog.create({
@@ -106,7 +111,7 @@ export async function DELETE(
         action: AuditAction.EVENT_DELETED,
         resourceType: "Event",
         resourceId: params.id,
-        details: `Deleted event: ${event.titleEn}`,
+        details: `Deleted event: ${event.titleEn} (${removed.deleted} stored files removed${removed.failed.length ? `, ${removed.failed.length} folder(s) failed: ${removed.failed.join(", ")}` : ""})`,
       },
     });
 

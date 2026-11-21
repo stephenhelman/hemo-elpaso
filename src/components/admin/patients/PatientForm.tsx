@@ -13,6 +13,7 @@ import HouseholdSection, {
   type MemberDraft,
 } from "@/components/household/HouseholdSection";
 import { householdTranslation } from "@/translation/household";
+import RichText from "@/components/legal/RichText";
 import { consentText } from "@/content/consent";
 import type { Lang } from "@/types";
 
@@ -183,7 +184,7 @@ export default function PatientForm({
         {mode === "create" && (
           <label className="flex items-start gap-2 text-sm text-neutral-700">
             <input type="checkbox" className="mt-1" checked={v.attestation} onChange={(e) => set("attestation", e.target.checked)} />
-            <span>{consentText.age_guardian_attestation[locale]}</span>
+            <span><RichText text={consentText.age_guardian_attestation[locale]} locale={locale} newTab /></span>
           </label>
         )}
         <label className="flex items-start gap-2 text-sm text-neutral-700">

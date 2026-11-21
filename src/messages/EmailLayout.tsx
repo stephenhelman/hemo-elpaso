@@ -1,6 +1,6 @@
 import { Body, Container, Head, Hr, Html, Img, Link, Preview, Section, Text } from "@react-email/components";
 import type { ReactNode } from "react";
-import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE, siteHost, siteUrl } from "@/lib/site";
+import { FACEBOOK_LABEL, FACEBOOK_URL, SITE_PHONE, siteHost, siteUrl, withLang } from "@/lib/site";
 import { ORG_NAME } from "@/lib/brand";
 
 /**
@@ -69,6 +69,11 @@ export default function EmailLayout({
               <Link href={base} style={link}>{siteHost() || base}</Link>
               {" · "}
               <Link href={FACEBOOK_URL} style={link}>{FACEBOOK_LABEL[es ? "es" : "en"]}</Link>
+            </Text>
+            <Text style={{ ...foot, fontSize: 12 }}>
+              <Link href={withLang(`${base}/privacy`, es ? "es" : "en")} style={link}>
+                {es ? "Política de Privacidad" : "Privacy Policy"}
+              </Link>
             </Text>
             {unsubscribeUrl && unsubscribeText && (
               <Text style={{ ...foot, fontSize: 12, marginTop: 8 }}>

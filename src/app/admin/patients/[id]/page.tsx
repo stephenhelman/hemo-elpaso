@@ -9,6 +9,8 @@ import { PATIENT_ONLY, currentConsents } from "@/lib/patients/query";
 import { auditPatient } from "@/lib/patients/audit";
 import PatientForm from "@/components/admin/patients/PatientForm";
 import HouseholdPanel from "@/components/admin/patients/HouseholdPanel";
+import CancelRsvpButton from "@/components/admin/patients/CancelRsvpButton";
+import { eventHasEnded } from "@/lib/rsvp/window";
 import DeletePatientPanel from "@/components/admin/patients/DeletePatientPanel";
 import NotDuplicateButton from "@/components/admin/patients/NotDuplicateButton";
 import ResendConfirmationButton from "@/components/admin/patients/ResendConfirmationButton";
@@ -31,7 +33,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       contactProfile: true,
       consentRecords: { orderBy: { createdAt: "desc" } },
       householdMembers: { orderBy: { createdAt: "asc" } },
-      rsvps: { include: { event: { select: { titleEn: true, titleEs: true, eventDate: true } } }, orderBy: { rsvpDate: "desc" } },
+      rsvps: { include: { event: { select: { titleEn: true, titleEs: true, eventDate: true, endDate: true } } }, orderBy: { rsvpDate: "desc" } },
       checkIns: { select: { id: true, checkInTime: true, event: { select: { titleEn: true, titleEs: true } } }, orderBy: { checkInTime: "desc" } },
       possibleDuplicateOf: { include: { contactProfile: true } },
       possibleDuplicates: { include: { contactProfile: true } },
@@ -158,7 +160,10 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
         <p className="text-sm text-neutral-700 mb-2">{t.rsvps}: {p.rsvps.length} · {t.checkIns}: {p.checkIns.length}</p>
         <ul className="text-sm text-neutral-600 space-y-1">
           {p.rsvps.map((r) => (
-            <li key={r.id}>{locale === "es" ? r.event.titleEs : r.event.titleEn} — {r.event.eventDate.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })} ({r.attendeeCount})</li>
+            <li key={r.id}>
+              {locale === "es" ? r.event.titleEs : r.event.titleEn} — {r.event.eventDate.toLocaleDateString("en-US", { timeZone: SITE_TIMEZONE })} ({r.attendeeCount})
+              {r.cancelledAt ? <span className="ml-2 text-xs text-neutral-400">{locale === "es" ? "cancelada" : "cancelled"}</span> : !eventHasEnded(r.event) && <CancelRsvpButton patientId={p.id} rsvpId={r.id} locale={locale} />}
+            </li>
           ))}
         </ul>
       </div>

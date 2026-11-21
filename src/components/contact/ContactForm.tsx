@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Send, CheckCircle, AlertCircle } from "lucide-react";
 import HoepCard from "@/components/ui/HoepCard";
+import LegalLinks from "@/components/legal/LegalLinks";
 import { contactFormTranslation } from "@/translation/contactPage";
 import { Lang } from "@/types";
 
@@ -188,6 +189,7 @@ export default function ContactForm({ locale, heading, sub, turnstileSiteKey = n
         </div>
 
         {/* Message */}
+        <p className="-mb-3 text-sm text-neutral-600">{locale === "es" ? "Por favor, no incluya detalles médicos; le responderemos de forma privada." : "Please don’t include medical details; we’ll follow up privately."}</p>
         <FormField label={t.message} required>
           <textarea
             name="message"
@@ -208,6 +210,8 @@ export default function ContactForm({ locale, heading, sub, turnstileSiteKey = n
               onChange={(e) => setWebsite(e.target.value)} />
           </label>
         </div>
+
+        <LegalLinks locale={locale === "es" ? "es" : "en"} which={["privacy"]} />
 
         {turnstileSiteKey && <div ref={widgetRef} />}
 

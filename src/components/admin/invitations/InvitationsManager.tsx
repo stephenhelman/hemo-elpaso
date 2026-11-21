@@ -38,8 +38,8 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function InvitationsManager({
-  eventId, rows, callList, canViewPHI,
-}: { eventId: string; rows: InvRow[]; callList: CallRow[]; canViewPHI: boolean }) {
+  eventId, rows, callList, canViewPHI, warning = null,
+}: { eventId: string; rows: InvRow[]; callList: CallRow[]; canViewPHI: boolean; warning?: string | null }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [q, setQ] = useState("");
@@ -67,7 +67,7 @@ export default function InvitationsManager({
   };
 
   const send = async () => {
-    if (!window.confirm(`Send ${pending} invitation email${pending === 1 ? "" : "s"} now? Already-sent invitations are never re-sent.`)) return;
+    if (!window.confirm(`${warning ? `⚠ ${warning}\n\n` : ""}Send ${pending} invitation email${pending === 1 ? "" : "s"} now? Already-sent invitations are never re-sent.`)) return;
     await call("send", `/api/admin/events/${eventId}/invitations/send`,
       { method: "POST", body: JSON.stringify({ expectedCount: pending }) },
       (d) => `Sent ${d.sent}${d.failed ? `, ${d.failed} FAILED and still pending (${(d.errors ?? []).join(", ") || "unknown error"})` : ""}${d.skipped ? `, ${d.skipped} skipped` : ""}`);

@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { matchPatientsForEvent } from "@/lib/invitations/match";
+import { invitationNamesCondition, CONDITION_WARNING } from "@/lib/invitations/condition-terms";
+import { getLocaleCookie } from "@/lib/locale";
 import InvitationsManager, { type InvRow, type CallRow } from "@/components/admin/invitations/InvitationsManager";
 
 export default async function EventInvitationsPage({ params }: { params: { id: string } }) {
@@ -12,7 +14,7 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
   if (!admin.can("canManageEvents")) redirect("/admin/dashboard");
   const canPHI = admin.can("canViewPHI");
 
-  const event = await prisma.event.findUnique({ where: { id: params.id } });
+  const event = await prisma.event.findUnique({ where: { id: params.id }, include: { targeting: true } });
   if (!event) notFound();
 
   const invitations = await prisma.invitation.findMany({
@@ -20,6 +22,8 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
     include: { patient: { include: { contactProfile: true } } },
     orderBy: { createdAt: "asc" },
   });
+  const warnLocale = (await getLocaleCookie()) === "es" ? "es" : "en";
+  const namesCondition = invitationNamesCondition(event);
   const match = await matchPatientsForEvent(event.id);
 
   const rows: InvRow[] = invitations.map((i) => ({
@@ -54,7 +58,12 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
           This event isn&apos;t published. Invitations are generated automatically when it is published.
         </p>
       )}
-      <InvitationsManager eventId={event.id} rows={rows} callList={call} canViewPHI={canPHI} />
+      {namesCondition && (
+        <p role="alert" className="mb-4 rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">
+          <strong>⚠ </strong>{CONDITION_WARNING[warnLocale]}
+        </p>
+      )}
+      <InvitationsManager eventId={event.id} rows={rows} callList={call} canViewPHI={canPHI} warning={namesCondition ? CONDITION_WARNING[warnLocale] : null} />
     </div>
   );
 }

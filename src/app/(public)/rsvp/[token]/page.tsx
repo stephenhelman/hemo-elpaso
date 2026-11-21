@@ -3,6 +3,8 @@ import { resolveRsvpToken } from "@/lib/rsvp";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
 import { selectableMembers } from "@/lib/rsvp/attendees";
 import { prisma } from "@/lib/db";
+import { getLocaleCookie } from "@/lib/locale";
+import LegalLinks from "@/components/legal/LegalLinks";
 import RsvpPanel, { type RsvpPanelProps } from "@/components/rsvp/RsvpPanel";
 
 // Personal link: never index, never leak the token via Referer.
@@ -46,10 +48,12 @@ export default async function RsvpTokenPage({ params }: { params: { token: strin
       }
     : { valid: false };
 
+  const locale = (await getLocaleCookie()) === "es" ? "es" : "en";
   return (
     <div className="bg-neutral-50 min-h-[70vh] px-4 py-12">
       <div className="max-w-xl mx-auto">
         <RsvpPanel {...props} />
+        <LegalLinks locale={locale} which={["privacy"]} newTab={false} className="mt-6 text-center text-xs text-neutral-500" />
       </div>
     </div>
   );

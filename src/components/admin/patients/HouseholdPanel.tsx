@@ -121,6 +121,15 @@ export default function HouseholdPanel({
                         {t.phoneConfirm}
                       </button>
                     )}
+                    {m.status === "confirmed" && m.ageGroup === "18_plus" && (
+                      <button className={link} disabled={busy === m.id}
+                        onClick={() => {
+                          if (window.confirm(t.withdrawMediaAsk))
+                            call(m.id, base(m.id), { method: "POST", body: JSON.stringify({ action: "withdraw_media" }) }, t.withdrawMediaDone, t.resendFailed);
+                        }}>
+                        {t.withdrawMedia}
+                      </button>
+                    )}
                     <button className={`${link} !text-red-600`} disabled={busy === m.id}
                       onClick={() => {
                         if (window.confirm(t.removeAsk))

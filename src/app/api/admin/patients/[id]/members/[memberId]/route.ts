@@ -7,6 +7,7 @@ import { dropMemberFromRsvps } from "@/lib/rsvp/attendees";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
 import { phoneConfirmMember, reissueMemberToken } from "@/lib/households/confirm";
+import { CONSENT_TEXT_VERSION } from "@/content/consent";
 import { sendMemberConfirmation } from "@/lib/households/confirmation";
 
 type Ctx = { params: { id: string; memberId: string } };
@@ -28,9 +29,20 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   if (error) return error;
   const m = await load(params.id, params.memberId);
   if (!m) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (m.status !== "pending") return NextResponse.json({ error: "Not pending" }, { status: 409 });
 
   const body = await req.json().catch(() => ({}));
+
+  // A confirmed adult withdraws photo consent (privacy runbook). Append-only: a NEW media record, granted = false.
+  if (body.action === "withdraw_media") {
+    if (m.status !== "confirmed" || m.ageGroup !== "18_plus") return NextResponse.json({ error: "Not a confirmed adult" }, { status: 409 });
+    await prisma.consentRecord.create({
+      data: { householdMemberId: m.id, type: "media", granted: false, textVersion: CONSENT_TEXT_VERSION, method: "phone", recordedByBoardUserId: admin!.id },
+    });
+    await auditPatient(admin!.id, AuditAction.PATIENT_UPDATED, params.id, `Member ${m.id} photo consent withdrawn`);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (m.status !== "pending") return NextResponse.json({ error: "Not pending" }, { status: 409 });
 
   if (body.action === "resend") {
     if (!m.email || !m.firstName) return NextResponse.json({ error: "No email on file" }, { status: 409 });

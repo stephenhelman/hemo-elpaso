@@ -18,12 +18,15 @@ interface Props {
   eventSlug: string;
   eventTitle: string;
   attendees: Attendee[];
+  /** President/VP only; when false the rows carry no email/phone and the export has no contact columns. */
+  showContact?: boolean;
 }
 
 export default function AttendeeListExport({
   eventSlug,
   eventTitle,
   attendees,
+  showContact = false,
 }: Props) {
   const [expanded, setExpanded] = useState(true);
 
@@ -63,9 +66,11 @@ export default function AttendeeListExport({
       `Attendee Contact List - ${eventTitle}`,
       `Generated: ${new Date().toLocaleString("en-US", { timeZone: SITE_TIMEZONE })}`,
       "",
-      "⚠️ PRIVACY-SAFE FORMAT - Names abbreviated",
+      showContact
+        ? "CONTAINS CONTACT DETAILS (full email and phone) - names abbreviated. Handle as confidential."
+        : "NO CONTACT DETAILS - names abbreviated, roles simplified.",
       "",
-      "Name,Email,Phone,Role,Check-In Time",
+      showContact ? "Name,Email,Phone,Role,Check-In Time" : "Name,Role,Check-In Time",
     ];
 
     attendees.forEach((attendee) => {
@@ -81,8 +86,7 @@ export default function AttendeeListExport({
       csv.push(
         [
           `"${name}"`,
-          attendee.email ?? "",
-          phone,
+          ...(showContact ? [attendee.email ?? "", phone] : []),
           role,
           checkInTime,
         ].join(","),
@@ -159,7 +163,7 @@ export default function AttendeeListExport({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {attendeeGroup.map((attendee) => (
-                      <AttendeeCard key={attendee.id} attendee={attendee} />
+                      <AttendeeCard key={attendee.id} attendee={attendee} showContact={showContact} />
                     ))}
                   </div>
                 </div>
@@ -174,7 +178,7 @@ export default function AttendeeListExport({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {sponsorDonorGroup.map((attendee) => (
-                      <AttendeeCard key={attendee.id} attendee={attendee} />
+                      <AttendeeCard key={attendee.id} attendee={attendee} showContact={showContact} />
                     ))}
                   </div>
                 </div>
@@ -189,7 +193,7 @@ export default function AttendeeListExport({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {volunteerGroup.map((attendee) => (
-                      <AttendeeCard key={attendee.id} attendee={attendee} />
+                      <AttendeeCard key={attendee.id} attendee={attendee} showContact={showContact} />
                     ))}
                   </div>
                 </div>
@@ -199,12 +203,14 @@ export default function AttendeeListExport({
 
           <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm font-medium text-amber-900 mb-1">
-              🔒 Maximum Privacy Protection
+              {showContact ? "Contact details shown (President / Vice President)" : "Contact details hidden for your role"}
             </p>
             <p className="text-xs text-amber-700">
-              Names abbreviated (e.g., "S. Helman"), roles simplified to
-              "Attendee", "Sponsor/Donor", and "Volunteer" to protect patient
-              status and personal information.
+              Names are abbreviated (e.g., "S. Helman") and roles simplified to "Attendee", "Sponsor/Donor" and "Volunteer"
+              to protect patient status.{" "}
+              {showContact
+                ? "This list and its CSV include full email addresses and phone numbers, so treat them as confidential."
+                : "Emails and phone numbers are available only to the President and Vice President."}
             </p>
           </div>
         </div>
@@ -213,7 +219,7 @@ export default function AttendeeListExport({
   );
 }
 
-function AttendeeCard({ attendee }: { attendee: Attendee }) {
+function AttendeeCard({ attendee, showContact }: { attendee: Attendee; showContact: boolean }) {
   const abbreviatedName = `${attendee.firstName.charAt(0)}. ${attendee.lastName}`;
 
   return (
@@ -221,9 +227,11 @@ function AttendeeCard({ attendee }: { attendee: Attendee }) {
       <p className="font-medium text-neutral-900 text-sm mb-1">
         {abbreviatedName}
       </p>
-      <p className="text-xs text-neutral-600 truncate mb-1">{attendee.email ?? "—"}</p>
-      {attendee.phone && (
-        <p className="text-xs text-neutral-500">{attendee.phone}</p>
+      {showContact && (
+        <>
+          <p className="text-xs text-neutral-600 truncate mb-1">{attendee.email ?? "—"}</p>
+          {attendee.phone && <p className="text-xs text-neutral-500">{attendee.phone}</p>}
+        </>
       )}
     </div>
   );
