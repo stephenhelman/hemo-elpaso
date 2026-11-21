@@ -32,7 +32,7 @@ Source lives at `src/`. All paths in these docs are relative to `src/`.
 
 ## Current Status
 
-Active development. In end-to-end testing phase. Not yet deployed to production.
+Live in production. Registration (Register for Information, public RSVP) is live. Privacy Policy, Terms and Children's Policy are published at `/privacy`, `/terms`, `/children` (text in `src/content/legal/`, requests handled per `docs/legal/RUNBOOK.md`). Active development continues.
 See `.claude/todo.md` for all known issues and planned features.
 
 ## Overhaul rules
