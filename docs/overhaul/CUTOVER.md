@@ -71,6 +71,24 @@ Then **Redeploy Production with "use existing build cache" unticked** (`NEXT_PUB
 
 **11. After 30 days:** remove the old Auth0 callback/logout/origin URLs, the old Sanity CORS origin and the old Turnstile hostname, and delete `NEXT_PUBLIC_BASE_URL`.
 
+## Old-site URLs (the previous hemoelpaso.org website)
+
+`scripts/legacy-redirects.mjs` (loaded by `next.config.mjs` after the host rules) sends the old site's URLs to the closest new page with a 308 (query kept):
+
+| Old path | New page |
+| --- | --- |
+| `/home-1104`, `/home` | `/` |
+| `/about-us-5023`, `/about-us` | `/about` |
+| `/resources-2315` | `/resources` |
+| `/get-involved-2932` | `/get-involved` |
+| `/calendar-of-events-3522`, `/calendar-of-events` | `/events` |
+| `/contact-us-6020`, `/contact-us` | `/contact` |
+| `/scholarships-9537` | `/scholarships` |
+| `/event-registration-contact-form` | `/events` |
+| `/event-sponsorship-contact-form` | `/contact` |
+
+The old unsuffixed `/get-involved`, `/resources` and `/scholarships` are real routes of the new site, so they are not redirected. `npm run check:legacy-redirects` fails if a rule ever collides with a real route. Source list: the old-site archive (`data/links.csv`, `wayback/index.md`).
+
 ## What people will notice
 
 - **Board members sign in again once** on the new host (the Auth0 session cookie belongs to one host).
@@ -91,7 +109,8 @@ Replace `<token>` with a real invitation or check-in token where noted. `-I` sho
 6. Studio: `/admin/studio` loads; edit and publish a trivial change, confirm it appears on the site within seconds (webhook works).
 7. Upload and approve a test photo (R2 CORS + new media host); a form with Turnstile works (`/contact`).
 8. Email: send a test (admin → Settings → Email templates, or Resend a confirmation). Links and the QR image in it point at `hemoelpaso.org`; sender is still the old verified domain.
-9. `https://hemoelpaso.org/api/cron/retention` and `/api/cron/send-reminders` without credentials return 401.
+9. Old-site URLs: `curl -sI https://hemoelpaso.org/about-us-5023` → `308`, `location: /about` (and `/contact-us-6020?lang=es` keeps its query). `/get-involved` itself is `200`.
+10. `https://hemoelpaso.org/api/cron/retention` and `/api/cron/send-reminders` without credentials return 401.
 
 ## Environment variables that hold a URL or host
 
