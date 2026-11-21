@@ -1,4 +1,4 @@
-import { mailbox } from "@/lib/site";
+import { mailbox, siteUrl } from "@/lib/site";
 import {
   Heading,
   Link,
@@ -89,7 +89,7 @@ export default function EventCancelled({
             {/* CTA Button */}
             <Section style={buttonSection}>
               <Link
-                href={`${process.env.NEXT_PUBLIC_BASE_URL}/events`}
+                href={`${siteUrl()}/events`}
                 style={button}
               >
                 Browse Other Events

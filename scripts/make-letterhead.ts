@@ -1,6 +1,6 @@
 /**
  * Builds brand/HOEP-letterhead.docx for board correspondence.
- *   NEXT_PUBLIC_BASE_URL=https://<public site> npx tsx scripts/make-letterhead.ts
+ *   NEXT_PUBLIC_SITE_URL=https://<public site> npx tsx scripts/make-letterhead.ts
  * Letter size. Header: the horizontal lockup + tagline, CENTERED and large (6in wide) at the top of the page, with a
  * thin maroon rule under it. Margins are 1in left/right/bottom; the top margin leaves room for the large header.
  * Footer: phone, website domain, Facebook group, small and ink-coloured. No mailing address (none is published).
@@ -18,10 +18,10 @@ const MAROON = "8B1538";
 const INK = "2A2426";
 const SERIF = "Georgia";
 
-const base = process.env.LETTERHEAD_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+const base = process.env.LETTERHEAD_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
 const host = (() => { try { return new URL(base).host; } catch { return ""; } })();
 if (!host || /localhost|127\.0\.0\.1/.test(host)) {
-  throw new Error(`Set NEXT_PUBLIC_BASE_URL (or LETTERHEAD_SITE_URL) to the PUBLIC site URL; got "${base}"`);
+  throw new Error(`Set NEXT_PUBLIC_SITE_URL (or LETTERHEAD_SITE_URL) to the PUBLIC site URL; got "${base}"`);
 }
 
 const logo = fs.readFileSync("brand/letterhead-logo.png"); // 2400 x 1050 (lockup on white)

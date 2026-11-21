@@ -1,4 +1,4 @@
-import { mailbox } from "@/lib/site";
+import { mailbox, siteUrl } from "@/lib/site";
 import { AuditAction, BoardRoleType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
@@ -99,7 +99,7 @@ export async function assignBoardRole(params: {
     const patientName = contactProfile
       ? `${contactProfile.firstName} ${contactProfile.lastName}`
       : (boardRole.patient.email ?? "");
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`;
+    const dashboardUrl = `${siteUrl()}/admin/dashboard`;
 
     await sendEmail({
       templateType: "BOARD_ROLE_ASSIGNED",

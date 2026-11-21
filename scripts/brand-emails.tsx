@@ -15,7 +15,7 @@ const arg = process.argv[3];
 
 (globalThis as any).React = React;
 // Links in the samples point at the documented public URL; previews load the header straight from disk.
-process.env.NEXT_PUBLIC_BASE_URL = mode === "preview" ? `file://${path.join(process.cwd(), "public")}` : "https://hemoelpaso.org";
+process.env.NEXT_PUBLIC_SITE_URL = mode === "preview" ? `file://${path.join(process.cwd(), "public")}` : "https://hemoelpaso.org";
 
 async function main() {
   const { render } = await import("@react-email/render");

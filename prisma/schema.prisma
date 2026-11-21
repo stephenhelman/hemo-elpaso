@@ -163,7 +163,7 @@ model BoardRole {
   patientId  String
   patient    Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   role       BoardRoleType
-  fromEmail  String? // e.g. president@hemo-el-paso.org — used by Resend
+  fromEmail  String? // e.g. president@<mail domain> (see lib/site.ts mailbox()) — used by Resend
   assignedBy String // admin email who assigned the role
   assignedAt DateTime      @default(now())
   active     Boolean       @default(true)
