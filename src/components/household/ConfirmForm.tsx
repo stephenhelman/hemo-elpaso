@@ -4,6 +4,8 @@ import { useState } from "react";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { confirmPageTranslation } from "@/translation/confirmPage";
+import LegalLinks from "@/components/legal/LegalLinks";
+import RichText from "@/components/legal/RichText";
 import { consentText } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { ageGroupLabels, relationshipLabels, type AgeGroup, type Relationship } from "@/lib/households/constants";
@@ -137,16 +139,17 @@ export default function ConfirmForm({ token, member }: { token: string; member: 
         <legend className="text-sm font-medium text-neutral-700 mb-1">{t.consentHeading}</legend>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={adult} onChange={(e) => setAdult(e.target.checked)} required />
-          <span><strong>{t.adultLabel}.</strong> {consentText.member_adult_attestation[locale]}</span>
+          <span><strong>{t.adultLabel}.</strong> <RichText text={consentText.member_adult_attestation[locale]} locale={locale} newTab /></span>
         </label>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={consentData} onChange={(e) => setConsentData(e.target.checked)} required />
-          <span><strong>{t.consentRequired}.</strong> {consentText.member_data_and_contact[locale]}</span>
+          <span><strong>{t.consentRequired}.</strong> <RichText text={consentText.member_data_and_contact[locale]} locale={locale} newTab /></span>
         </label>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={consentMedia} onChange={(e) => setConsentMedia(e.target.checked)} />
-          <span><strong>{t.consentOptional}.</strong> {consentText.member_media[locale]}</span>
+          <span><strong>{t.consentOptional}.</strong> <RichText text={consentText.member_media[locale]} locale={locale} newTab /></span>
         </label>
+        <LegalLinks locale={locale} which={["privacy"]} />
       </fieldset>
 
       {error && <p className="text-sm text-red-600" role="alert">{error}</p>}

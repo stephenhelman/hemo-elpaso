@@ -89,5 +89,9 @@ export const config = {
     "/events/:path*",
     "/contact",
     "/register-info",
+    "/privacy",
+    "/terms",
+    "/children",
+    "/legal",
   ],
 };

@@ -13,9 +13,16 @@
  *   - data_and_contact / media speak for the household (primary + minors)
  *   - age_guardian_attestation (primary: 18+, guardian of listed minors)
  *   - member_* texts for adults confirming for themselves at /confirm/[token]
+ * v2: v1 plus: the data-and-contact consent covers health information (if the person chooses to share it), names
+ *   the Privacy Policy (link), and says consent can be withdrawn at any time; the 18+ attestation links the Children
+ *   and Age Policy. media and the 18+ wording are unchanged in meaning. DRAFT pending Stephen's/the board's approval.
+ *   Only a test household exists under v1, so there is no re-confirmation flow.
  * Display order on every form: 1) 18+ attestation, 2) data_and_contact, 3) media.
+ *
+ * Strings may carry the inline markup of components/legal/RichText.tsx ([label](/path)); only the VERSION is stored
+ * in ConsentRecord, never the markup.
  */
-export const CONSENT_TEXT_VERSION = "v1";
+export const CONSENT_TEXT_VERSION = "v2";
 
 const draft1 = {
   data_and_contact: {
@@ -84,11 +91,30 @@ const v1 = {
   },
 } as const;
 
+const v2 = {
+  data_and_contact: {
+    en: "I agree that Hemophilia Outreach of El Paso (HOEP) may store the information I provide about me and the minors in my household, including health information if I choose to share it, and may contact me by email, phone, or mail about HOEP events and services, as described in the [Privacy Policy](/privacy). I can withdraw this consent, or ask HOEP to delete this information, at any time.",
+    es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y sobre los menores de mi hogar, incluida la información de salud si decido compartirla, y se comunique conmigo por correo electrónico, teléfono o correo postal sobre eventos y servicios de HOEP, como se describe en la [Política de Privacidad](/privacy). Puedo retirar este consentimiento, o pedir a HOEP que elimine esta información, en cualquier momento.",
+  },
+  media: v1.media,
+  age_guardian_attestation: {
+    en: "I am 18 or older, and I am the parent or legal guardian of any minors I listed, or have their guardian's permission. ([Children and Age Policy](/children))",
+    es: "Tengo 18 años o más, y soy el padre, la madre o el tutor legal de los menores que incluí, o tengo el permiso de su tutor. ([Política para Menores y Edad](/children))",
+  },
+  // Adults confirming for themselves (/confirm/[token]).
+  member_data_and_contact: {
+    en: "I agree that Hemophilia Outreach of El Paso (HOEP) may store the information I provide about myself, including health information if I choose to share it, and may contact me about HOEP events and services, as described in the [Privacy Policy](/privacy). I can withdraw this consent, or ask HOEP to delete my information, at any time.",
+    es: "Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí, incluida la información de salud si decido compartirla, y se comunique conmigo sobre eventos y servicios de HOEP, como se describe en la [Política de Privacidad](/privacy). Puedo retirar este consentimiento, o pedir a HOEP que elimine mi información, en cualquier momento.",
+  },
+  member_media: v1.member_media,
+  member_adult_attestation: v1.member_adult_attestation,
+} as const;
+
 /** Every published version, for traceability. */
-export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1 } as const;
+export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1, v2 } as const;
 
 /** The wording currently shown (CONSENT_TEXT_VERSION). */
-export const consentText = v1;
+export const consentText = v2;
 
 /** Primary person's consent types (ConsentRecord.type). */
 export type ConsentType = "data_and_contact" | "media" | "age_guardian_attestation";

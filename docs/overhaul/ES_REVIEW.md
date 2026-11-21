@@ -380,3 +380,163 @@ New Spanish for the RSVP checklist (tú form, same register question as above) a
 
 - `src/components/layout/Navbar.tsx`: dropdown labels `Eventos` (items `Todos los eventos`, `Fotos`) and `Recursos` (items `Guía de recursos`, `Becas`). `Todos los eventos` and `Guía de recursos` are new labels. Existing labels kept: `Nosotros`, `Recibir Información`, `Contacto`, `Participa`.
 - `src/translation/layoutPage.ts` (footer): `Acceso de la junta` (board sign-in link). The header no longer has a sign-in button.
+
+## Legal pages (new, 2026-11-19)
+
+Spanish written for the board-approved English policies (`docs/legal/POLICIES_v1.md`). **English controls if the two differ** (each Spanish page says so at the bottom). Register is **usted**, plain and neutral Latin American Spanish. Source: `src/content/legal/{privacy,terms,children}.ts`; consent text: `src/content/consent.ts` (v2, DRAFT).
+
+Placeholders: `{EMAIL}` = privacy inbox, `{PHONE}` = (915) 539-7353, `{HOST}` = site host, `{BACKUP}` = backup window ("hasta 30 días" is an unverified draft value).
+
+### Privacy Policy / Política de Privacidad
+
+| EN | ES |
+| --- | --- |
+| Privacy Policy | Política de Privacidad |
+| Hemophilia Outreach of El Paso (HOEP) is a nonprofit that supports families affected by bleeding disorders in the El Paso area. This policy explains what information we collect through our website and events, why, who can see it, how long we keep it, and the choices you have. We never sell your information. | Hemophilia Outreach of El Paso (HOEP) es una organización sin fines de lucro que apoya a las familias afectadas por trastornos hemorrágicos en el área de El Paso. Esta política explica qué información recopilamos a través de nuestro sitio web y de nuestros eventos, para qué la usamos, quién puede verla, cuánto tiempo la conservamos y qué opciones tiene usted. Nunca vendemos su información. |
+| Information we collect | Información que recopilamos |
+| **When you register your household:** | **Cuando registra a su hogar:** |
+| Your name, email address and/or phone number, and preferred language (English or Spanish). | Su nombre, su correo electrónico y/o su número de teléfono, y su idioma preferido (inglés o español). |
+| Your mailing address, if you choose to give it. | Su dirección postal, si decide darla. |
+| The people in your household: first name (last name optional), relationship to you, and age group. We do not ask for dates of birth. | Las personas de su hogar: nombre (el apellido es opcional), parentesco con usted y grupo de edad. No pedimos fechas de nacimiento. |
+| If you choose to tell us, whether you or a child in your household has a bleeding disorder, and which one (for example, hemophilia A, hemophilia B, or von Willebrand disease). This is health information, and we treat it with extra care. | Si usted decide decírnoslo, si usted o un menor de su hogar tiene un trastorno hemorrágico y cuál (por ejemplo, hemofilia A, hemofilia B o enfermedad de von Willebrand). Esta es información de salud y la tratamos con especial cuidado. |
+| Your consents and when you gave them (see “Your consents” below). | Sus consentimientos y la fecha en que los dio (vea “Sus consentimientos” más abajo). |
+| **Adults in your household** are asked to confirm their own information. If you list someone 18 or older, we email them once with a private link, or call them if they have no email. They decide for themselves whether to share health information and whether to consent. If they don’t confirm within 30 days, we delete what you entered about them, except a note that your household includes one more adult. | **A los adultos de su hogar** les pedimos que confirmen su propia información. Si usted incluye a alguien de 18 años o más, le enviamos un solo correo con un enlace privado, o lo llamamos si no tiene correo. Cada persona decide por sí misma si comparte información de salud y si da su consentimiento. Si no confirma en 30 días, borramos lo que usted escribió sobre esa persona, salvo una nota de que su hogar incluye un adulto más. |
+| **When you RSVP or attend an event:** who in your household is coming, the number of guests, and who checked in. | **Cuando confirma su asistencia o asiste a un evento:** quién de su hogar va a asistir, el número de invitados y quién se registró a la entrada. |
+| **When you contact us:** your name, email, phone (optional), and your message. Contact-form messages are sent to HOEP’s email inbox and are not stored in our database. Please don’t include medical details in a contact message; we will follow up privately. | **Cuando se comunica con nosotros:** su nombre, correo electrónico, teléfono (opcional) y su mensaje. Los mensajes del formulario de contacto se envían al correo de HOEP y no se guardan en nuestra base de datos. Por favor, no incluya detalles médicos en un mensaje de contacto; le responderemos de forma privada. |
+| **When you visit the website:** we use privacy-friendly page-view statistics that do not use cookies or identify you. We store one cookie to remember your language choice. Our hosting provider sees standard technical information, such as your IP address, to deliver the site. | **Cuando visita el sitio web:** usamos estadísticas de visitas que respetan la privacidad, no usan cookies y no lo identifican. Guardamos una sola cookie para recordar su idioma. Nuestro proveedor de alojamiento web ve información técnica estándar, como su dirección IP, para poder mostrarle el sitio. |
+| **Photos:** HOEP may take photos at events. Photos are only published for people who consented to photo use (see below). | **Fotos:** HOEP puede tomar fotos en los eventos. Solo publicamos fotos de las personas que dieron su consentimiento para el uso de fotos (vea más abajo). |
+| How we use it | Cómo la usamos |
+| To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age, so we may use your household’s information to decide which invitations to send you. Invitations never say why you were invited or mention anyone’s diagnosis. | Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad, por lo que podemos usar la información de su hogar para decidir qué invitaciones enviarle. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie. |
+| To manage RSVPs, send confirmations and reminders, and check people in at events. | Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas a los eventos. |
+| To answer your messages. | Para responder a sus mensajes. |
+| To improve our programs, using overall counts (for example, how many families attended). | Para mejorar nuestros programas, usando cifras generales (por ejemplo, cuántas familias asistieron). |
+| We do not use your information for advertising, and we do not sell, rent or trade it. | No usamos su información para publicidad, y no la vendemos, alquilamos ni intercambiamos. |
+| Who can see it | Quién puede verla |
+| Only HOEP board members who need it for their role can see your information, and access is limited by role. Health information is visible only to the President and Vice President. Board members sign in with secure accounts, and access to records is logged. | Solo los miembros de la junta directiva de HOEP que la necesitan para su cargo pueden ver su información, y el acceso está limitado según el cargo. La información de salud solo la ven la presidencia y la vicepresidencia. Los miembros de la junta inician sesión con cuentas seguras, y el acceso a los registros queda anotado. |
+| We use trusted service providers to run the website. They process information only to provide their service to HOEP: | Usamos proveedores de servicios de confianza para operar el sitio web. Ellos procesan la información únicamente para prestar su servicio a HOEP: |
+| Provider / What it does for HOEP | Proveedor / Qué hace para HOEP |
+| Vercel / Hosts the website; privacy-friendly page-view statistics | Vercel / Aloja el sitio web; estadísticas de visitas que respetan la privacidad |
+| Neon / Stores our database | Neon / Guarda nuestra base de datos |
+| Resend / Sends our emails | Resend / Envía nuestros correos electrónicos |
+| Cloudflare / Stores event photos; protects our forms from spam bots | Cloudflare / Guarda las fotos de los eventos; protege nuestros formularios contra robots de spam |
+| Auth0 / Board member sign-in | Auth0 / Inicio de sesión de los miembros de la junta |
+| Sanity / Manages public website content (no family information) | Sanity / Administra el contenido público del sitio web (sin información de las familias) |
+| Google / Shows a map on our contact page | Google / Muestra un mapa en nuestra página de contacto |
+| We may share information if the law requires it, or to protect someone’s safety. | Podemos compartir información si la ley lo exige o para proteger la seguridad de alguien. |
+| Your consents | Sus consentimientos |
+| When you register, you agree that HOEP may keep your information and contact you about events and services. Photo and video consent is separate and optional. You can change either at any time by contacting us. Withdrawing consent stops invitations and other non-essential email. If you have an active RSVP, we will still send that event’s confirmation and reminder unless you cancel the RSVP. | Al registrarse, usted acepta que HOEP guarde su información y se comunique con usted sobre eventos y servicios. El consentimiento para fotos y videos es aparte y es opcional. Puede cambiar cualquiera de los dos en cualquier momento comunicándose con nosotros. Al retirar su consentimiento, dejamos de enviarle invitaciones y otros correos que no sean esenciales. Si tiene una confirmación de asistencia activa, seguiremos enviándole la confirmación y el recordatorio de ese evento, a menos que cancele su asistencia. |
+| Every invitation email also has an unsubscribe link. | Cada correo de invitación también incluye un enlace para cancelar la suscripción. |
+| Children | Menores de edad |
+| Only adults (18 or older) can register. A parent or legal guardian may include their minor children and their information. Read our [Children and Age Policy](/children) for details. | Solo los adultos (de 18 años o más) pueden registrarse. Un padre, madre o tutor legal puede incluir a sus hijos menores de edad y su información. Lea nuestra [Política para Menores y Edad](/children) para más detalles. |
+| How long we keep it | Cuánto tiempo la conservamos |
+| Information / How long | Información / Cuánto tiempo |
+| Your household record / While you’re involved with HOEP. If there’s no RSVP or contact from you for 3 years, we’ll reach out, and delete it if we don’t hear back | El registro de su hogar / Mientras usted participe con HOEP. Si pasan 3 años sin confirmación de asistencia ni contacto de su parte, nos comunicaremos con usted y lo borraremos si no recibimos respuesta |
+| An unconfirmed adult’s details / 30 days, then deleted | Datos de un adulto sin confirmar / 30 días; después se borran |
+| Event links and QR codes / Until 30 days after the event | Enlaces y códigos QR de eventos / Hasta 30 días después del evento |
+| Email delivery records / 1 year | Registros de entrega de correos / 1 año |
+| Access logs / 3 years | Registros de acceso / 3 años |
+| Contact-form messages / In HOEP’s inbox until the matter is resolved | Mensajes del formulario de contacto / En el correo de HOEP hasta que el asunto se resuelva |
+| Published photos / Until we remove them, including on request | Fotos publicadas / Hasta que las retiremos, incluso si usted lo solicita |
+| Deleted information may remain in secure backups for a limited period ({BACKUP}) before it is permanently erased. | La información borrada puede permanecer en copias de seguridad protegidas durante un tiempo limitado ({BACKUP}) antes de eliminarse por completo. |
+| Your choices and rights | Sus opciones y derechos |
+| You can ask us to: | Usted puede pedirnos que: |
+| Tell you what information we have about you and your household. | Le digamos qué información tenemos sobre usted y su hogar. |
+| Correct it. | La corrijamos. |
+| Delete it, completely. | La borremos por completo. |
+| Remove a photo of you or your child from our website or social media. | Retiremos de nuestro sitio web o redes sociales una foto suya o de su hijo o hija. |
+| Stop contacting you. | Dejemos de comunicarnos con usted. |
+| Contact us at {EMAIL} or {PHONE}. We may ask a question to confirm it’s really you, and we will respond within 30 days. | Escríbanos a {EMAIL} o llámenos al {PHONE}. Es posible que le hagamos una pregunta para confirmar que realmente es usted, y le responderemos en un plazo de 30 días. |
+| Security | Seguridad |
+| We protect your information with encrypted connections, restricted access for board members, private links that can’t be guessed, and by never putting health information in emails, links or QR codes. No system is perfectly secure; if a breach affected your information, we would notify you as the law requires. | Protegemos su información con conexiones cifradas, acceso restringido para los miembros de la junta, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. Ningún sistema es perfectamente seguro; si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley. |
+| Changes to this policy | Cambios a esta política |
+| If we change this policy, we’ll post the new version here with a new effective date. If a change affects how we use information you already gave us, we’ll ask for your consent again. | Si cambiamos esta política, publicaremos aquí la nueva versión con una nueva fecha de vigencia. Si un cambio afecta la manera en que usamos información que usted ya nos dio, le pediremos su consentimiento de nuevo. |
+| Contact | Contacto |
+| Hemophilia Outreach of El Paso · El Paso, Texas · {EMAIL} · {PHONE} | Hemophilia Outreach of El Paso · El Paso, Texas · {EMAIL} · {PHONE} |
+| (none: added sentence) | Esta es una traducción para su comodidad. Si hay alguna diferencia entre la versión en español y la versión en inglés, prevalece la versión en inglés. |
+
+### Terms of Use / Términos de Uso
+
+| EN | ES |
+| --- | --- |
+| Terms of Use | Términos de Uso |
+| By using {HOST} you agree to these terms. If you don’t agree, please don’t use the site. | Al usar {HOST}, usted acepta estos términos. Si no está de acuerdo, por favor no use el sitio. |
+| Not medical advice | No es consejo médico |
+| Information on this site, including about bleeding disorders, treatment centers and programs, is for general education only. It is not medical advice and does not replace your doctor or hemophilia treatment center. In an emergency, call 911. | La información de este sitio, incluida la que trata de los trastornos hemorrágicos, los centros de tratamiento y los programas, es solo para educación general. No es consejo médico y no reemplaza a su médico ni a su centro de tratamiento de hemofilia. En caso de emergencia, llame al 911. |
+| Registering and RSVPs | Registro y confirmación de asistencia |
+| You must be 18 or older to register, and the information you give must be accurate. | Debe tener 18 años o más para registrarse, y la información que proporcione debe ser correcta. |
+| Only register people you are allowed to: yourself, minors you are the parent or legal guardian of (or have their guardian’s permission for), and other adults in your household, who will be asked to confirm for themselves. | Registre solo a las personas que le corresponde registrar: usted mismo, los menores de quienes usted es padre, madre o tutor legal (o tiene el permiso de su tutor), y otros adultos de su hogar, a quienes se les pedirá que confirmen por sí mismos. |
+| Your RSVP and invitation links are private. Please don’t share them; anyone with the link can view or change that RSVP. | Sus enlaces de confirmación de asistencia y de invitación son privados. Por favor, no los comparta; cualquier persona con el enlace puede ver o cambiar esa confirmación. |
+| Events can have limited space. RSVPs are first come, first served, and HOEP may change or cancel an event. We will let RSVPed families know. | Los eventos pueden tener cupo limitado. Las confirmaciones se atienden por orden de llegada, y HOEP puede cambiar o cancelar un evento. Se lo haremos saber a las familias que hayan confirmado. |
+| At our events | En nuestros eventos |
+| HOEP may take photos and video at events. We publish images only of people who consented to photo use. If you see an image of you or your child that you want removed, contact us and we will take it down. | HOEP puede tomar fotos y videos en los eventos. Solo publicamos imágenes de personas que dieron su consentimiento para el uso de fotos. Si ve una imagen suya o de su hijo o hija que desea que retiremos, comuníquese con nosotros y la quitaremos. |
+| Acceptable use | Uso aceptable |
+| Don’t use the site or its forms to send spam, advertising or harmful content, to try to access information that isn’t yours, or to interfere with how the site works. We may block submissions that break these rules. | No use el sitio ni sus formularios para enviar spam, publicidad o contenido dañino, para intentar acceder a información que no es suya, ni para interferir con el funcionamiento del sitio. Podemos bloquear envíos que incumplan estas reglas. |
+| Links to other websites | Enlaces a otros sitios web |
+| We link to other organizations, such as national bleeding disorder foundations and local providers. We aren’t responsible for their content or privacy practices. | Incluimos enlaces a otras organizaciones, como fundaciones nacionales de trastornos hemorrágicos y proveedores locales. No somos responsables de su contenido ni de sus prácticas de privacidad. |
+| HOEP’s content | Contenido de HOEP |
+| The HOEP name, logo and site content belong to HOEP. You may share our pages and event information for non-commercial purposes; please don’t alter our logo or use it to suggest HOEP endorses something. | El nombre, el logotipo y el contenido del sitio pertenecen a HOEP. Puede compartir nuestras páginas y la información de los eventos con fines no comerciales; por favor, no altere nuestro logotipo ni lo use para dar a entender que HOEP respalda algo. |
+| No warranty | Sin garantía |
+| We work to keep the site accurate and available, but it is provided “as is”, and we can’t promise it will always be error-free or online. To the extent the law allows, HOEP is not liable for losses from using the site. | Nos esforzamos por mantener el sitio correcto y disponible, pero se ofrece “tal como está” y no podemos prometer que siempre estará libre de errores ni en línea. En la medida en que la ley lo permita, HOEP no es responsable por pérdidas derivadas del uso del sitio. |
+| Governing law | Ley aplicable |
+| These terms are governed by the laws of the State of Texas. | Estos términos se rigen por las leyes del Estado de Texas. |
+| Changes | Cambios |
+| We may update these terms. The current version and its effective date will always be on this page. | Podemos actualizar estos términos. La versión vigente y su fecha de vigencia siempre estarán en esta página. |
+| Contact | Contacto |
+| {EMAIL} · {PHONE} | {EMAIL} · {PHONE} |
+| (none: added sentence) | Esta es una traducción para su comodidad. Si hay alguna diferencia entre la versión en español y la versión en inglés, prevalece la versión en inglés. |
+
+### Children and Age Policy / Política para Menores y Edad
+
+| EN | ES |
+| --- | --- |
+| Children and Age Policy | Política para Menores y Edad |
+| Many of the families HOEP serves have children with bleeding disorders, so we take extra care with children’s information. Children never use our forms themselves; a parent or guardian provides their information. | Muchas de las familias que atiende HOEP tienen hijos con trastornos hemorrágicos, por eso cuidamos de manera especial la información de los menores. Los niños nunca usan nuestros formularios por sí mismos; la información la proporciona un padre, madre o tutor. |
+| Who can register | Quién puede registrarse |
+| Only adults 18 or older can register with HOEP or RSVP to events. Everyone who registers confirms that they are 18 or older. This website is not directed to children, and we do not knowingly collect information directly from anyone under 18. If we learn a child registered themselves, we will delete that registration and, where we can, contact a parent or guardian. | Solo los adultos de 18 años o más pueden registrarse con HOEP o confirmar su asistencia a los eventos. Todas las personas que se registran confirman que tienen 18 años o más. Este sitio web no está dirigido a menores y no recopilamos a sabiendas información directamente de nadie menor de 18 años. Si nos enteramos de que un menor se registró por su cuenta, borraremos ese registro y, cuando podamos, nos comunicaremos con un padre, madre o tutor. |
+| Children in a household | Menores en un hogar |
+| When you register, you may list children under 18 in your household. You confirm that you are their parent or legal guardian, or that you have their guardian’s permission. For each child we collect only: | Al registrarse, puede incluir a los menores de 18 años de su hogar. Usted confirma que es su padre, madre o tutor legal, o que tiene el permiso de su tutor. De cada menor recopilamos únicamente: |
+| First name (last name optional) | Nombre (el apellido es opcional) |
+| Relationship to you | Parentesco con usted |
+| Age group (0–5, 6–12 or 13–17), not a date of birth | Grupo de edad (0–5, 6–12 o 13–17), no la fecha de nacimiento |
+| If you choose to tell us, whether they have a bleeding disorder, and which one | Si usted decide decírnoslo, si tiene un trastorno hemorrágico y cuál |
+| We use this to invite your family to events that fit your children, such as youth programs and camps, and to check your family in at events. We never put a child’s health information in an email, link or QR code. | Usamos esta información para invitar a su familia a eventos adecuados para sus hijos, como programas para jóvenes y campamentos, y para registrar la entrada de su familia a los eventos. Nunca incluimos la información de salud de un menor en un correo, un enlace ni un código QR. |
+| Adults in a household | Adultos en un hogar |
+| An adult in your household speaks for themselves. You may list them, but we ask them directly to confirm their information and give their own consent. You cannot share another adult’s health information. If they don’t confirm within 30 days, we delete what you entered about them. | Un adulto de su hogar habla por sí mismo. Usted puede incluirlo, pero le pedimos directamente a esa persona que confirme su información y dé su propio consentimiento. Usted no puede compartir la información de salud de otro adulto. Si no confirma en 30 días, borramos lo que usted escribió sobre esa persona. |
+| Photos of children | Fotos de menores |
+| We publish photos of children only when their parent or guardian has consented to photo use. At events, board members can see which families declined, so those children are not included in published photos. A parent or guardian can ask us to remove a photo of their child at any time, and we will take it down promptly. | Solo publicamos fotos de menores cuando su padre, madre o tutor ha dado su consentimiento para el uso de fotos. En los eventos, los miembros de la junta pueden ver qué familias no dieron su consentimiento, para que esos menores no aparezcan en las fotos publicadas. Un padre, madre o tutor puede pedirnos en cualquier momento que retiremos una foto de su hijo o hija, y la quitaremos de inmediato. |
+| When a child turns 18 | Cuando un menor cumple 18 años |
+| The age group you entered does not update automatically. When a child in your household turns 18, please let us know. As an adult, they will be asked to confirm their own information and consent, and any information about them that they don’t confirm will be removed. | El grupo de edad que usted escribió no se actualiza automáticamente. Cuando un menor de su hogar cumpla 18 años, por favor avísenos. Como adulto, se le pedirá que confirme su propia información y dé su consentimiento, y se eliminará cualquier información suya que no confirme. |
+| Your rights as a parent or guardian | Sus derechos como padre, madre o tutor |
+| You can review, correct or delete your children’s information at any time, and withdraw photo consent, by contacting us at {EMAIL} or {PHONE}. We respond within 30 days. | Puede revisar, corregir o borrar la información de sus hijos en cualquier momento, y retirar el consentimiento para fotos, comunicándose con nosotros en {EMAIL} o al {PHONE}. Respondemos en un plazo de 30 días. |
+| (none: added sentence) | Esta es una traducción para su comodidad. Si hay alguna diferencia entre la versión en español y la versión en inglés, prevalece la versión en inglés. |
+
+### Consent text v2 (DRAFT, needs approval)
+
+| Type | EN | ES |
+| --- | --- | --- |
+| data_and_contact | I agree that Hemophilia Outreach of El Paso (HOEP) may store the information I provide about me and the minors in my household, including health information if I choose to share it, and may contact me by email, phone, or mail about HOEP events and services, as described in the [Privacy Policy](/privacy). I can withdraw this consent, or ask HOEP to delete this information, at any time. | Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí y sobre los menores de mi hogar, incluida la información de salud si decido compartirla, y se comunique conmigo por correo electrónico, teléfono o correo postal sobre eventos y servicios de HOEP, como se describe en la [Política de Privacidad](/privacy). Puedo retirar este consentimiento, o pedir a HOEP que elimine esta información, en cualquier momento. |
+| media | I agree that HOEP may use photos or video that include me or the minors in my household at HOEP events in its materials and on its website and social media. This does not cover other adults, who answer for themselves. This is optional. | Acepto que HOEP pueda usar fotos o videos en los que aparezcamos yo o los menores de mi hogar en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto no cubre a otros adultos, que responden por sí mismos. Esto es opcional. |
+| age_guardian_attestation | I am 18 or older, and I am the parent or legal guardian of any minors I listed, or have their guardian's permission. ([Children and Age Policy](/children)) | Tengo 18 años o más, y soy el padre, la madre o el tutor legal de los menores que incluí, o tengo el permiso de su tutor. ([Política para Menores y Edad](/children)) |
+| member_data_and_contact | I agree that Hemophilia Outreach of El Paso (HOEP) may store the information I provide about myself, including health information if I choose to share it, and may contact me about HOEP events and services, as described in the [Privacy Policy](/privacy). I can withdraw this consent, or ask HOEP to delete my information, at any time. | Acepto que Hemophilia Outreach of El Paso (HOEP) guarde la información que proporciono sobre mí, incluida la información de salud si decido compartirla, y se comunique conmigo sobre eventos y servicios de HOEP, como se describe en la [Política de Privacidad](/privacy). Puedo retirar este consentimiento, o pedir a HOEP que elimine mi información, en cualquier momento. |
+| member_media | I agree that HOEP may use photos or video that include me at HOEP events in its materials and on its website and social media. This is optional. | Acepto que HOEP pueda usar fotos o videos en los que aparezca yo en eventos de HOEP, en sus materiales, sitio web y redes sociales. Esto es opcional. |
+| member_adult_attestation | I am 18 or older. | Tengo 18 años o más. |
+
+### Other legal UI strings
+
+| Where | EN | ES |
+| --- | --- | --- |
+| Print button | Print / Save as PDF | Imprimir / Guardar como PDF |
+| Page meta | Version 1 · Effective {date} | Versión 1 · Vigente desde {date} |
+| Back link on legal pages | All legal pages | Todas las páginas legales |
+| /legal index | Legal / How HOEP handles your information, and the rules for using this site. / Read | Información legal / Cómo maneja HOEP su información y las reglas para usar este sitio. / Leer |
+| Footer links | Privacy · Terms · Children’s Policy | Privacidad · Términos · Política para menores |
+| Link lines (forms, RSVP page) | Privacy Policy · Children and Age Policy · Terms of Use | Política de Privacidad · Política para Menores y Edad · Términos de Uso |
+| Contact form notice | Please don’t include medical details; we’ll follow up privately. | Por favor, no incluya detalles médicos; le responderemos de forma privada. |
+| Email footer link | Privacy Policy | Política de Privacidad |
+
+
+### Invitation warning (admin, shown on the event's Invitations page and in the send confirmation)
+
+| EN | ES |
+| --- | --- |
+| This invitation only goes to families with a specific condition. Its title or description names a condition, which could reveal a family's diagnosis to anyone who sees the email. | Esta invitación solo se envía a familias con una condición específica. Su título o descripción nombra una condición, lo que podría revelar el diagnóstico de una familia a cualquiera que vea el correo. |

@@ -96,3 +96,13 @@ export function withLang(url: string, lang: "en" | "es"): string {
 
 /** Short form of the org name, used in person subtitles ("President, HOEP"). */
 export const ORG_ABBR = "HOEP";
+
+/**
+ * Where privacy requests go (legal pages, consent text). For now this is the main info@ inbox, because that is the
+ * mailbox that exists and is monitored. TODO(domain move): once privacy@hemoelpaso.org exists (forwarding to the
+ * President and VP), change this to mailbox("privacy").
+ */
+export const PRIVACY_EMAIL = mailbox("info");
+
+/** The site's public URL (https://hemoelpaso.org after cutover). Terms of Use render its host. */
+export const SITE_URL = siteUrl();

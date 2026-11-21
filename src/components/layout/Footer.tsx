@@ -132,6 +132,14 @@ export default function Footer() {
             {t.rights}
           </p>
 
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            {t.legalLinks.map((l) => (
+              <Link key={l.href} href={l.href} className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+
           <a href="/api/auth/login?returnTo=/admin" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
             {t.boardSignIn}
           </a>

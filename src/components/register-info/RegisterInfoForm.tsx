@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { CheckCircle, Loader2 } from "lucide-react";
-import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { useLanguage } from "@/context/LanguageContext";
 import { registerInfoTranslation } from "@/translation/registerInfoPage";
 import { withPhone } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
+import LegalLinks from "@/components/legal/LegalLinks";
+import RichText from "@/components/legal/RichText";
 import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import HouseholdSection, {
@@ -214,11 +215,15 @@ export default function RegisterInfoForm({
         <label className="block text-sm font-medium text-neutral-700 mb-1.5">
           {t.address} <span className="text-neutral-400">({t.optional})</span>
         </label>
-        <PlacesAutocompleteInput
-          value={address}
-          onChange={setAddress}
-          placeholder={t.addressPlaceholder}
+        {/* Plain input on purpose: no Google Places script on a public page where health information is entered. */}
+        <input
+          type="text"
           className={input}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder={t.addressPlaceholder}
+          maxLength={300}
+          autoComplete="street-address"
         />
       </div>
 
@@ -265,7 +270,7 @@ export default function RegisterInfoForm({
           <input type="checkbox" className="mt-1" checked={attestation}
             onChange={(e) => setAttestation(e.target.checked)} required />
           <span>
-            <strong>{h.attestationLabel}.</strong> {consentText.age_guardian_attestation[locale]}
+            <strong>{h.attestationLabel}.</strong> <RichText text={consentText.age_guardian_attestation[locale]} locale={locale} newTab />
           </span>
         </label>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
@@ -273,16 +278,17 @@ export default function RegisterInfoForm({
             onChange={(e) => setConsentData(e.target.checked)} required />
           <span>
             <strong>{t.consentDataLabel}.</strong>{" "}
-            {consentText.data_and_contact[locale]}
+            <RichText text={consentText.data_and_contact[locale]} locale={locale} newTab />
           </span>
         </label>
         <label className="flex items-start gap-3 text-sm text-neutral-700">
           <input type="checkbox" className="mt-1" checked={consentMedia}
             onChange={(e) => setConsentMedia(e.target.checked)} />
           <span>
-            <strong>{t.consentMediaLabel}.</strong> {consentText.media[locale]}
+            <strong>{t.consentMediaLabel}.</strong> <RichText text={consentText.media[locale]} locale={locale} newTab />
           </span>
         </label>
+        <LegalLinks locale={locale} which={["privacy", "children", "terms"]} />
         <p className="text-[11px] text-neutral-400">v: {CONSENT_TEXT_VERSION}</p>
       </fieldset>
 

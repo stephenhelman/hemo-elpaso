@@ -21,6 +21,11 @@ export const footerTranslation = {
     connect: "Connect",
     rights: "All rights reserved.",
     boardSignIn: "Board sign in",
+    legalLinks: [
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/children", label: "Children’s Policy" },
+    ],
     madeWith: "Made with",
     forCommunity: "for the El Paso community",
     newsletter: "Stay Informed",
@@ -41,6 +46,11 @@ export const footerTranslation = {
     contact: "Contáctenos",
     connect: "Conéctate",
     boardSignIn: "Acceso de la junta",
+    legalLinks: [
+      { href: "/privacy", label: "Privacidad" },
+      { href: "/terms", label: "Términos" },
+      { href: "/children", label: "Política para menores" },
+    ],
     rights: "Todos los derechos reservados.",
     madeWith: "Hecho con",
     forCommunity: "para la comunidad de El Paso",
