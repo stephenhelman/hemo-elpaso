@@ -12,11 +12,14 @@
  *                            (the Resend-verified sending domain).
  */
 export function siteUrl(): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL;
+  const configured =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL;
   if (configured) return configured.replace(/\/+$/, "");
   // Production must never guess: a *.vercel.app link in an email to a family would be a broken, off-brand link.
   if (process.env.VERCEL_ENV === "production") {
-    throw new Error("NEXT_PUBLIC_SITE_URL is not set for Production (the site's public URL, e.g. https://hemoelpaso.org)");
+    throw new Error(
+      "NEXT_PUBLIC_SITE_URL is not set for Production (the site's public URL, e.g. https://hemoelpaso.org)",
+    );
   }
   // Previews build working links to themselves.
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
@@ -75,11 +78,34 @@ export const FACEBOOK_LABEL = {
 } as const;
 
 /** Replace {phone} in a translated sentence. */
-export const withPhone = (s: string) => s.replace(/\{phone\}/g, SITE_PHONE.dashed);
+export const withPhone = (s: string) =>
+  s.replace(/\{phone\}/g, SITE_PHONE.dashed);
 
 const DECADE_WORDS = {
-  en: ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"],
-  es: ["", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"],
+  en: [
+    "",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+  ],
+  es: [
+    "",
+    "una",
+    "dos",
+    "tres",
+    "cuatro",
+    "cinco",
+    "seis",
+    "siete",
+    "ocho",
+    "nueve",
+  ],
 } as const;
 
 /**
@@ -87,18 +113,24 @@ const DECADE_WORDS = {
  *   {years}       33            {decadeYears}  30  (floored to the decade)
  *   {decades}     three / tres (capitalised at the start of a sentence)   {Decades}  always Three / Tres
  */
-export function fillYears(s: string, locale: "en" | "es", now: Date = new Date()): string {
+export function fillYears(
+  s: string,
+  locale: "en" | "es",
+  now: Date = new Date(),
+): string {
   const d = decadesSinceFounding(now);
   const w = DECADE_WORDS[locale][d] ?? String(d);
   const cap = w.charAt(0).toUpperCase() + w.slice(1);
-  return s
-    .replace(/\{years\}/g, String(yearsSinceFounding(now)))
-    .replace(/\{decadeYears\}/g, String(d * 10))
-    // {decades}: capitalised at the start of the text or of a sentence ("{decades} Decades of Hope"), lower-case mid-sentence ("over {decades} decades")
-    .replace(/\{decades\}/g, (_m, offset: number, whole: string) =>
-      offset === 0 || /[.!?¿¡]\s*$/.test(whole.slice(0, offset)) ? cap : w,
-    )
-    .replace(/\{Decades\}/g, cap);
+  return (
+    s
+      .replace(/\{years\}/g, String(yearsSinceFounding(now)))
+      .replace(/\{decadeYears\}/g, String(d * 10))
+      // {decades}: capitalised at the start of the text or of a sentence ("{decades} Decades of Hope"), lower-case mid-sentence ("over {decades} decades")
+      .replace(/\{decades\}/g, (_m, offset: number, whole: string) =>
+        offset === 0 || /[.!?¿¡]\s*$/.test(whole.slice(0, offset)) ? cap : w,
+      )
+      .replace(/\{Decades\}/g, cap)
+  );
 }
 
 /** Append ?lang=en|es (or &lang=) so a link opened from an email renders in the patient's language. */
@@ -114,7 +146,7 @@ export const ORG_ABBR = "HOEP";
  * mailbox that exists and is monitored. TODO(domain move): once privacy@hemoelpaso.org exists (forwarding to the
  * President and VP), change this to mailbox("privacy").
  */
-export const PRIVACY_EMAIL = mailbox("info");
+export const PRIVACY_EMAIL = mailbox("privacy");
 
 /** The site's public URL (https://hemoelpaso.org after cutover). Terms of Use render its host. */
 export const SITE_URL = siteUrl();
