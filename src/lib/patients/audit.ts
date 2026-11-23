@@ -14,6 +14,7 @@ export async function auditPatient(
   await prisma.auditLog.create({
     data: {
       patientId: adminId, // the acting board user (existing convention)
+      actorType: "board",
       action,
       resourceType: "Patient",
       resourceId: patientId,

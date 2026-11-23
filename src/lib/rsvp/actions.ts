@@ -14,7 +14,7 @@ type Fail = { ok: false; code: RsvpBlock | "NOT_FOUND"; error: string; status: n
 
 /** Mark any invitation for this patient/event as answered. */
 async function markInvitation(eventId: string, patientId: string, status: "rsvp_yes" | "rsvp_no") {
-  await prisma.invitation.updateMany({ where: { eventId, patientId }, data: { status } });
+  await prisma.invitation.updateMany({ where: { eventId, patientId, status: { not: "removed" } }, data: { status } });
 }
 
 async function audit(actorId: string | null, action: AuditAction, rsvpId: string, details: string) {

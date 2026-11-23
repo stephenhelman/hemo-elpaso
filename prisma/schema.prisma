@@ -337,6 +337,7 @@ model Patient {
   emailOptOut           Boolean           @default(false) // invitations only; transactional emails still sent
   invitations           Invitation[]      @relation("InvitationPatient")
   invitationsSent       Invitation[]      @relation("InvitationSender")
+  invitationsRemoved    Invitation[]      @relation("InvitationRemover")
 
   @@index([email])
   @@index([possibleDuplicateOfId])
@@ -345,17 +346,22 @@ model Patient {
 
 // Append-only: a change in consent is a NEW row. A DB trigger rejects UPDATE.
 model Invitation {
-  id                String    @id @default(uuid())
-  eventId           String
-  event             Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  patientId         String
-  patient           Patient   @relation("InvitationPatient", fields: [patientId], references: [id], onDelete: Cascade)
-  tokenHash         String    @unique // SHA-256 of the raw token; raw exists only in the email link
-  status            String    @default("pending") // pending | sent | rsvp_yes | rsvp_no
-  sentAt            DateTime?
-  sentByBoardUserId String?
-  sentBy            Patient?  @relation("InvitationSender", fields: [sentByBoardUserId], references: [id], onDelete: SetNull)
-  createdAt         DateTime  @default(now())
+  id                   String    @id @default(uuid())
+  eventId              String
+  event                Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patientId            String
+  patient              Patient   @relation("InvitationPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  tokenHash            String    @unique // SHA-256 of the raw token; raw exists only in the email link
+  status               String    @default("pending") // pending | sent | rsvp_yes | rsvp_no
+  sentAt               DateTime?
+  sentByBoardUserId    String?
+  sentBy               Patient?  @relation("InvitationSender", fields: [sentByBoardUserId], references: [id], onDelete: SetNull)
+  // Manual removal (status = "removed"). The row stays so re-running matching never re-adds the household.
+  removedAt            DateTime?
+  removedByBoardUserId String?
+  removedBy            Patient?  @relation("InvitationRemover", fields: [removedByBoardUserId], references: [id], onDelete: SetNull)
+  removalReason        String? // code from lib/invitations/removal.ts; never free text
+  createdAt            DateTime  @default(now())
 
   @@unique([eventId, patientId])
   @@index([patientId])
@@ -1037,6 +1043,9 @@ enum AuditAction {
   HOUSEHOLD_MEMBER_EXPIRED
   HOUSEHOLD_MEMBER_PHONE_CONFIRMED
   HOUSEHOLD_MEMBER_CONFIRMATION_RESENT
+  INVITATION_MATCHED
+  INVITATION_REMOVED
+  INVITATION_REPORT_VIEWED
 }
 
 model AuditLog {
@@ -1050,6 +1059,8 @@ model AuditLog {
   userAgent    String?
   details      String?
   changes      Json?
+  // board | family | system | public. NULL = written before actorType existed (unclassified, NOT "board").
+  actorType    String?
   createdAt    DateTime    @default(now())
 
   @@map("audit_logs")

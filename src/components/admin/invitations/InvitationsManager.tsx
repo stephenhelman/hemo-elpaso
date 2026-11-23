@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2, RefreshCw, Send, Trash2, UserPlus } from "lucide-react";
 import { diagnosisLabels } from "@/lib/patients/diagnoses";
+import { REMOVAL_REASONS, REMOVAL_REASON_LABELS, type RemovalReason } from "@/lib/invitations/removal";
 
 export interface InvRow {
   id: string;
@@ -43,6 +44,8 @@ export default function InvitationsManager({
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [removing, setRemoving] = useState<{ id: string; name: string } | null>(null);
+  const [reason, setReason] = useState<RemovalReason | "">("");
   const [results, setResults] = useState<{ id: string; name: string; email: string | null; phone: string | null }[]>([]);
   const pending = rows.filter((r) => r.status === "pending").length;
   const dx = (d: string[]) =>
@@ -73,8 +76,38 @@ export default function InvitationsManager({
       (d) => `Sent ${d.sent}${d.failed ? `, ${d.failed} FAILED and still pending (${(d.errors ?? []).join(", ") || "unknown error"})` : ""}${d.skipped ? `, ${d.skipped} skipped` : ""}`);
   };
 
+  const confirmRemove = async () => {
+    if (!removing || !reason) return;
+    const target = removing;
+    setRemoving(null);
+    await call(target.id, `/api/admin/events/${eventId}/invitations/${target.id}`,
+      { method: "POST", body: JSON.stringify({ reason }) }, () => `${target.name} removed`);
+  };
+
   return (
     <div className="space-y-8">
+      {removing && (
+        <div role="dialog" aria-modal="true" aria-labelledby="remove-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl">
+            <h2 id="remove-title" className="font-semibold text-neutral-900">Remove {removing.name}?</h2>
+            <p className="mt-1 text-sm text-neutral-600">
+              They won&apos;t be invited to this event, and re-running matching won&apos;t add them back. A reason is required and is recorded with your name.
+            </p>
+            <label className="mt-3 block text-sm font-medium text-neutral-700" htmlFor="remove-reason">Reason</label>
+            <select id="remove-reason" value={reason} onChange={(e) => setReason(e.target.value as RemovalReason | "")}
+              className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm">
+              <option value="">Choose a reason…</option>
+              {REMOVAL_REASONS.map((c) => <option key={c} value={c}>{REMOVAL_REASON_LABELS[c]}</option>)}
+            </select>
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setRemoving(null)} className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700">Cancel</button>
+              <button onClick={confirmRemove} disabled={!reason}
+                className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <button onClick={() => call("gen", `/api/admin/events/${eventId}/invitations/generate`, { method: "POST" }, (d) => `${d.added} new match${d.added === 1 ? "" : "es"} added`)}
           disabled={busy !== null}
@@ -138,7 +171,7 @@ export default function InvitationsManager({
                   </td>
                   <td className="px-4 py-3 text-right">
                     {r.status === "pending" && (
-                      <button onClick={() => call(r.id, `/api/admin/events/${eventId}/invitations/${r.id}`, { method: "DELETE" })}
+                      <button onClick={() => { setReason(""); setRemoving({ id: r.id, name: r.name }); }}
                         disabled={busy !== null} className="text-neutral-400 hover:text-red-600" title="Remove">
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -18,10 +18,11 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
   if (!event) notFound();
 
   const invitations = await prisma.invitation.findMany({
-    where: { eventId: event.id },
+    where: { eventId: event.id, status: { not: "removed" } },
     include: { patient: { include: { contactProfile: true } } },
     orderBy: { createdAt: "asc" },
   });
+  const removedCount = await prisma.invitation.count({ where: { eventId: event.id, status: "removed" } });
   const warnLocale = (await getLocaleCookie()) === "es" ? "es" : "en";
   const namesCondition = invitationNamesCondition(event);
   const match = await matchPatientsForEvent(event.id);
@@ -61,6 +62,14 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
       {namesCondition && (
         <p role="alert" className="mb-4 rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">
           <strong>⚠ </strong>{CONDITION_WARNING[warnLocale]}
+        </p>
+      )}
+      {admin.can("canManageUsers") && (
+        <p className="mb-4 text-sm">
+          <Link href={`/admin/events/${event.id}/invitations/report`} className="font-semibold text-primary hover:underline">
+            Matched / sent / removed report
+          </Link>
+          {removedCount > 0 && <span className="text-neutral-500"> · {removedCount} removed from this event</span>}
         </p>
       )}
       <InvitationsManager eventId={event.id} rows={rows} callList={call} canViewPHI={canPHI} warning={namesCondition ? CONDITION_WARNING[warnLocale] : null} />

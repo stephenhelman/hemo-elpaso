@@ -165,7 +165,7 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | Permission | Roles that have it | What it unlocks |
 | --- | --- | --- |
 | `canManageUsers` | President, Vice President (+ admin) | Patients directory: list, search, detail, edit, add, delete, merge, household actions, CSV export (`src/app/api/admin/patients/*`). Every detail view writes a `PATIENT_VIEWED` audit row |
-| `canViewPHI` | President, VP, Secretary, Treasurer (+ admin) | Seeing and editing diagnoses (patient detail, invitation lists). **CSV export includes diagnoses only for role `admin`** (`withDx = admin.isSuperAdmin` in `src/app/api/admin/patients/export/route.ts`) |
+| `canViewPHI` | President, VP (+ admin). Narrowed from also Secretary and Treasurer on 2026-11-23 to match the Privacy Policy; `scripts/check-permissions.ts` enforces it | Seeing and editing diagnoses (patient detail, invitation lists). **CSV export includes diagnoses only for role `admin`** (`withDx = admin.isSuperAdmin` in `src/app/api/admin/patients/export/route.ts`) |
 | `canManageEvents` | President, VP | Events, invitations, sending, check-in console, RSVP add, photo approve/delete, patient name/email/phone **search** (`/api/admin/patients/search`), attendee page and sign-in sheet (names, relationships, NO PHOTOS flag) |
 | `canViewEventStats` | President, VP, Secretary, Treasurer, Events Coordinator, Sponsor Liaison | `/admin/attendance` and `/admin/events/[id]/stats`: checked-in attendees with **full email and phone**, plus a client-side CSV export (`src/app/admin/attendance/page.tsx:24`, `src/components/admin/stats/AttendeeListExport.tsx`) |
 | `canViewAuditLogs` | President, VP, Treasurer | `/admin/audit-logs` (actor name/email, action, details) |
