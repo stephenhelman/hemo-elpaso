@@ -11,12 +11,12 @@ const linkClass = "text-primary-700 underline underline-offset-2 hover:text-prim
  *   **bold**, [label](/internal or https://external), {EMAIL}, {PHONE}, {HOST}, {BACKUP}.
  * External links get class "print-url" so the printed page shows their address (see LegalDocument).
  */
-export default function RichText({ text, locale, newTab = false }: { text: string; locale: "en" | "es"; newTab?: boolean }) {
+export default function RichText({ text, locale, newTab = false, privacyEmail = PRIVACY_EMAIL }: { text: string; locale: "en" | "es"; newTab?: boolean; /** The live privacy contact (getPrivacyEmail()); defaults to the code default. */ privacyEmail?: string }) {
   const out: ReactNode[] = [];
   text.split(TOKEN).forEach((part, i) => {
     if (!part) return;
     if (part === "{EMAIL}") {
-      out.push(<a key={i} href={`mailto:${PRIVACY_EMAIL}`} className={linkClass}>{PRIVACY_EMAIL}</a>);
+      out.push(<a key={i} href={`mailto:${privacyEmail}`} className={linkClass}>{privacyEmail}</a>);
     } else if (part === "{PHONE}") {
       out.push(<a key={i} href={SITE_PHONE.tel} className={linkClass}>{SITE_PHONE.display}</a>);
     } else if (part === "{HOST}") {

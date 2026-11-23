@@ -7,9 +7,8 @@
  *                            Production with neither set throws; previews fall back to VERCEL_URL so their
  *                            links work; local dev falls back to http://localhost:3000.
  *   NEXT_PUBLIC_EMAIL_DOMAIN domain of the org's mailboxes (info@, events@, ...).
- *                            Kept separate because the website can move to a new
- *                            domain before mail does. Default: hemo-el-paso.org
- *                            (the Resend-verified sending domain).
+ *                            Default: hemoelpaso.org (the Resend-verified sending domain). Kept as its own
+ *                            variable so mail can be pointed elsewhere without moving the website.
  */
 export function siteUrl(): string {
   const configured =
@@ -35,12 +34,12 @@ export function siteHost(): string {
 }
 
 /**
- * TODO(resend): mailboxes and every "from" address still use the old, Resend-verified domain. When hemoelpaso.org is
- * verified in Resend, set NEXT_PUBLIC_EMAIL_DOMAIN=hemoelpaso.org and EMAIL_FROM to a hemoelpaso.org sender (and
- * switch PRIVACY_EMAIL below). Until then, do not change this default.
+ * Domain of every org mailbox (info@, events@, president@, ...) and of every "from" address. It must be the
+ * domain verified in Resend. Production must set NEXT_PUBLIC_EMAIL_DOMAIN=hemoelpaso.org and EMAIL_FROM to a
+ * sender on it (see .env.example). The email-routing allowed-domain check also reads this.
  */
 export function emailDomain(): string {
-  return process.env.NEXT_PUBLIC_EMAIL_DOMAIN || "hemo-el-paso.org";
+  return process.env.NEXT_PUBLIC_EMAIL_DOMAIN || "hemoelpaso.org";
 }
 
 export const mailbox = (local: string) => `${local}@${emailDomain()}`;
@@ -142,9 +141,9 @@ export function withLang(url: string, lang: "en" | "es"): string {
 export const ORG_ABBR = "HOEP";
 
 /**
- * Where privacy requests go (legal pages, consent text). For now this is the main info@ inbox, because that is the
- * mailbox that exists and is monitored. TODO(domain move): once privacy@hemoelpaso.org exists (forwarding to the
- * President and VP), change this to mailbox("privacy").
+ * DEFAULT address for privacy requests (privacy@ forwards to the President and VP). The live value is the
+ * "privacy" email route that officers can change in Admin > Settings > Email routing (lib/email-routing), and that
+ * is what the legal pages print (see getPrivacyEmail()). This constant is the code default and the fallback.
  */
 export const PRIVACY_EMAIL = mailbox("privacy");
 

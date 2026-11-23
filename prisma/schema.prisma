@@ -83,6 +83,10 @@ enum EmailTemplateType {
   FAMILY_MEMBER_INVITE
   REGISTRATION_INFO_CONFIRMATION
   MEMBER_CONFIRMATION
+  CONTACT_NOTIFICATION
+  CONTACT_AUTO_REPLY
+  EMAIL_ROUTING_NOTICE
+  EMAIL_ROUTING_TEST
   EVENT_INVITATION
 }
 
@@ -958,6 +962,8 @@ enum AuditAction {
   // Settings
   EMAIL_TEMPLATE_UPDATED
   TEST_EMAIL_SENT
+  EMAIL_ROUTE_CHANGED
+  EMAIL_ROUTE_TEST_SENT
 
   // Sponsorship
   SPONSOR_INVITE_SENT
@@ -1393,4 +1399,15 @@ model CommunicationLog {
   @@index([boardRoleId])
   @@index([patientId])
   @@map("communication_logs")
+}
+
+/// Where the site's emails go, set by officers in Admin > Settings > Email routing. Absent rows use the
+/// code defaults in lib/email-routing/definitions.ts, so an empty table changes nothing.
+model EmailRoute {
+  route      String   @id // e.g. "contact.sponsor", "reply.events"
+  recipients String[] // role addresses on the mail domain; at least one
+  updatedBy  String? // patientId of the officer who last changed it
+  updatedAt  DateTime @updatedAt
+
+  @@map("email_routes")
 }
