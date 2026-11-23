@@ -12,6 +12,7 @@ interface AuditLogEntry {
   resourceType: string | null;
   resourceId: string | null;
   details: string | null;
+  actorType?: string | null;
   createdAt: Date | string;
   patient: {
     email: string;
@@ -241,6 +242,9 @@ export default function AuditLogsClient({
                         </td>
                         <td className="px-4 py-3 text-neutral-600 text-sm">
                           {name}
+                          <div className="text-xs text-neutral-400" title="Who acted. Blank = logged before actor types existed">
+                            {log.actorType ?? "unclassified"}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-neutral-500 text-xs max-w-xs">
                           <span className="line-clamp-2">{log.details ?? "—"}</span>
