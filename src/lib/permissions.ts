@@ -16,6 +16,7 @@ export type Permission =
   | "canManageMinutes"
   | "canMarkMinutesPublic"
   | "canViewPHI"
+  | "canReviewVerification"
   | "canManageUsers"
   | "canAssignBoardRoles"
   | "canViewFinancials"
@@ -32,8 +33,17 @@ export type Permission =
 // -------------------------------------------------------
 // Role → Permission mapping
 // -------------------------------------------------------
+/**
+ * canReviewVerification: open and decide diagnosis-verification requests (Phase 4). President and Vice President
+ * only, separate from canViewPHI so the two can be changed independently. Nothing uses it before Phase 4.
+ *
+ * canViewPHI (stated diagnoses) is held by PRESIDENT and VICE_PRESIDENT only (+ admin, who passes every check).
+ * This is what the published Privacy Policy says ("Health information is visible only to the President and Vice
+ * President"). Keep the two in step: scripts/check-permissions.ts fails if another role gets it.
+ */
 export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
   PRESIDENT: [
+    "canReviewVerification",
     "canManageEmailRouting",
     "canEditSiteContent",
     "canViewAdminDashboard",
@@ -53,6 +63,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canManageVolunteers",
   ],
   VICE_PRESIDENT: [
+    "canReviewVerification",
     "canManageEmailRouting",
     "canEditSiteContent",
     "canViewAdminDashboard",
@@ -77,7 +88,6 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canViewEventStats",
     "canManageMinutes",
     "canMarkMinutesPublic",
-    "canViewPHI",
     "canSendIndividualEmails",
     "canManageVolunteers",
   ],
@@ -86,7 +96,6 @@ export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
     "canEditSiteContent",
     "canViewAdminDashboard",
     "canViewEventStats",
-    "canViewPHI",
     "canViewFinancials",
     "canManageFinancials",
     "canApproveAssistance",
