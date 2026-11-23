@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   // Published events get PENDING invitations for matching patients (nothing is sent).
   if (event.status === "published") {
-    await generateInvitations(event.id).catch(() => undefined);
+    await generateInvitations(event.id, { trigger: "publish", byBoardUserId: admin!.id }).catch(() => undefined);
   }
 
   await prisma.auditLog.create({

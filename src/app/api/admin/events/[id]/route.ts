@@ -63,7 +63,7 @@ export async function PATCH(
 
     // Re-run matching after edits: adds new matches as pending, never re-sends.
     if (updatedEvent.status === "published") {
-      await generateInvitations(updatedEvent.id).catch(() => undefined);
+      await generateInvitations(updatedEvent.id, { trigger: "edit", byBoardUserId: admin!.id }).catch(() => undefined);
     }
 
     await prisma.auditLog.create({
