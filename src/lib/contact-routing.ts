@@ -1,5 +1,7 @@
 import { contactEmail } from "@/lib/site";
 import { prisma } from "@/lib/db";
+import { getRouteRecipients } from "@/lib/email-routing";
+import { routeForContactReason } from "@/lib/email-routing/definitions";
 
 const FALLBACK_EMAIL = contactEmail();
 
@@ -45,38 +47,10 @@ export async function getVolunteerRecipient(areasOfInterest: string[]): Promise<
 }
 
 /**
- * Returns the best TO address for a contact form submission based on reason.
- *
- * Routing map:
- *   family    → Secretary → info@
- *   volunteer → Secretary → info@
- *   sponsor   → Treasurer → Secretary → info@
- *   media     → Communications Lead → President → info@
- *   general / other / fallback → info@
+ * Recipients for a contact-form submission, by reason. The officers set these in Admin > Settings > Email routing
+ * (routes contact.general / family / volunteer / sponsor / media / other); code defaults apply when nothing is set
+ * (lib/email-routing/definitions.ts). Unknown reasons use contact.other. Never throws.
  */
-export async function getContactRecipient(reason: string): Promise<string> {
-  switch (reason) {
-    case "family":
-    case "volunteer": {
-      const secretary = await getBoardEmail("SECRETARY");
-      return secretary ?? FALLBACK_EMAIL;
-    }
-
-    case "sponsor": {
-      const treasurer = await getBoardEmail("TREASURER");
-      if (treasurer) return treasurer;
-      const secretary = await getBoardEmail("SECRETARY");
-      return secretary ?? FALLBACK_EMAIL;
-    }
-
-    case "media": {
-      const comms = await getBoardEmail("COMMUNICATIONS_LEAD");
-      if (comms) return comms;
-      const president = await getBoardEmail("PRESIDENT");
-      return president ?? FALLBACK_EMAIL;
-    }
-
-    default:
-      return FALLBACK_EMAIL;
-  }
+export async function getContactRecipient(reason: string): Promise<string[]> {
+  return getRouteRecipients(routeForContactReason(reason));
 }

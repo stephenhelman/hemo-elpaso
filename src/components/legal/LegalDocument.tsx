@@ -23,8 +23,8 @@ export function formatLegalDate(iso: string, locale: "en" | "es") {
  * exist on pages that render this component (the site navbar/footer are not hidden anywhere else).
  */
 export default function LegalDocument({
-  doc, locale, path, autoPrint = false,
-}: { doc: LegalDoc; locale: "en" | "es"; path: string; autoPrint?: boolean }) {
+  doc, locale, path, autoPrint = false, privacyEmail,
+}: { doc: LegalDoc; locale: "en" | "es"; path: string; autoPrint?: boolean; privacyEmail?: string }) {
   const t = T[locale];
   const page = doc[locale];
   const date = formatLegalDate(doc.effectiveDate, locale);
@@ -56,11 +56,11 @@ export default function LegalDocument({
         <div className="space-y-4 text-base leading-relaxed text-neutral-800">
           {page.blocks.map((b, i) => {
             if (b.t === "h2") return <h2 key={i} className="legal-h2 pt-6 font-display text-xl font-semibold text-neutral-900">{b.text}</h2>;
-            if (b.t === "p") return <p key={i}><RichText text={b.text} locale={locale} /></p>;
+            if (b.t === "p") return <p key={i}><RichText text={b.text} locale={locale} privacyEmail={privacyEmail} /></p>;
             if (b.t === "ul")
               return (
                 <ul key={i} className="list-disc space-y-2 pl-6">
-                  {b.items.map((it, j) => <li key={j}><RichText text={it} locale={locale} /></li>)}
+                  {b.items.map((it, j) => <li key={j}><RichText text={it} locale={locale} privacyEmail={privacyEmail} /></li>)}
                 </ul>
               );
             return (
@@ -71,7 +71,7 @@ export default function LegalDocument({
                   </thead>
                   <tbody>
                     {b.rows.map((r, j) => (
-                      <tr key={j}>{r.map((c, k) => <td key={k} className={`border-b border-neutral-200 px-3 py-2 align-top ${k === 0 ? "font-medium text-neutral-900" : ""}`}><RichText text={c} locale={locale} /></td>)}</tr>
+                      <tr key={j}>{r.map((c, k) => <td key={k} className={`border-b border-neutral-200 px-3 py-2 align-top ${k === 0 ? "font-medium text-neutral-900" : ""}`}><RichText text={c} locale={locale} privacyEmail={privacyEmail} /></td>)}</tr>
                     ))}
                   </tbody>
                 </table>

@@ -1,4 +1,5 @@
-import { contactEmail, mailbox } from "@/lib/site";
+import { mailbox } from "@/lib/site";
+import { getRouteRecipients } from "@/lib/email-routing";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
 import { blockedByWithdrawal, isEssentialEmail } from "@/lib/email/policy";
@@ -21,7 +22,11 @@ export type CodeEmailKind =
   | "EVENT_INVITATION"
   | "RSVP_CONFIRMATION"
   | "RSVP_REMINDER"
-  | "RSVP_CANCELLATION";
+  | "RSVP_CANCELLATION"
+  | "CONTACT_NOTIFICATION"
+  | "CONTACT_AUTO_REPLY"
+  | "EMAIL_ROUTING_NOTICE"
+  | "EMAIL_ROUTING_TEST";
 
 export type SendResult =
   | { ok: true; id: string }
@@ -45,17 +50,20 @@ async function record(kind: CodeEmailKind, patientId: string | null | undefined,
 }
 
 /**
- * Which mailbox an email comes from (and where replies go):
- *   "info"   (default) EMAIL_FROM, e.g. "HOEP <info@<mail domain>>": registration, confirmations
- *   "events" "HOEP Events <events@<email domain>>": invitations, RSVP confirmations, reminders, cancellations
- * Both must live on the Resend-verified domain. Without EMAIL_FROM (dev only) both use Resend's sandbox sender.
+ * Which mailbox an email comes from. The "from" addresses are fixed in code (they must be on the Resend-verified
+ * domain); where REPLIES go is the officers' setting (reply.info / reply.events in Admin > Settings > Email routing).
+ *   "info"    (default) EMAIL_FROM, e.g. "HOEP <info@<mail domain>>": registration, confirmations, contact auto-reply
+ *   "events"  "HOEP Events <events@<email domain>>": invitations, RSVP confirmations, reminders, cancellations
+ *   "contact" "HOEP Contact Form <noreply@<email domain>>": the contact-form notification to the board
+ *   "noreply" "HOEP <noreply@<email domain>>": routing notices and tests
+ * Without EMAIL_FROM (dev only) all of them use Resend's sandbox sender.
  */
-export type EmailSender = "info" | "events";
+export type EmailSender = "info" | "events" | "contact" | "noreply";
 
 export async function sendLoggedEmail(params: {
   kind: CodeEmailKind;
   sender?: EmailSender;
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   patientId?: string | null;
@@ -82,18 +90,22 @@ export async function sendLoggedEmail(params: {
   const configured = process.env.EMAIL_FROM;
   if (!configured && process.env.NODE_ENV === "production") return fail("missing_email_from");
   const events = params.sender === "events";
-  const from = configured
-    ? events
-      ? `HOEP Events <${mailbox("events")}>`
-      : configured
-    : "HOEP Events <onboarding@resend.dev>"; // non-production only
+  const FROM_BY_SENDER: Record<EmailSender, string | null> = {
+    info: configured ?? null,
+    events: `HOEP Events <${mailbox("events")}>`,
+    contact: `HOEP Contact Form <${mailbox("noreply")}>`,
+    noreply: `HOEP <${mailbox("noreply")}>`,
+  };
+  const from = configured ? FROM_BY_SENDER[params.sender ?? "info"] : "HOEP Events <onboarding@resend.dev>"; // non-production only
+  // Reply-to is the officers' setting; an explicit replyTo (the contact form's submitter) wins.
+  const replyTo = params.replyTo ?? (await getRouteRecipients(events ? "reply.events" : "reply.info"))[0];
 
   try {
     // Client built per call so it always sees the runtime env (and a bad key shows up as
     // Resend's own error instead of a stale import-time value).
     const res = await new Resend(process.env.RESEND_API_KEY).emails.send({
-      from,
-      replyTo: params.replyTo ?? (events ? mailbox("events") : contactEmail()),
+      from: from!,
+      replyTo,
       to: params.to,
       subject: params.subject,
       html: params.html,

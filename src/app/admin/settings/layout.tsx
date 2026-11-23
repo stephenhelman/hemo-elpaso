@@ -25,6 +25,12 @@ export default function SettingsLayout({
       disabled: false,
     },
     {
+      name: "Email Routing",
+      href: "/admin/settings/email-routing",
+      icon: Mail,
+      disabled: false,
+    },
+    {
       name: "Board Management",
       href: "/admin/settings/board",
       icon: Users,

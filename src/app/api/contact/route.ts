@@ -1,13 +1,10 @@
-import { mailbox, contactEmail } from "@/lib/site";
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 import { render } from "@react-email/render";
 import ContactFormNotification from "@/messages/ContactFormNotification";
 import ContactAutoReply from "@/messages/ContactAutoReply";
 import { getContactRecipient } from "@/lib/contact-routing";
 import { verifyTurnstile } from "@/lib/turnstile";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendLoggedEmail } from "@/lib/email/send";
 
 const MIN_SUBMIT_MS = 3000;
 const LINK_RE = /https?:\/\/|www\.|\b[a-z0-9-]+\.(?:com|net|org|io|ru|xyz|info|biz|top|site|online|link|co|us|me|ly)\b/i;
@@ -64,7 +61,7 @@ export async function POST(req: NextRequest) {
     const isEs = locale === "es";
     const reasonLabel = reasonLabels[reason]?.[locale as "en" | "es"] ?? reason;
 
-    // Determine the correct recipient based on reason
+    // Recipients for this reason (officers' setting; code defaults if unset)
     const toEmail = await getContactRecipient(reason);
 
     // Still delivered, but flagged so a human looks before clicking anything.
@@ -75,8 +72,10 @@ export async function POST(req: NextRequest) {
       ContactFormNotification({ name, email, phone, reason, message, locale }),
     );
 
-    const notified = await resend.emails.send({
-      from: `HOEP Contact Form <${mailbox("noreply")}>`,
+    // Sent through the shared sender (lib/email/send.ts): it checks the Resend result and writes the EmailLog row.
+    const notified = await sendLoggedEmail({
+      kind: "CONTACT_NOTIFICATION",
+      sender: "contact",
       to: toEmail,
       replyTo: email, // clicking reply in Gmail goes straight to the sender
       subject:
@@ -86,28 +85,23 @@ export async function POST(req: NextRequest) {
         (hasLinks ? ` ${LINK_FLAG}` : ""),
       html: notificationHtml,
     });
-    // The SDK returns errors instead of throwing. If the board notification
-    // didn't go out the message would be lost, so fail the request.
-    if (notified.error) {
-      console.error("contact notification failed", { error: notified.error.name });
-      return NextResponse.json({ error: "Failed to send message" }, { status: 502 });
-    }
+    // If the board notification didn't go out the message would be lost, so fail the request.
+    if (!notified.ok) return NextResponse.json({ error: "Failed to send message" }, { status: 502 });
 
     // ── 2. Auto-reply confirmation to the sender ──────────────────────────────
     const autoReplyHtml = await render(
       ContactAutoReply({ name, reasonLabel, lang: isEs ? "es" : "en" }),
     );
-    const autoReply = await resend.emails.send({
-      from: `HOEP <${contactEmail()}>`,
+    // Best effort: a failed auto-reply is logged by the sender and does not fail the request.
+    await sendLoggedEmail({
+      kind: "CONTACT_AUTO_REPLY",
+      sender: "info",
       to: email,
       subject: isEs
         ? "Hemos recibido su mensaje — HOEP"
         : "We received your message — HOEP",
       html: autoReplyHtml,
     });
-    if (autoReply.error) {
-      console.error("contact auto-reply failed", { error: autoReply.error.name });
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
