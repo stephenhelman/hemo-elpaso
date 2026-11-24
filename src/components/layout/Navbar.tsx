@@ -6,7 +6,8 @@ import BrandMark from "@/components/brand/BrandMark";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import UserMenu from "./UserMenu";
+import UserMenu, { SignInLink } from "./UserMenu";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
@@ -17,8 +18,8 @@ type NavItem = NavLeaf | { labelEn: string; labelEs: string; children: NavLeaf[]
 
 /**
  * Top-level items stay few enough to fit a 1024px laptop: Photos live under
- * Events, Scholarships under Resources. "Home" is the logo. Sign-in is not here
- * (board only): it appears as the avatar menu once signed in, and in the footer.
+ * Events, Scholarships under Resources. "Home" is the logo. Sign-in is the outlined button before the CTA
+ * (desktop) or the last row of the mobile menu; once signed in it becomes the avatar menu.
  */
 const navItems: NavItem[] = [
   { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
@@ -45,7 +46,7 @@ const navItems: NavItem[] = [
 const isGroup = (i: NavItem): i is Extract<NavItem, { children: NavLeaf[] }> => "children" in i;
 const matches = (pathname: string, href: string) => pathname === href || pathname.startsWith(href + "/");
 
-const linkBase = "px-2 xl:px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-200";
+const linkBase = "px-1.5 xl:px-3 py-2 rounded-md text-[13px] xl:text-sm font-medium whitespace-nowrap transition-colors duration-200";
 const linkState = (active: boolean) =>
   active ? "text-primary bg-primary-50 font-semibold" : "text-neutral-600 hover:text-primary hover:bg-primary-50";
 
@@ -115,7 +116,8 @@ function NavDropdown({ item, pathname, locale }: { item: Extract<NavItem, { chil
 }
 
 export default function Navbar() {
-  const { registrationOpen } = useSiteFlags();
+  const { registrationOpen, familyPortal } = useSiteFlags();
+  const { user, isLoading } = useUser();
   const items = navItems.filter((i) => isGroup(i) || registrationOpen || i.href !== "/register-info");
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -131,14 +133,14 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-neutral-200 shadow-sm">
       <div className="container-max">
-        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-6 xl:px-8">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-3 xl:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <BrandMark tone="light" iconHeight={40} hideTextBelowSm />
           </Link>
 
           {/* Desktop nav (laptops and up). Below lg the same items live in the menu. */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 ml-2 xl:ml-8" aria-label={locale === "en" ? "Main" : "Principal"}>
+          <nav className="hidden lg:flex items-center gap-0 xl:gap-1 ml-1 xl:ml-8" aria-label={locale === "en" ? "Main" : "Principal"}>
             {items.map((item) =>
               isGroup(item) ? (
                 <NavDropdown key={item.labelEn} item={item} pathname={pathname} locale={locale} />
@@ -158,7 +160,7 @@ export default function Navbar() {
               <LanguageSwitcher />
             )}
 
-            <UserMenu lang={locale} />
+            <UserMenu lang={locale} showSignIn />
 
             {/* Get Involved CTA */}
             <Link
@@ -214,6 +216,9 @@ export default function Navbar() {
                     {locale === "en" ? item.labelEn : item.labelEs}
                   </Link>
                 ),
+              )}
+              {!user && !isLoading && (
+                <SignInLink lang={locale} familyPortal={familyPortal} variant="mobile" onClick={() => setMobileOpen(false)} />
               )}
             </nav>
           </div>
