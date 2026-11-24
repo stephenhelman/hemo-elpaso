@@ -55,7 +55,7 @@ export async function unlinkBoardOrgIdentity(patientId: string, identityId: stri
 // ---- President / VP (canManageUsers). Anything that touches family data. ----------------------------------------
 
 async function doUnlink(identityId: string, patientId: string, actor: Actor): Promise<Result> {
-  await prisma.userIdentity.update({ where: { id: identityId }, data: { patientId: null, linkedAt: null, linkedVia: "unlinked", linkedByPatientId: actor.id } });
+  await prisma.userIdentity.update({ where: { id: identityId }, data: { patientId: null, householdMemberId: null, linkedAt: null, linkedVia: "unlinked", linkedByPatientId: actor.id } });
   await audit({ actorType: "board", actorPatientId: actor.id, action: AuditAction.IDENTITY_UNLINKED, resourceType: "UserIdentity", resourceId: identityId, details: "Sign-in unlinked", changes: { patientId } });
   return { ok: true };
 }
@@ -69,14 +69,19 @@ export async function unlinkIdentity(identityId: string, actor: Actor): Promise<
 }
 
 /** Link an unmatched sign-in to a person by hand (Apple "Hide my email", a different address than registered, ...). */
-export async function linkIdentity(identityId: string, patientId: string, actor: Actor): Promise<Result> {
+export async function linkIdentity(identityId: string, patientId: string, actor: Actor, memberId?: string | null): Promise<Result> {
   const ident = await prisma.userIdentity.findUnique({ where: { id: identityId }, select: { id: true, patientId: true } });
   if (!ident) return { ok: false, status: 404, error: "identity_not_found" };
   if (ident.patientId) return { ok: false, status: 409, error: "already_linked" };
   const person = await prisma.patient.findFirst({ where: { id: patientId, role: { not: "admin" } }, select: { id: true } });
   if (!person) return { ok: false, status: 404, error: "person_not_found" };
-  await prisma.userIdentity.update({ where: { id: identityId }, data: { patientId, linkedAt: new Date(), linkedVia: "admin", linkedByPatientId: actor.id } });
-  await audit({ actorType: "board", actorPatientId: actor.id, action: AuditAction.IDENTITY_LINKED, resourceType: "UserIdentity", resourceId: identityId, details: "Sign-in linked by hand", changes: { patientId, via: "admin" } });
+  // Linking to an adult member: the household is the member's household, and only a confirmed adult can be linked.
+  if (memberId) {
+    const m = await prisma.householdMember.findFirst({ where: { id: memberId, patientId, status: "confirmed", ageGroup: "18_plus" }, select: { id: true } });
+    if (!m) return { ok: false, status: 404, error: "member_not_found" };
+  }
+  await prisma.userIdentity.update({ where: { id: identityId }, data: { patientId, householdMemberId: memberId ?? null, linkedAt: new Date(), linkedVia: "admin", linkedByPatientId: actor.id } });
+  await audit({ actorType: "board", actorPatientId: actor.id, action: AuditAction.IDENTITY_LINKED, resourceType: "UserIdentity", resourceId: identityId, details: "Sign-in linked by hand", changes: { patientId, memberId: memberId ?? null, via: "admin" } });
   return { ok: true };
 }
 
