@@ -91,6 +91,9 @@ enum EmailTemplateType {
   EVENT_INVITATION
   DUPLICATE_SIGNIN_NOTICE
   RECORDS_MERGED_NOTICE
+  EMAIL_CHANGE_CONFIRMATION
+  MEMBER_LEFT_NOTICE
+  DELETION_REQUEST_NOTICE
 }
 
 enum AgeTier {
@@ -353,6 +356,7 @@ model Patient {
   mergedFrom            Patient[]         @relation("PatientMerge")
   mergedAt              DateTime?
   emailAliases          PatientAlias[]
+  emailChangeRequests   EmailChangeRequest[]
   duplicateDismissalsA  DuplicateDismissal[] @relation("DismissalA")
   duplicateDismissalsB  DuplicateDismissal[] @relation("DismissalB")
 
@@ -421,6 +425,8 @@ model HouseholdMember {
   statedDiagnoses       String[]        @default([]) // PHI
   email                 String?
   confirmByPhone        Boolean         @default(false)
+  phone                 String? // a confirmed adult's own number (family page); never shown to other adults
+  preferredLanguage     String? // a confirmed adult's own language (en | es); null = the household's
   status                String          @default("not_required") // not_required | pending | confirmed | declined | expired
   confirmTokenHash      String?         @unique
   confirmTokenExpiresAt DateTime?
@@ -429,6 +435,10 @@ model HouseholdMember {
   updatedAt             DateTime        @updatedAt
   consentRecords        ConsentRecord[]
   rsvpAttendees         RsvpAttendee[]
+  identities            UserIdentity[]  @relation("IdentityMember")
+  guardianOf            MemberGuardianship[] @relation("GuardianAdult")
+  guardians             MemberGuardianship[] @relation("GuardianChild")
+  emailChangeRequests   EmailChangeRequest[]
 
   @@index([patientId])
   @@index([status, createdAt])
@@ -1088,6 +1098,14 @@ enum AuditAction {
   PATIENT_DUPLICATE_DISMISSED
   CONSENT_CHANGED_BY_BOARD
   MERGED_RECORDS_PURGED
+  PORTAL_PROFILE_CHANGED
+  PORTAL_MEMBER_CHANGED
+  PORTAL_DIAGNOSES_CHANGED
+  PORTAL_GUARDIAN_CHANGED
+  PORTAL_EMAIL_CHANGE_REQUESTED
+  PORTAL_EMAIL_CHANGED
+  PORTAL_MEMBER_LEFT
+  PORTAL_DELETION_REQUESTED
 }
 
 model AuditLog {
@@ -1103,8 +1121,11 @@ model AuditLog {
   changes      Json?
   // board | family | system | public. NULL = written before actorType existed (unclassified, NOT "board").
   actorType    String?
+  // The household member who acted on the family page (null = the primary, a board member or the system). An id, no FK.
+  actorMemberId String?
   createdAt    DateTime    @default(now())
 
+  @@index([actorMemberId])
   @@map("audit_logs")
 }
 
@@ -1494,8 +1515,12 @@ model FeatureFlag {
 /// patientId NULL = signed in but not matched to a household yet; purged after 30 days (retention job).
 model UserIdentity {
   id                String    @id @default(uuid())
-  patientId         String?
+  patientId         String? // the HOUSEHOLD (the primary's Patient id); null = not matched
   patient           Patient?  @relation("IdentityPerson", fields: [patientId], references: [id], onDelete: Cascade)
+  // Set only when the person signing in is a confirmed adult MEMBER of that household (never the primary). CHECK in the
+  // migration: householdMemberId is null or patientId is set. Cascade: a removed member can never turn into the primary.
+  householdMemberId String?
+  householdMember   HouseholdMember? @relation("IdentityMember", fields: [householdMemberId], references: [id], onDelete: Cascade)
   auth0Sub          String    @unique
   provider          String // google-oauth2 | apple | facebook | ... (from the sub prefix)
   email             String // lowercased, as the provider asserted it
@@ -1508,9 +1533,43 @@ model UserIdentity {
   lastLoginAt       DateTime  @default(now())
 
   @@index([patientId])
+  @@index([householdMemberId])
   @@index([email])
   @@index([patientId, lastLoginAt])
   @@map("user_identities")
+}
+
+/// A confirmed adult who is a parent/guardian of a minor in the household. The primary is always a guardian and has no row.
+/// The permission applies only once attestedAt is set (the adult accepted "I am this child's parent or legal guardian").
+model MemberGuardianship {
+  id               String          @id @default(uuid())
+  childMemberId    String
+  child            HouseholdMember @relation("GuardianChild", fields: [childMemberId], references: [id], onDelete: Cascade)
+  guardianMemberId String
+  guardian         HouseholdMember @relation("GuardianAdult", fields: [guardianMemberId], references: [id], onDelete: Cascade)
+  designatedAt     DateTime        @default(now())
+  attestedAt       DateTime?
+
+  @@unique([childMemberId, guardianMemberId])
+  @@index([guardianMemberId])
+  @@map("member_guardianships")
+}
+
+/// "Change my email": takes effect only when the link sent to the NEW address is used. Only the hash of the token is stored.
+model EmailChangeRequest {
+  id                String           @id @default(uuid())
+  patientId         String
+  patient           Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  householdMemberId String?
+  householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id], onDelete: Cascade)
+  newEmail          String // lowercased
+  tokenHash         String           @unique
+  expiresAt         DateTime
+  usedAt            DateTime?
+  createdAt         DateTime         @default(now())
+
+  @@index([patientId])
+  @@map("email_change_requests")
 }
 
 /// An address a person used to be known by (the email of a record merged into this one). Used ONLY to match a
