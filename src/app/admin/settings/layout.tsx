@@ -10,6 +10,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   if (!admin) redirect("/");
   const allowed = [
     admin.can("canManageSettings") && "/admin/settings",
+    admin.can("canManageFeatureToggles") && "/admin/settings/features",
     admin.can("canManagePermissions") && "/admin/settings/permissions",
     admin.can("canManageEmailTemplates") && "/admin/settings/email-templates",
     admin.can("canManageEmailRouting") && "/admin/settings/email-routing",

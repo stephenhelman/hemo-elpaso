@@ -971,6 +971,7 @@ enum AuditAction {
   TEST_EMAIL_SENT
   EMAIL_ROUTE_CHANGED
   PERMISSIONS_CHANGED
+  FEATURE_TOGGLED
   EMAIL_ROUTE_TEST_SENT
 
   // Sponsorship
@@ -1436,4 +1437,16 @@ model RolePermission {
 
   @@id([role, permission])
   @@map("role_permissions")
+}
+
+// Feature switchboard. A feature can be ON only if it is implemented AND the live policy version covers it
+// (src/lib/features/registry.ts). Absent row = off.
+model FeatureFlag {
+  key       String    @id
+  enabled   Boolean   @default(false)
+  enabledAt DateTime?
+  enabledBy String? // patientId
+  updatedAt DateTime  @updatedAt
+
+  @@map("feature_flags")
 }
