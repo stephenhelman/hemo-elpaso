@@ -19,6 +19,7 @@ export const ROUTE_KEYS = [
   "contact.media",
   "contact.other",
   "privacy",
+  "board.duplicates",
   "reply.info",
   "reply.events",
 ] as const;
@@ -91,6 +92,11 @@ export const ROUTE_DEFS: Record<RouteKey, RouteDef> = {
     key: "reply.info", group: "replies", mode: "single", options: REPLY_OPTIONS, allowTyped: false, defaultLocals: ["info"],
     label: { en: "Replies to registration and contact auto-reply emails", es: "Respuestas a los correos de registro y de acuse de contacto" },
     help: { en: "Where a reply goes when someone answers the registration confirmation, household confirmation or contact auto-reply.", es: "A dónde llega la respuesta cuando alguien contesta la confirmación de registro, la de hogar o el acuse de contacto." },
+  },
+  "board.duplicates": {
+    key: "board.duplicates", group: "notifications", mode: "list", options: ROLE_LOCALS, allowTyped: false, defaultLocals: ["president", "vicepresident"],
+    label: { en: "Sign-in matched more than one household", es: "Un inicio de sesión coincide con más de un hogar" },
+    help: { en: "Who is told when someone signs in and their email matches more than one household. The email contains only a link to the board page; no names, emails or family details.", es: "A quién se avisa cuando alguien inicia sesión y su correo coincide con más de un hogar. El correo solo contiene un enlace a la página de la junta; sin nombres, correos ni datos de la familia." },
   },
   "reply.events": {
     key: "reply.events", group: "replies", mode: "single", options: REPLY_OPTIONS, allowTyped: false, defaultLocals: ["events"],

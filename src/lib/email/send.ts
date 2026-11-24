@@ -27,7 +27,8 @@ export type CodeEmailKind =
   | "CONTACT_AUTO_REPLY"
   | "EMAIL_ROUTING_NOTICE"
   | "ADMIN_CHANGE_NOTICE"
-  | "EMAIL_ROUTING_TEST";
+  | "EMAIL_ROUTING_TEST"
+  | "DUPLICATE_SIGNIN_NOTICE";
 
 export type SendResult =
   | { ok: true; id: string }

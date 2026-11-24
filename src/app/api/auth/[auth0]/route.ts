@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { handleAuth, handleLogin, type HandlerError } from "@auth0/nextjs-auth0";
+import type { HandlerError } from "@auth0/nextjs-auth0";
+import { handleAuth, handleLogin } from "@/lib/auth0";
 
 /**
  * Auth0 handlers with a friendlier failure mode: when the Post-Login Action

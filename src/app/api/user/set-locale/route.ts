@@ -1,6 +1,6 @@
 // src/app/api/user/set-locale/route.ts
 import { NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { getSession } from "@/lib/auth0";
 import { prisma } from "@/lib/db";
 
 // Reads the session cookie, so it can never be rendered statically.
@@ -14,8 +14,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const patient = await prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
+    const patient = await prisma.patient.findFirst({
+      where: { identities: { some: { auth0Sub: session.user.sub } } },
       select: { preferredLanguage: true },
     });
 

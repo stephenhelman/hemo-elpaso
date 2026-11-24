@@ -1,3 +1,4 @@
+import { PATIENT_ONLY } from "@/lib/patients/query";
 import { SITE_TIMEZONE } from "@/lib/site";
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
@@ -25,13 +26,8 @@ export default async function AdminDashboardPage() {
   // Fetch dashboard data
   const now = new Date();
 
-  // Total patients (excluding admin/board)
-  const totalPatients = await prisma.patient.count({
-    where: {
-      role: "patient",
-      auth0Id: null,
-    },
-  });
+  // Total households (board-only and admin records are not households)
+  const totalPatients = await prisma.patient.count({ where: PATIENT_ONLY });
 
   // Total events
   const totalEvents = await prisma.event.count({

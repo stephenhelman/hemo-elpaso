@@ -1,11 +1,54 @@
 import { prisma } from "@/lib/db";
-import type { ConsentRecord } from "@prisma/client";
+import type { ConsentRecord, Prisma } from "@prisma/client";
 
 /**
- * "Patients" = public/accountless people. Board/admin rows, and any row that has
- * an Auth0 link (e.g. a former board member), are staff and never listed here.
+ * Household evidence: the thin registration always writes consent records, and older/phone/seed rows have a
+ * completed-registration stamp or household members. Board-only records (invited by name + org email) have none.
  */
-export const PATIENT_ONLY = { role: "patient", auth0Id: null } as const;
+export const HOUSEHOLD_EVIDENCE: Prisma.PatientWhereInput = {
+  OR: [
+    { registrationCompletedAt: { not: null } },
+    { consentRecords: { some: {} } },
+    { householdMembers: { some: {} } },
+  ],
+};
+
+/**
+ * Records the settings-only admin may handle: board records (and a former board member's) that hold NO household data.
+ * Separation of duties: the admin never sees or touches a record that carries family data.
+ */
+export const BOARD_ONLY: Prisma.PatientWhereInput = {
+  AND: [
+    { role: { not: "admin" } },
+    { NOT: HOUSEHOLD_EVIDENCE },
+    { OR: [{ role: "board" }, { identities: { some: {} } }, { auth0Id: { not: null } }] },
+  ],
+};
+
+/**
+ * "Patients" = households. Spread into a `where` (it uses the AND key only, so it can sit next to a caller's own OR).
+ *
+ *  - admin rows (the settings-only account) are never households;
+ *  - board rows are households only once they carry household data (after the President/VP links or merges their
+ *    record to it). A board-only record never appears in patient lists, invitations, attendees or retention;
+ *  - every accountless public patient (role "patient", no sign-in linked) is still a household, exactly as before;
+ *  - a role "patient" row that has a linked sign-in (e.g. a former board member) needs household evidence, and a
+ *    family that has signed in does have it.
+ *
+ * This replaces `{ role: "patient", auth0Id: null }`, which would have hidden every household whose person signs in
+ * or holds a board role. Tests: scripts/check-identities.ts.
+ */
+export const PATIENT_ONLY: Prisma.PatientWhereInput = {
+  AND: [
+    { role: { not: "admin" } },
+    {
+      OR: [
+        { role: "patient", auth0Id: null, identities: { none: {} } },
+        HOUSEHOLD_EVIDENCE,
+      ],
+    },
+  ],
+};
 
 export type CurrentConsents = {
   data_and_contact: boolean | null; // null = never recorded
