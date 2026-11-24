@@ -86,6 +86,7 @@ enum EmailTemplateType {
   CONTACT_NOTIFICATION
   CONTACT_AUTO_REPLY
   EMAIL_ROUTING_NOTICE
+  ADMIN_CHANGE_NOTICE
   EMAIL_ROUTING_TEST
   EVENT_INVITATION
 }
@@ -969,6 +970,7 @@ enum AuditAction {
   EMAIL_TEMPLATE_UPDATED
   TEST_EMAIL_SENT
   EMAIL_ROUTE_CHANGED
+  PERMISSIONS_CHANGED
   EMAIL_ROUTE_TEST_SENT
 
   // Sponsorship
@@ -1421,4 +1423,17 @@ model EmailRoute {
   updatedAt  DateTime @updatedAt
 
   @@map("email_routes")
+}
+
+// Permissions matrix (role x permission). Seeded from the code defaults (src/lib/permission-catalog.ts), which are
+// also the fallback if this table is empty or unreadable. Locked cells are enforced in code, never trusted from here.
+model RolePermission {
+  role       String // BoardRoleType value, or "ADMIN"
+  permission String
+  granted    Boolean  @default(false)
+  updatedBy  String? // patientId
+  updatedAt  DateTime @updatedAt
+
+  @@id([role, permission])
+  @@map("role_permissions")
 }

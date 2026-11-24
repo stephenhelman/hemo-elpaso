@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminWithPermissions } from "@/lib/permissions";
+import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const admin = await getAdminWithPermissions();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!admin.can("canManageEvents"))
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { error } = await requirePermission("canManageEvents");
+  if (error) return error;
 
   const event = await prisma.event.findUnique({ where: { id: params.id } });
   if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });

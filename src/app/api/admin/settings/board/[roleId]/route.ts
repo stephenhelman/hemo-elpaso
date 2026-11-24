@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { AuditAction } from "@prisma/client";
+import { notifyOfficersOfAdminAction } from "@/lib/admin-notice";
 
 interface Props {
   params: { roleId: string };
@@ -66,6 +67,12 @@ export async function DELETE(req: NextRequest, { params }: Props) {
     });
     demoted = res.count > 0;
   }
+
+  void notifyOfficersOfAdminAction({
+    subjectEn: "Board role removed", subjectEs: "Cargo de la junta retirado",
+    linesEn: [`${admin!.email} removed the role ${boardRole.role} (record ${params.roleId}).`],
+    linesEs: [`${admin!.email} retiró el cargo ${boardRole.role} (registro ${params.roleId}).`],
+  });
 
   return NextResponse.json({
     success: true,

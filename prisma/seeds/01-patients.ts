@@ -293,7 +293,8 @@ export async function seedPatients() {
     data: {
       auth0Id: "google-oauth2|108328322650777067680", // Your real Auth0 ID
       email: "stephenhelman18@gmail.com",
-      role: "admin",
+      role: "board", // officer account (data access through its own role); the settings-only admin is seed_admin_1
+      boardRoles: { create: { role: "VICE_PRESIDENT", assignedBy: "seed" } },
       preferredLanguage: "en",
       registrationCompletedAt: new Date(),
       consentDate: new Date(),

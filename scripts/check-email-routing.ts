@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { BoardRoleType } from "@prisma/client";
 import { ROLE_PERMISSIONS, hasPermission } from "../src/lib/permissions";
+import { DEFAULT_MATRIX } from "../src/lib/permission-catalog";
 import {
   ROUTE_KEYS, defaultRecipients, officerAddresses, resolveRecipients, routeForContactReason, validateRecipients,
 } from "../src/lib/email-routing/definitions";
@@ -13,12 +14,12 @@ const D = "hemoelpaso.org";
 const actor = { id: "p1", name: "Ana Perez" };
 
 // ── Permission ───────────────────────────────────────────────────────────────
-test("only the four officers hold canManageEmailRouting", () => {
-  const officers: BoardRoleType[] = ["PRESIDENT", "VICE_PRESIDENT", "SECRETARY", "TREASURER"];
+test("only the settings-only admin holds canManageEmailRouting", () => {
   for (const r of Object.keys(ROLE_PERMISSIONS) as BoardRoleType[]) {
-    assert.equal(hasPermission([r], "canManageEmailRouting"), officers.includes(r), r);
+    assert.equal(hasPermission([r], "canManageEmailRouting"), false, r);
   }
   assert.equal(hasPermission([], "canManageEmailRouting"), false);
+  assert.ok(DEFAULT_MATRIX.ADMIN.includes("canManageEmailRouting"));
 });
 
 test("every email-routing API route is gated by requirePermission(canManageEmailRouting) before doing anything", () => {

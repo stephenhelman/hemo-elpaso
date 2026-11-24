@@ -12,8 +12,8 @@ function cell(v: unknown) {
 }
 
 /**
- * CSV export. Diagnoses are included ONLY for users with the admin role
- * (isSuperAdmin); everyone else gets the same file without that column.
+ * CSV export. Diagnoses are included ONLY for users who hold
+ * canViewPHI; everyone else gets the same file without that column.
  * The audit entry records counts and whether diagnoses were included, never the
  * filter values (a diagnosis filter would itself reveal PHI).
  */
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     pendingConfirmations: f.pendingConfirmations === true,
   });
 
-  const withDx = admin!.isSuperAdmin;
+  const withDx = admin!.can("canViewPHI");
   const header = [
     "ID", "First Name", "Last Name", "Email", "Phone", "Address", "Language",
     "Family Size", "Source", "Data & Contact Consent", "Media Consent",

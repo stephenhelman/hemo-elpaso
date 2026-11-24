@@ -26,6 +26,7 @@ export type CodeEmailKind =
   | "CONTACT_NOTIFICATION"
   | "CONTACT_AUTO_REPLY"
   | "EMAIL_ROUTING_NOTICE"
+  | "ADMIN_CHANGE_NOTICE"
   | "EMAIL_ROUTING_TEST";
 
 export type SendResult =

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { BoardRoleType } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { assignBoardRole } from "@/lib/board/assign";
+import { assignBoardRole, isAdminAccount } from "@/lib/board/assign";
 import { AuditAction } from "@prisma/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,6 +34,11 @@ export async function POST(req: NextRequest) {
   }
   if (!Object.values(BoardRoleType).includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+  }
+
+  // The organizational admin account can never be invited into a board role.
+  if (isAdminAccount({ role: "", email })) {
+    return NextResponse.json({ error: "admin_cannot_hold_board_role" }, { status: 409 });
   }
 
   // Only reuse an existing STAFF row: board/admin, or a row that already has an

@@ -36,7 +36,7 @@ export async function seedEngagement() {
   });
 
   const admin = await prisma.patient.findFirst({
-    where: { role: "admin" },
+    where: { role: "board", boardRoles: { some: { active: true, role: { in: ["PRESIDENT", "VICE_PRESIDENT"] } } } },
   });
 
   if (!admin) throw new Error("No admin found");

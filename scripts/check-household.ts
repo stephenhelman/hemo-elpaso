@@ -130,7 +130,7 @@ async function main() {
   const cpp = await prisma.contactProfile.findFirst({ where: { lastName: tag + "p" } });
   created.push(cpp!.patientId!);
   const pm = await prisma.householdMember.findFirst({ where: { patientId: cpp!.patientId! } });
-  const board = await prisma.patient.findFirst({ where: { role: { in: ["board", "admin"] } } });
+  const board = await prisma.patient.findFirst({ where: { role: "board", boardRoles: { some: { active: true, role: { in: ["PRESIDENT", "VICE_PRESIDENT"] } } } } });
   const pc = await phoneConfirmMember(pm!.id, cpp!.patientId!, board!.id, { consentMedia: true });
   const pcr = await prisma.consentRecord.findMany({ where: { householdMemberId: pm!.id } });
   ok(pc && pcr.length === 3 && pcr.every((c) => c.method === "phone" && c.recordedByBoardUserId === board!.id), "phone confirmation records consents with method phone + board user id");

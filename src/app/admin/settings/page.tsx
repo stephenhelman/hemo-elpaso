@@ -5,7 +5,10 @@ import { Building2 } from "lucide-react";
 export default async function GeneralSettingsPage() {
   const admin = await getAdminWithPermissions();
   if (!admin) redirect("/");
-  if (!admin.can("canViewAdminDashboard")) redirect("/admin/dashboard");
+  if (!admin.can("canManageSettings")) {
+    // Officers do not hold canManageSettings; send them to the settings page they can use.
+    redirect(admin.can("canManageEmailTemplates") ? "/admin/settings/email-templates" : "/admin/dashboard");
+  }
 
   return (
     <div>

@@ -86,8 +86,12 @@ export const adminNavItemsTranslation = [
   },
 ];
 
-/** Permission needed to see a nav item. No entry = always visible (dashboard, events, settings). */
-export const ADMIN_NAV_PERMISSIONS: Record<string, string> = {
+/** Permission needed to see a nav item. No entry = always visible. */
+export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
+  "/admin/dashboard": "canViewAdminDashboard",
+  "/admin/events": "canViewAdminDashboard",
+  // Settings holds the admin pages (settings, toggles, permissions, routing, board) and the officers' email templates.
+  "/admin/settings": ["canManageSettings", "canManageEmailTemplates", "canManageEmailRouting", "canAssignBoardRoles"],
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
   "/admin/inactive-households": "canManageUsers",
@@ -99,6 +103,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string> = {
 export function visibleAdminNavItems(can: (permission: string) => boolean) {
   return adminNavItemsTranslation.filter((item) => {
     const required = ADMIN_NAV_PERMISSIONS[item.href];
-    return !required || can(required);
+    if (!required) return true;
+    return Array.isArray(required) ? required.some(can) : can(required);
   });
 }
