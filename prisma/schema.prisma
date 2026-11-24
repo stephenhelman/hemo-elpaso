@@ -1067,6 +1067,10 @@ enum AuditAction {
   BOARD_SIGNIN_POLICY_CHANGED
   BOARD_RECORD_CREATED
   BOARD_ORG_EMAIL_CHANGED
+
+  // Family page (actorType "family"; ids only)
+  PORTAL_VIEWED
+  PORTAL_CONSENT_CHANGED
 }
 
 model AuditLog {
