@@ -6,7 +6,8 @@ import BrandMark from "@/components/brand/BrandMark";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import UserMenu from "./UserMenu";
+import UserMenu, { SignInLink } from "./UserMenu";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import ServerLanguageSwitcher from "../ServerLanguageSwitcher";
@@ -17,8 +18,8 @@ type NavItem = NavLeaf | { labelEn: string; labelEs: string; children: NavLeaf[]
 
 /**
  * Top-level items stay few enough to fit a 1024px laptop: Photos live under
- * Events, Scholarships under Resources. "Home" is the logo. Sign-in is not here
- * (board only): it appears as the avatar menu once signed in, and in the footer.
+ * Events, Scholarships under Resources. "Home" is the logo. Sign-in is the outlined button before the CTA
+ * (desktop) or the last row of the mobile menu; once signed in it becomes the avatar menu.
  */
 const navItems: NavItem[] = [
   { href: "/about", labelEn: "About Us", labelEs: "Nosotros" },
@@ -115,7 +116,8 @@ function NavDropdown({ item, pathname, locale }: { item: Extract<NavItem, { chil
 }
 
 export default function Navbar() {
-  const { registrationOpen } = useSiteFlags();
+  const { registrationOpen, familyPortal } = useSiteFlags();
+  const { user, isLoading } = useUser();
   const items = navItems.filter((i) => isGroup(i) || registrationOpen || i.href !== "/register-info");
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -158,7 +160,7 @@ export default function Navbar() {
               <LanguageSwitcher />
             )}
 
-            <UserMenu lang={locale} />
+            <UserMenu lang={locale} showSignIn />
 
             {/* Get Involved CTA */}
             <Link
@@ -214,6 +216,9 @@ export default function Navbar() {
                     {locale === "en" ? item.labelEn : item.labelEs}
                   </Link>
                 ),
+              )}
+              {!user && !isLoading && (
+                <SignInLink lang={locale} familyPortal={familyPortal} variant="mobile" onClick={() => setMobileOpen(false)} />
               )}
             </nav>
           </div>

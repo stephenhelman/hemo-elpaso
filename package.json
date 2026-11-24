@@ -27,6 +27,7 @@
     "check:legal": "tsx --test scripts/check-legal.ts",
     "check:legal-placeholders": "tsx scripts/check-legal-placeholders.ts",
     "check:features": "tsx --test scripts/check-features.ts",
+    "check:nav": "tsx --test scripts/check-nav.ts",
     "check:identities": "tsx scripts/db-guard.ts && tsx --test scripts/check-identities.ts",
     "check:permissions": "tsx --test scripts/check-permissions.ts",
     "check:invitation-log": "tsx scripts/db-guard.ts && tsx --test scripts/check-invitation-log.ts",

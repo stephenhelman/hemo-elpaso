@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveSession } from "@/lib/identity/session";
+import { accessHeaders } from "@/lib/identity/access";
 import { getAdminWithPermissions, type Permission } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
  *
  *   ?need=board   board mode (an org Google account of an admin / board-role holder). Optional ?perm=<permission>.
  *   ?need=portal  a linked person with a household (family or board mode).
+ *   ?need=mode    always 200 for a signed-in caller; the headers say what they are (the header account menu).
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -18,9 +20,12 @@ export async function GET(req: Request) {
   const s = await resolveSession();
   if (!s) return new NextResponse(null, { status: 401 });
 
-  const deny = () => new NextResponse(null, { status: 403, headers: { "x-hoep-mode": s.mode, "x-hoep-household": s.hasHousehold ? "1" : "0" } });
+  const headers = accessHeaders(s);
+  const ok = () => new NextResponse(null, { status: 200, headers });
+  const deny = () => new NextResponse(null, { status: 403, headers });
 
-  if (need === "portal") return s.mode !== "none" && s.hasHousehold ? new NextResponse(null, { status: 200 }) : deny();
+  if (need === "mode") return ok();
+  if (need === "portal") return s.mode !== "none" && s.hasHousehold ? ok() : deny();
   if (need !== "board") return new NextResponse(null, { status: 400 });
 
   if (s.mode !== "board") return deny();
@@ -29,5 +34,5 @@ export async function GET(req: Request) {
     const admin = await getAdminWithPermissions();
     if (!admin || !admin.can(perm as Permission)) return deny();
   }
-  return new NextResponse(null, { status: 200 });
+  return ok();
 }

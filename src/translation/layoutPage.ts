@@ -2,12 +2,16 @@ export const userMenuTranslation = {
   en: {
     login: "Login",
     portal: "Portal",
+    board: "Board",
+    myHousehold: "My household",
     adminDashboard: "Admin Dashboard",
     logout: "Logout",
   },
   es: {
     login: "Iniciar Sesión",
     portal: "Portal",
+    board: "Junta",
+    myHousehold: "Mi hogar",
     adminDashboard: "Panel de administración",
     logout: "Cerrar sesión",
   },
@@ -20,7 +24,6 @@ export const footerTranslation = {
     contact: "Contact Us",
     connect: "Connect",
     rights: "All rights reserved.",
-    boardSignIn: "Board sign in",
     legalLinks: [
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
@@ -45,7 +48,6 @@ export const footerTranslation = {
     quickLinks: "Enlaces Rápidos",
     contact: "Contáctenos",
     connect: "Conéctate",
-    boardSignIn: "Acceso de la junta",
     legalLinks: [
       { href: "/privacy", label: "Privacidad" },
       { href: "/terms", label: "Términos" },

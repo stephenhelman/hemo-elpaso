@@ -25,16 +25,18 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 export default function SiteLayout({
   children,
   registrationOpen,
+  familyPortal,
   initialLocale,
   siteInfo,
 }: {
   children: React.ReactNode;
   registrationOpen: boolean;
+  familyPortal: boolean;
   initialLocale: Lang;
   siteInfo: PublicSiteInfo;
 }) {
   return (
-    <SiteFlagsProvider registrationOpen={registrationOpen}>
+    <SiteFlagsProvider registrationOpen={registrationOpen} familyPortal={familyPortal}>
     <UserProvider>
       <LanguageProvider initialLocale={initialLocale}>
       <SiteSettingsProvider value={siteInfo}>

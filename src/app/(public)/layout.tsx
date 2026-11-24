@@ -2,6 +2,7 @@ import { getDefaultShareImage, getSiteSettings } from "@/sanity/data";
 import { getLocaleCookie } from "../../lib/locale";
 import { siteUrl } from "@/lib/site";
 import { registrationOpen } from "@/lib/registration";
+import { isFeatureEnabled } from "@/lib/features";
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
@@ -136,6 +137,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${poppins.variable} ${bonum.variable}`}>
         <SiteLayout
           registrationOpen={registrationOpen()}
+          familyPortal={await isFeatureEnabled("family_portal")}
           initialLocale={locale === "es" ? "es" : "en"}
           siteInfo={{
             orgName: settings.orgName,
