@@ -15,6 +15,8 @@ export interface AuditInput {
   actorType: ActorType;
   /** The acting Patient row (board member or family). Null for system/public. NOT the subject of the action. */
   actorPatientId?: string | null;
+  /** Family page: the confirmed adult member who acted (null/absent = the primary, a board member or the system). */
+  actorMemberId?: string | null;
   action: AuditAction;
   resourceType?: string;
   resourceId?: string | null;
@@ -41,6 +43,7 @@ export function auditData(input: AuditInput): Prisma.AuditLogUncheckedCreateInpu
   return {
     patientId: input.actorPatientId ?? null,
     actorType: input.actorType,
+    actorMemberId: input.actorMemberId ?? null,
     action: input.action,
     resourceType: input.resourceType,
     resourceId: input.resourceId ?? null,

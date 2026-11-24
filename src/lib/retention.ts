@@ -78,6 +78,16 @@ export async function purgeMergedTombstones(now = new Date()) {
   return { tombstones: res.count };
 }
 
+/**
+ * Email-change requests hold the NEW address the person typed (the token is only a hash). Used or expired requests are
+ * deleted by the daily job, one day after they stop being usable. Counts only.
+ */
+export async function purgeEmailChangeRequests(now = new Date()) {
+  const cutoff = new Date(now.getTime() - DAY);
+  const res = await prisma.emailChangeRequest.deleteMany({ where: { OR: [{ expiresAt: { lt: cutoff } }, { usedAt: { lt: cutoff } }] } });
+  return { emailChangeRequests: res.count };
+}
+
 /** Marker written by "Mark contacted" (an audit row; no schema change). */
 export const CONTACTED_MARK = "Inactive household: marked contacted";
 

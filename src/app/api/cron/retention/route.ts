@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clearEndedEventTokens, purgeMergedTombstones, purgeOldLogs } from "@/lib/retention";
+import { clearEndedEventTokens, purgeEmailChangeRequests, purgeMergedTombstones, purgeOldLogs } from "@/lib/retention";
 import { purgeUnmatchedIdentities } from "@/lib/identity/admin";
 
 // Reads request headers and the database: never prerender at build time.
@@ -20,8 +20,9 @@ export async function GET(request: NextRequest) {
     const logs = await purgeOldLogs();
     const signIns = await purgeUnmatchedIdentities(); // sign-ins that never matched a household: 30 days
     const merged = await purgeMergedTombstones(); // merge tombstones: 12 months
-    console.info("retention run", { ...tokens, ...logs, ...signIns, ...merged });
-    return NextResponse.json({ ok: true, tokens, logs, signIns, merged });
+    const emailChanges = await purgeEmailChangeRequests(); // used / expired email-change links
+    console.info("retention run", { ...tokens, ...logs, ...signIns, ...merged, ...emailChanges });
+    return NextResponse.json({ ok: true, tokens, logs, signIns, merged, emailChanges });
   } catch {
     console.error("retention: failed");
     return NextResponse.json({ ok: false }, { status: 500 });

@@ -26,6 +26,7 @@ import { PATIENT_ONLY, currentConsents } from "../src/lib/patients/query";
 import { blockedByWithdrawal } from "../src/lib/email/policy";
 import { recordBoardConsent } from "../src/lib/consent/board";
 import { checkBoardChange } from "../src/lib/consent/board-rules";
+import { CONSENT_TEXT_VERSION } from "../src/content/consent";
 import { generateInvitations } from "../src/lib/invitations/generate";
 import { generateUnsubscribeToken } from "../src/lib/unsubscribe-token";
 import { GET as unsubscribe } from "../src/app/api/unsubscribe/route";
@@ -460,7 +461,7 @@ test("officer consent changes: append-only, reason rules, immediate effect on no
   for (const old of before) assert.deepEqual(recs.find((r) => r.id === old.id), old);
   const added = recs.filter((r) => !before.some((o) => o.id === r.id));
   assert.equal(added.length, 3);
-  assert.ok(added.every((r) => r.method === "board" && r.recordedByBoardUserId === officer && r.textVersion === "v3" && r.reasonCode));
+  assert.ok(added.every((r) => r.method === "board" && r.recordedByBoardUserId === officer && r.textVersion === CONSENT_TEXT_VERSION && r.reasonCode));
   assert.equal(currentConsents(recs).data_and_contact, false);
 
   const audits = await prisma.auditLog.findMany({ where: { action: "CONSENT_CHANGED_BY_BOARD", patientId: officer, resourceId: { in: added.map((r) => r.id) } } });

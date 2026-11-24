@@ -115,6 +115,15 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
       } else await tx.rsvpAttendee.update({ where: { id: r.id }, data: { householdMemberId: winnerId } });
     }
     await tx.$queryRaw`SELECT merge_member_consents(${loserId}, ${winnerId})`;
+    // a sign-in as the duplicate member, and guardian designations, follow the entry that is kept (deleting the loser would cascade them away)
+    await tx.userIdentity.updateMany({ where: { householdMemberId: loserId }, data: { householdMemberId: winnerId } });
+    for (const g of await tx.memberGuardianship.findMany({ where: { OR: [{ childMemberId: loserId }, { guardianMemberId: loserId }] } })) {
+      const childMemberId = g.childMemberId === loserId ? winnerId : g.childMemberId;
+      const guardianMemberId = g.guardianMemberId === loserId ? winnerId : g.guardianMemberId;
+      const existing = childMemberId === guardianMemberId ? null : await tx.memberGuardianship.findUnique({ where: { childMemberId_guardianMemberId: { childMemberId, guardianMemberId } } });
+      if (childMemberId === guardianMemberId || existing) await tx.memberGuardianship.delete({ where: { id: g.id } }); // the kept entry already has it
+      else await tx.memberGuardianship.update({ where: { id: g.id }, data: { childMemberId, guardianMemberId } });
+    }
     const mc = ins.memberConsents.find((m) => m.winnerId === winnerId && (m.keepMemberId === p.keepId));
     for (const r of mc?.resolutions.filter((x) => x.appendRefusal) ?? [])
       await tx.consentRecord.create({ data: { householdMemberId: winnerId, type: r.type, granted: false, textVersion: CONSENT_TEXT_VERSION, method: "merge", reasonCode: "MERGE", recordedByBoardUserId: actorId } });

@@ -5,7 +5,8 @@ import { audit } from "@/lib/audit";
 import { sendLoggedEmail } from "@/lib/email/send";
 import { getRouteRecipients } from "@/lib/email-routing";
 import { siteUrl } from "@/lib/site";
-import { decideLink, normalizeEmail, providerOf } from "./rules";
+import { decideLink, isOrgEmail, normalizeEmail, providerOf, type LinkCandidate } from "./rules";
+import { emailDomain } from "@/lib/site";
 
 export interface AuthUser {
   sub: string;
@@ -64,13 +65,13 @@ export async function syncIdentity(user: AuthUser): Promise<UserIdentity | null>
   if (decision.kind === "link") {
     const row = await prisma.userIdentity.upsert({
       where: { auth0Sub: user.sub },
-      create: { auth0Sub: user.sub, provider, email, emailVerified: true, patientId: decision.patientId, linkedAt: now, linkedVia: "auto", lastLoginAt: now },
-      update: { provider, email, emailVerified: true, patientId: decision.patientId, linkedAt: now, linkedVia: "auto", linkedByPatientId: null, lastLoginAt: now },
+      create: { auth0Sub: user.sub, provider, email, emailVerified: true, patientId: decision.patientId, householdMemberId: decision.memberId, linkedAt: now, linkedVia: "auto", lastLoginAt: now },
+      update: { provider, email, emailVerified: true, patientId: decision.patientId, householdMemberId: decision.memberId, linkedAt: now, linkedVia: "auto", linkedByPatientId: null, lastLoginAt: now },
     });
     await audit({
       actorType: "system", action: AuditAction.IDENTITY_LINKED, resourceType: "UserIdentity", resourceId: row.id,
       details: "Sign-in linked automatically by verified email",
-      changes: { patientId: decision.patientId, provider, via: "auto" },
+      changes: { patientId: decision.patientId, memberId: decision.memberId, provider, via: "auto" },
     });
     return row;
   }
@@ -96,14 +97,23 @@ export async function syncIdentity(user: AuthUser): Promise<UserIdentity | null>
 }
 
 /**
- * People a verified sign-in email may belong to: a primary email match, or an alias (the address of a record that was
- * merged into this one). Merged-away tombstones never match. Household-member emails are never candidates.
+ * People a verified sign-in email may belong to: a primary email match, an alias (the address of a record that was merged
+ * into this one), or a CONFIRMED ADULT member's email (never a pending, declined or minor member). Merged-away tombstones
+ * never match. An org-domain address never matches a member, so a board member's org login stays unambiguous.
  */
-export async function candidatesForEmail(email: string): Promise<{ id: string }[]> {
-  return prisma.patient.findMany({
-    where: { mergedIntoId: null, OR: [{ email: { equals: email, mode: "insensitive" } }, { emailAliases: { some: { email: email.trim().toLowerCase() } } }] },
+export async function candidatesForEmail(email: string): Promise<LinkCandidate[]> {
+  const e = email.trim().toLowerCase();
+  const patients = await prisma.patient.findMany({
+    where: { mergedIntoId: null, OR: [{ email: { equals: e, mode: "insensitive" } }, { emailAliases: { some: { email: e } } }] },
     select: { id: true },
   });
+  const members = isOrgEmail(e, emailDomain())
+    ? []
+    : await prisma.householdMember.findMany({
+        where: { email: { equals: e, mode: "insensitive" }, status: "confirmed", ageGroup: "18_plus", patient: { mergedIntoId: null } },
+        select: { id: true, patientId: true },
+      });
+  return [...patients.map((p) => ({ id: p.id })), ...members.map((m) => ({ id: m.patientId, memberId: m.id }))];
 }
 
 /** At most one notice per matching set per 24h. The email holds a link only: no names, addresses or household details. */

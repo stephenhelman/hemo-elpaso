@@ -607,8 +607,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: **Grabaciones y transmisiones en vivo de eventos.** {STATUS:recordings} Algunos eventos podrían transmitirse en vivo y grabarse para que las familias que no pueden asistir los vean. Lo anunciaremos en la invitación, en la puerta y al comenzar. Las cámaras apuntan a quienes presentan, no al público. Cuando alguien hace una pregunta, quien presenta la repite en lugar de mostrar a la persona. Las familias que no aceptaron el uso de fotos quedan fuera de cámara. Las grabaciones se publican como videos no listados o en la página familiar, y no aparecen en las búsquedas públicas.
 - EN: **Live captions and translation (Puente Live).** {STATUS:live_captions} At some events and meetings, HOEP’s own app, Puente Live, shows live English and Spanish captions of what is said. Speech is sent to a speech-to-text service and the text to a translation service; neither keeps it beyond processing, except as described under “How long we keep it”. HOEP doesn’t save the audio. Captions are machine-made and can be wrong; they are not a replacement for a qualified interpreter. A board member can pause captions at any time, for example when someone shares something personal. Board members may download a transcript after an event to help write newsletters or blog posts. We never publish a whole transcript.
   ES: **Subtítulos y traducción en vivo (Puente Live).** {STATUS:live_captions} En algunos eventos y reuniones, la aplicación propia de HOEP, Puente Live, muestra subtítulos en vivo en inglés y español de lo que se dice. La voz se envía a un servicio que la convierte en texto, y el texto a un servicio de traducción; ninguno la conserva más allá del procesamiento, salvo lo que se indica en “Cuánto tiempo la conservamos”. HOEP no guarda el audio. Los subtítulos los genera una máquina y pueden tener errores; no sustituyen a un intérprete calificado. Un miembro de la junta puede pausar los subtítulos en cualquier momento, por ejemplo cuando alguien comparte algo personal. Los miembros de la junta pueden descargar una transcripción después del evento para ayudar a escribir boletines o artículos del blog. Nunca publicamos una transcripción completa.
-- EN: **When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in.
-  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta.
+- EN: **When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in. Each adult in a household who has confirmed their own details can sign in with the email they confirmed with. Each adult manages their own consents and information, and parents and guardians manage their children’s information. No one sees another adult’s consents or health information.
+  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta. Cada adulto de un hogar que haya confirmado sus propios datos puede iniciar sesión con el correo con el que confirmó. Cada adulto administra sus propios consentimientos e información, y los padres y tutores administran la información de sus hijos. Nadie ve los consentimientos ni la información de salud de otro adulto.
 - EN: **When you verify a diagnosis (optional).** {STATUS:verification} You can upload a letter from a health care provider confirming a bleeding disorder for you or a child in your household. Only the President and Vice President can open it. We delete the file as soon as it’s reviewed and keep only the result: which diagnosis was confirmed, the date, and who reviewed it.
   ES: **Cuando verifica un diagnóstico (opcional).** {STATUS:verification} Puede subir una carta de un profesional de la salud que confirme un trastorno hemorrágico suyo o de un menor de su hogar. Solo la presidencia y la vicepresidencia pueden abrirla. Borramos el archivo en cuanto se revisa y conservamos solo el resultado: qué diagnóstico se confirmó, la fecha y quién lo revisó.
 - EN: **Text messages.** {STATUS:sms} If you opt in, your mobile number and whether you agreed to texts. Texts include event reminders, announcements and sign-in codes. Reply STOP at any time.
@@ -635,8 +635,9 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.
 - EN: To answer your messages.
   ES: Para responder a sus mensajes.
-- EN: To let you see your household’s information and manage your photo, text and newsletter choices on your family page. {STATUS:family_portal}
-  ES: Para que pueda ver la información de su hogar y administrar sus opciones de fotos, mensajes de texto y boletín en su página familiar. {STATUS:family_portal}
+- EN: To let you see and update your household’s information, and manage your photo, text and newsletter choices, on your family page. {STATUS:family_portal}
+  ES: Para que pueda ver y actualizar la información de su hogar, y administrar sus opciones de fotos, mensajes de texto y boletín, en su página familiar. {STATUS:family_portal}
+  (CHANGED in feat/portal-edits: “see” became “see and update”; reviewer, please re-check.)
 - EN: To confirm a diagnosis, if you choose to verify it. {STATUS:verification}
   ES: Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}
 - EN: To send the texts you opted into. {STATUS:sms}
@@ -731,6 +732,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Inicios de sesión vinculados {STATUS:family_portal} | Qué inicio de sesión de Google, Apple o Facebook está vinculado a su hogar: mientras exista el registro de su hogar
 - EN: Sign-ins we couldn’t match to a household {STATUS:family_portal} | 30 days after last use, then deleted
   ES: Inicios de sesión que no pudimos asociar a un hogar {STATUS:family_portal} | 30 días después del último uso, y luego se borran
+- EN: Merged duplicate records | If we merge duplicate records, we keep an empty placeholder for up to 12 months, and the other email address only to recognize your sign-in.
+  ES: Registros duplicados fusionados | Si fusionamos registros duplicados, conservamos un registro vacío hasta 12 meses, y el otro correo electrónico solo para reconocer su inicio de sesión. (NEW in feat/portal-edits)
 - EN: Assistance records {STATUS:assistance} | {ASSISTANCE_RETENTION}
   ES: Registros de ayuda financiera {STATUS:assistance} | {ASSISTANCE_RETENTION}
 - EN: Donation records {STATUS:donations} | As required for tax receipts
@@ -785,8 +788,9 @@ Policy text changed in this branch (already listed above under the privacy polic
 
 - EN: My household
   ES: Mi hogar
-- EN: This is the information HOEP has about your household. To change anything other than the choices below, contact us and we’ll update it.
-  ES: Esta es la información que HOEP tiene sobre su hogar. Para cambiar algo que no sean las opciones de abajo, contáctenos y lo actualizamos.
+- EN: This is the information HOEP has about your household. You can update your own details and your children’s here. Each adult in the household signs in for themselves and manages their own choices and information; no one sees another adult’s choices or health information. To withdraw consent to store your information, contact us.
+  ES: Esta es la información que HOEP tiene sobre su hogar. Aquí puede actualizar sus propios datos y los de sus hijos. Cada adulto del hogar inicia sesión por sí mismo y administra sus propias opciones e información; nadie ve las opciones ni la información de salud de otro adulto. Para retirar el consentimiento de guardar su información, contáctenos.
+  (CHANGED in feat/portal-edits.)
 - EN: Contact HOEP
   ES: Contactar a HOEP
 - EN: People in your household
@@ -853,3 +857,215 @@ Policy text changed in this branch (already listed above under the privacy polic
   ES: Volver al inicio
 - EN: Board | ES: Junta
 - EN: My household | ES: Mi hogar
+
+## Family page: editing, adults sign in, guardians (feat/portal-edits)
+
+### Consent v4: NEEDS HUMAN REVIEW (EN wording is DRAFT pending Stephen's and the attorney's approval)
+
+One new text, `member_guardian_attestation` in `src/content/consent.ts`. A confirmed adult the primary designated as a child's guardian must accept it on the family page before they can see or change that child's information. Recorded as an `age_guardian_attestation` consent on that adult's member row. Everything else in v4 is v3 unchanged. `CONSENT_TEXT_VERSION` is now `v4`.
+
+- EN: I am this child's parent or legal guardian.
+  ES: Soy el padre, la madre o el tutor legal de este menor.
+
+### Policy text changed in this branch (already listed above in their sections, marked CHANGED / NEW)
+
+The "see and update" purpose line; the family sign-in paragraph (each adult signs in, manages their own choices, parents and guardians manage their children's, no one sees another adult's consents or health information); the new retention row for merged duplicate records (12 months, and the other email only to recognize a sign-in). `LEGAL_EFFECTIVE_DATE` is untouched.
+
+### Family page strings (`src/lib/portal/edit-text.ts`, EN / ES)
+
+Function-valued strings show a placeholder for the name.
+
+- EN: Save
+  ES: Guardar
+- EN: Saving…
+  ES: Guardando…
+- EN: Saved.
+  ES: Guardado.
+- EN: That didn’t work. Please check it and try again.
+  ES: No funcionó. Revise los datos e inténtelo de nuevo.
+- EN: Cancel
+  ES: Cancelar
+- EN: Edit
+  ES: Editar
+- EN: Remove
+  ES: Quitar
+- EN: Yes, do it
+  ES: Sí, hacerlo
+- EN: Add
+  ES: Agregar
+- EN: Enter a first name.
+  ES: Escriba un nombre.
+- EN: Enter a last name.
+  ES: Escriba un apellido.
+- EN: That phone number doesn’t look right.
+  ES: Ese número de teléfono no parece correcto.
+- EN: Keep at least one way to reach you: an email or a phone number.
+  ES: Conserve al menos una forma de contactarle: un correo o un teléfono.
+- EN: That email address doesn’t look right.
+  ES: Ese correo electrónico no parece correcto.
+- EN: Check the details for this person (an adult needs an email, or choose to confirm by phone).
+  ES: Revise los datos de esta persona (un adulto necesita un correo, o elija confirmar por teléfono).
+- EN: A household can have up to 12 people.
+  ES: Un hogar puede tener hasta 12 personas.
+- EN: Choose an age group.
+  ES: Elija un grupo de edad.
+- EN: Choose a relationship.
+  ES: Elija un parentesco.
+- EN: You’ve made a lot of changes. Please wait a minute.
+  ES: Ha hecho muchos cambios. Espere un minuto.
+- EN: You can’t do that here.
+  ES: No puede hacer eso aquí.
+- EN: About you
+  ES: Sobre usted
+- EN: First name
+  ES: Nombre
+- EN: Last name
+  ES: Apellido
+- EN: Phone
+  ES: Teléfono
+- EN: Preferred language
+  ES: Idioma preferido
+- EN: English
+  ES: English
+- EN: Español
+  ES: Español
+- EN: Mailing address
+  ES: Dirección postal
+- EN: This is the household’s address. Any adult in the household can update it.
+  ES: Es la dirección del hogar. Cualquier adulto del hogar puede actualizarla.
+- EN: Email
+  ES: Correo electrónico
+- EN: New email address
+  ES: Nuevo correo electrónico
+- EN: Change email
+  ES: Cambiar correo
+- EN: We’ll send a confirmation link to the new address. Your email changes only after you use that link, and you stay signed in either way.
+  ES: Enviaremos un enlace de confirmación a la nueva dirección. Su correo cambia solo cuando use ese enlace, y su sesión sigue abierta de cualquier forma.
+- EN: If this address can be used, we’ve sent it a confirmation link.
+  ES: Si esta dirección se puede usar, le enviamos un enlace de confirmación.
+- EN: Your diagnoses
+  ES: Sus diagnósticos
+- EN: Only you can see and change this. HOEP board members who need it for their role can also see it. It is never sent by email or put in links.
+  ES: Solo usted puede verlos y cambiarlos. Los miembros de la junta de HOEP que lo necesiten para su cargo también pueden verlos. Nunca se envían por correo ni se ponen en enlaces.
+- EN: Changes to diagnoses and age groups affect future invitations only. Invitations we already sent are not changed.
+  ES: Los cambios en diagnósticos y grupos de edad afectan solo a las invitaciones futuras. Las invitaciones que ya enviamos no cambian.
+- EN: People in your household
+  ES: Personas de su hogar
+- EN: You
+  ES: Usted
+- EN: Household contact
+  ES: Contacto del hogar
+- EN: Waiting to confirm
+  ES: Falta que confirme
+- EN: Minor
+  ES: Menor
+- EN: Adult
+  ES: Adulto
+- EN: Add a person
+  ES: Agregar una persona
+- EN: Add a child or minor
+  ES: Agregar un niño o menor
+- EN: Add an adult
+  ES: Agregar un adulto
+- EN: Relationship
+  ES: Parentesco
+- EN: Age group
+  ES: Grupo de edad
+- EN: Child
+  ES: Hijo/a
+- EN: Spouse / partner
+  ES: Cónyuge / pareja
+- EN: Parent
+  ES: Padre / madre
+- EN: Sibling
+  ES: Hermano/a
+- EN: Other
+  ES: Otro
+- EN: Their email
+  ES: Su correo electrónico
+- EN: Confirm by phone instead (HOEP will call)
+  ES: Confirmar por teléfono (HOEP llamará)
+- EN: Adults confirm for themselves. We email them a link, or HOEP calls if you choose phone. They aren’t counted for invitations until they confirm.
+  ES: Los adultos confirman por sí mismos. Les enviamos un enlace por correo, o HOEP llama si elige teléfono. No cuentan para las invitaciones hasta que confirmen.
+- EN: Diagnoses
+  ES: Diagnósticos
+- EN: None shared.
+  ES: No compartió ninguno.
+- EN: Edit diagnoses
+  ES: Editar diagnósticos
+- EN: Only this child’s parents or guardians can see or change their diagnoses.
+  ES: Solo los padres o tutores de este menor pueden ver o cambiar sus diagnósticos.
+- EN: Is {name}’s age group still right?
+  ES: ¿Sigue siendo correcto el grupo de edad de {nombre}?
+- EN: Yes, still right
+  ES: Sí, sigue igual
+- EN: Now 18 or older
+  ES: Ya tiene 18 años o más
+- EN: {name} is now an adult
+  ES: {nombre} ya es adulto
+- EN: We’ll ask them to confirm for themselves, like any adult. Their diagnoses are cleared from the household until they confirm and share their own.
+  ES: Le pediremos que confirme por sí mismo, como cualquier adulto. Sus diagnósticos se quitan del hogar hasta que confirme y comparta los suyos.
+- EN: Convert to an adult
+  ES: Convertir en adulto
+- EN: Remove {name} from your household? They come off upcoming RSVPs. Past attendance stays as a count only.
+  ES: ¿Quitar a {nombre} de su hogar? Sale de los registros a eventos próximos. La asistencia pasada queda solo como un número.
+- EN: this person
+  ES: esta persona
+- EN: Parents / guardians
+  ES: Padres / tutores
+- EN: You are always a guardian. Other adults you add here can see and change this child’s diagnoses after they accept the guardian statement the next time they sign in.
+  ES: Usted siempre es tutor. Los otros adultos que agregue aquí podrán ver y cambiar los diagnósticos de este menor después de aceptar la declaración de tutor la próxima vez que inicien sesión.
+- EN: Add a guardian
+  ES: Agregar un tutor
+- EN: waiting to accept
+  ES: falta que acepte
+- EN: accepted
+  ES: aceptó
+- EN: Please confirm
+  ES: Por favor confirme
+- EN: You were added as a parent or guardian of {name}. To see or change their information, confirm:
+  ES: Lo agregaron como padre, madre o tutor de {nombre}. Para ver o cambiar su información, confirme:
+- EN: I am this child’s parent or legal guardian.
+  ES: Soy el padre, la madre o el tutor legal de este menor.
+- EN: I confirm
+  ES: Confirmo
+- EN: Not now
+  ES: Ahora no
+- EN: Your choices
+  ES: Sus opciones
+- EN: Leave this household
+  ES: Salir de este hogar
+- EN: You’ll be removed from this household and your sign-in will stop working. Your consents are withdrawn, and you come off upcoming RSVPs. The person who set up the household is told that an adult left.
+  ES: Saldrá de este hogar y su inicio de sesión dejará de funcionar. Sus consentimientos se retiran y sale de los registros a eventos próximos. Se avisa a quien creó el hogar que un adulto salió.
+- EN: Leave this household
+  ES: Salir de este hogar
+- EN: Delete our data
+  ES: Eliminar nuestros datos
+- EN: This asks HOEP to delete your whole household. It doesn’t delete anything by itself: HOEP follows its privacy process and will contact you.
+  ES: Esto pide a HOEP eliminar todo su hogar. No elimina nada por sí solo: HOEP sigue su proceso de privacidad y se comunicará con usted.
+- EN: Request to delete our household
+  ES: Pedir que se elimine nuestro hogar
+- EN: This asks HOEP to delete your own data. It doesn’t delete anything by itself: HOEP follows its privacy process and will contact you.
+  ES: Esto pide a HOEP eliminar sus propios datos. No elimina nada por sí solo: HOEP sigue su proceso de privacidad y se comunicará con usted.
+- EN: Request to delete my data
+  ES: Pedir que se eliminen mis datos
+- EN: We’ve told HOEP. Someone will contact you.
+  ES: Avisamos a HOEP. Alguien se comunicará con usted.
+- EN: Confirm your new email
+  ES: Confirme su nuevo correo
+- EN: Press the button to change your email address on your HOEP family page.
+  ES: Oprima el botón para cambiar su correo electrónico en su página familiar de HOEP.
+- EN: Confirm my new email
+  ES: Confirmar mi nuevo correo
+- EN: Done. Your email address was changed.
+  ES: Listo. Su correo electrónico cambió.
+- EN: This link isn’t valid any more. If you still want to change your email, ask for a new link on your family page.
+  ES: Este enlace ya no es válido. Si todavía quiere cambiar su correo, pida un enlace nuevo en su página familiar.
+- EN: Go to my family page
+  ES: Ir a mi página familiar
+
+### Emails (inline in `src/lib/portal/edit.ts`; each is EN and ES in one message, link only, no names)
+
+- Confirm your new email (to the NEW address). Subject: Confirm your new email / Confirme su nuevo correo.
+- An adult left your household (to the primary). Subject: An adult left your household / Un adulto salió de su hogar.
+- A privacy request needs review (to the `privacy.requests` route). Subject: A privacy request needs review / Una solicitud de privacidad necesita revisión.

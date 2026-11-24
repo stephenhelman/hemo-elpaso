@@ -19,6 +19,7 @@ export const ROUTE_KEYS = [
   "contact.media",
   "contact.other",
   "privacy",
+  "privacy.requests",
   "board.duplicates",
   "reply.info",
   "reply.events",
@@ -87,6 +88,12 @@ export const ROUTE_DEFS: Record<RouteKey, RouteDef> = {
     defaultLocals: ["privacy"], publishedInPolicy: true,
     label: { en: "Privacy contact", es: "Contacto de privacidad" },
     help: { en: "The address families use for privacy requests. It is printed in the Privacy Policy, Terms and Children’s policy.", es: "La dirección que las familias usan para solicitudes de privacidad. Se publica en la Política de privacidad, los Términos y la política de menores." },
+  },
+  "privacy.requests": {
+    key: "privacy.requests", group: "notifications", mode: "single", options: ["privacy", "info", "president", "vicepresident", "secretary", "treasurer"], allowTyped: false,
+    defaultLocals: ["privacy"],
+    label: { en: "Privacy requests from the family page", es: "Solicitudes de privacidad desde la página familiar" },
+    help: { en: "Where the notice goes when a family asks to delete their household, or an adult asks to delete their own data. The notice is a link only; nothing is deleted automatically.", es: "A dónde llega el aviso cuando una familia pide eliminar su hogar, o un adulto pide eliminar sus propios datos. El aviso es solo un enlace; nada se elimina automáticamente." },
   },
   "reply.info": {
     key: "reply.info", group: "replies", mode: "single", options: REPLY_OPTIONS, allowTyped: false, defaultLocals: ["info"],

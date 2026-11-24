@@ -112,8 +112,10 @@ test("the production build runs the placeholder check with the toggles", () => {
 import { CONSENT_TEXT_VERSION, consentText, consentTextVersions, eventNotices } from "../src/content/consent";
 
 test("consent v3: version, replaced media text, new sms/newsletter/verification, EN and ES", () => {
-  assert.equal(CONSENT_TEXT_VERSION, "v3");
-  assert.equal(consentText, consentTextVersions.v3);
+  assert.equal(CONSENT_TEXT_VERSION, "v4");
+  assert.equal(consentText, consentTextVersions.v4);
+  assert.equal(consentTextVersions.v3.media.en, consentText.media.en, "v4 changes nothing but the new guardian text");
+  assert.ok(consentText.member_guardian_attestation.en.length > 10 && consentText.member_guardian_attestation.es.length > 10);
   assert.match(consentText.media.en, /recordings and live streams/);
   assert.match(consentText.sms.en, /Reply STOP to stop, HELP for help/);
   assert.match(consentText.newsletter.en, /unsubscribe/);

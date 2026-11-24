@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import MergeDialog from "@/components/admin/merge/MergeDialog";
 
 interface Unmatched { id: string; provider: string; email: string; lastLoginAt: string; unlinkedByHand: boolean; matches: number }
-interface Person { id: string; name: string; email: string | null; hasHousehold: boolean; boardRoles: string[]; identities: { id: string; provider: string; email: string; linkedVia: string | null }[] }
+interface Person { id: string; name: string; email: string | null; hasHousehold: boolean; boardRoles: string[]; adults: { id: string; name: string }[]; identities: { id: string; provider: string; email: string; linkedVia: string | null; householdMemberId: string | null }[] }
 
 const PROVIDER: Record<string, string> = { "google-oauth2": "Google", apple: "Apple", facebook: "Facebook" };
 const btn = "px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-50";
@@ -35,8 +35,8 @@ export default function IdentitiesClient() {
     if (r.ok) setPeople(r.data.people);
   }
 
-  async function link(identityId: string, patientId: string) {
-    const r = await api(`/api/admin/identities/${identityId}/link`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patientId }) });
+  async function link(identityId: string, patientId: string, memberId?: string) {
+    const r = await api(`/api/admin/identities/${identityId}/link`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patientId, memberId }) });
     if (!r.ok) return toast.error("Could not link");
     toast.success("Linked"); setLinkTarget(null); load(); search();
   }
@@ -90,11 +90,17 @@ export default function IdentitiesClient() {
                   <button className={`${btn} border border-neutral-300`} onClick={() => toggle(p)}>{picked.some((x) => x.id === p.id) ? "Selected for merge" : "Select for merge"}</button>
                 </div>
               </div>
+              {linkTarget && p.adults.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-neutral-600">
+                  <span>Or link as a confirmed adult of this household:</span>
+                  {p.adults.map((a) => <button key={a.id} className={`${btn} border border-primary text-primary`} onClick={() => link(linkTarget, p.id, a.id)}>Link as {a.name}</button>)}
+                </div>
+              )}
               <ul className="mt-2 text-neutral-600">
                 {p.identities.length === 0 && <li>No sign-ins linked.</li>}
                 {p.identities.map((i) => (
                   <li key={i.id} className="flex items-center justify-between">
-                    <span>{PROVIDER[i.provider] ?? i.provider} · {i.email} · {i.linkedVia ?? "unmatched"}</span>
+                    <span>{PROVIDER[i.provider] ?? i.provider} · {i.email} · {i.linkedVia ?? "unmatched"}{i.householdMemberId ? ` · as ${p.adults.find((a) => a.id === i.householdMemberId)?.name ?? "an adult member"}` : ""}</span>
                     {i.linkedVia !== "unlinked" && <button className="text-red-600 font-semibold hover:underline" onClick={() => unlink(i.id)}>Unlink</button>}
                   </li>
                 ))}

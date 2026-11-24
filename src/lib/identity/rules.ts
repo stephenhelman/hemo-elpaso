@@ -75,19 +75,23 @@ export function resolveMode(f: SessionFacts): Mode {
 
 export type LinkDecision =
   | { kind: "ignore"; reason: "unverified_email" }
-  | { kind: "link"; patientId: string }
+  | { kind: "link"; patientId: string; memberId: string | null }
   | { kind: "unmatched" } // zero matches
   | { kind: "ambiguous"; patientIds: string[] }; // two or more
 
+/** A person a verified email may belong to: the household's primary (no memberId) or one of its confirmed adults. */
+export interface LinkCandidate { id: string; memberId?: string | null }
+
 /**
- * First sign-in. A VERIFIED email must match exactly one Patient's primary email. Household-member emails are never
- * candidates (only the primary adult signs in), which is why `candidates` is built from Patient.email alone.
+ * First sign-in. A VERIFIED email must match exactly one person: a primary's Patient.email (or alias) OR one confirmed adult
+ * member's email. Anything else is not linked: two or more matches ACROSS BOTH (a primary and a member sharing an address,
+ * or two households) are ambiguous, and an officer links the sign-in by hand.
  */
-export function decideLink(emailVerified: boolean | null | undefined, candidates: { id: string }[]): LinkDecision {
+export function decideLink(emailVerified: boolean | null | undefined, candidates: LinkCandidate[]): LinkDecision {
   if (emailVerified !== true) return { kind: "ignore", reason: "unverified_email" };
   if (candidates.length === 0) return { kind: "unmatched" };
-  if (candidates.length === 1) return { kind: "link", patientId: candidates[0].id };
-  return { kind: "ambiguous", patientIds: candidates.map((c) => c.id).sort() };
+  if (candidates.length === 1) return { kind: "link", patientId: candidates[0].id, memberId: candidates[0].memberId ?? null };
+  return { kind: "ambiguous", patientIds: candidates.map((c) => (c.memberId ? `${c.id}:${c.memberId}` : c.id)).sort() };
 }
 
 // ---- officer transition -------------------------------------------------------------------------------------

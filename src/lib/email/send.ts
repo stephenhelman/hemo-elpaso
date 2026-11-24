@@ -29,7 +29,10 @@ export type CodeEmailKind =
   | "ADMIN_CHANGE_NOTICE"
   | "EMAIL_ROUTING_TEST"
   | "DUPLICATE_SIGNIN_NOTICE"
-  | "RECORDS_MERGED_NOTICE";
+  | "RECORDS_MERGED_NOTICE"
+  | "EMAIL_CHANGE_CONFIRMATION"
+  | "MEMBER_LEFT_NOTICE"
+  | "DELETION_REQUEST_NOTICE";
 
 export type SendResult =
   | { ok: true; id: string }

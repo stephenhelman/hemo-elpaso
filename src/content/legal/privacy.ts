@@ -49,7 +49,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in.",
+        text: "**When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in. Each adult in a household who has confirmed their own details can sign in with the email they confirmed with. Each adult manages their own consents and information, and parents and guardians manage their children’s information. No one sees another adult’s consents or health information.",
       },
       {
         t: "p",
@@ -88,7 +88,7 @@ export const privacy: LegalDoc = {
           "To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.",
           "To manage RSVPs, send confirmations and reminders, and check people in.",
           "To answer your messages.",
-          "To let you see your household’s information and manage your photo, text and newsletter choices on your family page. {STATUS:family_portal}",
+          "To let you see and update your household’s information, and manage your photo, text and newsletter choices, on your family page. {STATUS:family_portal}",
           "To confirm a diagnosis, if you choose to verify it. {STATUS:verification}",
           "To send the texts you opted into. {STATUS:sms}",
           "To send the newsletter you opted into. {STATUS:newsletter}",
@@ -166,6 +166,7 @@ export const privacy: LegalDoc = {
           ["Sign-in sessions {STATUS:family_portal}", "Up to 7 days, and you’re signed out after 24 hours of inactivity"],
           ["Linked sign-ins {STATUS:family_portal}", "Which Google, Apple or Facebook sign-in is linked to your household: while your household record exists"],
           ["Sign-ins we couldn’t match to a household {STATUS:family_portal}", "30 days after last use, then deleted"],
+          ["Merged duplicate records", "If we merge duplicate records, we keep an empty placeholder for up to 12 months, and the other email address only to recognize your sign-in."],
           ["Assistance records {STATUS:assistance}", "{ASSISTANCE_RETENTION}"],
           ["Donation records {STATUS:donations}", "As required for tax receipts"],
         ],
@@ -226,7 +227,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta.",
+        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta. Cada adulto de un hogar que haya confirmado sus propios datos puede iniciar sesión con el correo con el que confirmó. Cada adulto administra sus propios consentimientos e información, y los padres y tutores administran la información de sus hijos. Nadie ve los consentimientos ni la información de salud de otro adulto.",
       },
       {
         t: "p",
@@ -265,7 +266,7 @@ export const privacy: LegalDoc = {
           "Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.",
           "Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.",
           "Para responder a sus mensajes.",
-          "Para que pueda ver la información de su hogar y administrar sus opciones de fotos, mensajes de texto y boletín en su página familiar. {STATUS:family_portal}",
+          "Para que pueda ver y actualizar la información de su hogar, y administrar sus opciones de fotos, mensajes de texto y boletín, en su página familiar. {STATUS:family_portal}",
           "Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}",
           "Para enviarle los mensajes de texto que aceptó recibir. {STATUS:sms}",
           "Para enviarle el boletín que aceptó recibir. {STATUS:newsletter}",
@@ -343,6 +344,7 @@ export const privacy: LegalDoc = {
           ["Sesiones de inicio de sesión {STATUS:family_portal}", "Hasta 7 días, y se cierra su sesión tras 24 horas de inactividad"],
           ["Inicios de sesión vinculados {STATUS:family_portal}", "Qué inicio de sesión de Google, Apple o Facebook está vinculado a su hogar: mientras exista el registro de su hogar"],
           ["Inicios de sesión que no pudimos asociar a un hogar {STATUS:family_portal}", "30 días después del último uso, y luego se borran"],
+          ["Registros duplicados fusionados", "Si fusionamos registros duplicados, conservamos un registro vacío hasta 12 meses, y el otro correo electrónico solo para reconocer su inicio de sesión."],
           ["Registros de ayuda financiera {STATUS:assistance}", "{ASSISTANCE_RETENTION}"],
           ["Registros de donaciones {STATUS:donations}", "Lo que exijan los recibos para impuestos"],
         ],
