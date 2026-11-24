@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BoardRoleType } from "@prisma/client";
+import { AuditAction, BoardRoleType } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { assignBoardRole, isAdminAccount } from "@/lib/board/assign";
-import { AuditAction } from "@prisma/client";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { assignBoardRole } from "@/lib/board/assign";
+import { audit } from "@/lib/audit";
+import { validateOrgEmail } from "@/lib/identity/admin";
 
 /**
- * Invite a board member who has no account yet.
- * Creates a Patient (role "board", no Auth0 link yet) + ContactProfile, then
- * the BoardRole. The row is linked to their Auth0 login on first sign-in
- * (see lib/board/link-session.ts).
+ * Create a board member's record: name + org email (an @<mail domain> Google Workspace address) + role. The
+ * settings-only admin never browses family records, so this refuses to reuse any record that has household data.
+ * There is no allow-list to update anywhere: on their first sign-in with that Google account the verified email
+ * matches this record and links itself (lib/identity/link.ts).
  */
 export async function POST(req: NextRequest) {
   const { admin, error } = await requirePermission("canAssignBoardRoles");
@@ -20,80 +19,46 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const firstName = String(body.firstName ?? "").trim();
   const lastName = String(body.lastName ?? "").trim();
-  const email = String(body.email ?? "").trim().toLowerCase();
   const { role, fromEmail } = body;
 
-  if (!firstName || !lastName || !email || !role) {
-    return NextResponse.json(
-      { error: "firstName, lastName, email and role are required" },
-      { status: 400 },
-    );
+  if (!firstName || !lastName || !body.email || !role) {
+    return NextResponse.json({ error: "firstName, lastName, email and role are required" }, { status: 400 });
   }
-  if (!EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  const v = validateOrgEmail(String(body.email));
+  if (!v.ok) {
+    // admin_mailbox: the organizational admin account can never be invited into a board role.
+    return NextResponse.json({ error: v.error === "admin_mailbox" ? "admin_cannot_hold_board_role" : v.error }, { status: v.error === "admin_mailbox" ? 409 : 400 });
   }
+  const email = v.email;
   if (!Object.values(BoardRoleType).includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  // The organizational admin account can never be invited into a board role.
-  if (isAdminAccount({ role: "", email })) {
-    return NextResponse.json({ error: "admin_cannot_hold_board_role" }, { status: 409 });
+  // Reuse a board record only if it has no household data. Anything else with this address is a family record (or
+  // ambiguous): refuse, the President/VP resolves it. A second record would make the sign-in match two people.
+  const existing = await prisma.patient.findMany({
+    where: { email: { equals: email, mode: "insensitive" } },
+    select: { id: true, role: true, _count: { select: { householdMembers: true, consentRecords: true } }, registrationCompletedAt: true },
+  });
+  const withHousehold = existing.filter((p) => p.registrationCompletedAt || p._count.householdMembers > 0 || p._count.consentRecords > 0);
+  if (withHousehold.length > 0 || existing.length > 1) {
+    return NextResponse.json({ error: "email_in_use" }, { status: 409 });
   }
 
-  // Only reuse an existing STAFF row: board/admin, or a row that already has an
-  // Auth0 login (public patients never do, so that's a former board member).
-  // A public patient row with the same email is deliberately left alone and
-  // never made linkable: the board member gets their own row, so patient data
-  // and diagnoses stay separate.
-  let patient = await prisma.patient.findFirst({
-    where: {
-      email: { equals: email, mode: "insensitive" },
-      OR: [{ role: { in: ["board", "admin"] } }, { auth0Id: { not: null } }],
-    },
-    include: { contactProfile: true },
-  });
-
-  if (!patient) {
-    patient = await prisma.patient.create({
-      data: {
-        auth0Id: null, // linked on first login (lib/board/link-session.ts)
-        email,
-        role: "board",
-        preferredLanguage: "en",
-        source: "web",
-        contactProfile: { create: { firstName, lastName } },
-      },
-      include: { contactProfile: true },
+  let patientId = existing[0]?.id;
+  if (!patientId) {
+    const created = await prisma.patient.create({
+      data: { email, role: "board", preferredLanguage: "en", source: "web", contactProfile: { create: { firstName, lastName } } },
+      select: { id: true },
     });
+    patientId = created.id;
+    await audit({ actorType: "board", actorPatientId: admin!.id, action: AuditAction.BOARD_RECORD_CREATED, resourceType: "Patient", resourceId: patientId, details: "Board record created", changes: { patientId, role } });
   }
 
-  await prisma.auditLog.create({
-    data: {
-      patientId: admin!.id,
-      action: AuditAction.BOARD_MEMBER_INVITED,
-      resourceType: "Patient",
-      resourceId: patient.id,
-      details: `Board member invited as ${role} by ${admin!.email}`,
-    },
-  });
-
-  const result = await assignBoardRole({
-    patientId: patient.id,
-    role,
-    fromEmail: fromEmail || null,
-    admin: { id: admin!.id, email: admin!.email },
-  });
+  const result = await assignBoardRole({ patientId, role, fromEmail: fromEmail || null, admin: { id: admin!.id, email: admin!.email } });
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  return NextResponse.json(
-    {
-      boardRole: result.boardRole,
-      reminder:
-        "Add this email to the Auth0 board allow-list (BOARD_ALLOWLIST) or they won't be able to sign in.",
-    },
-    { status: 201 },
-  );
+  return NextResponse.json({ boardRole: result.boardRole }, { status: 201 });
 }

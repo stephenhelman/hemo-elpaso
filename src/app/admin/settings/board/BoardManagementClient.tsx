@@ -38,6 +38,8 @@ interface BoardRoleRecord {
   patient: {
     id: string;
     linked: boolean; // false = invited, hasn't signed in yet
+    orgIdentities: { id: string; lastLoginAt: string }[]; // linked @<org> Google sign-ins
+    hasHousehold: boolean; // household data on this record: handled by the President/VP, no controls here
     email: string | null;
     firstName: string | null;
     lastName: string | null;
@@ -142,7 +144,6 @@ export default function BoardManagementClient({
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         toast.success(`${roleName} role removed`);
-        if (data.reminder) toast(data.reminder, { duration: 12000, icon: "⚠️" });
         router.refresh();
       } else {
         const data = await res.json();
@@ -406,6 +407,7 @@ function BoardRoleCard({
             )}
           </div>
           <p className="text-sm text-neutral-500">{record.patient.email}</p>
+          <OrgSignIn patient={record.patient} />
 
           {/* From email */}
           <div className="mt-3 flex items-center gap-2">
@@ -794,9 +796,9 @@ function InviteBoardMemberForm({
         Invite Board Member
       </h3>
       <p className="text-xs text-neutral-500 mb-5">
-        Creates their board record now. They are linked automatically the first
-        time they sign in with this (verified) email. Also add the email to the
-        Auth0 board allow-list.
+        Creates their board record now with their HOEP email (a Google
+        Workspace account on our domain). They are linked automatically the
+        first time they sign in with that account. Nothing else to set up.
       </p>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -823,10 +825,11 @@ function InviteBoardMemberForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Email <span className="text-red-500">*</span>
+            HOEP email <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
+            placeholder={mailbox("name")}
             className={input}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -879,6 +882,63 @@ function InviteBoardMemberForm({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Org sign-in of one board record. The settings-only admin sets the org email and can unlink an org sign-in. Records
+ * that carry household data show a note instead: the President/VP handles those (separation of duties).
+ */
+function OrgSignIn({ patient }: { patient: BoardRoleRecord["patient"] }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(patient.email ?? "");
+  const [busy, setBusy] = useState(false);
+
+  if (patient.hasHousehold) {
+    return <p className="mt-2 text-xs text-neutral-500">This record has household data. The President or Vice President manages its sign-ins.</p>;
+  }
+
+  const call = async (url: string, init: RequestInit, ok: string) => {
+    setBusy(true);
+    try {
+      const res = await fetch(url, init);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg: Record<string, string> = { not_org_email: "Use a HOEP email address.", email_in_use: "Another record already uses this email.", invalid_email: "That is not a valid email." };
+        toast.error(msg[data.error] ?? "Could not save");
+        return;
+      }
+      toast.success(ok);
+      setEditing(false);
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 text-xs text-neutral-600">
+      <p>
+        {patient.orgIdentities.length > 0
+          ? `HOEP sign-in linked (last used ${new Date(patient.orgIdentities[0].lastLoginAt).toLocaleDateString("en-US", { timeZone: "America/Denver" })})`
+          : "HOEP sign-in not linked yet. It links the first time they sign in with this email."}
+      </p>
+      {editing ? (
+        <div className="mt-2 flex items-center gap-2">
+          <input type="email" value={value} onChange={(e) => setValue(e.target.value)} className="flex-1 px-2 py-1 border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary" />
+          <button disabled={busy} onClick={() => call(`/api/admin/settings/board/members/${patient.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: value }) }, "HOEP email saved")} className="px-2 py-1 rounded bg-primary text-white font-semibold disabled:opacity-50">Save</button>
+          <button disabled={busy} onClick={() => setEditing(false)} className="px-2 py-1 rounded border border-neutral-300">Cancel</button>
+        </div>
+      ) : (
+        <div className="mt-1 flex gap-3">
+          <button onClick={() => setEditing(true)} className="text-primary font-semibold hover:underline">Change HOEP email</button>
+          {patient.orgIdentities.map((i) => (
+            <button key={i.id} disabled={busy} onClick={() => call(`/api/admin/settings/board/members/${patient.id}/identities/${i.id}`, { method: "DELETE" }, "HOEP sign-in unlinked")} className="text-red-600 font-semibold hover:underline disabled:opacity-50">Unlink HOEP sign-in</button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
