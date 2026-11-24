@@ -28,9 +28,9 @@ export function signInHref(familyPortalOn: boolean): string {
   return `/api/auth/login?returnTo=${familyPortalOn ? "/portal" : "/admin"}`;
 }
 
-export function signInLabel(familyPortalOn: boolean, lang: "en" | "es"): string {
-  if (familyPortalOn) return lang === "es" ? "Iniciar sesión" : "Sign in";
-  return lang === "es" ? "Inicio de sesión de la junta" : "Board sign-in";
+/** Short on purpose: at 1024px the bar has no room for a longer label. Same text whatever the family_portal toggle. */
+export function signInLabel(lang: "en" | "es"): string {
+  return lang === "es" ? "Iniciar sesión" : "Login";
 }
 
 /** Parse what /api/session/access?need=mode says (headers). Anything unexpected is "none", never "board". */

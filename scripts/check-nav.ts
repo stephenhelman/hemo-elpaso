@@ -56,21 +56,20 @@ test("unknown mode (before the answer arrives) shows only Log out", () => {
   assert.ok(!html.includes("/admin") && !html.includes("/portal") && html.includes("/api/auth/logout"));
 });
 
-test("signed out: label and destination follow the family_portal toggle, EN and ES", () => {
-  assert.equal(signInLabel(false, "en"), "Board sign-in");
-  assert.equal(signInLabel(false, "es"), "Inicio de sesión de la junta");
-  assert.equal(signInLabel(true, "en"), "Sign in");
-  assert.equal(signInLabel(true, "es"), "Iniciar sesión");
+test("signed out: the label is just Login / Iniciar sesión whatever the toggle; the destination follows it", () => {
+  assert.equal(signInLabel("en"), "Login");
+  assert.equal(signInLabel("es"), "Iniciar sesión");
   assert.equal(signInHref(false), "/api/auth/login?returnTo=/admin");
   assert.equal(signInHref(true), "/api/auth/login?returnTo=/portal");
 });
 test("signed out: desktop button is hidden below lg; the mobile one is hidden at lg and up (never both on screen)", () => {
   const d = renderToStaticMarkup(h(SignInLink, { lang: "en", familyPortal: false, variant: "desktop" }));
   const m = renderToStaticMarkup(h(SignInLink, { lang: "en", familyPortal: false, variant: "mobile" }));
-  assert.ok(/class="hidden lg:inline-flex /.test(d) && d.includes("Board sign-in") && d.includes('href="/api/auth/login?returnTo=/admin"'));
-  assert.ok(/class="lg:hidden /.test(m) && m.includes("Board sign-in"));
+  assert.ok(/class="hidden lg:inline-flex /.test(d) && d.includes(">Login<") && d.includes('href="/api/auth/login?returnTo=/admin"'));
+  assert.ok(/class="lg:hidden /.test(m) && m.includes(">Login<"));
   const on = renderToStaticMarkup(h(SignInLink, { lang: "es", familyPortal: true, variant: "desktop" }));
   assert.ok(on.includes("Iniciar sesión") && on.includes("returnTo=/portal"));
+  assert.ok(renderToStaticMarkup(h(SignInLink, { lang: "en", familyPortal: true, variant: "desktop" })).includes(">Login<"));
 });
 
 test("access answer: headers for each session type, and how the menu parses them (never 'board' by accident)", () => {

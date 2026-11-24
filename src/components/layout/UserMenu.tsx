@@ -21,11 +21,11 @@ export function SignInLink({ lang, familyPortal, variant, onClick }: { lang: Lan
       onClick={onClick}
       className={
         variant === "desktop"
-          ? "hidden lg:inline-flex items-center px-3 xl:px-4 py-2 rounded-full border border-neutral-300 text-neutral-700 text-sm font-semibold whitespace-nowrap hover:border-primary hover:text-primary transition-colors duration-200"
+          ? "hidden lg:inline-flex items-center px-3 py-2 rounded-full border border-neutral-300 text-neutral-700 text-sm font-semibold whitespace-nowrap hover:border-primary hover:text-primary transition-colors duration-200"
           : "lg:hidden mx-3 mt-2 mb-1 inline-flex items-center justify-center px-4 py-2.5 rounded-full border border-neutral-300 text-neutral-700 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
       }
     >
-      {signInLabel(familyPortal, lang)}
+      {signInLabel(lang)}
     </a>
   );
 }
