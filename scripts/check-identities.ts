@@ -134,7 +134,7 @@ test("auto-link decision: unverified ignored; 0 unmatched; 1 link; 2+ ambiguous"
   assert.deepEqual(decideLink(false, [{ id: "a" }]), { kind: "ignore", reason: "unverified_email" });
   assert.deepEqual(decideLink(undefined, []), { kind: "ignore", reason: "unverified_email" });
   assert.deepEqual(decideLink(true, []), { kind: "unmatched" });
-  assert.deepEqual(decideLink(true, [{ id: "a" }]), { kind: "link", patientId: "a" });
+  assert.deepEqual(decideLink(true, [{ id: "a" }]), { kind: "link", patientId: "a", memberId: null });
   assert.deepEqual(decideLink(true, [{ id: "b" }, { id: "a" }]), { kind: "ambiguous", patientIds: ["a", "b"] });
 });
 test("merge survivor: admin never; two households need a choice; a board-only record folds into the household", () => {
@@ -205,11 +205,14 @@ test("auto-link: one match links; zero stores an unmatched sign-in; several stor
   assert.equal((await resolveForUser(user(su, em("one"), false))).mode, "none");
   assert.equal(await prisma.userIdentity.findUnique({ where: { auth0Sub: su } }), null);
 });
-test("auto-link matches the PRIMARY email only, never a household member's", async () => {
+test("auto-link matches a primary's email OR a CONFIRMED adult's, never a pending or minor member's", async () => {
   const p = await family("host");
-  await prisma.householdMember.create({ data: { patientId: p, firstName: "Kid", relationship: "spouse_partner", ageGroup: "18_plus", email: em("spouse"), status: "confirmed" } });
+  const adult = await prisma.householdMember.create({ data: { patientId: p, firstName: "Spouse", relationship: "spouse_partner", ageGroup: "18_plus", email: em("spouse"), status: "confirmed" } });
+  await prisma.householdMember.create({ data: { patientId: p, firstName: "Pend", relationship: "sibling", ageGroup: "18_plus", email: em("pend"), status: "pending" } });
   const s = sub("google-oauth2", "m");
-  assert.equal((await resolveForUser(user(s, em("spouse")))).mode, "none");
+  const r = await resolveForUser(user(s, em("spouse")));
+  assert.deepEqual([r.mode, r.patient?.id, r.actor], ["family", p, { kind: "member", memberId: adult.id }]);
+  assert.equal((await resolveForUser(user(sub("google-oauth2", "mp"), em("pend")))).mode, "none");
 });
 test("an unmatched sign-in links on a later visit once the household exists", async () => {
   const s = sub("google-oauth2", "late");

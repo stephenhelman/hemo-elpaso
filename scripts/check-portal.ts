@@ -186,7 +186,7 @@ test("activity log: family rows, ids only; a view is logged; a change is logged 
     assert.ok(!/@/.test(text), "no email address");
     assert.ok(!/hemophilia|von_willebrand|carrier/i.test(text), "no diagnosis");
   }
-  assert.deepEqual(logs[1].changes, { type: "sms", granted: true, textVersion: CONSENT_TEXT_VERSION });
+  assert.deepEqual(logs[1].changes, { type: "sms", granted: true, textVersion: CONSENT_TEXT_VERSION, actor: p }, "the acting person (the primary: the household id) is in the row");
 });
 
 test("consent changes are rate limited per person", async () => {

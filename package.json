@@ -29,6 +29,7 @@
     "check:features": "tsx --test scripts/check-features.ts",
     "check:portal": "tsx scripts/db-guard.ts && tsx --test scripts/check-portal.ts",
     "check:nav": "tsx --test scripts/check-nav.ts",
+    "check:portal-edits": "tsx scripts/db-guard.ts && tsx --test scripts/check-portal-edits.ts",
     "check:merge": "tsx scripts/db-guard.ts && tsx --test scripts/check-merge.ts",
     "check:identities": "tsx scripts/db-guard.ts && tsx --test scripts/check-identities.ts",
     "check:permissions": "tsx --test scripts/check-permissions.ts",
