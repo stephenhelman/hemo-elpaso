@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       isPriority: body.isPriority || false,
       liveEnabled: body.liveEnabled || false,
       registrationEnabled: body.registrationEnabled === true,
+      isRecorded: body.isRecorded === true,
       createdBy: admin!.email,
       sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) ?? [],
       targeting: {

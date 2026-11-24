@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { expirePendingMembers } from "@/lib/households/confirm";
 
+// Reads request headers and the database: never prerender at build time.
+export const dynamic = "force-dynamic";
+
 /**
  * Daily: pending household members past their 30-day window have their details
  * purged (same write as a decline, status "expired"). Audit-logged with ids only.

@@ -27,6 +27,7 @@ export const publicEventSelect = {
   language: true,
   isPriority: true,
   registrationEnabled: true,
+  isRecorded: true,
   recapTitleEn: true,
   recapTitleEs: true,
   recapBodyEn: true,

@@ -2,11 +2,11 @@ import { LEGAL_EFFECTIVE_DATE } from "./meta";
 import type { LegalDoc } from "./types";
 
 /**
- * Terms of Use v1. English is the board-approved text (docs/legal/POLICIES_v1.md) and controls.
+ * Terms of Use v2. English is the board-approved text (docs/legal/POLICY_V2_DRAFT.md; v1 is in docs/legal/POLICIES_v1.md and git) and controls.
  * "{HOST}" renders from SITE_URL's host (lib/site.ts).
  */
 export const terms: LegalDoc = {
-  version: "1",
+  version: "2",
   effectiveDate: LEGAL_EFFECTIVE_DATE,
   en: {
     title: "Terms of Use",
@@ -34,6 +34,16 @@ export const terms: LegalDoc = {
       {
         t: "p",
         text: "HOEP may take photos and video at events. We publish images only of people who consented to photo use. If you see an image of you or your child that you want removed, contact us and we will take it down.",
+      },
+      { t: "h2", text: "When features start" },
+      {
+        t: "ul",
+        items: [
+          "**Your family page.** {STATUS:family_portal} Sign-in links are personal. Don’t forward them. HOEP may suspend access if a page is misused.",
+          "**Live captions.** {STATUS:live_captions} Captions and translations at HOEP events are machine-made and can be wrong. They’re for general understanding, not medical, legal or consent decisions.",
+          "**Recordings.** {STATUS:recordings} By attending an event that is announced as recorded, you understand you may be heard or seen in the background. Ask a board member, and we’ll keep you off camera.",
+          "**Community posts.** {STATUS:community} Be respectful, don’t share someone else’s health information, and don’t give medical advice. A board member reviews every post before it appears.",
+        ],
       },
       { t: "h2", text: "Acceptable use" },
       {
@@ -92,6 +102,16 @@ export const terms: LegalDoc = {
       {
         t: "p",
         text: "HOEP puede tomar fotos y videos en los eventos. Solo publicamos imágenes de personas que dieron su consentimiento para el uso de fotos. Si ve una imagen suya o de su hijo o hija que desea que retiremos, comuníquese con nosotros y la quitaremos.",
+      },
+      { t: "h2", text: "Cuando empiecen las funciones nuevas" },
+      {
+        t: "ul",
+        items: [
+          "**Su página familiar.** {STATUS:family_portal} Los enlaces para iniciar sesión son personales. No los reenvíe. HOEP puede suspender el acceso si una página se usa de forma indebida.",
+          "**Subtítulos en vivo.** {STATUS:live_captions} Los subtítulos y las traducciones en los eventos de HOEP los genera una máquina y pueden tener errores. Sirven para entender de forma general, no para decisiones médicas, legales ni de consentimiento.",
+          "**Grabaciones.** {STATUS:recordings} Al asistir a un evento que se anuncia como grabado, usted entiende que podrían oírlo o verlo al fondo. Pídale a un miembro de la junta y lo mantendremos fuera de cámara.",
+          "**Publicaciones de la comunidad.** {STATUS:community} Sea respetuoso, no comparta información de salud de otra persona y no dé consejos médicos. Un miembro de la junta revisa cada publicación antes de que aparezca.",
+        ],
       },
       { t: "h2", text: "Uso aceptable" },
       {

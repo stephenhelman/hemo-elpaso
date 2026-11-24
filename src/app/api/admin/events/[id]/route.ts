@@ -39,6 +39,7 @@ export async function PATCH(
         language: body.language,
         isPriority: body.isPriority,
         liveEnabled: body.liveEnabled,
+        ...(body.isRecorded !== undefined && { isRecorded: body.isRecorded === true }),
         ...(body.registrationEnabled !== undefined && { registrationEnabled: body.registrationEnabled === true }),
         ...(cleanSponsorIds(body.sponsorSanityIds) !== undefined && { sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) }),
         ...(body.eventCost !== undefined && { eventCost: body.eventCost }),

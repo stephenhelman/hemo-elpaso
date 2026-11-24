@@ -1,9 +1,9 @@
 import { LEGAL_EFFECTIVE_DATE } from "./meta";
 import type { LegalDoc } from "./types";
 
-/** Children and Age Policy v1. English is the board-approved text (docs/legal/POLICIES_v1.md) and controls. */
+/** Children and Age Policy v2. English is the board-approved text (docs/legal/POLICY_V2_DRAFT.md; v1 is in docs/legal/POLICIES_v1.md and git) and controls. */
 export const children: LegalDoc = {
-  version: "1",
+  version: "2",
   effectiveDate: LEGAL_EFFECTIVE_DATE,
   en: {
     title: "Children and Age Policy",
@@ -44,6 +44,16 @@ export const children: LegalDoc = {
       {
         t: "p",
         text: "We publish photos of children only when their parent or guardian has consented to photo use. At events, board members can see which families declined, so those children are not included in published photos. A parent or guardian can ask us to remove a photo of their child at any time, and we will take it down promptly.",
+      },
+      { t: "h2", text: "Sign-in, verification, recordings and stories" },
+      {
+        t: "ul",
+        items: [
+          "**Signing in.** {STATUS:family_portal} Only adults can sign in to a family page. Children never have accounts.",
+          "**Verifying a child’s diagnosis.** {STATUS:verification} A parent or legal guardian can upload a letter for their child. The letter is deleted after review, and only the result is kept.",
+          "**Recordings and live streams.** {STATUS:recordings} We keep children whose families declined photo use off camera, and we don’t point cameras at the audience. A parent can ask us to remove any recording that shows their child.",
+          "**Stories.** {STATUS:stories} We publish a child’s story or quote only with a parent’s or guardian’s signed permission.",
+        ],
       },
       { t: "h2", text: "When a child turns 18" },
       {
@@ -96,6 +106,16 @@ export const children: LegalDoc = {
       {
         t: "p",
         text: "Solo publicamos fotos de menores cuando su padre, madre o tutor ha dado su consentimiento para el uso de fotos. En los eventos, los miembros de la junta pueden ver qué familias no dieron su consentimiento, para que esos menores no aparezcan en las fotos publicadas. Un padre, madre o tutor puede pedirnos en cualquier momento que retiremos una foto de su hijo o hija, y la quitaremos de inmediato.",
+      },
+      { t: "h2", text: "Inicio de sesión, verificación, grabaciones e historias" },
+      {
+        t: "ul",
+        items: [
+          "**Inicio de sesión.** {STATUS:family_portal} Solo los adultos pueden iniciar sesión en una página familiar. Los menores nunca tienen cuentas.",
+          "**Verificación del diagnóstico de un menor.** {STATUS:verification} Un padre, madre o tutor legal puede subir una carta sobre su hijo o hija. La carta se borra después de revisarse y solo se conserva el resultado.",
+          "**Grabaciones y transmisiones en vivo.** {STATUS:recordings} Mantenemos fuera de cámara a los menores cuyas familias no aceptaron el uso de fotos, y no apuntamos las cámaras al público. Un padre o madre puede pedirnos que retiremos cualquier grabación en la que aparezca su hijo o hija.",
+          "**Historias.** {STATUS:stories} Publicamos la historia o una frase de un menor solo con el permiso firmado de su padre, madre o tutor.",
+        ],
       },
       { t: "h2", text: "Cuando un menor cumple 18 años" },
       {

@@ -9,7 +9,7 @@ import { withPhone } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import LegalLinks from "@/components/legal/LegalLinks";
 import RichText from "@/components/legal/RichText";
-import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
+import { consentText, eventNotices, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import HouseholdSection, {
   householdComplete,
@@ -25,10 +25,13 @@ const input =
 export default function RegisterInfoForm({
   turnstileSiteKey,
   eventId,
+  notices,
 }: {
   turnstileSiteKey: string | null;
   /** When set, this is a public event RSVP: adds party size, posts to /api/rsvp/public. */
   eventId?: string;
+  /** RSVP mode: whether to show the recording line (event marked recorded AND the "recordings" toggle on), and whether live captions are on too. */
+  notices?: { recorded: boolean; captions: boolean };
 }) {
   const { locale } = useLanguage();
   const t = registerInfoTranslation[locale];
@@ -50,6 +53,8 @@ export default function RegisterInfoForm({
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [consentData, setConsentData] = useState(false);
   const [consentMedia, setConsentMedia] = useState(false);
+  const [consentSms, setConsentSms] = useState(false);
+  const [consentNewsletter, setConsentNewsletter] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
   const [token, setToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -127,6 +132,8 @@ export default function RegisterInfoForm({
           diagnoses,
           consentDataAndContact: consentData,
           consentMedia,
+          consentSms,
+          consentNewsletter,
           website,
           turnstileToken: token,
         }),
@@ -288,6 +295,26 @@ export default function RegisterInfoForm({
             <strong>{t.consentMediaLabel}.</strong> <RichText text={consentText.media[locale]} locale={locale} newTab />
           </span>
         </label>
+        <label className="flex items-start gap-3 text-sm text-neutral-700">
+          <input type="checkbox" className="mt-1" checked={consentSms}
+            onChange={(e) => setConsentSms(e.target.checked)} />
+          <span>
+            <strong>{t.consentMediaLabel}.</strong> <RichText text={consentText.sms[locale]} locale={locale} newTab />
+          </span>
+        </label>
+        <label className="flex items-start gap-3 text-sm text-neutral-700">
+          <input type="checkbox" className="mt-1" checked={consentNewsletter}
+            onChange={(e) => setConsentNewsletter(e.target.checked)} />
+          <span>
+            <strong>{t.consentMediaLabel}.</strong> <RichText text={consentText.newsletter[locale]} locale={locale} newTab />
+          </span>
+        </label>
+        {eventId && (
+          <div className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600 space-y-1" data-testid="event-notices">
+            {notices?.recorded && <p>{(notices.captions ? eventNotices.recordedWithCaptions : eventNotices.recorded)[locale]}</p>}
+            <p>{eventNotices.quotes[locale]}</p>
+          </div>
+        )}
         <LegalLinks locale={locale} which={["privacy", "children", "terms"]} />
         <p className="text-[11px] text-neutral-400">v: {CONSENT_TEXT_VERSION}</p>
       </fieldset>

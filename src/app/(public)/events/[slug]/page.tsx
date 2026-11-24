@@ -10,6 +10,7 @@ import type { Lang } from "@/types";
 import { getSponsorsByIds } from "@/sanity/sponsors";
 import SponsoredBy from "@/components/sanity/SponsoredBy";
 import { registrationState, activeHeadcount } from "@/lib/rsvp";
+import { isFeatureEnabled } from "@/lib/features";
 
 interface Props {
   params: { slug: string };
@@ -79,6 +80,8 @@ export default async function EventPage({ params, searchParams }: Props) {
         registration={await registrationState(event)}
         eventId={event.id}
         turnstileSiteKey={process.env.TURNSTILE_SITE_KEY ?? null}
+        // The recording line shows only on events marked recorded, and only while the "recordings" toggle is on.
+        notices={{ recorded: event.isRecorded && (await isFeatureEnabled("recordings")), captions: await isFeatureEnabled("live_captions") }}
       />
       <SponsoredBy sponsors={sponsors} locale={locale} />
     </>

@@ -43,6 +43,8 @@ export const registerInfoTranslation = {
       contact: "Please provide an email or a phone number.",
       familySize: "Please enter a household size between 1 and 30.",
       consentDataAndContact: "You need to agree to the data and contact consent to continue.",
+      consentSms: "To agree to text messages, please give a phone number.",
+      consentNewsletter: "To subscribe to the newsletter, please give an email address.",
       captcha: "Please complete the security check and try again.",
       generic: "Something went wrong. Please try again.",
     },
@@ -93,6 +95,8 @@ export const registerInfoTranslation = {
       familySize: "Ingresa un tamaño de hogar entre 1 y 30.",
       consentDataAndContact:
         "Debes aceptar el consentimiento de datos y contacto para continuar.",
+      consentSms: "Para aceptar los mensajes de texto, escribe un número de teléfono.",
+      consentNewsletter: "Para suscribirte al boletín, escribe un correo electrónico.",
       captcha: "Completa la verificación de seguridad e inténtalo de nuevo.",
       generic: "Algo salió mal. Inténtalo de nuevo.",
     },

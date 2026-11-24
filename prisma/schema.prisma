@@ -516,6 +516,7 @@ model Event {
   isPriority          Boolean  @default(false)
   liveEnabled         Boolean  @default(false)
   registrationEnabled Boolean  @default(false) // public RSVP form on the event page
+  isRecorded          Boolean  @default(false) // event is recorded/streamed: the RSVP page shows the recording notice (only while the "recordings" toggle is on)
   eventCost           Decimal? @db.Decimal(10, 2)
 
   // Recap (post-event)
@@ -972,6 +973,10 @@ enum AuditAction {
   EMAIL_ROUTE_CHANGED
   PERMISSIONS_CHANGED
   FEATURE_TOGGLED
+  // Already in the database (migration 20260323120000_volunteer_email_types); listed so the schema matches it.
+  // The volunteer feature is cut, so nothing writes them.
+  VOLUNTEER_PROFILE_CREATED
+  VOLUNTEER_ASSIGNED
   EMAIL_ROUTE_TEST_SENT
 
   // Sponsorship

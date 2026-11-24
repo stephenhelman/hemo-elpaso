@@ -24,3 +24,12 @@ Context: `docs/overhaul/PHASE0_DRAFTS.md` has the draft wording these questions 
 17. **Text messages (later phase).** Before we send sign-in codes by text through Twilio Verify: what consent wording is required (TCPA), how must STOP and help replies be handled, and must Twilio be listed as a provider in the policy?
 18. **Invitation logging.** We will log every automatic match and every manual removal (with a required reason code) in the access log, using ids only, and show a per-event report to the President and Vice President. Are there concerns about keeping this for 3 years, about removal reasons, or about excluding a household from an invitation by hand?
 19. **Existing households.** The policy says that if a change affects how we use information already given, we will ask for consent again. Do verification and family sign-in count? Households registered under consent v2 (policy written before these features): what must we send them, and when can the 60-day window start for them?
+
+## Added with Privacy Policy v2 (2026-11-24)
+
+20. **“Not yet available” in a published policy.** Is describing planned features as “Not yet available” in a published policy acceptable, with the status changing automatically (to “Available since <date>”) when a feature launches?
+21. **Live event audio and caption text.** Does sending live event audio to Deepgram and caption text to Anthropic need anything beyond disclosure? Do we need data processing agreements with them?
+22. **Recording notice.** Is the event notice (invitation, RSVP page, door sign, spoken opener) enough for recordings, or does every attendee need the photo and video consent?
+23. **Text-message opt-in.** Do the text-message opt-in wording and the STOP/HELP language meet TCPA and carrier rules for a nonprofit?
+24. **Unnamed quotes.** Are unnamed quotes from transcripts acceptable with the RSVP-page notice alone?
+25. **Assistance and payment records.** What retention period should apply to assistance applications and payment records?

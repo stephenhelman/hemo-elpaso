@@ -52,6 +52,7 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
     language: "both",
     isPriority: false,
     registrationEnabled: false,
+    isRecorded: false,
     status: "draft",
 
     // Targeting
@@ -361,6 +362,20 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
               <span className="text-sm text-neutral-700">
                 Mark as featured/priority event (will appear first in
                 recommendations)
+              </span>
+            </label>
+          </FormField>
+
+          <FormField label="Recorded or streamed">
+            <label className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:border-primary-200 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={formData.isRecorded}
+                onChange={(e) => updateFormData({ isRecorded: e.target.checked })}
+                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-neutral-700">
+                This event is recorded or streamed. The recording notice shows on the RSVP page once recordings are available.
               </span>
             </label>
           </FormField>

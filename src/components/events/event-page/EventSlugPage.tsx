@@ -12,6 +12,7 @@ interface Props {
   registration: "open" | "full" | "closed" | "disabled" | "paused";
   eventId: string;
   turnstileSiteKey: string | null;
+  notices: { recorded: boolean; captions: boolean };
 }
 
 export function EventSlugPage({
@@ -21,6 +22,7 @@ export function EventSlugPage({
   registration,
   eventId,
   turnstileSiteKey,
+  notices,
 }: Props) {
   const { locale } = useLanguage();
 
@@ -34,6 +36,7 @@ export function EventSlugPage({
         registration={registration}
         eventId={eventId}
         turnstileSiteKey={turnstileSiteKey}
+        notices={notices}
       />
     </div>
   );

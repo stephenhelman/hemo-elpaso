@@ -9,6 +9,10 @@ import { LIVE_POLICY_VERSION } from "@/content/legal/meta";
 import { notifyOfficersOfAdminAction } from "@/lib/admin-notice";
 import { FEATURES, FEATURE_KEYS, resolveStates, type FeatureKey, type FeatureState, type FlagRow } from "./registry";
 import type { ToggleDeps, ToggleRecord } from "./change";
+import { placeholdersBlocking, unitsOf } from "@/content/legal/analyze";
+import { privacy } from "@/content/legal/privacy";
+import { terms } from "@/content/legal/terms";
+import { children } from "@/content/legal/children";
 
 export const FEATURES_TAG = "feature-flags";
 
@@ -67,6 +71,7 @@ async function notify(rec: ToggleRecord): Promise<boolean> {
 
 export const toggleDeps = (): ToggleDeps => ({
   liveVersion: LIVE_POLICY_VERSION,
+  unresolvedPlaceholders: (key) => placeholdersBlocking([...unitsOf("privacy", privacy), ...unitsOf("terms", terms), ...unitsOf("children", children)], key),
   readEnabled: async (key) => (await prisma.featureFlag.findUnique({ where: { key }, select: { enabled: true } }))?.enabled ?? false,
   persist, invalidate: invalidateFeatures, notifyOfficers: notify,
 });

@@ -36,6 +36,7 @@ interface Event {
   isPriority: boolean;
   liveEnabled: boolean;
   registrationEnabled: boolean;
+  isRecorded?: boolean;
   sponsorSanityIds: string[];
   targeting: {
     targetConditions: string[];
@@ -83,6 +84,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
     isPriority: event.isPriority,
     liveEnabled: event.liveEnabled,
     registrationEnabled: event.registrationEnabled,
+    isRecorded: event.isRecorded ?? false,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
     targetAgeGroups: event.targeting?.targetAgeGroups ?? ([] as string[]),
     sponsorSanityIds: event.sponsorSanityIds ?? ([] as string[]),
@@ -117,6 +119,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
         isPriority: formData.isPriority,
         liveEnabled: formData.liveEnabled,
         registrationEnabled: formData.registrationEnabled,
+        isRecorded: formData.isRecorded,
         targetConditions: formData.targetConditions,
         targetAgeGroups: formData.targetAgeGroups,
         sponsorSanityIds: formData.sponsorSanityIds,
@@ -357,6 +360,17 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
                 />
                 <span className="text-sm font-medium text-neutral-700">
                   Public RSVP on the event page
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer mt-3">
+                <input
+                  type="checkbox"
+                  checked={formData.isRecorded}
+                  onChange={(e) => setFormData({ ...formData, isRecorded: e.target.checked })}
+                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-neutral-700">
+                  This event is recorded or streamed (shows the recording notice on the RSVP page once recordings are available)
                 </span>
               </label>
             </div>
