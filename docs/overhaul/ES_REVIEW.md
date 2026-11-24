@@ -727,8 +727,12 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Cartas de diagnóstico {STATUS:verification} | Hasta que se revisan, máximo 14 días
 - EN: Verification result {STATUS:verification} | Same as your household record
   ES: Resultado de la verificación {STATUS:verification} | Igual que el registro de su hogar
-- EN: Sign-in links and sessions {STATUS:family_portal} | Links: 30 minutes, one use. Sessions: 30 days or until you sign out
-  ES: Enlaces de inicio de sesión y sesiones {STATUS:family_portal} | Enlaces: 30 minutos, un solo uso. Sesiones: 30 días o hasta que cierre sesión
+- EN: Sign-in sessions {STATUS:family_portal} | Up to 7 days, and you’re signed out after 24 hours of inactivity
+  ES: Sesiones de inicio de sesión {STATUS:family_portal} | Hasta 7 días, y se cierra su sesión tras 24 horas de inactividad
+- EN: Linked sign-ins {STATUS:family_portal} | Which Google, Apple or Facebook sign-in is linked to your household: while your household record exists
+  ES: Inicios de sesión vinculados {STATUS:family_portal} | Qué inicio de sesión de Google, Apple o Facebook está vinculado a su hogar: mientras exista el registro de su hogar
+- EN: Sign-ins we couldn’t match to a household {STATUS:family_portal} | 30 days after last use, then deleted
+  ES: Inicios de sesión que no pudimos asociar a un hogar {STATUS:family_portal} | 30 días después del último uso, y luego se borran
 - EN: Assistance records {STATUS:assistance} | {ASSISTANCE_RETENTION}
   ES: Registros de ayuda financiera {STATUS:assistance} | {ASSISTANCE_RETENTION}
 - EN: Donation records {STATUS:donations} | As required for tax receipts

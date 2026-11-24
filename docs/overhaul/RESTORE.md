@@ -80,6 +80,12 @@ Dirs are relative to `src/`. "Merge SHA" is filled in as each cut lands.
 | `feat/register-info` | `/register-info` public form + `/api/register-info`, Turnstile, honeypot, confirmation email; homepage/footer/nav/sitemap. | **Removed** `components/home/NewsletterSignup.tsx` (was left in place by cut/newsletter) and its translation; footer newsletter stub forms replaced with a link. New env vars: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. `/register` (archived multi-step flow) is untouched and must not be restored over `/register-info`. |
 | `feat/admin-patients` | `/admin/patients` (list, add, detail/edit, delete, merge, CSV export) replaces the users directory; board settings: invited-pending badge, Assign sets `role=board`, removing the last role demotes to `patient` + Auth0 allow-list reminder. | **Removed** `/admin/users/*` pages (now a redirect), `components/admin/users/*`, `/api/admin/users/*` (including the admin role-editing form and users CSV export). Revert the merge to restore. Translation `adminUsersTranslation` left unused in `translation/adminPages.ts`. |
 
+## Identities (feat/identities)
+
+| Branch | What changed | Dormant things reactivated / removed |
+| --- | --- | --- |
+| `feat/identities` | Migrations `20261125120000_user_identities` (tables `user_identities`, `app_settings`; backfills one identity per `patients.auth0Id`; 6 AuditAction values) and `20261125120100_duplicate_signin_notice` (1 EmailTemplateType value). Auth0 only authenticates; mode (board/family/none) derived per request (`lib/identity/*`, `/api/session/access`, `middleware.ts` also gates `/portal`). `PATIENT_ONLY` rewritten (households, not `role=patient`). Auto-link by verified email, `/no-household`, `/admin/identities`, `/admin/settings/signin`, `board.duplicates` email route, merge moves identities + board roles, explicit session lifetime. | **Removed** `lib/board/link-session.ts`, `/api/session/board-check` (now `/api/session/access`), `docs/overhaul/auth0-board-action.js` (now `auth0-post-login-action.js`), the BOARD_ALLOWLIST reminders. Revert the merge to restore; the new tables stay dormant (rule 1). To restore the allow-list Action, redeploy the old Action text from the `full-app-2026-11` tag. |
+
 ## Phase 4 log
 
 | Branch | What changed | Dormant things reactivated / removed |

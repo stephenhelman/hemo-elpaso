@@ -145,7 +145,9 @@ Only adults (18 or older) can register or sign in. A parent or legal guardian ma
 | Downloaded event transcripts (*when available*) | \[90 days\], then deleted |
 | Diagnosis letters (*when available*) | Until reviewed, no more than 14 days |
 | Verification result (*when available*) | Same as your household record |
-| Sign-in links and sessions (*when available*) | Links: 30 minutes, one use. Sessions: 30 days or until you sign out |
+| Sign-in sessions (*when available*) | Up to 7 days, and you’re signed out after 24 hours of inactivity |
+| Linked sign-ins (*when available*) | Which Google, Apple or Facebook sign-in is linked to your household: while your household record exists |
+| Sign-ins we couldn’t match to a household (*when available*) | 30 days after last use, then deleted |
 | Assistance records (*when available*) | \[To be set with our accountant and attorney\] |
 | Donation records (*when available*) | As required for tax receipts |
 
