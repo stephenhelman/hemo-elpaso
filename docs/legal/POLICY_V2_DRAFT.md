@@ -23,8 +23,7 @@ The toggle key is the name the admin settings and the policy page share.
 | Contact form and email | Live | always on |
 | Event recordings and live streams (YouTube) | Not yet available | `recordings` |
 | Live captions and translation (Puente Live) | Not yet available | `live_captions` |
-| Family page sign-in (email link) | Not yet available | `family_portal` |
-| Family sign-in with Google, Apple or Facebook | Not yet available | `family_social_signin` |
+| Family page (sign in with Google, Apple or Facebook) | Not yet available | `family_portal` |
 | Diagnosis verification | Not yet available | `verification` |
 | Text messages | Not yet available | `sms` |
 | Newsletter | Not yet available | `newsletter` |
@@ -59,7 +58,7 @@ HOEP is a nonprofit that supports families affected by bleeding disorders in the
 
 **Live captions and translation (Puente Live).** *Not yet available.* At some events and meetings, HOEP's own app, Puente Live, shows live English and Spanish captions of what is said. Speech is sent to a speech-to-text service and the text to a translation service; neither keeps it beyond processing, except as described under "How long we keep it". HOEP doesn't save the audio. Captions are machine-made and can be wrong; they are not a replacement for a qualified interpreter. A board member can pause captions at any time, for example when someone shares something personal. Board members may download a transcript after an event to help write newsletters or blog posts. We never publish a whole transcript.
 
-**When you sign in to your family page.** *Not yet available.* Your email address (we send a one-time sign-in link) or, if you choose, the name and email that Google, Apple or Facebook share with us. We never receive your password for those services. A cookie keeps you signed in.
+**When you sign in to your family page.** *Not yet available.* You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in.
 
 **When you verify a diagnosis (optional).** *Not yet available.* You can upload a letter from a health care provider confirming a bleeding disorder for you or a child in your household. Only the President and Vice President can open it. We delete the file as soon as it's reviewed and keep only the result: which diagnosis was confirmed, the date, and who reviewed it.
 
@@ -84,7 +83,7 @@ HOEP is a nonprofit that supports families affected by bleeding disorders in the
 - To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone's diagnosis.
 - To manage RSVPs, send confirmations and reminders, and check people in.
 - To answer your messages.
-- *When available:* to let you view and update your household's information on your family page; to confirm a diagnosis if you choose to verify it; to send texts and newsletters you opted into; to review assistance applications.
+- *When available:* to let you see your household's information and manage your photo, text and newsletter choices on your family page; to confirm a diagnosis if you choose to verify it; to send texts and newsletters you opted into; to review assistance applications.
 - To improve our programs using overall counts, never individual records.
 
 We do not use your information for advertising. We do not sell, rent or trade it. **Sponsors never receive names or contact details.** They see totals only, such as how many families attended.
@@ -109,7 +108,7 @@ We use these service providers. They process information only to provide their s
 | Neon | Stores our database |
 | Resend | Sends our emails |
 | Cloudflare | Stores event photos; protects our forms from spam |
-| Auth0 | Board sign-in; *when available*, family sign-in with Google, Apple or Facebook |
+| Auth0 | Board sign-in and, *when available*, family sign-in with Google, Apple or Facebook |
 | Sanity | Manages public website content (no family information) |
 | Google | HOEP email; the map on our contact page; *when available*, Google Meet for virtual events and YouTube for recordings |
 | Railway | *When available:* hosts Puente Live |
@@ -159,7 +158,7 @@ You can ask us to tell you what we have about you and your household; correct it
 
 ### Security
 
-Encrypted connections, role-limited access for board members, private links that can't be guessed, and no health information in emails, links or QR codes. *When available:* sign-in links work once and expire quickly, and diagnosis letters are stored privately and deleted after review. No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.
+Encrypted connections, role-limited access for board members, private links that can't be guessed, and no health information in emails, links or QR codes. *When available:* diagnosis letters are stored privately and deleted after review. No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.
 
 ### Changes to this policy
 
@@ -180,7 +179,7 @@ Hemophilia Outreach of El Paso · \[mailing address\] · privacy@hemoelpaso.org 
 
 **Terms of Use, new clauses**
 
-- **Your family page.** *Not yet available.* Sign-in links are personal. Don't forward them. HOEP may suspend access if a page is misused.
+- **Your family page.** *Not yet available.* Your sign-in is personal. Don't share it. HOEP may suspend access if a page is misused.
 - **Live captions.** *Not yet available.* Captions and translations at HOEP events are machine-made and can be wrong. They're for general understanding, not medical, legal or consent decisions.
 - **Recordings.** *Not yet available.* By attending an event that is announced as recorded, you understand you may be heard or seen in the background. Ask a board member, and we'll keep you off camera.
 - **Community posts.** *Not yet available.* Be respectful, don't share someone else's health information, and don't give medical advice. A board member reviews every post before it appears.

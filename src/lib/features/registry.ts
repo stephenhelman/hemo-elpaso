@@ -1,6 +1,10 @@
 /**
  * Feature registry: the switchboard's code side. PURE (no DB, no Next).
  *
+ * `family_social_signin` was folded into `family_portal` (family sign-in is Google, Apple or Facebook only). The key is
+ * retired, not reserved for anything: a stored feature_flags row for it is ignored. A future text-code sign-in would be a
+ * new key with its own policy text.
+ *
  * Keys are the toggle keys of the policy's "Feature status" table (docs/legal/POLICY_V2_DRAFT.md). Features that are
  * always on (registration, photos, contact form) are NOT toggles.
  *
@@ -11,7 +15,7 @@
  * locked with the reason. Switching OFF is always allowed.
  */
 export const FEATURE_KEYS = [
-  "recordings", "live_captions", "family_portal", "family_social_signin", "verification", "sms", "newsletter",
+  "recordings", "live_captions", "family_portal", "verification", "sms", "newsletter",
   "stories", "assistance", "live_interaction", "community", "donations", "volunteers",
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -27,8 +31,7 @@ export interface FeatureDef {
 export const FEATURES: Record<FeatureKey, FeatureDef> = {
   recordings: { key: "recordings", implemented: false, coveredByPolicy: 2, label: { en: "Event recordings and live streams", es: "Grabaciones y transmisiones en vivo de eventos" } },
   live_captions: { key: "live_captions", implemented: false, coveredByPolicy: 2, label: { en: "Live captions and translation (Puente Live)", es: "Subtítulos y traducción en vivo (Puente Live)" } },
-  family_portal: { key: "family_portal", implemented: false, coveredByPolicy: 2, label: { en: "Family page sign-in (email link)", es: "Inicio de sesión en la página familiar (enlace por correo)" } },
-  family_social_signin: { key: "family_social_signin", implemented: false, coveredByPolicy: 2, label: { en: "Family sign-in with Google, Apple or Facebook", es: "Inicio de sesión familiar con Google, Apple o Facebook" } },
+  family_portal: { key: "family_portal", implemented: true, coveredByPolicy: 2, label: { en: "Family page (sign in with Google, Apple or Facebook)", es: "Página familiar (inicio de sesión con Google, Apple o Facebook)" } },
   verification: { key: "verification", implemented: false, coveredByPolicy: 2, label: { en: "Diagnosis verification", es: "Verificación de diagnóstico" } },
   sms: { key: "sms", implemented: false, coveredByPolicy: 2, label: { en: "Text messages", es: "Mensajes de texto" } },
   newsletter: { key: "newsletter", implemented: false, coveredByPolicy: 2, label: { en: "Newsletter", es: "Boletín" } },
