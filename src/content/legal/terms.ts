@@ -39,7 +39,7 @@ export const terms: LegalDoc = {
       {
         t: "ul",
         items: [
-          "**Your family page.** {STATUS:family_portal} Sign-in links are personal. Don’t forward them. HOEP may suspend access if a page is misused.",
+          "**Your family page.** {STATUS:family_portal} Your sign-in is personal. Don’t share it. HOEP may suspend access if a page is misused.",
           "**Live captions.** {STATUS:live_captions} Captions and translations at HOEP events are machine-made and can be wrong. They’re for general understanding, not medical, legal or consent decisions.",
           "**Recordings.** {STATUS:recordings} By attending an event that is announced as recorded, you understand you may be heard or seen in the background. Ask a board member, and we’ll keep you off camera.",
           "**Community posts.** {STATUS:community} Be respectful, don’t share someone else’s health information, and don’t give medical advice. A board member reviews every post before it appears.",
@@ -107,7 +107,7 @@ export const terms: LegalDoc = {
       {
         t: "ul",
         items: [
-          "**Su página familiar.** {STATUS:family_portal} Los enlaces para iniciar sesión son personales. No los reenvíe. HOEP puede suspender el acceso si una página se usa de forma indebida.",
+          "**Su página familiar.** {STATUS:family_portal} Su inicio de sesión es personal. No lo comparta. HOEP puede suspender el acceso si una página se usa de forma indebida.",
           "**Subtítulos en vivo.** {STATUS:live_captions} Los subtítulos y las traducciones en los eventos de HOEP los genera una máquina y pueden tener errores. Sirven para entender de forma general, no para decisiones médicas, legales ni de consentimiento.",
           "**Grabaciones.** {STATUS:recordings} Al asistir a un evento que se anuncia como grabado, usted entiende que podrían oírlo o verlo al fondo. Pídale a un miembro de la junta y lo mantendremos fuera de cámara.",
           "**Publicaciones de la comunidad.** {STATUS:community} Sea respetuoso, no comparta información de salud de otra persona y no dé consejos médicos. Un miembro de la junta revisa cada publicación antes de que aparezca.",

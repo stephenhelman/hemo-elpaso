@@ -49,11 +49,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**When you sign in to your family page.** {STATUS:family_portal} Your email address (we send a one-time sign-in link). A cookie keeps you signed in.",
-      },
-      {
-        t: "p",
-        text: "**Signing in with Google, Apple or Facebook.** {STATUS:family_social_signin} If you choose this, the name and email that the service shares with us. We never receive your password for those services.",
+        text: "**When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in.",
       },
       {
         t: "p",
@@ -92,7 +88,7 @@ export const privacy: LegalDoc = {
           "To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.",
           "To manage RSVPs, send confirmations and reminders, and check people in.",
           "To answer your messages.",
-          "To let you view and update your household’s information on your family page. {STATUS:family_portal}",
+          "To let you see your household’s information and manage your photo, text and newsletter choices on your family page. {STATUS:family_portal}",
           "To confirm a diagnosis, if you choose to verify it. {STATUS:verification}",
           "To send the texts you opted into. {STATUS:sms}",
           "To send the newsletter you opted into. {STATUS:newsletter}",
@@ -128,7 +124,7 @@ export const privacy: LegalDoc = {
           ["Neon", "Stores our database"],
           ["Resend", "Sends our emails"],
           ["Cloudflare", "Stores event photos; protects our forms from spam"],
-          ["Auth0", "Board sign-in. Family sign-in with Google, Apple or Facebook. {STATUS:family_social_signin}"],
+          ["Auth0", "Board sign-in and family sign-in with Google, Apple or Facebook. {STATUS:family_portal}"],
           ["Sanity", "Manages public website content (no family information)"],
           ["Google", "HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings}"],
           ["Railway", "Hosts Puente Live. {STATUS:live_captions}"],
@@ -183,7 +179,7 @@ export const privacy: LegalDoc = {
       { t: "h2", text: "Security" },
       {
         t: "p",
-        text: "Encrypted connections, role-limited access for board members, private links that can’t be guessed, and no health information in emails, links or QR codes. Sign-in links work once and expire quickly. {STATUS:family_portal} Diagnosis letters are stored privately and deleted after review. {STATUS:verification} No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.",
+        text: "Encrypted connections, role-limited access for board members, private links that can’t be guessed, and no health information in emails, links or QR codes. {STATUS:family_portal} Diagnosis letters are stored privately and deleted after review. {STATUS:verification} No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.",
       },
       { t: "h2", text: "Changes to this policy" },
       {
@@ -230,11 +226,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Su correo electrónico (le enviamos un enlace de un solo uso para iniciar sesión). Una cookie mantiene su sesión abierta.",
-      },
-      {
-        t: "p",
-        text: "**Inicio de sesión con Google, Apple o Facebook.** {STATUS:family_social_signin} Si usted lo elige, el nombre y el correo que ese servicio comparte con nosotros. Nunca recibimos su contraseña de esos servicios.",
+        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta.",
       },
       {
         t: "p",
@@ -273,7 +265,7 @@ export const privacy: LegalDoc = {
           "Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.",
           "Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.",
           "Para responder a sus mensajes.",
-          "Para que pueda ver y actualizar la información de su hogar en su página familiar. {STATUS:family_portal}",
+          "Para que pueda ver la información de su hogar y administrar sus opciones de fotos, mensajes de texto y boletín en su página familiar. {STATUS:family_portal}",
           "Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}",
           "Para enviarle los mensajes de texto que aceptó recibir. {STATUS:sms}",
           "Para enviarle el boletín que aceptó recibir. {STATUS:newsletter}",
@@ -309,7 +301,7 @@ export const privacy: LegalDoc = {
           ["Neon", "Guarda nuestra base de datos"],
           ["Resend", "Envía nuestros correos electrónicos"],
           ["Cloudflare", "Guarda las fotos de los eventos; protege nuestros formularios contra el spam"],
-          ["Auth0", "Inicio de sesión de la junta. Inicio de sesión familiar con Google, Apple o Facebook. {STATUS:family_social_signin}"],
+          ["Auth0", "Inicio de sesión de la junta y de las familias con Google, Apple o Facebook. {STATUS:family_portal}"],
           ["Sanity", "Administra el contenido público del sitio web (sin información de las familias)"],
           ["Google", "Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings}"],
           ["Railway", "Aloja Puente Live. {STATUS:live_captions}"],
@@ -364,7 +356,7 @@ export const privacy: LegalDoc = {
       { t: "h2", text: "Seguridad" },
       {
         t: "p",
-        text: "Conexiones cifradas, acceso de la junta limitado por cargo, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. Los enlaces de inicio de sesión funcionan una sola vez y vencen pronto. {STATUS:family_portal} Las cartas de diagnóstico se guardan en privado y se borran después de revisarse. {STATUS:verification} Ningún sistema es perfectamente seguro. Si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley.",
+        text: "Conexiones cifradas, acceso de la junta limitado por cargo, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. {STATUS:family_portal} Las cartas de diagnóstico se guardan en privado y se borran después de revisarse. {STATUS:verification} Ningún sistema es perfectamente seguro. Si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley.",
       },
       { t: "h2", text: "Cambios a esta política" },
       {

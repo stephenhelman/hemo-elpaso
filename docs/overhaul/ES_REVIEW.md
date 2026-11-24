@@ -607,10 +607,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: **Grabaciones y transmisiones en vivo de eventos.** {STATUS:recordings} Algunos eventos podrían transmitirse en vivo y grabarse para que las familias que no pueden asistir los vean. Lo anunciaremos en la invitación, en la puerta y al comenzar. Las cámaras apuntan a quienes presentan, no al público. Cuando alguien hace una pregunta, quien presenta la repite en lugar de mostrar a la persona. Las familias que no aceptaron el uso de fotos quedan fuera de cámara. Las grabaciones se publican como videos no listados o en la página familiar, y no aparecen en las búsquedas públicas.
 - EN: **Live captions and translation (Puente Live).** {STATUS:live_captions} At some events and meetings, HOEP’s own app, Puente Live, shows live English and Spanish captions of what is said. Speech is sent to a speech-to-text service and the text to a translation service; neither keeps it beyond processing, except as described under “How long we keep it”. HOEP doesn’t save the audio. Captions are machine-made and can be wrong; they are not a replacement for a qualified interpreter. A board member can pause captions at any time, for example when someone shares something personal. Board members may download a transcript after an event to help write newsletters or blog posts. We never publish a whole transcript.
   ES: **Subtítulos y traducción en vivo (Puente Live).** {STATUS:live_captions} En algunos eventos y reuniones, la aplicación propia de HOEP, Puente Live, muestra subtítulos en vivo en inglés y español de lo que se dice. La voz se envía a un servicio que la convierte en texto, y el texto a un servicio de traducción; ninguno la conserva más allá del procesamiento, salvo lo que se indica en “Cuánto tiempo la conservamos”. HOEP no guarda el audio. Los subtítulos los genera una máquina y pueden tener errores; no sustituyen a un intérprete calificado. Un miembro de la junta puede pausar los subtítulos en cualquier momento, por ejemplo cuando alguien comparte algo personal. Los miembros de la junta pueden descargar una transcripción después del evento para ayudar a escribir boletines o artículos del blog. Nunca publicamos una transcripción completa.
-- EN: **When you sign in to your family page.** {STATUS:family_portal} Your email address (we send a one-time sign-in link). A cookie keeps you signed in.
-  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Su correo electrónico (le enviamos un enlace de un solo uso para iniciar sesión). Una cookie mantiene su sesión abierta.
-- EN: **Signing in with Google, Apple or Facebook.** {STATUS:family_social_signin} If you choose this, the name and email that the service shares with us. We never receive your password for those services.
-  ES: **Inicio de sesión con Google, Apple o Facebook.** {STATUS:family_social_signin} Si usted lo elige, el nombre y el correo que ese servicio comparte con nosotros. Nunca recibimos su contraseña de esos servicios.
+- EN: **When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in.
+  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta.
 - EN: **When you verify a diagnosis (optional).** {STATUS:verification} You can upload a letter from a health care provider confirming a bleeding disorder for you or a child in your household. Only the President and Vice President can open it. We delete the file as soon as it’s reviewed and keep only the result: which diagnosis was confirmed, the date, and who reviewed it.
   ES: **Cuando verifica un diagnóstico (opcional).** {STATUS:verification} Puede subir una carta de un profesional de la salud que confirme un trastorno hemorrágico suyo o de un menor de su hogar. Solo la presidencia y la vicepresidencia pueden abrirla. Borramos el archivo en cuanto se revisa y conservamos solo el resultado: qué diagnóstico se confirmó, la fecha y quién lo revisó.
 - EN: **Text messages.** {STATUS:sms} If you opt in, your mobile number and whether you agreed to texts. Texts include event reminders, announcements and sign-in codes. Reply STOP at any time.
@@ -637,8 +635,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.
 - EN: To answer your messages.
   ES: Para responder a sus mensajes.
-- EN: To let you view and update your household’s information on your family page. {STATUS:family_portal}
-  ES: Para que pueda ver y actualizar la información de su hogar en su página familiar. {STATUS:family_portal}
+- EN: To let you see your household’s information and manage your photo, text and newsletter choices on your family page. {STATUS:family_portal}
+  ES: Para que pueda ver la información de su hogar y administrar sus opciones de fotos, mensajes de texto y boletín en su página familiar. {STATUS:family_portal}
 - EN: To confirm a diagnosis, if you choose to verify it. {STATUS:verification}
   ES: Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}
 - EN: To send the texts you opted into. {STATUS:sms}
@@ -673,8 +671,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Resend | Envía nuestros correos electrónicos
 - EN: Cloudflare | Stores event photos; protects our forms from spam
   ES: Cloudflare | Guarda las fotos de los eventos; protege nuestros formularios contra el spam
-- EN: Auth0 | Board sign-in. Family sign-in with Google, Apple or Facebook. {STATUS:family_social_signin}
-  ES: Auth0 | Inicio de sesión de la junta. Inicio de sesión familiar con Google, Apple o Facebook. {STATUS:family_social_signin}
+- EN: Auth0 | Board sign-in and family sign-in with Google, Apple or Facebook. {STATUS:family_portal}
+  ES: Auth0 | Inicio de sesión de la junta y de las familias con Google, Apple o Facebook. {STATUS:family_portal}
 - EN: Sanity | Manages public website content (no family information)
   ES: Sanity | Administra el contenido público del sitio web (sin información de las familias)
 - EN: Google | HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings}
@@ -745,8 +743,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Puede pedirnos que le digamos qué información tenemos sobre usted y su hogar; que la corrijamos; que la borremos por completo, incluido cualquier resultado de verificación; que retiremos una foto, una grabación o una cita suya o de su hijo o hija; o que dejemos de comunicarnos con usted. Escriba a {EMAIL} o llame al {PHONE}. Es posible que le hagamos una pregunta para confirmar que es usted, y respondemos en un plazo de 30 días.
 - EN: Security
   ES: Seguridad
-- EN: Encrypted connections, role-limited access for board members, private links that can’t be guessed, and no health information in emails, links or QR codes. Sign-in links work once and expire quickly. {STATUS:family_portal} Diagnosis letters are stored privately and deleted after review. {STATUS:verification} No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.
-  ES: Conexiones cifradas, acceso de la junta limitado por cargo, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. Los enlaces de inicio de sesión funcionan una sola vez y vencen pronto. {STATUS:family_portal} Las cartas de diagnóstico se guardan en privado y se borran después de revisarse. {STATUS:verification} Ningún sistema es perfectamente seguro. Si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley.
+- EN: Encrypted connections, role-limited access for board members, private links that can’t be guessed, and no health information in emails, links or QR codes. {STATUS:family_portal} Diagnosis letters are stored privately and deleted after review. {STATUS:verification} No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.
+  ES: Conexiones cifradas, acceso de la junta limitado por cargo, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. {STATUS:family_portal} Las cartas de diagnóstico se guardan en privado y se borran después de revisarse. {STATUS:verification} Ningún sistema es perfectamente seguro. Si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley.
 - EN: Changes to this policy
   ES: Cambios a esta política
 - EN: When a feature marked “Not yet available” starts, this page updates to show the date. If we change how we use information you already gave us, we’ll tell you and ask for your consent again.
@@ -758,8 +756,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
 
 ### Terms of Use v2: new section (src/content/legal/terms.ts)
 
-- EN: **Your family page.** {STATUS:family_portal} Sign-in links are personal. Don’t forward them. HOEP may suspend access if a page is misused.
-  ES: **Su página familiar.** {STATUS:family_portal} Los enlaces para iniciar sesión son personales. No los reenvíe. HOEP puede suspender el acceso si una página se usa de forma indebida.
+- EN: **Your family page.** {STATUS:family_portal} Your sign-in is personal. Don’t share it. HOEP may suspend access if a page is misused.
+  ES: **Su página familiar.** {STATUS:family_portal} Su inicio de sesión es personal. No lo comparta. HOEP puede suspender el acceso si una página se usa de forma indebida.
 - EN: **Live captions.** {STATUS:live_captions} Captions and translations at HOEP events are machine-made and can be wrong. They’re for general understanding, not medical, legal or consent decisions.
   ES: **Subtítulos en vivo.** {STATUS:live_captions} Los subtítulos y las traducciones en los eventos de HOEP los genera una máquina y pueden tener errores. Sirven para entender de forma general, no para decisiones médicas, legales ni de consentimiento.
 - EN: **Recordings.** {STATUS:recordings} By attending an event that is announced as recorded, you understand you may be heard or seen in the background. Ask a board member, and we’ll keep you off camera.
@@ -778,3 +776,80 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
 - EN: **Stories.** {STATUS:stories} We publish a child’s story or quote only with a parent’s or guardian’s signed permission.
   ES: **Historias.** {STATUS:stories} Publicamos la historia o una frase de un menor solo con el permiso firmado de su padre, madre o tutor.
 
+
+## Family page (feat/family-portal)
+
+Strings in `src/lib/portal/text.ts` (EN / ES), the page `src/app/(public)/portal/`, and the account menu (`Board` / `Junta`, `My household` / `Mi hogar` in `src/translation/layoutPage.ts`). Consent wording itself is the existing v3 text (`src/content/consent.ts`) and is unchanged.
+
+Policy text changed in this branch (already listed above under the privacy policy and Terms): the family sign-in paragraph (Google, Apple or Facebook only), the merged social-sign-in paragraph removed, the Auth0 provider row, the "view and update" purpose line, the security line, and Terms "Your family page". The `family_social_signin` toggle is retired; `family_portal` covers all of it.
+
+- EN: My household
+  ES: Mi hogar
+- EN: This is the information HOEP has about your household. To change anything other than the choices below, contact us and we’ll update it.
+  ES: Esta es la información que HOEP tiene sobre su hogar. Para cambiar algo que no sean las opciones de abajo, contáctenos y lo actualizamos.
+- EN: Contact HOEP
+  ES: Contactar a HOEP
+- EN: People in your household
+  ES: Personas de su hogar
+- EN: You
+  ES: Usted
+- EN: Waiting to confirm
+  ES: Falta que confirme
+- EN: Diagnoses you shared
+  ES: Diagnósticos que compartió
+- EN: Only you can see this. HOEP board members who need it for their role can also see it; it is never sent by email or put in links.
+  ES: Solo usted puede verlos. Los miembros de la junta de HOEP que lo necesiten para su cargo también pueden verlos; nunca se envían por correo ni se ponen en enlaces.
+- EN: None shared.
+  ES: No compartió ninguno.
+- EN: Your events
+  ES: Sus eventos
+- EN: Upcoming
+  ES: Próximos
+- EN: Past
+  ES: Anteriores
+- EN: Invited
+  ES: Invitaciones
+- EN: No upcoming events yet.
+  ES: Todavía no hay eventos próximos.
+- EN: No past events.
+  ES: No hay eventos anteriores.
+- EN: Cancelled
+  ES: Cancelado
+- EN: Change or cancel
+  ES: Cambiar o cancelar
+- EN: View
+  ES: Ver
+- EN: Use the link in your invitation email to reply.
+  ES: Use el enlace de su correo de invitación para responder.
+- EN: Your choices
+  ES: Sus opciones
+- EN: These are saved as new entries; earlier ones stay on record. Change them any time.
+  ES: Se guardan como entradas nuevas; las anteriores quedan registradas. Puede cambiarlas cuando quiera.
+- EN: On
+  ES: Sí
+- EN: Off
+  ES: No
+- EN: Not set
+  ES: Sin definir
+- EN: Saving…
+  ES: Guardando…
+- EN: Saved.
+  ES: Guardado.
+- EN: Could not save. Please try again.
+  ES: No se pudo guardar. Inténtelo de nuevo.
+- EN: HOEP isn’t sending these yet. Your choice is saved for when it starts.
+  ES: HOEP todavía no envía esto. Su elección queda guardada para cuando empiece.
+- EN: Storing your information and contacting you
+  ES: Guardar su información y comunicarnos con usted
+- EN: To withdraw this one, contact us (it also stops event emails).
+  ES: Para retirar este, contáctenos (también detiene los correos de eventos).
+- EN: Privacy Policy
+  ES: Política de Privacidad
+- EN: Your family page is coming soon
+  ES: Su página familiar llegará pronto
+- EN: You’re signed in. We’re still finishing this page.
+  ES: Ya iniciamos su sesión. Todavía estamos terminando esta página.
+- EN: Back to homepage
+  ES: Volver al inicio
+- EN: Board | ES: Junta
+- EN: My household | ES: Mi hogar

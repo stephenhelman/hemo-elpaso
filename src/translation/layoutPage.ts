@@ -1,18 +1,12 @@
 export const userMenuTranslation = {
   en: {
-    login: "Login",
-    portal: "Portal",
     board: "Board",
     myHousehold: "My household",
-    adminDashboard: "Admin Dashboard",
     logout: "Logout",
   },
   es: {
-    login: "Iniciar Sesión",
-    portal: "Portal",
     board: "Junta",
     myHousehold: "Mi hogar",
-    adminDashboard: "Panel de administración",
     logout: "Cerrar sesión",
   },
 };
