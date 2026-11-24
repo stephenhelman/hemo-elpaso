@@ -24,6 +24,7 @@
     "check:legacy-redirects": "tsx --test scripts/check-legacy-redirects.ts",
     "check:email-routing": "tsx --test scripts/check-email-routing.ts",
     "check:invitation-guard": "tsx --test scripts/check-invitation-guard.ts",
+    "check:features": "tsx --test scripts/check-features.ts",
     "check:permissions": "tsx --test scripts/check-permissions.ts",
     "check:invitation-log": "tsx scripts/db-guard.ts && tsx --test scripts/check-invitation-log.ts",
     "check:withdrawal": "tsx scripts/db-guard.ts && tsx --test scripts/check-withdrawal.ts",

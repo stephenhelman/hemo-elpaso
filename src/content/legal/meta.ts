@@ -13,3 +13,10 @@ export const BACKUP_WINDOW = {
   en: "up to 14 days",
   es: "hasta 14 días",
 } as const;
+
+/**
+ * The policy version that is LIVE on /privacy. Feature toggles read this: a feature can be switched on only if the
+ * live policy version covers it (src/lib/features/registry.ts). Bump it in the same change that publishes a new
+ * version of the policy text.
+ */
+export const LIVE_POLICY_VERSION = 1;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Mail, Users, Building2, Shield } from "lucide-react";
+import { Settings, Mail, Users, Building2, Shield, ToggleRight } from "lucide-react";
 
 export default function SettingsShell({
   children,
@@ -16,6 +16,7 @@ export default function SettingsShell({
 
   const all = [
     { name: "General", href: "/admin/settings", icon: Building2 },
+    { name: "Feature toggles", href: "/admin/settings/features", icon: ToggleRight },
     { name: "Permissions", href: "/admin/settings/permissions", icon: Shield },
     { name: "Email Templates", href: "/admin/settings/email-templates", icon: Mail },
     { name: "Email Routing", href: "/admin/settings/email-routing", icon: Mail },
