@@ -5,15 +5,16 @@ import { getLocaleCookie } from "@/lib/locale";
 import { resolveSession } from "@/lib/identity/session";
 import { isFeatureEnabled, getFeatureStates } from "@/lib/features";
 import { portalGate } from "@/lib/portal/rules";
-import { loadHousehold, type PortalRsvp } from "@/lib/portal/household";
+import { type PortalRsvp } from "@/lib/portal/household";
+import { loadPortalView } from "@/lib/portal/view";
+import { actorMemberId } from "@/lib/portal/permissions";
 import { auditPortalView } from "@/lib/portal/service";
 import { portalText } from "@/lib/portal/text";
-import { diagnosisLabels, type Diagnosis } from "@/lib/patients/diagnoses";
-import { ageGroupLabels, type AgeGroup } from "@/lib/households/constants";
 import { formatEventDateTime } from "@/lib/datetime";
 import { CONSENT_TEXT_VERSION, consentTextVersions } from "@/content/consent";
 import LegalLinks from "@/components/legal/LegalLinks";
 import ConsentSwitches from "./ConsentSwitches";
+import PortalEditor from "./PortalEditor";
 
 export const metadata: Metadata = { title: "My household", robots: { index: false, follow: false }, referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
@@ -43,13 +44,14 @@ export default async function PortalPage() {
     );
   }
 
-  const h = await loadHousehold(s.patient.id);
-  if (!h) redirect("/no-household");
-  await auditPortalView(s.patient.id);
+  if (!s.actor) redirect("/no-household");
+  const v = await loadPortalView(s.patient.id, s.actor);
+  if (!v) redirect("/no-household");
+  await auditPortalView(s.patient.id, actorMemberId(s.actor));
+  const h = { firstName: v.me.firstName, upcoming: v.household.upcoming, past: v.household.past, invited: v.household.invited, consents: v.consents };
 
   const features = await getFeatureStates();
   const text = consentTextVersions[CONSENT_TEXT_VERSION as keyof typeof consentTextVersions] as unknown as Record<string, { en: string; es: string }>;
-  const diag = (list: string[]) => list.map((d) => diagnosisLabels[d as Diagnosis]?.[lang] ?? d).join(", ");
   const when = (iso: string) => formatEventDateTime(iso, lang);
   const evTitle = (x: { title: { en: string; es: string } }) => x.title[lang];
 
@@ -73,32 +75,16 @@ export default async function PortalPage() {
           <p className="mt-2 text-sm text-neutral-600">{t.intro} <Link href="/contact" className="text-primary font-semibold hover:underline">{t.contact}</Link></p>
         </div>
 
-        <section className={card} aria-labelledby="people">
-          <h2 id="people" className={h2}>{t.people}</h2>
-          <ul className="divide-y divide-neutral-100">
-            <li className="py-2.5 flex justify-between gap-3">
-              <span className="font-medium text-neutral-900">{h.firstName} {h.lastName}</span>
-              <span className="text-sm text-neutral-500">{t.you}</span>
-            </li>
-            {h.members.map((m) => (
-              <li key={m.id} className="py-2.5 flex justify-between gap-3">
-                <span className="font-medium text-neutral-900">{[m.firstName, m.lastName].filter(Boolean).join(" ") || "—"}</span>
-                <span className="text-sm text-neutral-500">{t.relationship[m.relationship] ?? m.relationship} · {ageGroupLabels[m.ageGroup as AgeGroup]?.[lang] ?? m.ageGroup}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className={card} aria-labelledby="diagnoses">
-          <h2 id="diagnoses" className={h2}>{t.diagnoses}</h2>
-          <p className="text-xs text-neutral-500 mb-3">{t.diagnosesNote}</p>
-          <ul className="space-y-1.5 text-sm">
-            <li><span className="font-medium text-neutral-900">{t.you}:</span> <span className="text-neutral-700">{h.primaryDiagnoses.length ? diag(h.primaryDiagnoses) : t.diagnosesNone}</span></li>
-            {h.members.filter((m) => m.diagnoses.length > 0).map((m) => (
-              <li key={m.id}><span className="font-medium text-neutral-900">{m.firstName || "—"}:</span> <span className="text-neutral-700">{diag(m.diagnoses)}</span></li>
-            ))}
-          </ul>
-        </section>
+        <PortalEditor
+          lang={lang}
+          isPrimary={v.actor.kind === "primary"}
+          me={v.me}
+          address={v.address}
+          members={v.members}
+          otherAdults={v.otherAdults}
+          pendingAttestations={v.pendingAttestations}
+          primaryName={v.primaryName}
+        />
 
         <section className={card} aria-labelledby="events">
           <h2 id="events" className={h2}>{t.events}</h2>

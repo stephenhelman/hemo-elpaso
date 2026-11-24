@@ -3,7 +3,7 @@ export const portalText = {
   en: {
     title: "My household",
     hello: (n: string) => (n ? `Hello, ${n}` : "Hello"),
-    intro: "This is the information HOEP has about your household. To change anything other than the choices below, contact us and we’ll update it.",
+    intro: "This is the information HOEP has about your household. You can update your own details and your children’s here. Each adult in the household signs in for themselves and manages their own choices and information; no one sees another adult’s choices or health information. To withdraw consent to store your information, contact us.",
     contact: "Contact HOEP",
     people: "People in your household",
     you: "You",
@@ -47,7 +47,7 @@ export const portalText = {
   es: {
     title: "Mi hogar",
     hello: (n: string) => (n ? `Hola, ${n}` : "Hola"),
-    intro: "Esta es la información que HOEP tiene sobre su hogar. Para cambiar algo que no sean las opciones de abajo, contáctenos y lo actualizamos.",
+    intro: "Esta es la información que HOEP tiene sobre su hogar. Aquí puede actualizar sus propios datos y los de sus hijos. Cada adulto del hogar inicia sesión por sí mismo y administra sus propias opciones e información; nadie ve las opciones ni la información de salud de otro adulto. Para retirar el consentimiento de guardar su información, contáctenos.",
     contact: "Contactar a HOEP",
     people: "Personas de su hogar",
     you: "Usted",

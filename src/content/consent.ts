@@ -22,12 +22,15 @@
  *   registration now, only USED while their feature toggles are on); the verification consent text is added for later
  *   (shown at upload; nothing uses it before the verification feature). data_and_contact and the 18+ attestation carry
  *   over from v2 unchanged. v1 and v2 stay in this file, unchanged, for older records.
+ * v4: v3 plus one new text: member_guardian_attestation, shown to a confirmed adult the primary designated as a child's
+ *   parent or legal guardian, before they can see or change that child's information on the family page. DRAFT wording
+ *   pending Stephen's and the attorney's review (docs/overhaul/ES_REVIEW.md, "Consent v4"). Nothing else changed.
  * Display order on every form: 1) 18+ attestation, 2) data_and_contact, 3) media, 4) sms, 5) newsletter.
  *
  * Strings may carry the inline markup of components/legal/RichText.tsx ([label](/path)); only the VERSION is stored
  * in ConsentRecord, never the markup.
  */
-export const CONSENT_TEXT_VERSION = "v3";
+export const CONSENT_TEXT_VERSION = "v4";
 
 const draft1 = {
   data_and_contact: {
@@ -144,6 +147,15 @@ const v3 = {
   },
 } as const;
 
+const v4 = {
+  ...v3,
+  // New: a designated co-guardian accepts this on the family page (consent type "age_guardian_attestation" on THEIR member row).
+  member_guardian_attestation: {
+    en: "I am this child's parent or legal guardian.",
+    es: "Soy el padre, la madre o el tutor legal de este menor.",
+  },
+} as const;
+
 /** Event notices (not checkboxes). Shown on the RSVP page. */
 export const eventNotices = {
   // Quotes: always shown on the RSVP page.
@@ -164,12 +176,12 @@ export const eventNotices = {
 } as const;
 
 /** Every published version, for traceability. */
-export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1, v2, v3 } as const;
+export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1, v2, v3, v4 } as const;
 
 /** The wording currently shown (CONSENT_TEXT_VERSION). */
-export const consentText = v3;
+export const consentText = v4;
 
 /** Primary person's consent types (ConsentRecord.type). */
 export type ConsentType = "data_and_contact" | "media" | "age_guardian_attestation" | "sms" | "newsletter" | "verification";
 /** Adult member's consent types. "adult_attestation" = the member's own "I am 18 or older". */
-export type MemberConsentType = "data_and_contact" | "media" | "adult_attestation";
+export type MemberConsentType = "data_and_contact" | "media" | "adult_attestation" | "sms" | "newsletter" | "age_guardian_attestation";
