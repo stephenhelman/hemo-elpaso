@@ -348,7 +348,10 @@ test("merge: a board record folds into the household; identities and roles move;
   assert.ok(r.ok && r.keptId === hh && r.droppedId === board, "the household survives");
   assert.ok(r.ok && r.moved.identities === 2 && r.moved.boardRoles === 1);
 
-  assert.equal(await prisma.patient.findUnique({ where: { id: board } }), null);
+  const tomb = await prisma.patient.findUnique({ where: { id: board }, include: { contactProfile: true, identities: true } });
+  assert.equal(tomb?.role, "merged", "the dropped record is kept as a tombstone");
+  assert.equal(tomb?.mergedIntoId, hh);
+  assert.deepEqual([tomb?.email, tomb?.contactProfile, tomb?.identities.length], [null, null, 0], "no personal data, no sign-ins left on the tombstone");
   const kept = await prisma.patient.findUnique({ where: { id: hh }, include: { boardRoles: true, identities: true } });
   assert.equal(kept?.role, "board");
   assert.deepEqual(kept?.boardRoles.map((b) => b.role), ["PRESIDENT"]);

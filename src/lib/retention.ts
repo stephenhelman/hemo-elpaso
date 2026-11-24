@@ -14,6 +14,8 @@ export const TOKEN_GRACE_DAYS = 30;
 export const EMAIL_LOG_DAYS = 365;
 export const AUDIT_LOG_DAYS = 3 * 365;
 export const INACTIVE_YEARS = 3;
+/** A merged-away record is kept as a tombstone (no personal data) this long, then deleted. */
+export const MERGED_TOMBSTONE_DAYS = 365;
 
 const DAY = 864e5;
 /** Cleared values keep their column non-null/unique but can never match a real link. */
@@ -59,6 +61,21 @@ export async function purgeOldLogs(now = new Date()) {
   const emails = await prisma.emailLog.deleteMany({ where: { sentAt: { lt: new Date(now.getTime() - EMAIL_LOG_DAYS * DAY) } } });
   const audits = await prisma.auditLog.deleteMany({ where: { createdAt: { lt: new Date(now.getTime() - AUDIT_LOG_DAYS * DAY) } } });
   return { emailLogs: emails.count, auditLogs: audits.count };
+}
+
+/**
+ * Delete merge tombstones 12 months after the merge. A tombstone holds no personal data; this removes the last trace
+ * (old links to it stop resolving). Its legacy Family row, if any, goes first (that FK has no cascade). Logs a count only.
+ */
+export async function purgeMergedTombstones(now = new Date()) {
+  const cutoff = new Date(now.getTime() - MERGED_TOMBSTONE_DAYS * DAY);
+  const due = await prisma.patient.findMany({ where: { role: "merged", mergedAt: { lt: cutoff } }, select: { id: true } });
+  if (due.length === 0) return { tombstones: 0 };
+  const idList = due.map((d) => d.id);
+  await prisma.family.deleteMany({ where: { primaryPatientId: { in: idList } } });
+  const res = await prisma.patient.deleteMany({ where: { id: { in: idList }, role: "merged" } });
+  await prisma.auditLog.create({ data: { actorType: "system", action: "MERGED_RECORDS_PURGED", resourceType: "Patient", details: "Merge tombstones purged", changes: { count: res.count } } });
+  return { tombstones: res.count };
 }
 
 /** Marker written by "Mark contacted" (an audit row; no schema change). */

@@ -57,7 +57,7 @@ export async function syncIdentity(user: AuthUser): Promise<UserIdentity | null>
 
   if (!email || !verified) return null; // the Auth0 Action already denies these; never link on an unverified email
 
-  const candidates = await prisma.patient.findMany({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } });
+  const candidates = await candidatesForEmail(email);
   const decision = decideLink(verified, candidates);
   const provider = providerOf(user.sub);
 
@@ -93,6 +93,17 @@ export async function syncIdentity(user: AuthUser): Promise<UserIdentity | null>
     return row;
   }
   return null;
+}
+
+/**
+ * People a verified sign-in email may belong to: a primary email match, or an alias (the address of a record that was
+ * merged into this one). Merged-away tombstones never match. Household-member emails are never candidates.
+ */
+export async function candidatesForEmail(email: string): Promise<{ id: string }[]> {
+  return prisma.patient.findMany({
+    where: { mergedIntoId: null, OR: [{ email: { equals: email, mode: "insensitive" } }, { emailAliases: { some: { email: email.trim().toLowerCase() } } }] },
+    select: { id: true },
+  });
 }
 
 /** At most one notice per matching set per 24h. The email holds a link only: no names, addresses or household details. */

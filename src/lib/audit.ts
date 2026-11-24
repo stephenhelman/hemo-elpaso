@@ -21,8 +21,11 @@ export interface AuditInput {
   /** Ids, codes and field NAMES only. */
   details?: string;
   /** Structured ids and codes, e.g. { eventId, patientId, reasonCode }. */
-  changes?: Record<string, string | number | boolean | null>;
+  changes?: Record<string, AuditValue>;
 }
+
+/** Audit values: ids, codes, counts and lists/maps of those. Never names, emails, phone numbers or diagnoses. */
+export type AuditValue = string | number | boolean | null | AuditValue[] | { [key: string]: AuditValue };
 
 /**
  * The audit log holds ids only: no names, emails, phone numbers or diagnoses (Privacy Policy, CLAUDE.md rule 4).

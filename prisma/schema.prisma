@@ -90,6 +90,7 @@ enum EmailTemplateType {
   EMAIL_ROUTING_TEST
   EVENT_INVITATION
   DUPLICATE_SIGNIN_NOTICE
+  RECORDS_MERGED_NOTICE
 }
 
 enum AgeTier {
@@ -345,8 +346,19 @@ model Patient {
   identities            UserIdentity[]    @relation("IdentityPerson")
   identitiesLinked      UserIdentity[]    @relation("IdentityLinker")
 
+  // Merge tombstone. A record folded into another keeps only this row (role "merged", no personal data) so audit
+  // history and old links resolve to the survivor. Purged 12 months after mergedAt (lib/retention.ts).
+  mergedIntoId          String?
+  mergedInto            Patient?          @relation("PatientMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom            Patient[]         @relation("PatientMerge")
+  mergedAt              DateTime?
+  emailAliases          PatientAlias[]
+  duplicateDismissalsA  DuplicateDismissal[] @relation("DismissalA")
+  duplicateDismissalsB  DuplicateDismissal[] @relation("DismissalB")
+
   @@index([email])
   @@index([possibleDuplicateOfId])
+  @@index([mergedIntoId])
   @@map("patients")
 }
 
@@ -386,6 +398,7 @@ model ConsentRecord {
   method                String // web | phone
   recordedByBoardUserId String?
   recordedBy            Patient?         @relation("ConsentRecorder", fields: [recordedByBoardUserId], references: [id], onDelete: SetNull)
+  reasonCode            String? // board changes only (method "board"): FAMILY_ASKED_PHONE | FAMILY_ASKED_EMAIL | FAMILY_ASKED_IN_PERSON | OTHER; "MERGE" for merge-appended refusals
   createdAt             DateTime         @default(now())
 
   @@index([patientId, type, createdAt])
@@ -1071,6 +1084,10 @@ enum AuditAction {
   // Family page (actorType "family"; ids only)
   PORTAL_VIEWED
   PORTAL_CONSENT_CHANGED
+  PATIENT_MERGE_PREVIEWED
+  PATIENT_DUPLICATE_DISMISSED
+  CONSENT_CHANGED_BY_BOARD
+  MERGED_RECORDS_PURGED
 }
 
 model AuditLog {
@@ -1494,6 +1511,36 @@ model UserIdentity {
   @@index([email])
   @@index([patientId, lastLoginAt])
   @@map("user_identities")
+}
+
+/// An address a person used to be known by (the email of a record merged into this one). Used ONLY to match a
+/// first sign-in to a household; never emailed. Deleted with the household.
+model PatientAlias {
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  email     String // lowercased
+  source    String   @default("merge")
+  createdAt DateTime @default(now())
+
+  @@unique([patientId, email])
+  @@index([email])
+  @@map("patient_aliases")
+}
+
+/// "Not a duplicate": this pair is never offered for merging again. Ids are stored in sorted order (patientAId < patientBId).
+model DuplicateDismissal {
+  id                String   @id @default(uuid())
+  patientAId        String
+  patientA          Patient  @relation("DismissalA", fields: [patientAId], references: [id], onDelete: Cascade)
+  patientBId        String
+  patientB          Patient  @relation("DismissalB", fields: [patientBId], references: [id], onDelete: Cascade)
+  dismissedByPatientId String?
+  createdAt         DateTime @default(now())
+
+  @@unique([patientAId, patientBId])
+  @@index([patientBId])
+  @@map("duplicate_dismissals")
 }
 
 /// Small key/value settings (feature_flags is for toggles tied to the policy; this is for everything else).

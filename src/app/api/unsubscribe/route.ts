@@ -22,10 +22,14 @@ export async function GET(req: NextRequest) {
 
   const patient = await prisma.patient.findUnique({
     where: { id: patientId },
-    select: { id: true, emailOptOut: true },
+    select: { id: true, emailOptOut: true, mergedIntoId: true },
   });
+  // A link from a record that was merged into another: the opt-out applies to the surviving household.
+  const target = patient?.mergedIntoId
+    ? await prisma.patient.findUnique({ where: { id: patient.mergedIntoId }, select: { id: true, emailOptOut: true, mergedIntoId: true } })
+    : patient;
 
-  if (!patient) {
+  if (!target) {
     return NextResponse.redirect(
       new URL(`/unsubscribe?error=notfound${langQs}`, req.url),
     );
@@ -33,9 +37,9 @@ export async function GET(req: NextRequest) {
 
   // Opts out of invitation emails only. Transactional emails (RSVP confirmation,
   // reminders) still go to people who RSVP. Consent records are not touched.
-  if (!patient.emailOptOut) {
+  if (!target.emailOptOut) {
     await prisma.patient.update({
-      where: { id: patientId },
+      where: { id: target.id },
       data: { emailOptOut: true },
     });
   }

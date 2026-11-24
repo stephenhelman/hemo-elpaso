@@ -20,6 +20,7 @@ export const HOUSEHOLD_EVIDENCE: Prisma.PatientWhereInput = {
 export const BOARD_ONLY: Prisma.PatientWhereInput = {
   AND: [
     { role: { not: "admin" } },
+    { mergedIntoId: null },
     { NOT: HOUSEHOLD_EVIDENCE },
     { OR: [{ role: "board" }, { identities: { some: {} } }, { auth0Id: { not: null } }] },
   ],
@@ -41,6 +42,7 @@ export const BOARD_ONLY: Prisma.PatientWhereInput = {
 export const PATIENT_ONLY: Prisma.PatientWhereInput = {
   AND: [
     { role: { not: "admin" } },
+    { mergedIntoId: null }, // a merge tombstone is never a household
     {
       OR: [
         { role: "patient", auth0Id: null, identities: { none: {} } },

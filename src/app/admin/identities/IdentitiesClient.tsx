@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import MergeDialog from "@/components/admin/merge/MergeDialog";
 
 interface Unmatched { id: string; provider: string; email: string; lastLoginAt: string; unlinkedByHand: boolean; matches: number }
 interface Person { id: string; name: string; email: string | null; hasHousehold: boolean; boardRoles: string[]; identities: { id: string; provider: string; email: string; linkedVia: string | null }[] }
@@ -21,8 +22,7 @@ export default function IdentitiesClient() {
   const [people, setPeople] = useState<Person[]>([]);
   const [linkTarget, setLinkTarget] = useState<string | null>(null); // unmatched identity being linked
   const [picked, setPicked] = useState<Person[]>([]); // up to two for merge
-  const [keepId, setKeepId] = useState<string | null>(null);
-  const [needsChoice, setNeedsChoice] = useState(false);
+  const [reviewing, setReviewing] = useState(false); // merge preview open
 
   const load = useCallback(async () => {
     const r = await api("/api/admin/identities");
@@ -46,14 +46,7 @@ export default function IdentitiesClient() {
     if (!r.ok) return toast.error("Could not unlink");
     toast.success("Unlinked"); load(); search();
   }
-  async function merge() {
-    const [a, b] = picked;
-    const r = await api(`/api/admin/patients/${a.id}/merge`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ otherId: b.id, keepId }) });
-    if (r.data?.error === "needs_keep_choice") { setNeedsChoice(true); return toast("Both records have a household. Choose which one survives."); }
-    if (!r.ok) return toast.error("Could not merge");
-    toast.success("Merged"); setPicked([]); setKeepId(null); setNeedsChoice(false); search(); load();
-  }
-  const toggle = (p: Person) => { setNeedsChoice(false); setKeepId(null); setPicked((cur) => (cur.some((x) => x.id === p.id) ? cur.filter((x) => x.id !== p.id) : [...cur, p].slice(-2))); };
+  const toggle = (p: Person) => { setPicked((cur) => (cur.some((x) => x.id === p.id) ? cur.filter((x) => x.id !== p.id) : [...cur, p].slice(-2))); };
 
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-4xl">
@@ -114,17 +107,12 @@ export default function IdentitiesClient() {
       {picked.length === 2 && (
         <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm space-y-3">
           <p className="font-semibold">Merge these two records into one?</p>
-          <p>Their sign-ins, board roles, consents and RSVPs move to the record that survives. The other record is deleted. This cannot be undone.</p>
-          {(needsChoice || (picked[0].hasHousehold && picked[1].hasHousehold)) && (
-            <div>
-              <p className="font-medium mb-1">Both records have a household. Which one survives?</p>
-              {picked.map((p) => (
-                <label key={p.id} className="flex items-center gap-2"><input type="radio" name="keep" checked={keepId === p.id} onChange={() => setKeepId(p.id)} />{p.name} ({p.email})</label>
-              ))}
-            </div>
-          )}
-          <button className={`${btn} bg-red-600 text-white`} disabled={picked[0].hasHousehold && picked[1].hasHousehold && !keepId} onClick={merge}>Merge</button>
+          <p>You will see what moves and what conflicts before anything changes. There is no undo.</p>
+          <button className={`${btn} bg-neutral-900 text-white`} onClick={() => setReviewing(true)}>Review merge</button>
         </section>
+      )}
+      {reviewing && picked.length === 2 && (
+        <MergeDialog aId={picked[0].id} bId={picked[1].id} onClose={() => setReviewing(false)} onDone={() => { setReviewing(false); setPicked([]); search(); load(); }} />
       )}
     </div>
   );

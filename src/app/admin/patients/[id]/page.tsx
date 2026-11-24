@@ -14,6 +14,9 @@ import { eventHasEnded } from "@/lib/rsvp/window";
 import DeletePatientPanel from "@/components/admin/patients/DeletePatientPanel";
 import NotDuplicateButton from "@/components/admin/patients/NotDuplicateButton";
 import ResendConfirmationButton from "@/components/admin/patients/ResendConfirmationButton";
+import ConsentPanel, { type ConsentSubject, type ConsentLine } from "@/components/admin/patients/ConsentPanel";
+import { PATIENT_BOARD_TYPES, MEMBER_BOARD_TYPES } from "@/lib/consent/board-rules";
+import { newest } from "@/lib/identity/merge-rules";
 import { confirmationStatus } from "@/lib/patients/query";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
@@ -32,7 +35,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
     include: {
       contactProfile: true,
       consentRecords: { orderBy: { createdAt: "desc" } },
-      householdMembers: { orderBy: { createdAt: "asc" } },
+      householdMembers: { orderBy: { createdAt: "asc" }, include: { consentRecords: { orderBy: { createdAt: "desc" } } } },
       rsvps: { include: { event: { select: { titleEn: true, titleEs: true, eventDate: true, endDate: true } } }, orderBy: { rsvpDate: "desc" } },
       checkIns: { select: { id: true, checkInTime: true, event: { select: { titleEn: true, titleEs: true } } }, orderBy: { checkInTime: "desc" } },
       possibleDuplicateOf: { include: { contactProfile: true } },
@@ -46,6 +49,19 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
   await auditPatient(admin.id, AuditAction.PATIENT_VIEWED, p.id, "Patient detail viewed");
 
   const cur = currentConsents(p.consentRecords);
+  const fmt = (d: Date) => d.toLocaleString("en-US", { timeZone: SITE_TIMEZONE });
+  const lines = (types: readonly string[], rows: typeof p.consentRecords): ConsentLine[] =>
+    types.map((type) => ({
+      type,
+      current: newest(rows, type),
+      history: rows.filter((r) => r.type === type).map((r) => ({ id: r.id, when: fmt(r.createdAt), granted: r.granted, method: r.method, version: r.textVersion, reason: r.reasonCode })),
+    }));
+  const consentSubjects: ConsentSubject[] = [
+    { memberId: null, title: locale === "es" ? "Hogar (persona principal y menores)" : "Household (primary person and minors)", lines: lines(PATIENT_BOARD_TYPES, p.consentRecords) },
+    ...p.householdMembers
+      .filter((m) => m.ageGroup === "18_plus" && m.status === "confirmed")
+      .map((m) => ({ memberId: m.id, title: `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "—", lines: lines(MEMBER_BOARD_TYPES, m.consentRecords) })),
+  ];
   const nm = (x?: { contactProfile: { firstName: string; lastName: string } | null } | null) =>
     x?.contactProfile ? `${x.contactProfile.firstName} ${x.contactProfile.lastName}` : "—";
 
@@ -133,27 +149,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
         }))}
       />
 
-      <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-        <h2 className="font-semibold text-neutral-900 mb-3">{t.consentHistory}</h2>
-        <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-neutral-500">
-            <tr>
-              <th className="py-2">{t.when}</th><th>{t.type}</th><th>{t.granted}</th><th>{t.method}</th><th>{t.version}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100">
-            {p.consentRecords.map((c) => (
-              <tr key={c.id}>
-                <td className="py-2">{c.createdAt.toLocaleString("en-US", { timeZone: SITE_TIMEZONE })}</td>
-                <td>{c.type}</td>
-                <td>{c.granted ? "yes" : "no"}</td>
-                <td>{c.method}</td>
-                <td>{c.textVersion}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ConsentPanel patientId={p.id} locale={locale} subjects={consentSubjects} />
 
       <div className="bg-white rounded-2xl border border-neutral-200 p-6">
         <h2 className="font-semibold text-neutral-900 mb-3">{t.activity}</h2>

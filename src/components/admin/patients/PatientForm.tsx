@@ -85,8 +85,8 @@ export default function PatientForm({
                 }
               : {}),
             diagnoses: v.diagnoses,
-            consentDataAndContact: v.consentData,
-            consentMedia: v.consentMedia,
+            // Consents are only sent when creating. After that they change in the consent panel (reason required).
+            ...(mode === "create" ? { consentDataAndContact: v.consentData, consentMedia: v.consentMedia } : {}),
           }),
         },
       );
@@ -187,14 +187,18 @@ export default function PatientForm({
             <span><RichText text={consentText.age_guardian_attestation[locale]} locale={locale} newTab /></span>
           </label>
         )}
-        <label className="flex items-start gap-2 text-sm text-neutral-700">
-          <input type="checkbox" className="mt-1" checked={v.consentData} onChange={(e) => set("consentData", e.target.checked)} />
-          {t.consentData}
-        </label>
-        <label className="flex items-start gap-2 text-sm text-neutral-700">
-          <input type="checkbox" className="mt-1" checked={v.consentMedia} onChange={(e) => set("consentMedia", e.target.checked)} />
-          {t.consentMedia}
-        </label>
+        {mode === "create" && (
+          <>
+            <label className="flex items-start gap-2 text-sm text-neutral-700">
+              <input type="checkbox" className="mt-1" checked={v.consentData} onChange={(e) => set("consentData", e.target.checked)} />
+              {t.consentData}
+            </label>
+            <label className="flex items-start gap-2 text-sm text-neutral-700">
+              <input type="checkbox" className="mt-1" checked={v.consentMedia} onChange={(e) => set("consentMedia", e.target.checked)} />
+              {t.consentMedia}
+            </label>
+          </>
+        )}
       </fieldset>
 
       <div className="flex justify-end">

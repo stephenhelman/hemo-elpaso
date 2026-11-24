@@ -1,4 +1,5 @@
 import {
+  Copy,
   Hourglass,
   KeyRound,
   LayoutDashboard,
@@ -68,6 +69,12 @@ export const adminNavItemsTranslation = [
     icon: KeyRound,
   },
   {
+    href: "/admin/duplicates",
+    en: "Duplicates",
+    es: "Duplicados",
+    icon: Copy,
+  },
+  {
     href: "/admin/inactive-households",
     en: "Inactive households",
     es: "Hogares inactivos",
@@ -102,6 +109,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
   "/admin/identities": "canManageUsers",
+  "/admin/duplicates": "canManageUsers",
   "/admin/inactive-households": "canManageUsers",
   "/admin/audit-logs": "canViewAuditLogs",
   "/admin/studio": "canEditSiteContent",
