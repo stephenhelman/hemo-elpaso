@@ -89,6 +89,7 @@ enum EmailTemplateType {
   ADMIN_CHANGE_NOTICE
   EMAIL_ROUTING_TEST
   EVENT_INVITATION
+  DUPLICATE_SIGNIN_NOTICE
 }
 
 enum AgeTier {
@@ -288,6 +289,8 @@ model PatientPreferences {
 
 model Patient {
   id                String   @id @default(uuid())
+  // DEPRECATED: read-only legacy link. Sign-in identities live in user_identities (many per person); nothing writes this
+  // column any more. Kept (never dropped) so the old data and the rollback path stay intact.
   auth0Id           String?  @unique // null = no Auth0 login (public patients, invited-but-unlinked board)
   email             String? // stored lowercased + trimmed; not unique (duplicates flagged via possibleDuplicateOfId)
   role              String   @default("patient")
@@ -339,6 +342,8 @@ model Patient {
   invitations           Invitation[]      @relation("InvitationPatient")
   invitationsSent       Invitation[]      @relation("InvitationSender")
   invitationsRemoved    Invitation[]      @relation("InvitationRemover")
+  identities            UserIdentity[]    @relation("IdentityPerson")
+  identitiesLinked      UserIdentity[]    @relation("IdentityLinker")
 
   @@index([email])
   @@index([possibleDuplicateOfId])
@@ -1054,6 +1059,14 @@ enum AuditAction {
   INVITATION_MATCHED
   INVITATION_REMOVED
   INVITATION_REPORT_VIEWED
+
+  // Sign-in identities (ids only in details/changes)
+  IDENTITY_LINKED
+  IDENTITY_UNLINKED
+  IDENTITY_LINK_FAILED
+  BOARD_SIGNIN_POLICY_CHANGED
+  BOARD_RECORD_CREATED
+  BOARD_ORG_EMAIL_CHANGED
 }
 
 model AuditLog {
@@ -1454,4 +1467,37 @@ model FeatureFlag {
   updatedAt DateTime  @updatedAt
 
   @@map("feature_flags")
+}
+
+/// One row per Auth0 sign-in (Auth0 makes a separate user per provider). Many identities can belong to one Patient.
+/// patientId NULL = signed in but not matched to a household yet; purged after 30 days (retention job).
+model UserIdentity {
+  id                String    @id @default(uuid())
+  patientId         String?
+  patient           Patient?  @relation("IdentityPerson", fields: [patientId], references: [id], onDelete: Cascade)
+  auth0Sub          String    @unique
+  provider          String // google-oauth2 | apple | facebook | ... (from the sub prefix)
+  email             String // lowercased, as the provider asserted it
+  emailVerified     Boolean   @default(false)
+  linkedAt          DateTime?
+  linkedVia         String? // auto | admin | merge | backfill
+  linkedByPatientId String?
+  linkedBy          Patient?  @relation("IdentityLinker", fields: [linkedByPatientId], references: [id], onDelete: SetNull)
+  firstSeenAt       DateTime  @default(now())
+  lastLoginAt       DateTime  @default(now())
+
+  @@index([patientId])
+  @@index([email])
+  @@index([patientId, lastLoginAt])
+  @@map("user_identities")
+}
+
+/// Small key/value settings (feature_flags is for toggles tied to the policy; this is for everything else).
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedBy String? // patientId
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
 }

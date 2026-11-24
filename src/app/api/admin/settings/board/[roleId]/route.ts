@@ -74,12 +74,7 @@ export async function DELETE(req: NextRequest, { params }: Props) {
     linesEs: [`${admin!.email} retiró el cargo ${boardRole.role} (registro ${params.roleId}).`],
   });
 
-  return NextResponse.json({
-    success: true,
-    demoted,
-    // The app can't edit the Auth0 Action: remind the admin to do it by hand.
-    reminder: demoted
-      ? `Also remove ${boardRole.patient.email ?? "this person"} from BOARD_ALLOWLIST in the Auth0 Action.`
-      : null,
-  });
+  // No allow-list to update: board access is the database role plus an org Google account, so removing the last
+  // role ends board access on the person's next request.
+  return NextResponse.json({ success: true, demoted });
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Mail, Users, Building2, Shield, ToggleRight } from "lucide-react";
+import { Settings, Mail, Users, Building2, Shield, ToggleRight, KeyRound } from "lucide-react";
 
 export default function SettingsShell({
   children,
@@ -21,6 +21,7 @@ export default function SettingsShell({
     { name: "Email Templates", href: "/admin/settings/email-templates", icon: Mail },
     { name: "Email Routing", href: "/admin/settings/email-routing", icon: Mail },
     { name: "Board Management", href: "/admin/settings/board", icon: Users },
+    { name: "Board sign-in", href: "/admin/settings/signin", icon: KeyRound },
   ];
   const tabs = all.filter((t) => allowed.includes(t.href)).map((t) => ({ ...t, disabled: false }));
 

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
-import { prisma } from "@/lib/db";
 import { BoardRoleType } from "@prisma/client";
-import { linkPendingBoardMember } from "@/lib/board/link-session";
+import { resolveSession } from "@/lib/identity/session";
 import { DEFAULT_MATRIX, permissionDef, type Matrix, type Permission } from "@/lib/permission-catalog";
 import { getMatrix } from "@/lib/permission-matrix";
 
@@ -59,37 +57,21 @@ export interface AdminWithPermissions {
 }
 
 export async function getAdminWithPermissions(): Promise<AdminWithPermissions | null> {
-  const session = await getSession();
-  if (!session?.user) return null;
-
-  const findPatient = () =>
-    prisma.patient.findUnique({
-      where: { auth0Id: session.user.sub },
-      include: {
-        boardRoles: {
-          where: { active: true },
-          select: { role: true, active: true },
-        },
-      },
-    });
-
-  let patient = await findPatient();
-  // First login of an invited board member: link by verified email.
-  if (!patient && (await linkPendingBoardMember(session.user as any))) {
-    patient = await findPatient();
-  }
-
-  if (!patient || !["board", "admin"].includes(patient.role)) return null;
+  // Board access depends on HOW the person signed in (lib/identity/rules.ts resolveMode): an @<mail domain> Google
+  // Workspace identity of someone who is an admin or holds an active board role. A personal Gmail is a family session,
+  // even for an officer, and gets null here.
+  const s = await resolveSession();
+  if (!s || s.mode !== "board" || !s.patient) return null;
+  const patient = s.patient;
 
   const isSettingsAdmin = patient.role === "admin";
-  const activeRoles = patient.boardRoles.map((r) => r.role);
-  const permissions = resolvePermissions(patient.role, activeRoles, await getMatrix());
+  const permissions = resolvePermissions(patient.role, patient.activeRoles, await getMatrix());
 
   return {
     id: patient.id,
     email: patient.email ?? "",
     role: patient.role,
-    boardRoles: patient.boardRoles,
+    boardRoles: patient.activeRoles.map((role) => ({ role, active: true })),
     permissions,
     isSettingsAdmin,
     can: (permission: Permission) => permissions.has(permission),

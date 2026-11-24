@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0/edge";
+import { initAuth0 } from "@auth0/nextjs-auth0/edge";
+import { SESSION_CONFIG } from "@/lib/auth0-config";
+
+const { getSession } = initAuth0({ session: SESSION_CONFIG });
 
 /**
- * Gatekeeper for /admin/* and /api/admin/*.
+ * Gatekeeper for /admin/* and /api/admin/* (board mode) and /portal/* and /api/portal/* (a linked household).
  *
- * Requires an Auth0 session whose Patient record has role "board" or "admin".
- * Middleware runs on the Edge runtime where Prisma is unavailable, so the role
- * check is delegated to /api/session/board-check (Node runtime), forwarding
- * the caller's cookies. Route handlers still run their own requirePermission()
- * checks — this is the outer layer, not a replacement.
+ * Who someone is comes from the database, per request, never from a cookie claim: the Auth0 `sub` maps to a linked
+ * identity, and the mode (board / family / none) is derived from how they signed in (lib/identity/rules.ts). Middleware
+ * runs on the Edge runtime where Prisma is unavailable, so the decision is delegated to /api/session/access (Node
+ * runtime), forwarding the caller's cookies. Route handlers still run their own requirePermission() checks: this is
+ * the outer layer, not a replacement.
  */
 const ADMIN_PREFIXES = ["/admin", "/api/admin"];
+const PORTAL_PREFIXES = ["/portal", "/api/portal"];
+const under = (pathname: string, prefixes: string[]) => prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
 /**
  * Links in patient emails carry ?lang=en|es. That wins over the locale cookie:
@@ -33,9 +38,10 @@ function applyLangParam(req: NextRequest): NextResponse | null {
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  if (!ADMIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    return applyLangParam(req) ?? NextResponse.next();
-  }
+  const isAdmin = under(pathname, ADMIN_PREFIXES);
+  const isPortal = under(pathname, PORTAL_PREFIXES);
+  if (!isAdmin && !isPortal) return applyLangParam(req) ?? NextResponse.next();
+
   const isApi = pathname.startsWith("/api/");
   const res = NextResponse.next();
 
@@ -50,28 +56,35 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  let isBoard = false;
+  let allowed = false;
+  let mode = "none";
+  let household = false;
   try {
     // Site-content Studio needs more than "is board": canEditSiteContent.
-    const needsPerm =
-      pathname === "/admin/studio" || pathname.startsWith("/admin/studio/")
-        ? "?perm=canEditSiteContent"
-        : "";
-    const check = await fetch(new URL(`/api/session/board-check${needsPerm}`, req.url), {
+    const perm =
+      pathname === "/admin/studio" || pathname.startsWith("/admin/studio/") ? "&perm=canEditSiteContent" : "";
+    const check = await fetch(new URL(`/api/session/access?need=${isAdmin ? "board" : "portal"}${perm}`, req.url), {
       headers: { cookie: req.headers.get("cookie") ?? "" },
       cache: "no-store",
     });
-    isBoard = check.ok;
+    allowed = check.ok;
+    mode = check.headers.get("x-hoep-mode") ?? "none";
+    household = check.headers.get("x-hoep-household") === "1";
   } catch {
     // Fail closed
-    isBoard = false;
+    allowed = false;
   }
 
-  if (!isBoard) {
+  if (!allowed) {
     if (isApi) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    return NextResponse.redirect(new URL("/", req.url));
+    // A signed-in family never sees the board side; send them to their own page. Someone we can't match is told so.
+    let to = "/";
+    if (mode === "none") to = "/no-household";
+    else if (isAdmin && mode === "family" && household) to = "/portal";
+    else if (isPortal && mode === "board") to = "/admin/dashboard";
+    return NextResponse.redirect(new URL(to, req.url));
   }
 
   return res;
@@ -81,6 +94,8 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/api/admin/:path*",
+    "/portal/:path*",
+    "/api/portal/:path*",
     // ?lang= from email links
     "/rsvp/:path*",
     "/confirm/:path*",

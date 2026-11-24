@@ -97,7 +97,7 @@ Nothing from this form is written to the database. It is emailed (via Resend) to
 | --- | --- | --- |
 | First name, last name, email | `POST /api/admin/settings/board/invite` → `patients` row with `role = "board"` + `contact_profiles` | Entered by a President/VP |
 | Role, optional org mailbox (`fromEmail`), `assignedBy` (assigner's email), `assignedAt`, `active` | `board_roles` (`prisma/schema.prisma:161`) | |
-| Auth0 subject id (`auth0Id`) | Linked on first login by verified email (`src/lib/board/link-session.ts`) | Auth0 itself also holds the login profile |
+| Sign-in identities (`user_identities`): Auth0 subject id, provider, email as the provider gave it, verified flag, how/when linked | Linked on first sign-in by verified email (`src/lib/identity/link.ts`). Sign-ins that match no household are kept 30 days (retention cron), then deleted. `patients.auth0Id` is deprecated and no longer written | Auth0 itself also holds the login profile |
 | Onboarding email sent time | `board_onboardings` | |
 | Dormant: encrypted Gmail OAuth tokens | `board_roles.gmail*` columns | **Still stored** after the Gmail feature was cut (RESTORE.md) |
 
@@ -153,14 +153,14 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | Event flyers | R2 `flyers/<eventId>/…` | Public URLs |
 | Legacy uploads (diagnosis letters, assistance documents, receipts, tax PDFs, minutes) | R2 | Left in place by the cuts |
 | Board and public-site content | **Sanity** (private dataset `production`, project `ed5kyl4v`) | Read by the server with a Viewer token; edited in the embedded Studio at `/admin/studio` |
-| Board logins | **Auth0** tenant + `patients.auth0Id` | |
+| Board and family logins | **Auth0** tenant + `user_identities` | |
 | Sent email copies | **Resend** | Full body and recipient |
 | Request logs, page-view analytics | **Vercel** | |
 | Language preference | `locale` cookie in the visitor's browser; `patients.preferredLanguage` in Neon | |
 
 ### 2b. Who can access what (admin)
 
-`/admin/*` and `/api/admin/*` require an Auth0 session whose `patients.role` is `board` or `admin` (`src/middleware.ts`). Each route then enforces a permission (`src/lib/permissions.ts`). A board user with no active role has no permissions. Role `admin` (super admin) has every permission.
+`/admin/*` and `/api/admin/*` require an Auth0 session whose identity is an @<mail domain> Google Workspace account of a person with role `admin` or an active board role (`src/middleware.ts` → `/api/session/access`; any other sign-in is a family session and gets `/portal` only). Each route then enforces a permission (`src/lib/permissions.ts`). A board user with no active role has no permissions. Role `admin` (super admin) has every permission.
 
 | Permission | Roles that have it | What it unlocks |
 | --- | --- | --- |
@@ -189,7 +189,7 @@ Everyone outside the board has **no account and no access**. Patients and househ
 | **Cloudflare R2** | Event photos (originals briefly, then processed copies), flyers, legacy documents. Visitors' browsers load public photos directly from R2 | File storage | Board browsers upload originals straight to R2 with presigned URLs |
 | **Cloudflare Turnstile** | Visitor browser → Cloudflare (script + challenge) on `/contact`, `/register-info` and the public RSVP form. Server → Cloudflare: secret + token only (no visitor IP is forwarded: `src/lib/turnstile.ts`) | Bot protection | May set its own browser storage (verify) |
 | **Sanity** | Public-site content, incl. board/officer names, photos, bios. Board editors' Sanity logins. No patient data | CMS for About, Home, Resources, etc. | Dataset is private. **Anyone with Sanity project access can read every document, including ones hidden with "Show on site" off** |
-| **Auth0** | Board members' login identity (email, name, subject id, login events, IP). Also **anyone who clicks the login button**, because Auth0 can create a user record for any social login before the app rejects them | Board-only login | Connections per `.claude/stack.md`: Google, Apple, Facebook. The board allow-list Action is a draft in the repo, **"NOT APPLIED"** (`docs/overhaul/auth0-board-action.js`): verify it is live |
+| **Auth0** | Board members' login identity (email, name, subject id, login events, IP). Also **anyone who clicks the login button**, because Auth0 can create a user record for any social login before the app rejects them | Board-only login | Connections per `.claude/stack.md`: Google, Apple, Facebook. The Post-Login Action (`docs/overhaul/auth0-post-login-action.js`) only denies unverified emails; there is no allow-list. Production social connections: `docs/overhaul/AUTH0_PRODUCTION.md` |
 | **Google Places** (Maps JS API) | As someone types their address, the text is sent to Google with their IP and the site's API key. Loaded on the **public** `/register-info` and public RSVP form, and on the admin patient/event forms (`src/components/form/PlacesAutocompleteInput.tsx:99`) | Address autocomplete | Only if `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` is set; without the key the field is a plain input. No consent gate before the script loads |
 | **Google Maps embed** | Visitor IP/browser to Google when `/contact` loads (iframe: `src/components/contact/ContactMap.tsx:26`, `src/components/sanity/ContactParts.tsx:92`) | Map on the contact page | No consent gate. May set Google cookies (verify) |
 | **DeepL** | Text typed into event title/description/recap fields (up to 5,000 characters) when the board clicks Translate (`src/lib/translate.ts`, `src/app/api/translate/route.ts`) | EN↔ES translation | Not patient data unless a board member types it. Plan (Free vs Pro) decides whether DeepL keeps the text: verify |

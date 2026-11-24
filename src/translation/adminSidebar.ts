@@ -1,5 +1,6 @@
 import {
   Hourglass,
+  KeyRound,
   LayoutDashboard,
   Calendar,
   Users,
@@ -61,6 +62,12 @@ export const adminNavItemsTranslation = [
     icon: Users,
   },
   {
+    href: "/admin/identities",
+    en: "Sign-ins",
+    es: "Inicios de sesión",
+    icon: KeyRound,
+  },
+  {
     href: "/admin/inactive-households",
     en: "Inactive households",
     es: "Hogares inactivos",
@@ -94,6 +101,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
   "/admin/settings": ["canManageSettings", "canManageEmailTemplates", "canManageEmailRouting", "canAssignBoardRoles"],
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
+  "/admin/identities": "canManageUsers",
   "/admin/inactive-households": "canManageUsers",
   "/admin/audit-logs": "canViewAuditLogs",
   "/admin/studio": "canEditSiteContent",

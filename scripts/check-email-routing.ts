@@ -67,11 +67,12 @@ test("the allowed domain follows emailDomain(), not a hard-coded value", () => {
 
 // ── Defaults and fallback ────────────────────────────────────────────────────
 test("defaults are role addresses on the mail domain", () => {
-  const want: Record<string, string> = {
+  const want: Record<string, string | string[]> = {
     "contact.general": "info", "contact.family": "secretary", "contact.volunteer": "secretary", "contact.sponsor": "treasurer",
     "contact.media": "president", "contact.other": "info", privacy: "privacy", "reply.info": "info", "reply.events": "events",
+    "board.duplicates": ["president", "vicepresident"],
   };
-  for (const k of ROUTE_KEYS) assert.deepEqual(defaultRecipients(k, D), [`${want[k]}@${D}`], k);
+  for (const k of ROUTE_KEYS) assert.deepEqual(defaultRecipients(k, D), [want[k]].flat().map((l) => `${l}@${D}`), k);
   assert.deepEqual(defaultRecipients("contact.media", "example.org"), ["president@example.org"]);
 });
 test("empty table / missing row / unreadable row all fall back to the defaults", () => {

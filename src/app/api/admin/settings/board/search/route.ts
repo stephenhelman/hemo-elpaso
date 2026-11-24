@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
+import { BOARD_ONLY } from "@/lib/patients/query";
 
 export async function GET(req: NextRequest) {
   const { error } = await requirePermission("canAssignBoardRoles");
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const patients = await prisma.patient.findMany({
     where: {
-      OR: [
+      AND: [BOARD_ONLY, { OR: [
         { email: { contains: query, mode: "insensitive" } },
         {
           contactProfile: {
@@ -25,11 +26,10 @@ export async function GET(req: NextRequest) {
             ],
           },
         },
-      ],
-      // Only staff rows: board/admin, or anyone who already has an Auth0 login
-      // (e.g. a former board member). Public patients are never assignable here;
-      // use "Invite board member" for new people.
-      AND: [{ OR: [{ role: { in: ["board", "admin"] } }, { auth0Id: { not: null } }] }],
+      ] }],
+      // Only board-only records (no household data): the settings-only admin never sees family records. A board
+      // member whose record was linked to a household is handled by the President/VP. Use "Invite board member"
+      // for new people.
     },
     include: { contactProfile: true },
     take: 10,

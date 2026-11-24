@@ -7,7 +7,7 @@
  *
  * Creates a Patient (role "admin", auth0Id NULL, lowercased email) with a ContactProfile and NO board role. On the
  * first Auth0 login with the same VERIFIED email (Google Workspace), the session is linked to the row
- * (src/lib/board/link-session.ts). Idempotent. Refuses if that email already belongs to a person with a board role:
+ * (src/lib/identity/link.ts). Idempotent. Refuses if that email already belongs to a person with a board role:
  * the admin account can never be an officer. To create an officer instead, use scripts/bootstrap-officer.ts.
  *
  * Also (idempotently) seeds the email template catalogue and the permissions matrix cells.

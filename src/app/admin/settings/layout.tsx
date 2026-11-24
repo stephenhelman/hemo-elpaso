@@ -15,6 +15,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
     admin.can("canManageEmailTemplates") && "/admin/settings/email-templates",
     admin.can("canManageEmailRouting") && "/admin/settings/email-routing",
     admin.can("canAssignBoardRoles") && "/admin/settings/board",
+    admin.can("canManageSettings") && "/admin/settings/signin",
   ].filter(Boolean) as string[];
   return <SettingsShell allowed={allowed}>{children}</SettingsShell>;
 }
