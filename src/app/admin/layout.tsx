@@ -34,7 +34,6 @@ export default async function AdminLayout({
             user={session.user}
             locale={locale}
             permissions={Array.from(admin.permissions)}
-            isSuperAdmin={admin.isSuperAdmin}
           />
           {/* Admin chrome only: the sidebar (lg+) or the fixed admin bar (below lg, hence pt-14). Never the public Navbar/Footer. */}
           <main className="flex-1 min-w-0 pt-14 lg:pt-0 lg:ml-64 overflow-x-clip">

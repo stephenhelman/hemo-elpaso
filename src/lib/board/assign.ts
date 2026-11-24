@@ -2,6 +2,13 @@ import { mailbox, siteUrl } from "@/lib/site";
 import { AuditAction, BoardRoleType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email-service";
+import { notifyOfficersOfAdminAction } from "@/lib/admin-notice";
+
+/** The settings-only account: Patient.role "admin", or the organizational admin mailbox (admin@<mail domain>). */
+export function isAdminAccount(p: { role: string; email: string | null } | null): boolean {
+  if (!p) return false;
+  return p.role === "admin" || (p.email ?? "").trim().toLowerCase() === mailbox("admin").toLowerCase();
+}
 
 const ROLE_TITLE: Record<BoardRoleType, { en: string; es: string }> = {
   PRESIDENT:               { en: "President",              es: "Presidente/a" },
@@ -33,6 +40,12 @@ export async function assignBoardRole(params: {
   admin: { id: string; email: string };
 }): Promise<AssignResult> {
   const { patientId, role, fromEmail, admin } = params;
+
+  // The settings-only admin account (and the org admin mailbox) can never hold a board role (separation of duties).
+  const target = await prisma.patient.findUnique({ where: { id: patientId }, select: { role: true, email: true } });
+  if (isAdminAccount(target)) {
+    return { ok: false, status: 409, error: "admin_cannot_hold_board_role" };
+  }
 
   // Check if this patient already has this role (active)
   const existing = await prisma.boardRole.findFirst({
@@ -87,6 +100,12 @@ export async function assignBoardRole(params: {
       resourceId: boardRole.id,
       details: `Role ${role} assigned to patient ${patientId} by ${admin.email}`,
     },
+  });
+
+  void notifyOfficersOfAdminAction({
+    subjectEn: "Board role assigned", subjectEs: "Cargo de la junta asignado",
+    linesEn: [`${admin.email} assigned the role ${role} (record ${boardRole.id}).`],
+    linesEs: [`${admin.email} asignó el cargo ${role} (registro ${boardRole.id}).`],
   });
 
   // Part B — send onboarding email + create BoardOnboarding record

@@ -3,141 +3,43 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 import { BoardRoleType } from "@prisma/client";
 import { linkPendingBoardMember } from "@/lib/board/link-session";
+import { DEFAULT_MATRIX, permissionDef, type Matrix, type Permission } from "@/lib/permission-catalog";
+import { getMatrix } from "@/lib/permission-matrix";
 
 // -------------------------------------------------------
-// Permission types
+// Permission catalog, defaults and locked rules
 // -------------------------------------------------------
-export type Permission =
-  | "canViewAdminDashboard"
-  | "canManageEvents"
-  | "canViewEventStats"
-  | "canSelectForNewsletter"
-  | "canApproveNewsletter"
-  | "canManageMinutes"
-  | "canMarkMinutesPublic"
-  | "canViewPHI"
-  | "canReviewVerification"
-  | "canManageUsers"
-  | "canAssignBoardRoles"
-  | "canViewFinancials"
-  | "canManageFinancials"
-  | "canApproveAssistance"
-  | "canSendBulkEmails"
-  | "canSendIndividualEmails"
-  | "canManageEmailTemplates"
-  | "canViewAuditLogs"
-  | "canManageVolunteers"
-  | "canEditSiteContent"
-  | "canManageEmailRouting";
+// The catalog and the code defaults live in ./permission-catalog (pure). The role x permission grid is stored in
+// role_permissions and read through ./permission-matrix (tag-cached; code defaults are the fallback). The locked
+// rules (./permission-rules) are applied on every read, so a stored row can never breach them.
+export type { Permission } from "@/lib/permission-catalog";
+export { ROLE_PERMISSIONS } from "@/lib/permission-catalog";
 
 // -------------------------------------------------------
-// Role → Permission mapping
+// Aggregate permissions across a set of roles
 // -------------------------------------------------------
-/**
- * canReviewVerification: open and decide diagnosis-verification requests (Phase 4). President and Vice President
- * only, separate from canViewPHI so the two can be changed independently. Nothing uses it before Phase 4.
- *
- * canViewPHI (stated diagnoses) is held by PRESIDENT and VICE_PRESIDENT only (+ admin, who passes every check).
- * This is what the published Privacy Policy says ("Health information is visible only to the President and Vice
- * President"). Keep the two in step: scripts/check-permissions.ts fails if another role gets it.
- */
-export const ROLE_PERMISSIONS: Record<BoardRoleType, Permission[]> = {
-  PRESIDENT: [
-    "canReviewVerification",
-    "canManageEmailRouting",
-    "canEditSiteContent",
-    "canViewAdminDashboard",
-    "canManageEvents",
-    "canViewEventStats",
-    "canSelectForNewsletter",
-    "canApproveNewsletter",
-    "canViewPHI",
-    "canManageUsers",
-    "canAssignBoardRoles",
-    "canViewFinancials",
-    "canApproveAssistance",
-    "canSendBulkEmails",
-    "canSendIndividualEmails",
-    "canManageEmailTemplates",
-    "canViewAuditLogs",
-    "canManageVolunteers",
-  ],
-  VICE_PRESIDENT: [
-    "canReviewVerification",
-    "canManageEmailRouting",
-    "canEditSiteContent",
-    "canViewAdminDashboard",
-    "canManageEvents",
-    "canViewEventStats",
-    "canSelectForNewsletter",
-    "canViewPHI",
-    "canManageUsers",
-    "canAssignBoardRoles",
-    "canViewFinancials",
-    "canApproveAssistance",
-    "canSendBulkEmails",
-    "canSendIndividualEmails",
-    "canManageEmailTemplates",
-    "canViewAuditLogs",
-    "canManageVolunteers",
-  ],
-  SECRETARY: [
-    "canManageEmailRouting",
-    "canEditSiteContent",
-    "canViewAdminDashboard",
-    "canViewEventStats",
-    "canManageMinutes",
-    "canMarkMinutesPublic",
-    "canSendIndividualEmails",
-    "canManageVolunteers",
-  ],
-  TREASURER: [
-    "canManageEmailRouting",
-    "canEditSiteContent",
-    "canViewAdminDashboard",
-    "canViewEventStats",
-    "canViewFinancials",
-    "canManageFinancials",
-    "canApproveAssistance",
-    "canViewAuditLogs",
-  ],
-  // Community at Large — to be populated when roles are staffed
-  EVENTS_COORDINATOR: [
-    "canViewAdminDashboard",
-    "canViewEventStats",
-    "canSelectForNewsletter",
-    "canManageVolunteers",
-  ],
-  SPONSOR_LIAISON: ["canViewAdminDashboard", "canViewEventStats"],
-  COMMUNICATIONS_LEAD: [
-    "canViewAdminDashboard",
-    "canSendBulkEmails",
-    "canSendIndividualEmails",
-  ],
-  YOUTH_COORDINATOR: ["canViewAdminDashboard"],
-  VOLUNTEER_COORDINATOR: ["canViewAdminDashboard", "canManageVolunteers"],
-  FUNDRAISING_COORDINATOR: ["canViewAdminDashboard"],
-  BOARD_MEMBER_AT_LARGE: ["canViewAdminDashboard"],
-};
-
-// -------------------------------------------------------
-// Aggregate permissions across all active roles
-// -------------------------------------------------------
-export function getPermissions(roles: BoardRoleType[]): Set<Permission> {
+export function getPermissions(roles: BoardRoleType[], matrix: Matrix = DEFAULT_MATRIX): Set<Permission> {
   const permissions = new Set<Permission>();
   for (const role of roles) {
-    for (const perm of ROLE_PERMISSIONS[role] ?? []) {
-      permissions.add(perm);
-    }
+    for (const perm of matrix[role] ?? []) permissions.add(perm);
   }
   return permissions;
 }
 
-export function hasPermission(
-  roles: BoardRoleType[],
-  permission: Permission,
-): boolean {
-  return getPermissions(roles).has(permission);
+export function hasPermission(roles: BoardRoleType[], permission: Permission, matrix: Matrix = DEFAULT_MATRIX): boolean {
+  return getPermissions(roles, matrix).has(permission);
+}
+
+/**
+ * Permissions for an account. The settings-only `admin` account resolves from the ADMIN row ONLY (board roles are
+ * ignored, so an admin that somehow also holds an officer role still gets no data access), and data permissions are
+ * stripped again here as a second line of defence.
+ */
+export function resolvePermissions(patientRole: string, activeRoles: BoardRoleType[], matrix: Matrix): Set<Permission> {
+  if (patientRole === "admin") {
+    return new Set(matrix.ADMIN.filter((p) => permissionDef(p).category === "settings"));
+  }
+  return getPermissions(activeRoles, matrix);
 }
 
 // -------------------------------------------------------
@@ -150,8 +52,9 @@ export interface AdminWithPermissions {
   role: string;
   boardRoles: { role: BoardRoleType; active: boolean }[];
   permissions: Set<Permission>;
-  // Convenience — true for role === "admin" (super admin bypasses all checks)
-  isSuperAdmin: boolean;
+  // true for the settings-only organizational account (role "admin"). It is NOT a super admin: it passes no check
+  // it does not hold.
+  isSettingsAdmin: boolean;
   can: (permission: Permission) => boolean;
 }
 
@@ -178,14 +81,9 @@ export async function getAdminWithPermissions(): Promise<AdminWithPermissions | 
 
   if (!patient || !["board", "admin"].includes(patient.role)) return null;
 
-  const isSuperAdmin = patient.role === "admin";
+  const isSettingsAdmin = patient.role === "admin";
   const activeRoles = patient.boardRoles.map((r) => r.role);
-  const permissions = isSuperAdmin
-    ? // Super admin gets every permission
-      new Set<Permission>(
-        Object.values(ROLE_PERMISSIONS).flat() as Permission[],
-      )
-    : getPermissions(activeRoles);
+  const permissions = resolvePermissions(patient.role, activeRoles, await getMatrix());
 
   return {
     id: patient.id,
@@ -193,9 +91,8 @@ export async function getAdminWithPermissions(): Promise<AdminWithPermissions | 
     role: patient.role,
     boardRoles: patient.boardRoles,
     permissions,
-    isSuperAdmin,
-    can: (permission: Permission) =>
-      isSuperAdmin || permissions.has(permission),
+    isSettingsAdmin,
+    can: (permission: Permission) => permissions.has(permission),
   };
 }
 

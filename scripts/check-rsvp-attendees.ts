@@ -30,7 +30,7 @@ async function main() {
   const day = 86400000;
   const patients: string[] = [];
   const events: string[] = [];
-  const admin = (await prisma.patient.findFirst({ where: { role: { in: ["board", "admin"] } } }))!;
+  const admin = (await prisma.patient.findFirst({ where: { role: "board", boardRoles: { some: { active: true, role: { in: ["PRESIDENT", "VICE_PRESIDENT"] } } } } }))!;
   const adminCtx = { id: admin.id, email: admin.email ?? "board@example.org" };
 
   const mkEvent = async (over: object = {}) => {

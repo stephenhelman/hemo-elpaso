@@ -20,21 +20,18 @@ interface Props {
   };
   locale: "en" | "es";
   permissions: Permission[];
-  isSuperAdmin: boolean;
 }
 
 export default function AdminSidebar({
   user,
   locale,
   permissions,
-  isSuperAdmin,
 }: Props) {
   const pathname = usePathname();
   const t = adminSidebarTranslation[locale];
 
   const permSet = new Set(permissions);
-  const can = (permission: Permission) =>
-    isSuperAdmin || permSet.has(permission);
+  const can = (permission: Permission) => permSet.has(permission);
 
   const visibleItems = visibleAdminNavItems((p) => can(p as Permission));
 

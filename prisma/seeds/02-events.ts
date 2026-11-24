@@ -19,7 +19,7 @@ export async function seedEvents() {
 
   // Get admin user for createdBy
   const admin = await prisma.patient.findFirst({
-    where: { role: "admin" },
+    where: { role: "board", boardRoles: { some: { active: true, role: { in: ["PRESIDENT", "VICE_PRESIDENT"] } } } },
   });
 
   if (!admin) {
