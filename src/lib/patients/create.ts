@@ -26,6 +26,8 @@ export interface PatientInput {
   members?: unknown; // household members (everyone except the primary)
   consentDataAndContact: unknown;
   consentMedia: unknown;
+  consentSms?: unknown; // optional; needs a phone number
+  consentNewsletter?: unknown; // optional; needs an email
   attestation?: unknown; // "I am 18+ and guardian of any minors listed"
 }
 
@@ -41,6 +43,8 @@ export type ValidatedPatient = {
   members: ValidatedMember[];
   consentDataAndContact: boolean;
   consentMedia: boolean;
+  consentSms: boolean;
+  consentNewsletter: boolean;
   attestation: boolean;
 };
 
@@ -87,6 +91,11 @@ export function validatePatientInput(
   const consentDataAndContact = i.consentDataAndContact === true;
   if (opts.requireConsent && !consentDataAndContact)
     return { ok: false, field: "consentDataAndContact" };
+  // Optional contact consents are only meaningful with something to contact.
+  const consentSms = i.consentSms === true;
+  if (consentSms && !phone) return { ok: false, field: "consentSms" };
+  const consentNewsletter = i.consentNewsletter === true;
+  if (consentNewsletter && !email) return { ok: false, field: "consentNewsletter" };
   const attestation = i.attestation === true;
   if (opts.requireConsent && withHousehold && !attestation) return { ok: false, field: "attestation" };
 
@@ -104,6 +113,8 @@ export function validatePatientInput(
       members,
       consentDataAndContact,
       consentMedia: i.consentMedia === true,
+      consentSms,
+      consentNewsletter,
       attestation,
     },
   };
@@ -156,6 +167,8 @@ export async function createPatient(
   const consents: { type: ConsentType; granted: boolean }[] = [
     { type: "data_and_contact", granted: v.consentDataAndContact },
     { type: "media", granted: v.consentMedia },
+    { type: "sms", granted: v.consentSms },
+    { type: "newsletter", granted: v.consentNewsletter },
     ...(v.attestation ? [{ type: "age_guardian_attestation" as const, granted: true }] : []),
   ];
 

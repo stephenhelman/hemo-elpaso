@@ -30,6 +30,7 @@ interface Props {
   registration: "open" | "full" | "closed" | "disabled" | "paused";
   eventId: string;
   turnstileSiteKey: string | null;
+  notices: { recorded: boolean; captions: boolean };
 }
 
 export function EventPageContent({
@@ -39,6 +40,7 @@ export function EventPageContent({
   registration,
   eventId,
   turnstileSiteKey,
+  notices,
 }: Props) {
   const t = eventSlugPageTranslation[locale];
   const isUpcoming = event.status === "published";
@@ -72,7 +74,7 @@ export function EventPageContent({
               <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
                 {locale === "es" ? "Confirma tu asistencia" : "RSVP for this event"}
               </h2>
-              <RegisterInfoForm turnstileSiteKey={turnstileSiteKey} eventId={eventId} />
+              <RegisterInfoForm turnstileSiteKey={turnstileSiteKey} eventId={eventId} notices={notices} />
             </div>
           )}
 

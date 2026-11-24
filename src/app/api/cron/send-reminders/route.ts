@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db";
 import { tomorrowRangeUtc } from "@/lib/datetime";
 import { reissueCheckInToken } from "@/lib/rsvp";
 
+// Reads request headers and the database: never prerender at build time.
+export const dynamic = "force-dynamic";
+
 /**
  * Day-before reminders for ACTIVE yes-RSVPs that have an email.
  * Transactional: sent even to people who opted out of invitations.

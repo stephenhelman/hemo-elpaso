@@ -17,12 +17,17 @@
  *   the Privacy Policy (link), and says consent can be withdrawn at any time; the 18+ attestation links the Children
  *   and Age Policy. media and the 18+ wording are unchanged in meaning. DRAFT pending Stephen's/the board's approval.
  *   Only a test household exists under v1, so there is no re-confirmation flow.
- * Display order on every form: 1) 18+ attestation, 2) data_and_contact, 3) media.
+ * v3: (docs/legal/POLICY_V2_DRAFT.md, "Consent v3 text"). media is REPLACED by the photos, video and recordings text
+ *   (member_media gets the matching adult wording); new optional sms and newsletter consents (collected at
+ *   registration now, only USED while their feature toggles are on); the verification consent text is added for later
+ *   (shown at upload; nothing uses it before the verification feature). data_and_contact and the 18+ attestation carry
+ *   over from v2 unchanged. v1 and v2 stay in this file, unchanged, for older records.
+ * Display order on every form: 1) 18+ attestation, 2) data_and_contact, 3) media, 4) sms, 5) newsletter.
  *
  * Strings may carry the inline markup of components/legal/RichText.tsx ([label](/path)); only the VERSION is stored
  * in ConsentRecord, never the markup.
  */
-export const CONSENT_TEXT_VERSION = "v2";
+export const CONSENT_TEXT_VERSION = "v3";
 
 const draft1 = {
   data_and_contact: {
@@ -110,13 +115,61 @@ const v2 = {
   member_adult_attestation: v1.member_adult_attestation,
 } as const;
 
+const v3 = {
+  ...v2,
+  // Replaces the media consent (optional, at registration).
+  media: {
+    en: "I agree that HOEP may take and publish photos and video of me and the minors in my household at HOEP events, including event recordings and live streams. HOEP will not name us without asking. I can withdraw this at any time and ask HOEP to remove a photo or recording.",
+    es: "Acepto que HOEP pueda tomar y publicar fotos y videos de mí y de los menores de mi hogar en los eventos de HOEP, incluidas las grabaciones y transmisiones en vivo de los eventos. HOEP no nos identificará por nombre sin preguntarnos antes. Puedo retirar este consentimiento en cualquier momento y pedir a HOEP que retire una foto o una grabación.",
+  },
+  // Adults confirming for themselves (/confirm/[token]): the same wording, for themselves only.
+  member_media: {
+    en: "I agree that HOEP may take and publish photos and video of me at HOEP events, including event recordings and live streams. HOEP will not name me without asking. I can withdraw this at any time and ask HOEP to remove a photo or recording.",
+    es: "Acepto que HOEP pueda tomar y publicar fotos y videos de mí en los eventos de HOEP, incluidas las grabaciones y transmisiones en vivo de los eventos. HOEP no me identificará por nombre sin preguntarme antes. Puedo retirar este consentimiento en cualquier momento y pedir a HOEP que retire una foto o una grabación.",
+  },
+  // New, optional: at registration (and on the family page once it exists). Used only while the "sms" toggle is on.
+  sms: {
+    en: "I agree that HOEP may text me at this number about events, reminders, announcements and sign-in codes, once HOEP starts sending texts. Message and data rates may apply. Message frequency varies. Reply STOP to stop, HELP for help. Consent is not required to take part in HOEP.",
+    es: "Acepto que HOEP me envíe mensajes de texto a este número sobre eventos, recordatorios, avisos y códigos para iniciar sesión, cuando HOEP empiece a enviar mensajes de texto. Pueden aplicar tarifas de mensajes y datos. La frecuencia de los mensajes varía. Responda STOP para dejar de recibirlos y HELP para obtener ayuda. No es obligatorio dar este consentimiento para participar en HOEP.",
+  },
+  // New, optional. Used only while the "newsletter" toggle is on.
+  newsletter: {
+    en: "Send me HOEP's newsletter by email. I can unsubscribe in any newsletter.",
+    es: "Quiero recibir el boletín de HOEP por correo electrónico. Puedo cancelar la suscripción en cualquier boletín.",
+  },
+  // New: shown at upload, required before the upload button works. Nothing uses it until the verification feature.
+  verification: {
+    en: "I agree that HOEP's President or Vice President may read the letter I am uploading, only to confirm the diagnosis it names. HOEP will delete the letter when they decide and keep only the result (which diagnosis, the date, and who reviewed it). If the letter is about a child in my household, I am that child's parent or legal guardian.",
+    es: "Acepto que la presidencia o la vicepresidencia de HOEP pueda leer la carta que estoy subiendo, solo para confirmar el diagnóstico que menciona. HOEP borrará la carta cuando decidan y conservará únicamente el resultado (qué diagnóstico, la fecha y quién lo revisó). Si la carta es sobre un menor de mi hogar, soy el padre, la madre o el tutor legal de ese menor.",
+  },
+} as const;
+
+/** Event notices (not checkboxes). Shown on the RSVP page. */
+export const eventNotices = {
+  // Quotes: always shown on the RSVP page.
+  quotes: {
+    en: "HOEP may quote things said at this event in its newsletter or website without names. We will ask first before using anyone's name.",
+    es: "HOEP puede citar, sin nombres, lo que se diga en este evento en su boletín o en su sitio web. Le preguntaremos antes de usar el nombre de cualquier persona.",
+  },
+  // Recording: only on events marked recorded, and only while the "recordings" toggle is on.
+  recorded: {
+    en: "This event will be recorded and streamed. Cameras face the presenters, not the audience. Tell us at check-in if you'd like to stay off camera.",
+    es: "Este evento se grabará y se transmitirá en vivo. Las cámaras apuntan a quienes presentan, no al público. Avísenos al registrarse si prefiere quedar fuera de cámara.",
+  },
+  // Same line when live captions are also on (the draft's full wording).
+  recordedWithCaptions: {
+    en: "This event will be recorded, streamed and shown with live English and Spanish captions. Cameras face the presenters, not the audience. Tell us at check-in if you'd like to stay off camera.",
+    es: "Este evento se grabará, se transmitirá en vivo y se mostrará con subtítulos en vivo en inglés y español. Las cámaras apuntan a quienes presentan, no al público. Avísenos al registrarse si prefiere quedar fuera de cámara.",
+  },
+} as const;
+
 /** Every published version, for traceability. */
-export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1, v2 } as const;
+export const consentTextVersions = { "draft-1": draft1, "draft-2": draft2, v1, v2, v3 } as const;
 
 /** The wording currently shown (CONSENT_TEXT_VERSION). */
-export const consentText = v2;
+export const consentText = v3;
 
 /** Primary person's consent types (ConsentRecord.type). */
-export type ConsentType = "data_and_contact" | "media" | "age_guardian_attestation";
+export type ConsentType = "data_and_contact" | "media" | "age_guardian_attestation" | "sms" | "newsletter" | "verification";
 /** Adult member's consent types. "adult_attestation" = the member's own "I am 18 or older". */
 export type MemberConsentType = "data_and_contact" | "media" | "adult_attestation";

@@ -6,6 +6,8 @@ export interface ToggleRecord { key: FeatureKey; enabled: boolean; actor: Actor;
 
 export interface ToggleDeps {
   liveVersion: number;
+  /** Required legal placeholders (src/content/legal/meta.ts) still unresolved for this feature; enabling is refused while any remain. */
+  unresolvedPlaceholders?: (key: FeatureKey) => string[];
   readEnabled: (key: FeatureKey) => Promise<boolean>;
   persist: (rec: ToggleRecord) => Promise<void>; // row + audit entry in one transaction
   invalidate: () => void;
@@ -15,12 +17,15 @@ export interface ToggleDeps {
 export type ToggleResult =
   | { ok: true; changed: false }
   | { ok: true; changed: true; noticeSent: boolean }
-  | { ok: false; error: "locked"; check: Exclude<EnableCheck, { ok: true }> };
+  | { ok: false; error: "locked"; check: Exclude<EnableCheck, { ok: true }> }
+  | { ok: false; error: "placeholders"; placeholders: string[] };
 
 export async function toggleFeature(deps: ToggleDeps, key: FeatureKey, enabled: boolean, actor: Actor): Promise<ToggleResult> {
   if (enabled) {
     const check = canEnable(key, deps.liveVersion);
     if (!check.ok) return { ok: false, error: "locked", check };
+    const open = deps.unresolvedPlaceholders?.(key) ?? [];
+    if (open.length) return { ok: false, error: "placeholders", placeholders: open };
   }
   if ((await deps.readEnabled(key)) === enabled) return { ok: true, changed: false };
 

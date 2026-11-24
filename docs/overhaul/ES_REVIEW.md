@@ -540,3 +540,237 @@ Placeholders: `{EMAIL}` = privacy inbox, `{PHONE}` = (915) 539-7353, `{HOST}` = 
 | EN | ES |
 | --- | --- |
 | This invitation only goes to families with a specific condition. Its title or description names a condition, which could reveal a family's diagnosis to anyone who sees the email. | Esta invitación solo se envía a familias con una condición específica. Su título o descripción nombra una condición, lo que podría revelar el diagnóstico de una familia a cualquiera que vea el correo. |
+
+## Legal v2 (new, 2026-11-24)
+
+Privacy Policy v2, the Terms and Children's additions, consent v3 and the event notices. English is the board-approved text (docs/legal/POLICY_V2_DRAFT.md) and controls. Spanish is neutral Latin American, plain and warm, written with “usted”. Review the Spanish for tone and accuracy; nothing here has been checked by a native speaker yet.
+
+Markup: `{STATUS:key}` renders the live label “Aún no disponible” (toggle off) or “Disponible desde <fecha>” (toggle on). `{PROCESSOR}`, `{TRANSCRIPT}`, `{BACKUP}`, `{ASSISTANCE_RETENTION}` and `{ADDRESS}` are filled from src/content/legal/meta.ts. Keep every token exactly as written.
+
+### Consent v3 (src/content/consent.ts)
+
+**media**
+- EN: I agree that HOEP may take and publish photos and video of me and the minors in my household at HOEP events, including event recordings and live streams. HOEP will not name us without asking. I can withdraw this at any time and ask HOEP to remove a photo or recording.
+- ES: Acepto que HOEP pueda tomar y publicar fotos y videos de mí y de los menores de mi hogar en los eventos de HOEP, incluidas las grabaciones y transmisiones en vivo de los eventos. HOEP no nos identificará por nombre sin preguntarnos antes. Puedo retirar este consentimiento en cualquier momento y pedir a HOEP que retire una foto o una grabación.
+
+**member_media**
+- EN: I agree that HOEP may take and publish photos and video of me at HOEP events, including event recordings and live streams. HOEP will not name me without asking. I can withdraw this at any time and ask HOEP to remove a photo or recording.
+- ES: Acepto que HOEP pueda tomar y publicar fotos y videos de mí en los eventos de HOEP, incluidas las grabaciones y transmisiones en vivo de los eventos. HOEP no me identificará por nombre sin preguntarme antes. Puedo retirar este consentimiento en cualquier momento y pedir a HOEP que retire una foto o una grabación.
+
+**sms**
+- EN: I agree that HOEP may text me at this number about events, reminders, announcements and sign-in codes, once HOEP starts sending texts. Message and data rates may apply. Message frequency varies. Reply STOP to stop, HELP for help. Consent is not required to take part in HOEP.
+- ES: Acepto que HOEP me envíe mensajes de texto a este número sobre eventos, recordatorios, avisos y códigos para iniciar sesión, cuando HOEP empiece a enviar mensajes de texto. Pueden aplicar tarifas de mensajes y datos. La frecuencia de los mensajes varía. Responda STOP para dejar de recibirlos y HELP para obtener ayuda. No es obligatorio dar este consentimiento para participar en HOEP.
+
+**newsletter**
+- EN: Send me HOEP's newsletter by email. I can unsubscribe in any newsletter.
+- ES: Quiero recibir el boletín de HOEP por correo electrónico. Puedo cancelar la suscripción en cualquier boletín.
+
+**verification**
+- EN: I agree that HOEP's President or Vice President may read the letter I am uploading, only to confirm the diagnosis it names. HOEP will delete the letter when they decide and keep only the result (which diagnosis, the date, and who reviewed it). If the letter is about a child in my household, I am that child's parent or legal guardian.
+- ES: Acepto que la presidencia o la vicepresidencia de HOEP pueda leer la carta que estoy subiendo, solo para confirmar el diagnóstico que menciona. HOEP borrará la carta cuando decidan y conservará únicamente el resultado (qué diagnóstico, la fecha y quién lo revisó). Si la carta es sobre un menor de mi hogar, soy el padre, la madre o el tutor legal de ese menor.
+
+### Event notices (RSVP page)
+
+**quotes**
+- EN: HOEP may quote things said at this event in its newsletter or website without names. We will ask first before using anyone's name.
+- ES: HOEP puede citar, sin nombres, lo que se diga en este evento en su boletín o en su sitio web. Le preguntaremos antes de usar el nombre de cualquier persona.
+
+**recorded**
+- EN: This event will be recorded and streamed. Cameras face the presenters, not the audience. Tell us at check-in if you'd like to stay off camera.
+- ES: Este evento se grabará y se transmitirá en vivo. Las cámaras apuntan a quienes presentan, no al público. Avísenos al registrarse si prefiere quedar fuera de cámara.
+
+**recordedWithCaptions**
+- EN: This event will be recorded, streamed and shown with live English and Spanish captions. Cameras face the presenters, not the audience. Tell us at check-in if you'd like to stay off camera.
+- ES: Este evento se grabará, se transmitirá en vivo y se mostrará con subtítulos en vivo en inglés y español. Las cámaras apuntan a quienes presentan, no al público. Avísenos al registrarse si prefiere quedar fuera de cámara.
+
+Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/translation/registerInfoPage.ts), in the same informal “tú” as the rest of that form.
+
+### Privacy Policy v2 (src/content/legal/privacy.ts)
+
+- EN: Hemophilia Outreach of El Paso (HOEP) is a nonprofit that supports families affected by bleeding disorders in the El Paso area. This policy explains what information we collect, why, who can see it, how long we keep it, and your choices. Some features below are marked “Not yet available”: we describe them now so you know exactly how they will work before they start. We never sell your information.
+  ES: Hemophilia Outreach of El Paso (HOEP) es una organización sin fines de lucro que apoya a las familias afectadas por trastornos hemorrágicos en el área de El Paso. Esta política explica qué información recopilamos, para qué, quién puede verla, cuánto tiempo la conservamos y qué opciones tiene usted. Algunas funciones de abajo están marcadas como “Aún no disponible”: las describimos desde ahora para que sepa exactamente cómo funcionarán antes de que empiecen. Nunca vendemos su información.
+- EN: Information we collect
+  ES: Información que recopilamos
+- EN: **When you register your household:** your name, email and/or phone number, preferred language, and mailing address if you give it. The people in your household: first name (last name optional), relationship to you, and age group, never a date of birth. If you choose to tell us, whether you or a child in your household has a bleeding disorder, and which one. This is health information, and we treat it with extra care. We also record your consents and when you gave them.
+  ES: **Cuando registra a su hogar:** su nombre, su correo electrónico y/o su número de teléfono, su idioma preferido y su dirección postal, si decide darla. Las personas de su hogar: nombre (el apellido es opcional), parentesco con usted y grupo de edad, nunca la fecha de nacimiento. Si usted decide decírnoslo, si usted o un menor de su hogar tiene un trastorno hemorrágico y cuál. Esta es información de salud y la tratamos con especial cuidado. También anotamos sus consentimientos y la fecha en que los dio.
+- EN: **Adults in your household** confirm their own information. If you list someone 18 or older, we email or call them once. They decide for themselves whether to share health information and whether to consent. If they don’t confirm within 30 days, we delete what you entered about them.
+  ES: **Los adultos de su hogar** confirman su propia información. Si usted incluye a alguien de 18 años o más, le enviamos un correo o lo llamamos una sola vez. Cada persona decide por sí misma si comparte información de salud y si da su consentimiento. Si no confirma en 30 días, borramos lo que usted escribió sobre esa persona.
+- EN: **When you RSVP or attend an event:** who in your household is coming, the number of guests, and who checked in.
+  ES: **Cuando confirma su asistencia o asiste a un evento:** quién de su hogar va a asistir, el número de invitados y quién se registró a la entrada.
+- EN: **When you contact us:** your name, email, phone (optional) and message. Messages go to HOEP’s email and are not stored in our database. Please don’t include medical details; we will follow up privately.
+  ES: **Cuando se comunica con nosotros:** su nombre, correo electrónico, teléfono (opcional) y su mensaje. Los mensajes llegan al correo de HOEP y no se guardan en nuestra base de datos. Por favor, no incluya detalles médicos; le responderemos de forma privada.
+- EN: **When you visit the website:** privacy-friendly page-view statistics that use no cookies and don’t identify you, and one cookie that remembers your language. Our hosting provider sees standard technical information, such as your IP address, to deliver the site.
+  ES: **Cuando visita el sitio web:** estadísticas de visitas que respetan la privacidad, no usan cookies y no lo identifican, y una sola cookie que recuerda su idioma. Nuestro proveedor de alojamiento web ve información técnica estándar, como su dirección IP, para poder mostrarle el sitio.
+- EN: **Photos at events:** we publish photos only of people who consented to photo use.
+  ES: **Fotos en los eventos:** solo publicamos fotos de las personas que dieron su consentimiento para el uso de fotos.
+- EN: **Event recordings and live streams.** {STATUS:recordings} Some events may be streamed live and recorded so families who can’t attend can watch. We announce this on the invitation, at the door and at the start. We point cameras at presenters, not the audience. When someone asks a question, the presenter repeats it rather than showing the person. Families who declined photo use are kept off camera. Recordings are posted as unlisted videos or on the family page, not publicly searchable.
+  ES: **Grabaciones y transmisiones en vivo de eventos.** {STATUS:recordings} Algunos eventos podrían transmitirse en vivo y grabarse para que las familias que no pueden asistir los vean. Lo anunciaremos en la invitación, en la puerta y al comenzar. Las cámaras apuntan a quienes presentan, no al público. Cuando alguien hace una pregunta, quien presenta la repite en lugar de mostrar a la persona. Las familias que no aceptaron el uso de fotos quedan fuera de cámara. Las grabaciones se publican como videos no listados o en la página familiar, y no aparecen en las búsquedas públicas.
+- EN: **Live captions and translation (Puente Live).** {STATUS:live_captions} At some events and meetings, HOEP’s own app, Puente Live, shows live English and Spanish captions of what is said. Speech is sent to a speech-to-text service and the text to a translation service; neither keeps it beyond processing, except as described under “How long we keep it”. HOEP doesn’t save the audio. Captions are machine-made and can be wrong; they are not a replacement for a qualified interpreter. A board member can pause captions at any time, for example when someone shares something personal. Board members may download a transcript after an event to help write newsletters or blog posts. We never publish a whole transcript.
+  ES: **Subtítulos y traducción en vivo (Puente Live).** {STATUS:live_captions} En algunos eventos y reuniones, la aplicación propia de HOEP, Puente Live, muestra subtítulos en vivo en inglés y español de lo que se dice. La voz se envía a un servicio que la convierte en texto, y el texto a un servicio de traducción; ninguno la conserva más allá del procesamiento, salvo lo que se indica en “Cuánto tiempo la conservamos”. HOEP no guarda el audio. Los subtítulos los genera una máquina y pueden tener errores; no sustituyen a un intérprete calificado. Un miembro de la junta puede pausar los subtítulos en cualquier momento, por ejemplo cuando alguien comparte algo personal. Los miembros de la junta pueden descargar una transcripción después del evento para ayudar a escribir boletines o artículos del blog. Nunca publicamos una transcripción completa.
+- EN: **When you sign in to your family page.** {STATUS:family_portal} Your email address (we send a one-time sign-in link). A cookie keeps you signed in.
+  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Su correo electrónico (le enviamos un enlace de un solo uso para iniciar sesión). Una cookie mantiene su sesión abierta.
+- EN: **Signing in with Google, Apple or Facebook.** {STATUS:family_social_signin} If you choose this, the name and email that the service shares with us. We never receive your password for those services.
+  ES: **Inicio de sesión con Google, Apple o Facebook.** {STATUS:family_social_signin} Si usted lo elige, el nombre y el correo que ese servicio comparte con nosotros. Nunca recibimos su contraseña de esos servicios.
+- EN: **When you verify a diagnosis (optional).** {STATUS:verification} You can upload a letter from a health care provider confirming a bleeding disorder for you or a child in your household. Only the President and Vice President can open it. We delete the file as soon as it’s reviewed and keep only the result: which diagnosis was confirmed, the date, and who reviewed it.
+  ES: **Cuando verifica un diagnóstico (opcional).** {STATUS:verification} Puede subir una carta de un profesional de la salud que confirme un trastorno hemorrágico suyo o de un menor de su hogar. Solo la presidencia y la vicepresidencia pueden abrirla. Borramos el archivo en cuanto se revisa y conservamos solo el resultado: qué diagnóstico se confirmó, la fecha y quién lo revisó.
+- EN: **Text messages.** {STATUS:sms} If you opt in, your mobile number and whether you agreed to texts. Texts include event reminders, announcements and sign-in codes. Reply STOP at any time.
+  ES: **Mensajes de texto.** {STATUS:sms} Si usted acepta, su número de celular y si aceptó recibir mensajes. Los mensajes incluyen recordatorios de eventos, avisos y códigos para iniciar sesión. Responda STOP en cualquier momento para dejar de recibirlos.
+- EN: **Newsletter.** {STATUS:newsletter} If you subscribe, your email and language. You can unsubscribe in any newsletter.
+  ES: **Boletín.** {STATUS:newsletter} Si se suscribe, su correo electrónico y su idioma. Puede cancelar la suscripción en cualquier boletín.
+- EN: **Patient stories and blog.** {STATUS:stories} If you share your story, what you choose to tell us and any photos you provide, only with your signed permission (a parent or guardian signs for a child). Quotes from events are used without names unless the person gives permission.
+  ES: **Historias de pacientes y blog.** {STATUS:stories} Si comparte su historia, lo que usted decida contarnos y las fotos que nos dé, solo con su permiso firmado (un padre, madre o tutor firma por un menor). Las frases dichas en los eventos se usan sin nombre, salvo que la persona dé su permiso.
+- EN: **Financial assistance and scholarships.** {STATUS:assistance} If you apply, what the application asks for, such as the reason, the amount and supporting documents, plus a record of any payment. These programs require a verified diagnosis.
+  ES: **Ayuda financiera y becas.** {STATUS:assistance} Si presenta una solicitud, lo que ella pide, como el motivo, el monto y los documentos de apoyo, y un registro de cualquier pago. Estos programas requieren un diagnóstico verificado.
+- EN: **Polls and questions at events.** {STATUS:live_interaction} Your answers to live polls are anonymous. Questions you submit may be shown on screen without your name.
+  ES: **Encuestas y preguntas en eventos.** {STATUS:live_interaction} Sus respuestas a las encuestas en vivo son anónimas. Las preguntas que envíe pueden mostrarse en pantalla sin su nombre.
+- EN: **Community Q&A.** {STATUS:community} Questions and answers you post, which a board member reviews before they appear. Please don’t post health details you wouldn’t want others to see.
+  ES: **Preguntas y respuestas de la comunidad.** {STATUS:community} Las preguntas y respuestas que publique, que un miembro de la junta revisa antes de que aparezcan. Por favor, no publique datos de salud que no quisiera que otras personas vean.
+- EN: **Online donations.** {STATUS:donations} A payment company processes donations. HOEP receives your name, email, the amount and the date for receipts. We never see or store your full card number.
+  ES: **Donaciones en línea.** {STATUS:donations} Una empresa de pagos procesa las donaciones. HOEP recibe su nombre, su correo, el monto y la fecha para los recibos. Nunca vemos ni guardamos el número completo de su tarjeta.
+- EN: **Volunteer sign-up.** {STATUS:volunteers} Your name, contact information, availability and the events you volunteer for.
+  ES: **Registro de voluntarios.** {STATUS:volunteers} Su nombre, datos de contacto, disponibilidad y los eventos en los que se ofrece como voluntario.
+- EN: How we use it
+  ES: Cómo la usamos
+- EN: To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.
+  ES: Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.
+- EN: To manage RSVPs, send confirmations and reminders, and check people in.
+  ES: Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.
+- EN: To answer your messages.
+  ES: Para responder a sus mensajes.
+- EN: To let you view and update your household’s information on your family page. {STATUS:family_portal}
+  ES: Para que pueda ver y actualizar la información de su hogar en su página familiar. {STATUS:family_portal}
+- EN: To confirm a diagnosis, if you choose to verify it. {STATUS:verification}
+  ES: Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}
+- EN: To send the texts you opted into. {STATUS:sms}
+  ES: Para enviarle los mensajes de texto que aceptó recibir. {STATUS:sms}
+- EN: To send the newsletter you opted into. {STATUS:newsletter}
+  ES: Para enviarle el boletín que aceptó recibir. {STATUS:newsletter}
+- EN: To review assistance applications. {STATUS:assistance}
+  ES: Para revisar las solicitudes de ayuda. {STATUS:assistance}
+- EN: To improve our programs using overall counts, never individual records.
+  ES: Para mejorar nuestros programas usando cifras generales, nunca registros individuales.
+- EN: We do not use your information for advertising. We do not sell, rent or trade it. **Sponsors never receive names or contact details.** They see totals only, such as how many families attended.
+  ES: No usamos su información para publicidad. No la vendemos, alquilamos ni intercambiamos. **Los patrocinadores nunca reciben nombres ni datos de contacto.** Solo ven totales, como cuántas familias asistieron.
+- EN: Verifying a diagnosis
+  ES: Verificación de un diagnóstico
+- EN: {STATUS:verification} Verification is optional. You can register, RSVP and use your family page without it.
+  ES: {STATUS:verification} La verificación es opcional. Puede registrarse, confirmar su asistencia y usar su página familiar sin verificar.
+- EN: If you don’t verify: 60 days after your household is asked to, we stop including you in invitations to events meant for a specific diagnosis. You still get general invitations, and you can still RSVP to any event you have a link for. You can verify any time and be included again. Financial assistance and scholarships require verification.
+  ES: Si no verifica: 60 días después de que se le pida a su hogar que lo haga, dejamos de incluirle en las invitaciones a eventos para un diagnóstico específico. Seguirá recibiendo las invitaciones generales y podrá confirmar su asistencia a cualquier evento del que tenga un enlace. Puede verificar en cualquier momento y volver a ser incluido. La ayuda financiera y las becas requieren verificación.
+- EN: How it works: you upload a letter, the President or Vice President reviews it, and we delete the file once they decide, whether or not they approve it. If they can’t approve it, we tell you a general reason and you can try again. We never ask for medical records beyond the letter, and we never share the letter or the result with other organizations.
+  ES: Cómo funciona: usted sube una carta, la presidencia o la vicepresidencia la revisa y borramos el archivo en cuanto decide, la apruebe o no. Si no se puede aprobar, le explicamos el motivo en términos generales y puede intentarlo de nuevo. Nunca pedimos expedientes médicos aparte de la carta, y nunca compartimos la carta ni el resultado con otras organizaciones.
+- EN: Who can see it
+  ES: Quién puede verla
+- EN: Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.
+  ES: Solo los miembros de la junta de HOEP que la necesitan para su cargo, con acceso limitado según el cargo. La información de salud, incluidas las cartas de diagnóstico, solo la ven la presidencia y la vicepresidencia. Los miembros de la junta inician sesión con cuentas seguras, y cada acceso a los registros de las familias queda anotado. La cuenta que administra la configuración del sitio no puede ver información de las familias.
+- EN: We use these service providers. They process information only to provide their service to HOEP:
+  ES: Usamos estos proveedores de servicios. Ellos procesan la información únicamente para prestar su servicio a HOEP:
+- EN: Vercel | Hosts the website; privacy-friendly page statistics
+  ES: Vercel | Aloja el sitio web; estadísticas de visitas que respetan la privacidad
+- EN: Neon | Stores our database
+  ES: Neon | Guarda nuestra base de datos
+- EN: Resend | Sends our emails
+  ES: Resend | Envía nuestros correos electrónicos
+- EN: Cloudflare | Stores event photos; protects our forms from spam
+  ES: Cloudflare | Guarda las fotos de los eventos; protege nuestros formularios contra el spam
+- EN: Auth0 | Board sign-in. Family sign-in with Google, Apple or Facebook. {STATUS:family_social_signin}
+  ES: Auth0 | Inicio de sesión de la junta. Inicio de sesión familiar con Google, Apple o Facebook. {STATUS:family_social_signin}
+- EN: Sanity | Manages public website content (no family information)
+  ES: Sanity | Administra el contenido público del sitio web (sin información de las familias)
+- EN: Google | HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings}
+  ES: Google | Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings}
+- EN: Railway | Hosts Puente Live. {STATUS:live_captions}
+  ES: Railway | Aloja Puente Live. {STATUS:live_captions}
+- EN: Deepgram | Turns speech into text for live captions; audio is kept only while it’s processed. {STATUS:live_captions}
+  ES: Deepgram | Convierte la voz en texto para los subtítulos en vivo; el audio se conserva solo mientras se procesa. {STATUS:live_captions}
+- EN: Anthropic | Translates caption text; deleted within 30 days and never used to train models. {STATUS:live_captions}
+  ES: Anthropic | Traduce el texto de los subtítulos; se borra en un plazo de 30 días y nunca se usa para entrenar modelos. {STATUS:live_captions}
+- EN: Twilio | Sends text messages. {STATUS:sms}
+  ES: Twilio | Envía los mensajes de texto. {STATUS:sms}
+- EN: Payment processor: {PROCESSOR} | Processes donations. {STATUS:donations}
+  ES: Procesador de pagos: {PROCESSOR} | Procesa las donaciones. {STATUS:donations}
+- EN: We may share information if the law requires it, or to protect someone’s safety.
+  ES: Podemos compartir información si la ley lo exige o para proteger la seguridad de alguien.
+- EN: Your consents
+  ES: Sus consentimientos
+- EN: When you register, you agree that HOEP may keep your information and contact you about events and services. Photo and video use is separate and optional, and so are texts and the newsletter. Some actions, like uploading a letter or applying for assistance, ask for a short consent at that moment. You can change any consent by contacting us. Withdrawing consent stops invitations and other non-essential messages; we still send confirmations and reminders for an RSVP you keep.
+  ES: Al registrarse, usted acepta que HOEP guarde su información y se comunique con usted sobre eventos y servicios. El uso de fotos y videos es aparte y opcional, igual que los mensajes de texto y el boletín. Algunas acciones, como subir una carta o solicitar ayuda, piden un consentimiento breve en ese momento. Puede cambiar cualquier consentimiento comunicándose con nosotros. Al retirar su consentimiento dejamos de enviarle invitaciones y otros mensajes que no sean esenciales; seguimos enviando las confirmaciones y los recordatorios de una asistencia que usted mantenga.
+- EN: Children
+  ES: Menores de edad
+- EN: Only adults (18 or older) can register or sign in. A parent or legal guardian may include their children. See our [Children and Age Policy](/children).
+  ES: Solo los adultos (de 18 años o más) pueden registrarse o iniciar sesión. Un padre, madre o tutor legal puede incluir a sus hijos. Lea nuestra [Política para Menores y Edad](/children).
+- EN: How long we keep it
+  ES: Cuánto tiempo la conservamos
+- EN: Your household record | While you’re involved with HOEP. After 3 years with no RSVP or contact, we reach out, then delete it if we don’t hear back
+  ES: El registro de su hogar | Mientras usted participe con HOEP. Después de 3 años sin confirmación de asistencia ni contacto, nos comunicamos con usted y lo borramos si no recibimos respuesta
+- EN: An unconfirmed adult’s details | 30 days, then deleted
+  ES: Datos de un adulto sin confirmar | 30 días; después se borran
+- EN: Event links and QR codes | Until 30 days after the event
+  ES: Enlaces y códigos QR de eventos | Hasta 30 días después del evento
+- EN: Email delivery records | 1 year
+  ES: Registros de entrega de correos | 1 año
+- EN: Access logs | 3 years
+  ES: Registros de acceso | 3 años
+- EN: Contact-form messages | In HOEP’s inbox until the matter is resolved
+  ES: Mensajes del formulario de contacto | En el correo de HOEP hasta que el asunto se resuelva
+- EN: Published photos | Until we remove them, including on request
+  ES: Fotos publicadas | Hasta que las retiremos, incluso si usted lo solicita
+- EN: Event recordings {STATUS:recordings} | Until removed, including on request
+  ES: Grabaciones de eventos {STATUS:recordings} | Hasta que se retiren, incluso si usted lo solicita
+- EN: Live caption audio {STATUS:live_captions} | Not saved by HOEP; held by the speech service only while processing
+  ES: Audio de los subtítulos en vivo {STATUS:live_captions} | HOEP no lo guarda; el servicio de voz lo conserva solo mientras lo procesa
+- EN: Caption text sent for translation {STATUS:live_captions} | Deleted by the translation service within 30 days
+  ES: Texto de subtítulos enviado a traducción {STATUS:live_captions} | El servicio de traducción lo borra en un plazo de 30 días
+- EN: Downloaded event transcripts {STATUS:live_captions} | {TRANSCRIPT}, then deleted
+  ES: Transcripciones de eventos descargadas {STATUS:live_captions} | {TRANSCRIPT}; después se borran
+- EN: Diagnosis letters {STATUS:verification} | Until reviewed, no more than 14 days
+  ES: Cartas de diagnóstico {STATUS:verification} | Hasta que se revisan, máximo 14 días
+- EN: Verification result {STATUS:verification} | Same as your household record
+  ES: Resultado de la verificación {STATUS:verification} | Igual que el registro de su hogar
+- EN: Sign-in links and sessions {STATUS:family_portal} | Links: 30 minutes, one use. Sessions: 30 days or until you sign out
+  ES: Enlaces de inicio de sesión y sesiones {STATUS:family_portal} | Enlaces: 30 minutos, un solo uso. Sesiones: 30 días o hasta que cierre sesión
+- EN: Assistance records {STATUS:assistance} | {ASSISTANCE_RETENTION}
+  ES: Registros de ayuda financiera {STATUS:assistance} | {ASSISTANCE_RETENTION}
+- EN: Donation records {STATUS:donations} | As required for tax receipts
+  ES: Registros de donaciones {STATUS:donations} | Lo que exijan los recibos para impuestos
+- EN: Deleted information may stay in secure backups for {BACKUP} before it is permanently erased.
+  ES: La información borrada puede permanecer en copias de seguridad protegidas durante {BACKUP} antes de eliminarse por completo.
+- EN: Your choices and rights
+  ES: Sus opciones y derechos
+- EN: You can ask us to tell you what we have about you and your household; correct it; delete it completely, including any verification result; remove a photo, recording or quote of you or your child; or stop contacting you. Contact {EMAIL} or {PHONE}. We may ask a question to confirm it’s you, and we respond within 30 days.
+  ES: Puede pedirnos que le digamos qué información tenemos sobre usted y su hogar; que la corrijamos; que la borremos por completo, incluido cualquier resultado de verificación; que retiremos una foto, una grabación o una cita suya o de su hijo o hija; o que dejemos de comunicarnos con usted. Escriba a {EMAIL} o llame al {PHONE}. Es posible que le hagamos una pregunta para confirmar que es usted, y respondemos en un plazo de 30 días.
+- EN: Security
+  ES: Seguridad
+- EN: Encrypted connections, role-limited access for board members, private links that can’t be guessed, and no health information in emails, links or QR codes. Sign-in links work once and expire quickly. {STATUS:family_portal} Diagnosis letters are stored privately and deleted after review. {STATUS:verification} No system is perfectly secure. If a breach affected your information, we would notify you as the law requires.
+  ES: Conexiones cifradas, acceso de la junta limitado por cargo, enlaces privados imposibles de adivinar, y nunca incluimos información de salud en correos, enlaces ni códigos QR. Los enlaces de inicio de sesión funcionan una sola vez y vencen pronto. {STATUS:family_portal} Las cartas de diagnóstico se guardan en privado y se borran después de revisarse. {STATUS:verification} Ningún sistema es perfectamente seguro. Si una violación de seguridad afectara su información, se lo notificaríamos como lo exige la ley.
+- EN: Changes to this policy
+  ES: Cambios a esta política
+- EN: When a feature marked “Not yet available” starts, this page updates to show the date. If we change how we use information you already gave us, we’ll tell you and ask for your consent again.
+  ES: Cuando empiece una función marcada como “Aún no disponible”, esta página se actualizará para mostrar la fecha. Si cambiamos la manera en que usamos información que usted ya nos dio, se lo diremos y le pediremos su consentimiento de nuevo.
+- EN: Contact
+  ES: Contacto
+- EN: Hemophilia Outreach of El Paso · {ADDRESS}{EMAIL} · {PHONE}
+  ES: Hemophilia Outreach of El Paso · {ADDRESS}{EMAIL} · {PHONE}
+
+### Terms of Use v2: new section (src/content/legal/terms.ts)
+
+- EN: **Your family page.** {STATUS:family_portal} Sign-in links are personal. Don’t forward them. HOEP may suspend access if a page is misused.
+  ES: **Su página familiar.** {STATUS:family_portal} Los enlaces para iniciar sesión son personales. No los reenvíe. HOEP puede suspender el acceso si una página se usa de forma indebida.
+- EN: **Live captions.** {STATUS:live_captions} Captions and translations at HOEP events are machine-made and can be wrong. They’re for general understanding, not medical, legal or consent decisions.
+  ES: **Subtítulos en vivo.** {STATUS:live_captions} Los subtítulos y las traducciones en los eventos de HOEP los genera una máquina y pueden tener errores. Sirven para entender de forma general, no para decisiones médicas, legales ni de consentimiento.
+- EN: **Recordings.** {STATUS:recordings} By attending an event that is announced as recorded, you understand you may be heard or seen in the background. Ask a board member, and we’ll keep you off camera.
+  ES: **Grabaciones.** {STATUS:recordings} Al asistir a un evento que se anuncia como grabado, usted entiende que podrían oírlo o verlo al fondo. Pídale a un miembro de la junta y lo mantendremos fuera de cámara.
+- EN: **Community posts.** {STATUS:community} Be respectful, don’t share someone else’s health information, and don’t give medical advice. A board member reviews every post before it appears.
+  ES: **Publicaciones de la comunidad.** {STATUS:community} Sea respetuoso, no comparta información de salud de otra persona y no dé consejos médicos. Un miembro de la junta revisa cada publicación antes de que aparezca.
+
+### Children and Age Policy v2: new section (src/content/legal/children.ts)
+
+- EN: **Signing in.** {STATUS:family_portal} Only adults can sign in to a family page. Children never have accounts.
+  ES: **Inicio de sesión.** {STATUS:family_portal} Solo los adultos pueden iniciar sesión en una página familiar. Los menores nunca tienen cuentas.
+- EN: **Verifying a child’s diagnosis.** {STATUS:verification} A parent or legal guardian can upload a letter for their child. The letter is deleted after review, and only the result is kept.
+  ES: **Verificación del diagnóstico de un menor.** {STATUS:verification} Un padre, madre o tutor legal puede subir una carta sobre su hijo o hija. La carta se borra después de revisarse y solo se conserva el resultado.
+- EN: **Recordings and live streams.** {STATUS:recordings} We keep children whose families declined photo use off camera, and we don’t point cameras at the audience. A parent can ask us to remove any recording that shows their child.
+  ES: **Grabaciones y transmisiones en vivo.** {STATUS:recordings} Mantenemos fuera de cámara a los menores cuyas familias no aceptaron el uso de fotos, y no apuntamos las cámaras al público. Un padre o madre puede pedirnos que retiremos cualquier grabación en la que aparezca su hijo o hija.
+- EN: **Stories.** {STATUS:stories} We publish a child’s story or quote only with a parent’s or guardian’s signed permission.
+  ES: **Historias.** {STATUS:stories} Publicamos la historia o una frase de un menor solo con el permiso firmado de su padre, madre o tutor.
+

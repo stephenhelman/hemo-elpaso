@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clearEndedEventTokens, purgeOldLogs } from "@/lib/retention";
 
+// Reads request headers and the database: never prerender at build time.
+export const dynamic = "force-dynamic";
+
 /**
  * Daily retention job (vercel.json). Same protection as the other crons: Bearer CRON_SECRET.
  * Deletes only what the Privacy Policy says: expired event links/QR codes, old email logs, old audit logs.

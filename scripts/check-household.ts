@@ -77,7 +77,7 @@ async function main() {
   ok(kid.status === "not_required" && kid.statedDiagnoses[0] === "hemophilia_a", "child: not_required with Hemophilia A");
   ok(gran.status === "pending" && gran.confirmByPhone && !gran.confirmTokenHash, "parent: pending, confirmByPhone, no token");
   const types = patient!.consentRecords.map((c) => c.type).sort().join(",");
-  ok(types === "age_guardian_attestation,data_and_contact,media", "primary consents + attestation recorded");
+  ok(types === "age_guardian_attestation,data_and_contact,media,newsletter,sms", "primary consents + attestation recorded (v3 adds sms and newsletter rows)");
   const mail = await prisma.emailLog.findMany({ where: { patientId: patient!.id, templateType: "MEMBER_CONFIRMATION" } });
   ok(mail.length === 1 && mail[0].status === "sent", `spouse confirmation email sent via Resend (log rows: ${mail.map((m) => m.status + ":" + m.error)})`);
 

@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { getSession } from "@auth0/nextjs-auth0";
 import { prisma } from "@/lib/db";
 
+// Reads the session cookie, so it can never be rendered statically.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await getSession();
