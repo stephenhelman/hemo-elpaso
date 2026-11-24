@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
 
   const rows = await prisma.patient.findMany({
     where: {
-      role: { not: "admin" },
+      role: { notIn: ["admin", "merged"] },
+      mergedIntoId: null,
       OR: [
         { email: { contains: q, mode: "insensitive" } },
         { contactProfile: { firstName: { contains: q, mode: "insensitive" } } },
