@@ -3,17 +3,16 @@ import { AuditAction } from "@prisma/client";
 import { requirePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { validatePatientInput } from "@/lib/patients/create";
-import { currentConsents, PATIENT_ONLY } from "@/lib/patients/query";
+import { PATIENT_ONLY } from "@/lib/patients/query";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
-import { CONSENT_TEXT_VERSION } from "@/content/consent";
 
 type Ctx = { params: { id: string } };
 
 const load = (id: string) =>
   prisma.patient.findFirst({
     where: { id, ...PATIENT_ONLY },
-    include: { contactProfile: true, consentRecords: true },
+    include: { contactProfile: true },
   });
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
@@ -45,14 +44,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   const updateDx = canPHI && !sameDx;
   if (updateDx) changed.push("diagnoses"); // field name only; never the values
 
-  // Consent changes are NEW append-only rows, never edits.
-  const cur = currentConsents(existing.consentRecords);
-  const newConsents: { type: string; granted: boolean }[] = [];
-  if (body.consentDataAndContact !== undefined && (body.consentDataAndContact === true) !== (cur.data_and_contact === true))
-    newConsents.push({ type: "data_and_contact", granted: body.consentDataAndContact === true });
-  if (body.consentMedia !== undefined && (body.consentMedia === true) !== (cur.media === true))
-    newConsents.push({ type: "media", granted: body.consentMedia === true });
-  if (newConsents.length) changed.push("consent");
+  // Consent is NOT changed here. The consent panel (POST /api/admin/patients/:id/consents) is the only board path:
+  // it requires a reason and never lets the board turn a consent on without the family having asked.
 
   await prisma.$transaction(async (tx) => {
     await tx.patient.update({
@@ -69,18 +62,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       update: { firstName: n.firstName, lastName: n.lastName, phone: n.phone, addressLine1: n.address },
       create: { patientId: existing.id, firstName: n.firstName, lastName: n.lastName, phone: n.phone, addressLine1: n.address },
     });
-    for (const c of newConsents) {
-      await tx.consentRecord.create({
-        data: {
-          patientId: existing.id,
-          type: c.type,
-          granted: c.granted,
-          textVersion: CONSENT_TEXT_VERSION,
-          method: "phone",
-          recordedByBoardUserId: admin!.id,
-        },
-      });
-    }
   });
 
   await auditPatient(
