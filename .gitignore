@@ -43,3 +43,6 @@ next-env.d.ts
 IMPLEMENTATION.md
 
 .claude
+
+# EMAIL_MODE=capture writes rendered dev emails here
+.email-outbox/

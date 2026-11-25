@@ -8,6 +8,9 @@
 import * as ReactNS from "react"; (globalThis as any).React = ReactNS; // tsx uses the classic JSX runtime
 import { config } from "dotenv";
 config({ path: ".env.local" });
+process.env.EMAIL_MODE = "capture"; // check scripts never send email (lib/email/mode.ts)
+process.env.EMAIL_OUTBOX_FILES = "0";
+delete process.env.VERCEL_ENV;
 process.env.REGISTRATION_OPEN = "true";
 process.env.TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"; // Cloudflare always-pass test secret
 

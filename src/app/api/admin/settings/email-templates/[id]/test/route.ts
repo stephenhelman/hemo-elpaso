@@ -2,12 +2,11 @@ import { mailbox } from "@/lib/site";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
-import { Resend } from "resend";
+import { deliverEmail } from "@/lib/email/send";
 import { render } from "@react-email/render";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
 import { AuditAction } from "@prisma/client";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const EMAIL_FROM =
   process.env.EMAIL_FROM || `HOEP Events <${mailbox("events")}>`;
 
@@ -59,16 +58,11 @@ export async function POST(
       );
     }
 
-    // Send via Resend
-    const sent = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: testEmail,
-      subject: `[TEST] ${subject}`,
-      html: emailHtml,
-    });
-    if (sent.error) {
-      console.error("test email failed", { error: sent.error.name });
-      return NextResponse.json({ error: `Resend rejected the test email (${sent.error.name})` }, { status: 502 });
+    // Through the one sender: EMAIL_MODE decides whether it is really sent (live, or an allowlisted address) or only captured.
+    const sent = await deliverEmail({ kind: "TEST_EMAIL", from: EMAIL_FROM, to: testEmail, subject: `[TEST] ${subject}`, html: emailHtml });
+    if (!sent.ok) {
+      console.error("test email failed", { error: sent.errorName });
+      return NextResponse.json({ error: `Resend rejected the test email (${sent.errorName})` }, { status: 502 });
     }
 
     // Audit log
@@ -82,7 +76,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, captured: sent.captured });
   } catch (error: any) {
     console.error("Test email error:", error);
     return NextResponse.json(

@@ -1,5 +1,5 @@
 import { mailbox } from "@/lib/site";
-import { Resend } from "resend";
+import { deliverEmail } from "@/lib/email/send";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/db";
 import CheckInConfirmation from "@/messages/CheckInConfirmation";
@@ -7,7 +7,6 @@ import EventPublished from "@/messages/EventPublished";
 import EventCancelled from "@/messages/EventCancelled";
 import BoardRoleAssigned from "@/messages/BoardRoleAssigned";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const DEFAULT_FROM =
   process.env.EMAIL_FROM || `HOEP (DO NOT REPLY) <${mailbox("noreply")}>`;
 
@@ -65,16 +64,9 @@ export async function sendEmail({
       throw new Error(`Failed to render email template: ${templateType}`);
     }
 
-    // Send via Resend
-    const result = await resend.emails.send({
-      from: fromEmail ?? DEFAULT_FROM,
-      to: recipient,
-      subject,
-      html: emailHtml,
-      ...(replyTo ? { replyTo } : {}),
-    });
-
-    if (result.error) throw new Error(result.error.name); // the SDK returns errors, it doesn't throw
+    // Send through the one sender (EMAIL_MODE decides: live, capture or allowlist).
+    const result = await deliverEmail({ kind: templateType, from: fromEmail ?? DEFAULT_FROM, to: recipient, subject, html: emailHtml, replyTo });
+    if (!result.ok) throw new Error(result.errorName); // deliverEmail returns errors, it doesn't throw
 
     // Log email
     await prisma.emailLog.create({
@@ -82,13 +74,13 @@ export async function sendEmail({
         templateType: templateType as any,
         recipient,
         subject,
-        status: "sent",
+        status: result.captured ? "captured" : "sent",
         patientId,
         eventId,
       },
     });
 
-    return { success: true, messageId: result.data?.id };
+    return { success: true, messageId: result.id, captured: result.captured };
   } catch (error: any) {
     console.error("Email send error:", error);
 

@@ -153,7 +153,7 @@ export function confirmationStatus(p: {
 }): ConfirmationStatus {
   if (!p.email || p.source !== "web") return "n/a";
   const last = p.emailLogs[0]?.status;
-  if (last === "sent") return "sent";
+  if (last === "sent" || last === "captured") return "sent"; // "captured" = EMAIL_MODE kept it from Resend (dev/preview)
   if (last === "failed") return "failed";
   return "missing";
 }

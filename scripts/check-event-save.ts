@@ -9,6 +9,9 @@
  */
 import { config } from "dotenv";
 config({ path: ".env.local" });
+process.env.EMAIL_MODE = "capture"; // check scripts never send email (lib/email/mode.ts)
+process.env.EMAIL_OUTBOX_FILES = "0";
+delete process.env.VERCEL_ENV;
 config();
 import { PrismaClient } from "@prisma/client";
 import { eventTextFields } from "../src/lib/events/text-fields";

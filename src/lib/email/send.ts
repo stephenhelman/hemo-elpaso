@@ -2,6 +2,9 @@ import { mailbox } from "@/lib/site";
 import { getRouteRecipients } from "@/lib/email-routing";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
+import fs from "node:fs";
+import path from "node:path";
+import { parseAllowlist, resolveEmailMode, splitByAllowlist, type EmailMode } from "@/lib/email/mode";
 import { blockedByWithdrawal, isEssentialEmail } from "@/lib/email/policy";
 
 /**
@@ -41,17 +44,17 @@ export type CodeEmailKind =
   | "DELETION_REQUEST_NOTICE";
 
 export type SendResult =
-  | { ok: true; id: string }
+  | { ok: true; id: string; /** EMAIL_MODE kept it from Resend (capture, or an address not on the allowlist) */ captured?: boolean }
   | { ok: false; errorName: string; status?: number };
 
-async function record(kind: CodeEmailKind, patientId: string | null | undefined, ok: boolean, errorName?: string) {
+async function record(kind: CodeEmailKind, patientId: string | null | undefined, ok: boolean, errorName?: string, status?: "captured") {
   try {
     await prisma.emailLog.create({
       data: {
         templateType: kind,
         recipient: "",
         subject: "",
-        status: ok ? "sent" : "failed",
+        status: status ?? (ok ? "sent" : "failed"),
         error: ok ? null : errorName ?? "unknown_error",
         patientId: patientId ?? null,
       },
@@ -97,10 +100,8 @@ export async function sendLoggedEmail(params: {
     return { ok: false, errorName, status };
   };
 
-  // Fail loudly instead of silently using Resend's sandbox sender / no key.
-  if (!process.env.RESEND_API_KEY) return fail("missing_resend_api_key");
   const configured = process.env.EMAIL_FROM;
-  if (!configured && process.env.NODE_ENV === "production") return fail("missing_email_from");
+  if (!configured && process.env.NODE_ENV === "production" && mode() !== "capture") return fail("missing_email_from");
   const events = params.sender === "events";
   const FROM_BY_SENDER: Record<EmailSender, string | null> = {
     info: configured ?? null,
@@ -112,20 +113,89 @@ export async function sendLoggedEmail(params: {
   // Reply-to is the officers' setting; an explicit replyTo (the contact form's submitter) wins.
   const replyTo = params.replyTo ?? (await getRouteRecipients(events ? "reply.events" : "reply.info"))[0];
 
+  const res = await deliverEmail({ kind: params.kind, from: from!, replyTo, to: params.to, subject: params.subject, html: params.html });
+  if (!res.ok) return fail(res.errorName, res.status);
+  await record(params.kind, params.patientId, true, undefined, res.captured ? "captured" : undefined);
+  return { ok: true, id: res.id, captured: res.captured };
+}
+
+// ── THE ONLY PLACE THAT TALKS TO RESEND ─────────────────────────────────────────────────────────────────────────
+// No other file may construct a Resend client (npm run check:email-guard fails if it does). Everything that sends an email
+// (sendLoggedEmail, the template-driven sendEmail, the admin "send test email", scripts/brand-emails.tsx) calls deliverEmail.
+
+export interface Outboxed { at: string; to: string; kind: string; subject: string; html: string; reason: "capture" | "not_allowlisted" }
+type G = typeof globalThis & { __hoepEmailOutbox?: Outboxed[] };
+const OUTBOX_MAX = 500;
+
+/** Everything EMAIL_MODE kept from Resend, oldest first. In memory only; tests read it. */
+export const emailOutbox = (): Outboxed[] => ((globalThis as G).__hoepEmailOutbox ??= []);
+export const clearEmailOutbox = () => { emailOutbox().length = 0; };
+
+const mode = (): EmailMode => resolveEmailMode(process.env);
+mode(); // refuse to load with a bad EMAIL_MODE (live outside production, or an unknown value)
+
+/** Local dev only (not Vercel, not production): write the rendered email to .email-outbox/ so it can be opened. */
+function writeOutboxFile(o: Outboxed) {
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL || process.env.EMAIL_OUTBOX_FILES === "0") return;
   try {
-    // Client built per call so it always sees the runtime env (and a bad key shows up as
-    // Resend's own error instead of a stale import-time value).
+    const dir = path.join(process.cwd(), ".email-outbox");
+    fs.mkdirSync(dir, { recursive: true });
+    const stamp = o.at.replace(/[:.]/g, "-");
+    fs.writeFileSync(path.join(dir, `${stamp}-${o.kind}-${Math.random().toString(36).slice(2, 6)}.html`), `<!-- to: ${o.to}\n     subject: ${o.subject}\n     kind: ${o.kind} (${o.reason}) -->\n${o.html}`);
+  } catch { /* a dev convenience: never fail a send because of it */ }
+}
+
+function capture(p: { kind: string; to: string | string[]; subject: string; html: string }, reason: Outboxed["reason"]) {
+  for (const to of Array.isArray(p.to) ? p.to : [p.to]) {
+    const o: Outboxed = { at: new Date().toISOString(), to, kind: p.kind, subject: p.subject, html: p.html, reason };
+    const box = emailOutbox();
+    box.push(o);
+    if (box.length > OUTBOX_MAX) box.splice(0, box.length - OUTBOX_MAX);
+    writeOutboxFile(o);
+    // kind/reason only: no address, no subject (event titles can imply a diagnosis)
+    console.log(`[email ${reason}] ${p.kind}`);
+  }
+}
+
+export interface DeliverParams {
+  kind: string;
+  from: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  replyTo?: string;
+  attachments?: { filename: string; content: Buffer; contentId?: string }[];
+}
+export type DeliverResult = { ok: true; id: string; captured: boolean } | { ok: false; errorName: string; status?: number };
+
+/** Send (live), capture, or send only allowlisted addresses (allowlist), per EMAIL_MODE. Never throws on a Resend error: it returns it. */
+export async function deliverEmail(p: DeliverParams): Promise<DeliverResult> {
+  const m = mode();
+  if (m === "capture") { capture(p, "capture"); return { ok: true, id: "captured", captured: true }; }
+
+  let to = p.to;
+  if (m === "allowlist") {
+    const { send, capture: held } = splitByAllowlist(p.to, parseAllowlist(process.env.EMAIL_DEV_ALLOWLIST));
+    if (held.length) capture({ ...p, to: held }, "not_allowlisted");
+    if (send.length === 0) return { ok: true, id: "captured", captured: true };
+    to = send;
+  }
+
+  // Fail loudly instead of silently using Resend's sandbox sender / no key.
+  if (!process.env.RESEND_API_KEY) return { ok: false, errorName: "missing_resend_api_key" };
+  try {
+    // Client built per call so it always sees the runtime env (and a bad key shows up as Resend's own error).
     const res = await new Resend(process.env.RESEND_API_KEY).emails.send({
-      from: from!,
-      replyTo,
-      to: params.to,
-      subject: params.subject,
-      html: params.html,
+      from: p.from,
+      replyTo: p.replyTo,
+      to,
+      subject: p.subject,
+      html: p.html,
+      ...(p.attachments ? { attachments: p.attachments } : {}),
     });
-    if (res.error) return fail(res.error.name, (res.error as { statusCode?: number }).statusCode ?? undefined);
-    await record(params.kind, params.patientId, true);
-    return { ok: true, id: res.data?.id ?? "" };
+    if (res.error) return { ok: false, errorName: res.error.name, status: (res.error as { statusCode?: number }).statusCode ?? undefined };
+    return { ok: true, id: res.data?.id ?? "", captured: false };
   } catch (e) {
-    return fail(e instanceof Error ? e.name : "send_exception");
+    return { ok: false, errorName: e instanceof Error ? e.name : "send_exception" };
   }
 }

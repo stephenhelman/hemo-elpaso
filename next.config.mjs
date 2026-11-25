@@ -3,6 +3,8 @@ import { legacyRedirects } from "./scripts/legacy-redirects.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // src/instrumentation.ts runs at server start (it refuses to start with a bad EMAIL_MODE)
+  experimental: { instrumentationHook: true },
   eslint: {
     // Allow build to succeed even with ESLint errors (for now)
     ignoreDuringBuilds: true,

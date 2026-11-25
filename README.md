@@ -16,6 +16,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Email in local development
+
+No email reaches Resend unless the app is running in production or you opt in (`EMAIL_MODE`, see `.env.example`):
+
+- **Default (local dev, preview deploys, every `check:*` script): `capture`.** Nothing is sent. Each email is rendered, logged with status `captured`, and written to `.email-outbox/<timestamp>-<kind>.html` (gitignored). Open the file in a browser to see it. Tests read the in-memory outbox (`emailOutbox()` in `src/lib/email/send.ts`).
+- **See a real email in your own inbox:** set `EMAIL_MODE=allowlist` and `EMAIL_DEV_ALLOWLIST=you@example.com` in `.env.local` (plus a `RESEND_API_KEY`). Only listed addresses are sent; everything else is still captured.
+- **`live`** is only valid when `VERCEL_ENV=production`. Setting it anywhere else makes the app refuse to start, so a stray variable can't turn dev into live sending.
+- All sending goes through `deliverEmail()` in `src/lib/email/send.ts`. Don't construct a Resend client anywhere else: `npm run check:email-guard` fails if you do.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
