@@ -1092,3 +1092,35 @@ Function-valued strings show a placeholder for the name.
 - Address form labels, errors and the "suggestions come from Google" line: `src/translation/address.ts` (EN and ES side by side).
 - RSVP link email (subject "Your RSVP link" / "Su enlace para confirmar asistencia", body in `src/messages/RsvpAccessLinkEmail.tsx`, EN and ES in one file).
 - Registration confirmation line in the email: "We'll review your registration and may call you." / "Revisaremos tu registro y es posible que te llamemos."
+
+## RSVP requests, virtual attendance, contact preferences (feat/rsvp-requests)
+
+EN is the source; every ES string below needs a native-speaker read. Plain, warm Latin American Spanish; "usted" in emails, "tú" in the modal and the event page (matches the existing RSVP page).
+
+### Privacy Policy (src/content/legal/privacy.ts): NEW paragraphs and bullets (LEGAL_EFFECTIVE_DATE untouched; bump the policy version when you publish)
+
+| EN | ES |
+| --- | --- |
+| **Virtual attendance.** {STATUS:recordings} Some events may offer a way to join online, with a Google Meet link and a YouTube link. We send those links only to households the board has confirmed for virtual attendance, in their invitation, confirmation and reminder emails. They are never shown on the public event page. If you ask to attend an event you weren’t invited to, the board reviews your request and decides whether you attend in person or online. | **Participación en línea.** {STATUS:recordings} Algunos eventos podrían ofrecer una forma de participar en línea, con un enlace de Google Meet y un enlace de YouTube. Enviamos esos enlaces solo a los hogares que la junta confirmó para participar en línea, en sus correos de invitación, confirmación y recordatorio. Nunca se muestran en la página pública del evento. Si pide asistir a un evento al que no fue invitado, la junta revisa su solicitud y decide si asistirá en persona o en línea. |
+| **Contact preferences.** If you choose, you can name other confirmed adults in your household who also receive your invitation and confirmation emails (you always receive them), and you can tell us whether a phone number can receive text messages. We keep the answer so we can respect it if we start sending texts. {STATUS:sms} We don’t send texts yet. | **Preferencias de contacto.** Si usted lo decide, puede indicar a otros adultos confirmados de su hogar que también reciban sus correos de invitación y confirmación (usted siempre los recibe), y puede decirnos si un número de teléfono puede recibir mensajes de texto. Guardamos la respuesta para respetarla si empezamos a enviar mensajes de texto. {STATUS:sms} Todavía no enviamos mensajes de texto. |
+| (How we use it) To review requests to attend an event, and to choose whether you attend in person or virtually. | Para revisar las solicitudes para asistir a un evento y elegir si asistirá en persona o en línea. |
+| (How we use it) To send the Google Meet and YouTube links for a virtual event, only to households confirmed to attend virtually. {STATUS:recordings} | Para enviar los enlaces de Google Meet y YouTube de un evento en línea, solo a los hogares confirmados para participar en línea. {STATUS:recordings} |
+
+The virtual sentences are bound to the `recordings` toggle: they show "Not yet available" until it is on, and the event form will not turn virtual on while it is off.
+
+### The RSVP modal (src/translation/rsvpModal.ts) and the RSVP page additions (src/translation/rsvpPage.ts)
+
+See those files: every key has EN and ES side by side. Please read especially: `registerTitle`/`emailTitle`/`phoneTitle` (the three choices), `requestNote`, `reviewNote`, `doneRequest`, `requestWaitlisted`, `alreadyVirtual`, `byInvitation`, `blocked`.
+
+### Registration (src/translation/registerInfoPage.ts): `eventNote`, `phoneMode`, `phoneModeNote`, `successCall`, `successEvent`, `canText*`
+
+### Family page contact preferences (src/lib/portal/contact-text.ts)
+
+### Emails (src/messages/RsvpRequestEmail.tsx, EN and ES in the same file; src/messages/EventInvitation.tsx virtual block)
+
+| Email | Gist | Check |
+| --- | --- | --- |
+| Request received | "We got your request. We'll confirm soon, and we'll write to you again either way." | warm, no promise of a yes |
+| Waitlisted | "All in-person spots are taken for now. If a spot opens, or another way to join is possible, we'll write to you." | does not mention virtual by name (virtual may be off) |
+| Declined | "We're sorry we aren't able to say yes this time… you're always welcome to call us." | kind and general. **Never** gives a reason or a reason code |
+| Confirmed virtual / virtual reminder | Meet link, YouTube link, date and time, how to join | links appear in these emails and virtual invitations only |

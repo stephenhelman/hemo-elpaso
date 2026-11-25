@@ -212,6 +212,8 @@ test("pending and on-hold households cannot RSVP; approved can; the refusal is N
   const pending = await household("r-pending", {}, "pending_review");
   const hold = await household("r-hold", { reviewHoldReason: "OTHER" }, "on_hold");
   const ok = await household("r-ok");
+  await invite(ev, ok); // approved AND invited: the direct path
+  await invite(ev, pending); await invite(ev, hold); // invited, but not approved (and not grandfathered)
   for (const id of [pending, hold]) {
     const r = await rsvpYes({ eventId: ev, patientId: id, partySize: 1, source: "portal", sendEmail: false });
     assert.ok(!r.ok && r.code === "NOT_APPROVED");
@@ -224,6 +226,7 @@ test("pending and on-hold households cannot RSVP; approved can; the refusal is N
 test("existing RSVPs survive: a status change never cancels, and they can still be changed or cancelled", async () => {
   const ev = await event("survive");
   const h = await household("s-1");
+  await invite(ev, h);
   const first = await rsvpYes({ eventId: ev, patientId: h, partySize: 3, source: "invite", sendEmail: false });
   assert.ok(first.ok);
   const officer = await household("s-officer");
@@ -255,19 +258,17 @@ test("invitations created before the cutoff are grandfathered; after it they are
   assert.ok(!b.ok && b.code === "NOT_APPROVED", "post-deploy invitation does not");
 });
 
-test("invited-only and diagnosis-targeted events refuse uninvited households; any-approved lets them in", async () => {
-  const any = await event("any");
-  const only = await event("only", { rsvpAccess: "invited_only" });
+test("an uninvited household can't RSVP directly (it asks to attend); an event by invitation refuses it; an invited one is let in", async () => {
+  const open = await event("any");
+  const only = await event("only", { allowUninvitedRequests: false });
   const dx = await event("dx", { targeting: { create: { targetConditions: ["hemophilia_a"], targetSeverity: [], targetAgeGroups: [], targetInterests: [] } } });
   const h = await household("a-1");
-  const ok = (await rsvpYes({ eventId: any, patientId: h, partySize: 1, source: "portal", sendEmail: false })).ok;
-  assert.equal(ok, true, "any approved household, not invited");
-  for (const e of [only, dx]) {
+  for (const e of [open, only, dx]) {
     const r = await rsvpYes({ eventId: e, patientId: h, partySize: 1, source: "portal", sendEmail: false });
-    assert.ok(!r.ok && r.code === "NOT_INVITED", "uninvited refused");
+    assert.ok(!r.ok && r.code === "NOT_INVITED", "approved but not invited: no direct RSVP (the request path takes over)");
   }
-  for (const e of [only, dx]) await invite(e, h);
-  for (const e of [only, dx]) assert.ok((await rsvpYes({ eventId: e, patientId: h, partySize: 1, source: "invite", sendEmail: false })).ok, "invited is let in");
+  for (const e of [open, only, dx]) await invite(e, h);
+  for (const e of [open, only, dx]) assert.ok((await rsvpYes({ eventId: e, patientId: h, partySize: 1, source: "invite", sendEmail: false })).ok, "invited is let in");
   assert.equal((await rsvpGate(only, h)).ok, true);
 });
 
@@ -283,6 +284,7 @@ test("board-entered RSVPs bypass the gate and are logged (ids and codes only)", 
   assert.equal(row!.actorType, "board");
   // an approved household is not logged as an override
   const h2 = await household("b-approved");
+  await invite(ev, h2);
   const r2 = await rsvpYes({ eventId: ev, patientId: h2, partySize: 1, source: "manual", actorId: officer, boardOverride: true, sendEmail: false });
   assert.equal(await prisma.auditLog.count({ where: { action: AuditAction.RSVP_APPROVAL_OVERRIDDEN, resourceId: r2.ok ? r2.rsvpId : "" } }), 0);
 });
@@ -306,8 +308,8 @@ test("emailed link: the same neutral answer for approved, unapproved and unknown
   for (const r of [a, b, c]) { assert.equal(r.status, 200); assert.deepEqual(r.body, { ok: true }); assert.ok(r.ms >= MIN_RESPONSE_MS - 50, `took ${r.ms}ms`); }
   assert.ok(Math.max(a.ms, b.ms, c.ms) - Math.min(a.ms, b.ms, c.ms) < 700, "response times are close");
   assert.equal(await prisma.rsvpAccessLink.count({ where: { eventId: ev, patientId: approved } }), 1, "approved household got a link");
-  assert.equal(await prisma.rsvpAccessLink.count({ where: { eventId: ev, patientId: pending } }), 0, "pending household got none");
-  assert.equal(await prisma.rsvpAccessLink.count({ where: { eventId: ev } }), 1);
+  assert.equal(await prisma.rsvpAccessLink.count({ where: { eventId: ev, patientId: pending } }), 1, "a pending household gets one too: the RSVP page lets it send a request");
+  assert.equal(await prisma.rsvpAccessLink.count({ where: { eventId: ev } }), 2);
   // honeypot: the same answer, nothing stored
   const hp = await ask(`${tag}.l-ok@example.org`, { website: "http://spam" });
   assert.deepEqual(hp.body, { ok: true });
@@ -325,15 +327,15 @@ test("emailed link: the same neutral answer for approved, unapproved and unknown
   }
   const outcomes = rows.map((r) => (r.changes as { outcome: string }).outcome).sort();
   assert.ok(outcomes.includes("sent") || outcomes.includes("send_failed"));
-  assert.ok(outcomes.includes("not_eligible") && outcomes.includes("unknown_email"));
+  assert.ok(outcomes.includes("unknown_email"));
 });
 
 test("emailed link: refused on events the household can't RSVP to, and rate limited per IP", async () => {
-  const only = await event("link-only", { rsvpAccess: "invited_only" });
+  const only = await event("link-only", { allowUninvitedRequests: false });
   const h = await household("l2-ok");
   const ipHash = `iphash-${tag}`;
   const o = await requestRsvpLink({ eventId: only, email: `${tag}.l2-ok@example.org`, ipHash });
-  assert.equal(o, "not_eligible", "approved but uninvited on an invited-only event: no link");
+  assert.equal(o, "not_eligible", "uninvited on an event by invitation: no link");
   assert.equal(await prisma.rsvpAccessLink.count({ where: { patientId: h } }), 0);
   const ev = await event("link-rl");
   const limited: string[] = [];
@@ -357,12 +359,13 @@ test("emailed link: a bad Turnstile token is refused before anything else", asyn
 test("emailed link works like an invitation token and is gated at redemption", async () => {
   const ev = await event("redeem");
   const h = await household("x-ok");
+  await invite(ev, h);
   const raw = generateToken();
   await prisma.rsvpAccessLink.create({ data: { eventId: ev, patientId: h, tokenHash: hashToken(raw), expiresAt: new Date(Date.now() + DAY) } });
   const ctx = await resolveRsvpToken(raw);
   assert.equal(ctx?.via, "link");
   assert.equal(ctx?.patient.id, h);
-  assert.equal(ctx?.invitation, null, "a link does not make the household 'invited'");
+  assert.equal(ctx?.invitation, null, "a link does not make the household 'invited' (the invitation is looked up separately)");
   const { NextRequest } = await import("next/server");
   const respond = await import("../src/app/api/rsvp/respond/route");
   const yes = await respond.POST(new NextRequest("http://localhost/x", { method: "POST", body: JSON.stringify({ token: raw, response: "yes" }), headers: { "content-type": "application/json" } }));
@@ -378,8 +381,10 @@ test("emailed link works like an invitation token and is gated at redemption", a
   await prisma.rsvpAccessLink.create({ data: { eventId: ev, patientId: h2, tokenHash: hashToken(raw2), expiresAt: new Date(Date.now() + DAY) } });
   await prisma.patient.update({ where: { id: h2 }, data: { reviewStatus: "on_hold", reviewHoldReason: "NEEDS_CALL" } });
   const late = await respond.POST(new NextRequest("http://localhost/x", { method: "POST", body: JSON.stringify({ token: raw2, response: "yes" }), headers: { "content-type": "application/json" } }));
-  assert.equal(late.status, 403);
-  assert.equal((await late.json()).error, "review");
+  assert.equal(late.status, 200, "not approved: the link sends a REQUEST instead of an RSVP");
+  assert.equal((await late.json()).state, "requested");
+  assert.equal(await prisma.rsvp.count({ where: { eventId: ev, patientId: h2 } }), 0);
+  assert.equal((await prisma.rsvpRequest.findFirstOrThrow({ where: { eventId: ev, patientId: h2 } })).status, "waiting_household_review");
 });
 
 test("the anonymous public RSVP is gone", async () => {

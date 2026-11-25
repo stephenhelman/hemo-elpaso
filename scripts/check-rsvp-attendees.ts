@@ -85,7 +85,8 @@ async function main() {
     patients.push(pidX);
     await prisma.patient.update({ where: { id: pidX }, data: { reviewStatus: "approved" } });
     const mems = await prisma.householdMember.findMany({ where: { patientId: pidX }, orderBy: { createdAt: "asc" } });
-    const res = await rsvpYes({ eventId, patientId: pidX, source: "manual", sendEmail: false,
+    await prisma.invitation.create({ data: { eventId, patientId: pidX, tokenHash: `t${Date.now()}${Math.random()}`, status: "sent" } });
+    const res = await rsvpYes({ eventId, patientId: pidX, source: "manual", sendEmail: false, boardOverride: true,
       selection: { primary: pick.primary, memberIds: mems.filter((m) => pick.memberNames.includes(m.firstName!)).map((m) => m.id), guests: pick.guests } });
     return { r, pidX, res };
   };
@@ -106,29 +107,29 @@ async function main() {
     return p;
   };
   const other = await mk("Other");
-  let o = await rsvpYes({ eventId: ev.id, patientId: other.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false });
+  let o = await rsvpYes({ eventId: ev.id, patientId: other.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false, boardOverride: true });
   ok(!o.ok && o.code === "AT_CAPACITY", "another household of 3 is refused while 4 of 5 are taken");
   const sel2 = { primary: true, memberIds: [byName.Kid.id], guests: 0 };
-  const up = await rsvpYes({ eventId: ev.id, patientId: pid, selection: sel2, source: "manual", sendEmail: false });
+  const up = await rsvpYes({ eventId: ev.id, patientId: pid, selection: sel2, source: "manual", sendEmail: false, boardOverride: true });
   const after = await prisma.rsvp.findUnique({ where: { id: rsvp.id }, include: { attendees: true } });
   ok(up.ok && after!.attendeeCount === 2 && after!.attendees.length === 2 && after!.guestCount === 0, "changing to 2 people updates rows, guests and attendeeCount");
   ok((await rsvpPeopleByEvent([ev.id]))[ev.id] === 2, "capacity now counts 2 (two spots freed)");
-  o = await rsvpYes({ eventId: ev.id, patientId: other.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false });
+  o = await rsvpYes({ eventId: ev.id, patientId: other.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false, boardOverride: true });
   ok(o.ok, "the household of 3 now fits");
 
   // invalid selections
-  let bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: false, memberIds: [], guests: 0 }, source: "manual", sendEmail: false });
+  let bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: false, memberIds: [], guests: 0 }, source: "manual", sendEmail: false, boardOverride: true });
   ok(!bad.ok, "a yes with nobody listed is rejected");
-  bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: true, memberIds: ["not-a-member"], guests: 0 }, source: "manual", sendEmail: false });
+  bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: true, memberIds: ["not-a-member"], guests: 0 }, source: "manual", sendEmail: false, boardOverride: true });
   ok(!bad.ok, "a member that isn't in the household is rejected");
 
   // increase re-runs the deadline check; lowering is always fine
   const ev2 = await mkEvent({ rsvpDeadline: new Date(Date.now() + 5000) });
   const dl = await mk("Dl");
-  const first = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false });
+  const first = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false, boardOverride: true });
   await prisma.event.update({ where: { id: ev2.id }, data: { rsvpDeadline: new Date(Date.now() - 1000) } });
-  const inc = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 4 }, source: "manual", sendEmail: false });
-  const dec = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 0 }, source: "manual", sendEmail: false });
+  const inc = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 4 }, source: "manual", sendEmail: false, boardOverride: true });
+  const dec = await rsvpYes({ eventId: ev2.id, patientId: dl.id, selection: { primary: true, memberIds: [], guests: 0 }, source: "manual", sendEmail: false, boardOverride: true });
   ok(first.ok && !inc.ok && (inc as any).code === "DEADLINE_PASSED" && dec.ok, "after the deadline an increase is refused, a decrease is allowed");
 
   // --- per-person NO PHOTOS ---
@@ -167,7 +168,7 @@ async function main() {
   });
   void memC;
   const ciMembers = await prisma.householdMember.findMany({ where: { patientId: ciP.id } });
-  const cr = await rsvpYes({ eventId: evC.id, patientId: ciP.id, selection: { primary: true, memberIds: ciMembers.map((m) => m.id), guests: 1 }, source: "manual", sendEmail: false });
+  const cr = await rsvpYes({ eventId: evC.id, patientId: ciP.id, selection: { primary: true, memberIds: ciMembers.map((m) => m.id), guests: 1 }, source: "manual", sendEmail: false, boardOverride: true });
   const rs = (await prisma.rsvp.findUnique({ where: { id: (cr as any).rsvpId }, include: { attendees: true } }))!;
   ok(rs.attendeeCount === 4, "RSVP: 3 people + 1 guest = 4");
   const primaryRow = rs.attendees.find((a) => a.isPrimary)!;
@@ -187,14 +188,14 @@ async function main() {
   ok(u.ok && ci2!.headcount === 3, "undo works per person (headcount back to 3)");
   // walk-in shortcut: primary + guests
   const wi = await mk("Wi");
-  const wr = await rsvpYes({ eventId: evC.id, patientId: wi.id, partySize: 3, source: "manual", sendEmail: false });
+  const wr = await rsvpYes({ eventId: evC.id, patientId: wi.id, partySize: 3, source: "manual", sendEmail: false, boardOverride: true });
   const wc = await checkInRsvp({ rsvpId: (wr as any).rsvpId, eventId: evC.id, headcount: 3, admin: adminCtx, manual: true });
   const wrow = await prisma.rsvp.findUnique({ where: { id: (wr as any).rsvpId }, include: { attendees: true } });
   ok(wc.ok && wc.headcount === 3 && wrow!.attendees.length === 1 && wrow!.guestCount === 2, "walk-in: primary plus guest count, unchanged behaviour");
 
   // --- removing/declining a member drops them off the RSVP ---
   const memD = await prisma.householdMember.create({ data: { patientId: ciP.id, firstName: "Dee", relationship: "spouse_partner", ageGroup: "18_plus", status: "pending", email: "delivered+d@resend.dev" } });
-  await rsvpYes({ eventId: evC.id, patientId: ciP.id, selection: { primary: true, memberIds: [...ciMembers.map((m) => m.id), memD.id], guests: 1 }, source: "manual", sendEmail: false });
+  await rsvpYes({ eventId: evC.id, patientId: ciP.id, selection: { primary: true, memberIds: [...ciMembers.map((m) => m.id), memD.id], guests: 1 }, source: "manual", sendEmail: false, boardOverride: true });
   const before = (await prisma.rsvp.findUnique({ where: { id: rs.id } }))!.attendeeCount;
   const tok = (await reissueMemberToken(memD.id))!.raw;
   await declineMember(tok);
