@@ -6,6 +6,7 @@ import { editText } from "@/lib/portal/edit-text";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { AGE_GROUPS, RELATIONSHIPS, ageGroupLabels } from "@/lib/households/constants";
 import type { ViewMember } from "@/lib/portal/view";
+import { flyerText } from "@/lib/flyers/text";
 import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
 
 type Lang = "en" | "es";
@@ -21,6 +22,7 @@ export interface EditorProps {
   otherAdults: { id: string; name: string }[];
   pendingAttestations: { childMemberId: string; childName: string }[];
   primaryName: string;
+  flyerDelivery: { value: "email" | "mail" | "none"; hasEmail: boolean; hasAddress: boolean };
 }
 
 const input = "w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm";
@@ -347,12 +349,43 @@ function DangerZone({ lang, isPrimary }: { lang: Lang; isPrimary: boolean }) {
   );
 }
 
+// ── flyers ──────────────────────────────────────────────────────────────────────────────────────────────────
+function FlyerChoice({ lang, current }: { lang: Lang; current: EditorProps["flyerDelivery"] }) {
+  const t = editText[lang], f = flyerText[lang];
+  const a = useAct(lang);
+  const [value, setValue] = useState(current.value);
+  const options: { v: "email" | "mail" | "none"; label: string; disabled: boolean; hint: string | null }[] = [
+    { v: "email", label: f.email, disabled: !current.hasEmail, hint: current.hasEmail ? null : f.needsEmail },
+    { v: "mail", label: f.mail, disabled: false, hint: current.hasAddress ? null : f.needsAddress },
+    { v: "none", label: f.none, disabled: false, hint: null },
+  ];
+  return (
+    <section className={card} aria-labelledby="flyers">
+      <h2 id="flyers" className={h2}>{f.question}</h2>
+      <p className="text-xs text-neutral-500 mb-3">{f.help}</p>
+      <div role="radiogroup" aria-labelledby="flyers" className="space-y-2">
+        {options.map((o) => (
+          <label key={o.v} className={`flex items-start gap-2 text-sm ${o.disabled ? "text-neutral-400" : "text-neutral-800"}`}>
+            <input type="radio" name="flyerDelivery" className="mt-1" checked={value === o.v} disabled={o.disabled} onChange={() => setValue(o.v)} />
+            <span>{o.label}{o.hint && <span className="block text-xs text-neutral-500">{o.hint}</span>}</span>
+          </label>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <button className={ghostBtn} disabled={a.busy || value === current.value} onClick={() => a.act({ action: "flyer_delivery", flyerDelivery: value })}>{a.busy ? t.saving : t.save}</button>
+        <Note note={a.note} />
+      </div>
+    </section>
+  );
+}
+
 export default function PortalEditor(p: EditorProps) {
   const t = editText[p.lang];
   return (
     <>
       <GuardianGate lang={p.lang} pending={p.pendingAttestations} />
       <AboutYou lang={p.lang} me={p.me} address={p.address} autocomplete={p.addressAutocomplete} />
+      <FlyerChoice lang={p.lang} current={p.flyerDelivery} />
       <section className={card} aria-labelledby="members">
         <h2 id="members" className={h2}>{t.members}</h2>
         <ul className="divide-y divide-neutral-100">

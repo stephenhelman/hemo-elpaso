@@ -6,6 +6,8 @@ import { validatePatientInput } from "@/lib/patients/create";
 import { PATIENT_ONLY } from "@/lib/patients/query";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
+import { setFlyerDelivery } from "@/lib/flyers/delivery";
+import { defaultFlyerDelivery } from "@/lib/flyers";
 import { addressColumns } from "@/lib/address/validate";
 
 type Ctx = { params: { id: string } };
@@ -65,6 +67,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       create: { patientId: existing.id, firstName: n.firstName, lastName: n.lastName, phone: n.phone, ...nextAddr },
     });
   });
+
+  // Flyer delivery: an explicit choice, or (when the email was removed) the default for what the household still has.
+  // Through the shared setter so every change is logged (household id + field name only).
+  const nextDelivery = n.flyerDelivery ?? (existing.flyerDelivery === "email" && !n.email ? defaultFlyerDelivery({ email: n.email, address: cp ? { ...cp, ...nextAddr } : { addressLine1: nextAddr.addressLine1, city: nextAddr.city, state: nextAddr.state, zipCode: nextAddr.zipCode } }) : null);
+  if (nextDelivery) await setFlyerDelivery(existing.id, nextDelivery, { type: "board", patientId: admin!.id });
 
   await auditPatient(
     admin!.id,

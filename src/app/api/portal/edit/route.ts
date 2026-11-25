@@ -3,7 +3,7 @@ import { portalContext } from "@/lib/portal/request";
 import { overEditLimit, type EditResult, type PortalCtx } from "@/lib/portal/context";
 import {
   acceptGuardianAttestation, addMember, convertMinor, designateGuardian, editMinor, leaveHousehold, removeMember, requestDeletion, requestEmailChange,
-  revokeGuardian, setMinorDiagnoses, setOwnDiagnoses, updateAddress, updateProfile,
+  revokeGuardian, setMinorDiagnoses, setOwnDiagnoses, updateAddress, updateFlyerDelivery, updateProfile,
 } from "@/lib/portal/edit";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,7 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 const ACTIONS: Record<string, (ctx: PortalCtx, b: Body) => Promise<EditResult<Record<string, unknown>>>> = {
   profile: (c, b) => updateProfile(c, { firstName: b.firstName, lastName: b.lastName, phone: b.phone, language: b.language }),
   address: (c, b) => updateAddress(c, b.address),
+  flyer_delivery: (c, b) => updateFlyerDelivery(c, b.flyerDelivery),
   email: (c, b) => requestEmailChange(c, b.email),
   own_diagnoses: (c, b) => setOwnDiagnoses(c, b.diagnoses),
   minor_diagnoses: (c, b) => setMinorDiagnoses(c, str(b.memberId), b.diagnoses),

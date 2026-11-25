@@ -6,6 +6,8 @@ import { resolveSession } from "@/lib/identity/session";
 import { isFeatureEnabled, getFeatureStates } from "@/lib/features";
 import { portalGate } from "@/lib/portal/rules";
 import { type PortalRsvp } from "@/lib/portal/household";
+import { flyerText } from "@/lib/flyers/text";
+import type { PickedFlyer } from "@/lib/flyers";
 import { loadPortalView } from "@/lib/portal/view";
 import { actorMemberId } from "@/lib/portal/permissions";
 import { auditPortalView } from "@/lib/portal/service";
@@ -58,12 +60,30 @@ export default async function PortalPage() {
   const when = (iso: string) => formatEventDateTime(iso, lang);
   const evTitle = (x: { title: { en: string; es: string } }) => x.title[lang];
 
+  const ft = flyerText[lang];
+  // The household's-language flyer next to an upcoming event: a small image (PDFs: just the link) and a download link.
+  const FlyerBlock = ({ f }: { f: PickedFlyer | null }) => f && (
+    <div className="mt-2 flex items-center gap-3">
+      {!f.isPdf && (
+        <a href={f.url} target="_blank" rel="noopener noreferrer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={f.url} alt={f.alt || ft.flyer} loading="lazy" className="h-24 w-auto rounded border border-neutral-200" />
+        </a>
+      )}
+      <div className="text-sm">
+        <a href={f.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">{ft.download}</a>
+        {f.lang !== lang && <p className="text-xs text-neutral-500">{f.lang === "es" ? ft.otherLanguageEs : ft.otherLanguage}</p>}
+      </div>
+    </div>
+  );
+
   const RsvpRow = ({ r }: { r: PortalRsvp }) => (
     <li className="py-3 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="font-medium text-neutral-900">{evTitle(r)}</p>
         <p className="text-sm text-neutral-600">{when(r.eventDate)} · {r.location}</p>
         <p className="text-xs text-neutral-500">{r.cancelled ? t.cancelled : t.people_n(r.partySize)}</p>
+        {!r.past && !r.cancelled && <FlyerBlock f={r.flyer} />}
       </div>
       {r.link && <Link href={r.link} className="text-sm font-semibold text-primary hover:underline">{r.past ? t.view : t.change}</Link>}
     </li>
@@ -92,6 +112,7 @@ export default async function PortalPage() {
           otherAdults={v.otherAdults}
           pendingAttestations={v.pendingAttestations}
           primaryName={v.primaryName}
+          flyerDelivery={v.flyerDelivery}
         />
 
         <section className={card} aria-labelledby="events">
@@ -105,6 +126,7 @@ export default async function PortalPage() {
                   <p className="font-medium text-neutral-900">{evTitle(i)} <span className="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">{t.invited}</span></p>
                   <p className="text-sm text-neutral-600">{when(i.eventDate)} · {i.location}</p>
                   <p className="text-xs text-neutral-500">{t.inviteHelp}</p>
+                  <FlyerBlock f={i.flyer} />
                 </li>
               ))}
             </ul>

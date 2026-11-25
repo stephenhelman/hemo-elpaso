@@ -16,6 +16,8 @@ import HouseholdSection, {
   membersPayload,
   type MemberDraft,
 } from "@/components/household/HouseholdSection";
+import { defaultFlyerDelivery, type FlyerDelivery } from "@/lib/flyers";
+import { flyerText } from "@/lib/flyers/text";
 import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
 import { householdTranslation } from "@/translation/household";
 
@@ -41,6 +43,7 @@ export default function RegisterInfoForm({
   const [address, setAddress] = useState<AddressDraft>(emptyAddress());
   const [badField, setBadField] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "es">(locale);
+  const [flyerChoice, setFlyerChoice] = useState<FlyerDelivery | null>(null); // null = automatic
   const [members, setMembers] = useState<MemberDraft[]>([]);
   const householdSize = members.length + 1; // primary + members: always in sync
   const [attestation, setAttestation] = useState(false);
@@ -52,6 +55,10 @@ export default function RegisterInfoForm({
   const [website, setWebsite] = useState(""); // honeypot
   const [token, setToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Flyer delivery: the default follows what was typed (email, else a complete address, else none) until the person chooses.
+  const autoFlyer = defaultFlyerDelivery({ email, address: { addressLine1: address.line1, city: address.city, state: address.state, zipCode: address.zip } });
+  const flyerDelivery: FlyerDelivery = flyerChoice && !(flyerChoice === "email" && !email.trim()) ? flyerChoice : autoFlyer;
+  const ft = flyerText[locale];
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,6 +101,7 @@ export default function RegisterInfoForm({
           phone,
           address,
           language,
+          flyerDelivery,
           familySize: householdSize,
           members: membersPayload(members),
           attestation,
@@ -206,6 +214,22 @@ export default function RegisterInfoForm({
           </select>
         </div>
       </div>
+
+      <fieldset>
+        <legend className="block text-sm font-medium text-neutral-700 mb-1">{ft.question}</legend>
+        <p className="text-xs text-neutral-500 mb-2">{ft.help}</p>
+        <div className="space-y-2">
+          {([["email", ft.email], ["mail", ft.mail], ["none", ft.none]] as const).map(([v, label]) => {
+            const disabled = v === "email" && !email.trim();
+            return (
+              <label key={v} className={`flex items-start gap-2 text-sm ${disabled ? "text-neutral-400" : "text-neutral-800"}`}>
+                <input type="radio" name="flyerDelivery" className="mt-1" checked={flyerDelivery === v} disabled={disabled} onChange={() => setFlyerChoice(v)} />
+                <span>{label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <HouseholdSection locale={locale} members={members} onChange={setMembers} />
 

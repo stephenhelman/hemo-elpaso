@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
     consentMedia: body.consentMedia,
     consentSms: body.consentSms,
     consentNewsletter: body.consentNewsletter,
+    flyerDelivery: body.flyerDelivery,
   });
   if (!v.ok) {
     return NextResponse.json({ ok: false, error: "invalid", field: v.field }, { status: 400 });

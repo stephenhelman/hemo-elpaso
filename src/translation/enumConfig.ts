@@ -95,6 +95,8 @@ export const auditActionEnum = {
   EVENT_PHOTOS_UPLOADED: { en: "Photos Uploaded", es: "Fotos Subidas" },
   EVENT_PHOTO_DELETED: { en: "Photo Deleted", es: "Foto Eliminada" },
   EVENT_FLYERS_UPDATED: { en: "Flyer Updated", es: "Volante Actualizado" },
+  FLYER_DELIVERY_CHANGED: { en: "Flyer Delivery Changed", es: "Entrega de Volantes Cambiada" },
+  FLYER_MAILING_EXPORTED: { en: "Flyer Mailing List Exported", es: "Lista de Envío de Volantes Exportada" },
 
   // Announcements & Itinerary
   ANNOUNCEMENT_CREATED: { en: "Announcement Posted", es: "Anuncio Publicado" },

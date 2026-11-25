@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
+import { householdLang, pickFlyer, type PickedFlyer } from "@/lib/flyers";
 import { currentValue, isPast, visibleDiagnoses, type ConsentRow } from "./rules";
 
 export interface PortalRsvp {
@@ -12,8 +13,10 @@ export interface PortalRsvp {
   past: boolean;
   /** /rsvp/<token> to change or cancel. Null once the token was cleared (30 days after the event) or if cancelled. */
   link: string | null;
+  /** The flyer in the household's language (the other language if that is the only one). null = the event has no flyer. */
+  flyer: PickedFlyer | null;
 }
-export interface PortalInvite { id: string; title: { en: string; es: string }; eventDate: string; location: string }
+export interface PortalInvite { id: string; title: { en: string; es: string }; eventDate: string; location: string; flyer: PickedFlyer | null }
 export interface PortalMember { id: string; firstName: string | null; lastName: string | null; relationship: string; ageGroup: string; diagnoses: string[] }
 
 export interface PortalHousehold {
@@ -46,16 +49,17 @@ export async function loadHousehold(patientId: string, now = new Date()): Promis
         orderBy: { rsvpDate: "desc" },
         select: {
           id: true, attendeeCount: true, cancelledAt: true, checkInTokenEnc: true,
-          event: { select: { id: true, titleEn: true, titleEs: true, eventDate: true, endDate: true, location: true } },
+          event: { select: { id: true, titleEn: true, titleEs: true, eventDate: true, endDate: true, location: true, flyerEnUrl: true, flyerEsUrl: true, flyerEnAlt: true, flyerEsAlt: true } },
         },
       },
       invitations: {
         where: { status: "sent", removedAt: null },
-        select: { id: true, eventId: true, event: { select: { titleEn: true, titleEs: true, eventDate: true, endDate: true, location: true } } },
+        select: { id: true, eventId: true, event: { select: { titleEn: true, titleEs: true, eventDate: true, endDate: true, location: true, flyerEnUrl: true, flyerEsUrl: true, flyerEnAlt: true, flyerEsAlt: true } } },
       },
     },
   });
   if (!p) return null;
+  const lang = householdLang(p.preferredLanguage);
 
   const diag = visibleDiagnoses(p.primaryDiagnoses, p.householdMembers);
   const rsvps: PortalRsvp[] = p.rsvps.map((r) => {
@@ -69,6 +73,7 @@ export async function loadHousehold(patientId: string, now = new Date()): Promis
       cancelled: !!r.cancelledAt,
       past: isPast(r.event, now),
       link: raw ? `/rsvp/${raw}` : null,
+      flyer: pickFlyer(r.event, lang),
     };
   });
   const rsvpEvents = new Set(p.rsvps.map((r) => r.event.id));
@@ -84,7 +89,7 @@ export async function loadHousehold(patientId: string, now = new Date()): Promis
     past: rsvps.filter((r) => r.past),
     invited: p.invitations
       .filter((i) => !isPast(i.event, now) && !rsvpEvents.has(i.eventId))
-      .map((i) => ({ id: i.id, title: { en: i.event.titleEn, es: i.event.titleEs }, eventDate: i.event.eventDate.toISOString(), location: i.event.location }))
+      .map((i) => ({ id: i.id, title: { en: i.event.titleEn, es: i.event.titleEs }, eventDate: i.event.eventDate.toISOString(), location: i.event.location, flyer: pickFlyer(i.event, lang) }))
       .sort((a, b) => a.eventDate.localeCompare(b.eventDate)),
     consents: {
       data_and_contact: currentValue(rows, "data_and_contact"),

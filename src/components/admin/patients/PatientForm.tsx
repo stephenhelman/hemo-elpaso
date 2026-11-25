@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import { flyerText } from "@/lib/flyers/text";
 import AddressFields, { type AddressDraft } from "@/components/form/AddressFields";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
@@ -26,6 +27,8 @@ export interface PatientFormValues {
   /** Editing: the address on file is a one-line legacy entry (shown empty with a note; not auto-parsed). */
   addressUnstructured?: boolean;
   language: "en" | "es";
+  /** "" = automatic (create only): email if any, else mail if the address is complete, else none. */
+  flyerDelivery?: "" | "email" | "mail" | "none";
   familySize: number;
   diagnoses: string[]; // the PRIMARY's own
   members?: MemberDraft[]; // create mode only; edit mode manages members on the detail page
@@ -57,7 +60,7 @@ export default function PatientForm({
   const t = adminPatientsTranslation[locale];
   const h = householdTranslation[locale];
   const router = useRouter();
-  const [v, setV] = useState<Required<PatientFormValues>>({ members: [], attestation: false, addressUnstructured: false, ...initial });
+  const [v, setV] = useState<Required<PatientFormValues>>({ members: [], attestation: false, addressUnstructured: false, flyerDelivery: "", ...initial });
   const [saving, setSaving] = useState(false);
   const [badField, setBadField] = useState<string | null>(null);
   const set = <K extends keyof Required<PatientFormValues>>(k: K, val: Required<PatientFormValues>[K]) =>
@@ -82,6 +85,7 @@ export default function PatientForm({
             phone: v.phone,
             address: v.address,
             language: v.language,
+            ...(v.flyerDelivery ? { flyerDelivery: v.flyerDelivery } : {}),
             ...(mode === "create"
               ? {
                   familySize: v.members.length + 1,
@@ -154,6 +158,15 @@ export default function PatientForm({
           <select className={input} value={v.language} onChange={(e) => set("language", e.target.value === "es" ? "es" : "en")}>
             <option value="en">English</option>
             <option value="es">Español</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">{flyerText[locale].question}</label>
+          <select className={input} value={v.flyerDelivery} onChange={(e) => set("flyerDelivery", e.target.value as typeof v.flyerDelivery)}>
+            {mode === "create" && <option value="">{locale === "es" ? "Automático" : "Automatic"}</option>}
+            <option value="email">{flyerText[locale].email}</option>
+            <option value="mail">{flyerText[locale].mail}</option>
+            <option value="none">{flyerText[locale].none}</option>
           </select>
         </div>
       </div>

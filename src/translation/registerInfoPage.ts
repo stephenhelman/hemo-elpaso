@@ -42,6 +42,7 @@ export const registerInfoTranslation = {
       email: "Please enter a valid email address.",
       phone: "Please enter a valid phone number.",
       contact: "Please provide an email or a phone number.",
+      flyerDelivery: "That flyer choice isn’t available. If you chose email, add an email address first.",
       familySize: "Please enter a household size between 1 and 30.",
       consentDataAndContact: "You need to agree to the data and contact consent to continue.",
       consentSms: "To agree to text messages, please give a phone number.",
@@ -94,6 +95,7 @@ export const registerInfoTranslation = {
       email: "Ingresa un correo electrónico válido.",
       phone: "Ingresa un número de teléfono válido.",
       contact: "Proporciona un correo electrónico o un teléfono.",
+      flyerDelivery: "Esa opción de volantes no está disponible. Si eligió correo electrónico, agregue primero un correo.",
       familySize: "Ingresa un tamaño de hogar entre 1 y 30.",
       consentDataAndContact:
         "Debes aceptar el consentimiento de datos y contacto para continuar.",
