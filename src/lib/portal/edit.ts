@@ -1,4 +1,5 @@
 import { AuditAction } from "@prisma/client";
+import { addressColumns, parseAddress } from "@/lib/address/validate";
 import { prisma } from "@/lib/db";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
 import { cleanText, isValidEmail, normalizeEmail, normalizePhone } from "@/lib/patients/normalize";
@@ -86,11 +87,12 @@ export async function updateProfile(ctx: PortalCtx, i: { firstName: unknown; las
 export async function updateAddress(ctx: PortalCtx, address: unknown): Promise<EditResult> {
   if (!can(ctx.actor, "address.edit")) return forbidden();
   if (ctx.actor.kind === "member" && !(await actingMember(ctx))) return forbidden();
-  const value = cleanText(address, 300) || null;
+  const parsed = parseAddress(address);
+  if (!parsed.ok) return bad(parsed.field);
   await prisma.$transaction(async (tx) => {
     const cp = await tx.contactProfile.findUnique({ where: { patientId: ctx.householdId }, select: { id: true } });
     if (!cp) throw new Error("no_profile");
-    await tx.contactProfile.update({ where: { id: cp.id }, data: { addressLine1: value } });
+    await tx.contactProfile.update({ where: { id: cp.id }, data: addressColumns(parsed.value) });
     await auditFamily(ctx, AuditAction.PORTAL_PROFILE_CHANGED, "Patient", ctx.householdId, "Mailing address changed on the family page", { fields: ["address"] }, tx);
   });
   return { ok: true };

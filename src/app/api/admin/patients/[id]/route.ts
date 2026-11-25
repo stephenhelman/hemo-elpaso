@@ -6,6 +6,7 @@ import { validatePatientInput } from "@/lib/patients/create";
 import { PATIENT_ONLY } from "@/lib/patients/query";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { auditPatient } from "@/lib/patients/audit";
+import { addressColumns } from "@/lib/address/validate";
 
 type Ctx = { params: { id: string } };
 
@@ -35,7 +36,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   if (cp?.firstName !== n.firstName || cp?.lastName !== n.lastName) changed.push("name");
   if (existing.email !== n.email) changed.push("email");
   if ((cp?.phone ?? null) !== n.phone) changed.push("phone");
-  if ((cp?.addressLine1 ?? null) !== n.address) changed.push("address");
+  const nextAddr = addressColumns(n.address);
+  if ((["addressLine1", "addressLine2", "city", "state", "zipCode"] as const).some((k) => (cp?.[k] ?? null) !== nextAddr[k])) changed.push("address");
   if (existing.preferredLanguage !== n.language) changed.push("language");
   // familySize is derived (1 + household members); diagnoses edited here are the PRIMARY's own.
   const sameDx =
@@ -59,8 +61,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     if (updateDx) await recomputeHousehold(tx, existing.id);
     await tx.contactProfile.upsert({
       where: { patientId: existing.id },
-      update: { firstName: n.firstName, lastName: n.lastName, phone: n.phone, addressLine1: n.address },
-      create: { patientId: existing.id, firstName: n.firstName, lastName: n.lastName, phone: n.phone, addressLine1: n.address },
+      update: { firstName: n.firstName, lastName: n.lastName, phone: n.phone, ...nextAddr },
+      create: { patientId: existing.id, firstName: n.firstName, lastName: n.lastName, phone: n.phone, ...nextAddr },
     });
   });
 

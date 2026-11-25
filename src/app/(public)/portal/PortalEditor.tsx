@@ -6,6 +6,7 @@ import { editText } from "@/lib/portal/edit-text";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { AGE_GROUPS, RELATIONSHIPS, ageGroupLabels } from "@/lib/households/constants";
 import type { ViewMember } from "@/lib/portal/view";
+import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
 
 type Lang = "en" | "es";
 type Body = Record<string, unknown>;
@@ -13,7 +14,9 @@ export interface EditorProps {
   lang: Lang;
   isPrimary: boolean;
   me: { firstName: string; lastName: string; phone: string | null; email: string | null; language: Lang; diagnoses: string[] };
-  address: string | null;
+  address: { line1: string; line2: string; city: string; state: string; zip: string; unstructured: boolean } | null;
+  /** The address_autocomplete toggle (decided on the server). */
+  addressAutocomplete: boolean;
   members: ViewMember[];
   otherAdults: { id: string; name: string }[];
   pendingAttestations: { childMemberId: string; childName: string }[];
@@ -34,13 +37,15 @@ function useAct(lang: Lang) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [field, setField] = useState<string | null>(null);
   async function act(body: Body, okText?: string): Promise<boolean> {
     setBusy(true);
-    setNote(null);
+    setNote(null); setField(null);
     try {
       const res = await fetch("/api/portal/edit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        setField(typeof data.field === "string" ? data.field : null);
         setNote({ ok: false, text: t.errors[(data.field as string) ?? (data.error as string)] ?? t.failed });
         return false;
       }
@@ -54,7 +59,7 @@ function useAct(lang: Lang) {
       setBusy(false);
     }
   }
-  return { act, busy, note };
+  return { act, busy, note, field };
 }
 const Note = ({ note }: { note: { ok: boolean; text: string } | null }) => (
   <p className={`text-sm min-h-[1.25rem] ${note?.ok ? "text-green-700" : "text-red-700"}`} role="status" aria-live="polite">{note?.text ?? ""}</p>
@@ -74,11 +79,12 @@ function DiagnosisChecks({ lang, value, onChange }: { lang: Lang; value: string[
 }
 
 // ── about you ───────────────────────────────────────────────────────────────────────────────────────────────
-function AboutYou({ lang, me, address }: { lang: Lang; me: EditorProps["me"]; address: string | null }) {
+function AboutYou({ lang, me, address, autocomplete }: { lang: Lang; me: EditorProps["me"]; address: EditorProps["address"]; autocomplete: boolean }) {
   const t = editText[lang];
   const p = useAct(lang), a = useAct(lang), e = useAct(lang), d = useAct(lang);
   const [f, setF] = useState({ firstName: me.firstName, lastName: me.lastName, phone: me.phone ?? "", language: me.language });
-  const [addr, setAddr] = useState(address ?? "");
+  // A legacy one-line address is not split up for the person: the boxes start empty and the note says why.
+  const [addr, setAddr] = useState<AddressDraft>(address && !address.unstructured ? { line1: address.line1, line2: address.line2, city: address.city, state: address.state, zip: address.zip } : emptyAddress());
   const [email, setEmail] = useState("");
   const [dx, setDx] = useState<string[]>(me.diagnoses);
   const [sent, setSent] = useState(false);
@@ -112,8 +118,9 @@ function AboutYou({ lang, me, address }: { lang: Lang; me: EditorProps["me"]; ad
       </div>
 
       <div>
-        <label className="text-sm font-medium text-neutral-900">{t.address}<textarea className={`${input} mt-1`} rows={2} value={addr} onChange={(x) => setAddr(x.target.value)} autoComplete="street-address" /></label>
+        <p className="text-sm font-medium text-neutral-900">{t.address}</p>
         <p className="text-xs text-neutral-500 mb-2">{t.addressHelp}</p>
+        <AddressFields value={addr} onChange={setAddr} locale={lang} autocomplete={autocomplete} unstructuredNote={!!address?.unstructured} invalidField={a.field} />
         <div className="flex items-center gap-3"><button className={ghostBtn} disabled={a.busy} onClick={() => a.act({ action: "address", address: addr })}>{a.busy ? t.saving : t.save}</button><Note note={a.note} /></div>
       </div>
 
@@ -345,7 +352,7 @@ export default function PortalEditor(p: EditorProps) {
   return (
     <>
       <GuardianGate lang={p.lang} pending={p.pendingAttestations} />
-      <AboutYou lang={p.lang} me={p.me} address={p.address} />
+      <AboutYou lang={p.lang} me={p.me} address={p.address} autocomplete={p.addressAutocomplete} />
       <section className={card} aria-labelledby="members">
         <h2 id="members" className={h2}>{t.members}</h2>
         <ul className="divide-y divide-neutral-100">

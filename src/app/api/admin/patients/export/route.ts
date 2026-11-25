@@ -31,11 +31,12 @@ export async function POST(req: NextRequest) {
     consent: typeof f.consent === "string" ? f.consent : undefined,
     duplicates: f.duplicates === true,
     pendingConfirmations: f.pendingConfirmations === true,
+    noAffectedMember: f.noAffectedMember === true,
   });
 
   const withDx = admin!.can("canViewPHI");
   const header = [
-    "ID", "First Name", "Last Name", "Email", "Phone", "Address", "Language",
+    "ID", "First Name", "Last Name", "Email", "Phone", "Address", "Address Line 2", "City", "State", "ZIP", "Review Status", "Language",
     "Family Size", "Source", "Data & Contact Consent", "Media Consent",
     "Possible Duplicate", "Created",
     ...(withDx ? ["Stated Diagnoses"] : []),
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   const rows = patients.map((p) => [
     p.id,
     p.contactProfile?.firstName, p.contactProfile?.lastName,
-    p.email, p.contactProfile?.phone, p.contactProfile?.addressLine1,
+    p.email, p.contactProfile?.phone, p.contactProfile?.addressLine1, p.contactProfile?.addressLine2, p.contactProfile?.city, p.contactProfile?.state, p.contactProfile?.zipCode, p.reviewStatus,
     p.preferredLanguage, p.familySize, p.source,
     yn(p.consents.data_and_contact), yn(p.consents.media),
     p.possibleDuplicateOfId ? "yes" : "no",

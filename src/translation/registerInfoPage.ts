@@ -32,6 +32,7 @@ export const registerInfoTranslation = {
     full: "This event is full. Please call us at {phone}.",
     closed: "Registration is closed. Please call us at {phone}.",
     submitting: "Sending…",
+    reviewNote: "We'll review your registration and may call you.",
     successTitle: "Thank you!",
     successBody:
       "We received your information. If you gave us an email address, a confirmation is on its way.",
@@ -83,6 +84,7 @@ export const registerInfoTranslation = {
     full: "Este evento está lleno. Llámanos al {phone}.",
     closed: "El registro está cerrado. Llámanos al {phone}.",
     submitting: "Enviando…",
+    reviewNote: "Revisaremos tu registro y es posible que te llamemos.",
     successTitle: "¡Gracias!",
     successBody:
       "Recibimos tu información. Si nos diste un correo electrónico, tu confirmación va en camino.",
