@@ -94,7 +94,8 @@ test("autocomplete: off by default, Google script never added unless asked for",
   assert.deepEqual(added, [], "import adds no script");
   const React = await import("react");
   const { renderToString } = await import("react-dom/server");
-  const { default: AddressFields, emptyAddress } = await import("../src/components/form/AddressFields");
+  const { default: AddressFields } = await import("../src/components/form/AddressFields");
+  const { emptyAddress } = await import("../src/lib/address/draft");
   const html = (autocomplete: boolean) => renderToString(React.createElement(AddressFields, { value: emptyAddress(), onChange: () => {}, locale: "en", autocomplete }));
   assert.ok(!html(false).includes("Google"), "toggle off: no Google line");
   assert.ok(html(true).includes("Address suggestions come from Google."), "toggle on: the line under the field");

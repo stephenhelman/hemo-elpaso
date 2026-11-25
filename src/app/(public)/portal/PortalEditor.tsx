@@ -7,7 +7,8 @@ import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { AGE_GROUPS, RELATIONSHIPS, ageGroupLabels } from "@/lib/households/constants";
 import type { ViewMember } from "@/lib/portal/view";
 import { flyerText } from "@/lib/flyers/text";
-import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
+import AddressFields from "@/components/form/AddressFields";
+import { emptyAddress, type AddressDraft } from "@/lib/address/draft";
 
 type Lang = "en" | "es";
 type Body = Record<string, unknown>;

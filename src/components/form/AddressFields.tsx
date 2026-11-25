@@ -7,8 +7,7 @@ import { lookupZip } from "@/lib/address/zip";
 import { addressFromPlace, newSessionToken, suggest, type Suggestion } from "@/lib/address/google";
 import type { Lang } from "@/types";
 
-export interface AddressDraft { line1: string; line2: string; city: string; state: string; zip: string }
-export const emptyAddress = (): AddressDraft => ({ line1: "", line2: "", city: "", state: DEFAULT_STATE, zip: "" });
+import type { AddressDraft } from "@/lib/address/draft";
 
 const input = "w-full px-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary";
 

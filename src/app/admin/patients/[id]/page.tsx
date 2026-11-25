@@ -1,6 +1,6 @@
 import { SITE_TIMEZONE } from "@/lib/site";
 import { addressAutocompleteEnabled } from "@/lib/address/server";
-import { emptyAddress } from "@/components/form/AddressFields";
+import { emptyAddress } from "@/lib/address/draft";
 import { isUnstructuredAddress } from "@/lib/review/rules";
 import ReviewStatusPanel from "@/components/admin/patients/ReviewStatusPanel";
 import { notFound, redirect } from "next/navigation";

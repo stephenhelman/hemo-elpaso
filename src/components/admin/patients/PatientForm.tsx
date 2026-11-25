@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { flyerText } from "@/lib/flyers/text";
-import AddressFields, { type AddressDraft } from "@/components/form/AddressFields";
+import AddressFields from "@/components/form/AddressFields";
+import type { AddressDraft } from "@/lib/address/draft";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import HouseholdSection, {

@@ -18,7 +18,8 @@ import HouseholdSection, {
 } from "@/components/household/HouseholdSection";
 import { defaultFlyerDelivery, type FlyerDelivery } from "@/lib/flyers";
 import { flyerText } from "@/lib/flyers/text";
-import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
+import AddressFields from "@/components/form/AddressFields";
+import { emptyAddress, type AddressDraft } from "@/lib/address/draft";
 import { householdTranslation } from "@/translation/household";
 
 const input =
