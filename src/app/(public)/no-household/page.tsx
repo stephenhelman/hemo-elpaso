@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const t = {
   en: {
     title: "We couldn't find your household",
-    body: "You signed in, but the email on that account doesn't match a household we have. If you haven't registered yet, you can do that now. If you have, you may have signed in with a different email, or with Apple's “Hide my email”. Tell us and we'll connect it for you.",
+    body: "You signed in, but the email on that account doesn't match a household we have. If you haven't registered yet, you can do that now. If you have, you may have signed in with a different email, with Apple's “Hide my email”, or by asking for a code at a different address. A code sent to the email you registered with always works. Tell us and we'll connect it for you.",
     register: "Register your household",
     contact: "Contact HOEP",
     switchAccount: "Sign in with a different account",
@@ -22,7 +22,7 @@ const t = {
   },
   es: {
     title: "No encontramos su hogar",
-    body: "Inició sesión, pero el correo de esa cuenta no coincide con ningún hogar que tengamos. Si aún no se ha registrado, puede hacerlo ahora. Si ya lo hizo, tal vez inició sesión con otro correo, o con “Ocultar mi correo” de Apple. Avísenos y lo conectamos.",
+    body: "Inició sesión, pero el correo de esa cuenta no coincide con ningún hogar que tengamos. Si aún no se ha registrado, puede hacerlo ahora. Si ya lo hizo, tal vez inició sesión con otro correo, con “Ocultar mi correo” de Apple, o pidió un código a otra dirección. Un código enviado al correo con el que se registró siempre funciona. Avísenos y lo conectamos.",
     register: "Registre su hogar",
     contact: "Contactar a HOEP",
     switchAccount: "Iniciar sesión con otra cuenta",

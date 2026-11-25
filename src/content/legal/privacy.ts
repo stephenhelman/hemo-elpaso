@@ -53,7 +53,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple or Facebook. The service shares your name and email with us, and we use the email to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in. Each adult in a household who has confirmed their own details can sign in with the email they confirmed with. Each adult manages their own consents and information, and parents and guardians manage their children’s information. No one sees another adult’s consents or health information.",
+        text: "**When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple, Facebook, or a one-time code we email to you. The service (or the code email) gives us your email address, and we use it to find your household. We keep a record of which sign-in is linked to your household. If we can’t find your household, we keep that sign-in record for up to 30 days so the board can help you. We never receive your password for those services. A cookie keeps you signed in. Each adult in a household who has confirmed their own details can sign in with the email they confirmed with. Each adult manages their own consents and information, and parents and guardians manage their children’s information. No one sees another adult’s consents or health information.",
       },
       {
         t: "p",
@@ -135,7 +135,7 @@ export const privacy: LegalDoc = {
           ["Neon", "Stores our database"],
           ["Resend", "Sends our emails"],
           ["Cloudflare", "Stores event photos; protects our forms from spam"],
-          ["Auth0", "Board sign-in and family sign-in with Google, Apple or Facebook. {STATUS:family_portal}"],
+          ["Auth0", "Board sign-in and family sign-in with Google, Apple, Facebook, or a one-time code emailed to you. {STATUS:family_portal}"],
           ["Sanity", "Manages public website content (no family information)"],
           ["Google", "HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings} Address suggestions while you type, if enabled. {STATUS:address_autocomplete}"],
           ["Railway", "Hosts Puente Live. {STATUS:live_captions}"],
@@ -175,7 +175,7 @@ export const privacy: LegalDoc = {
           ["Diagnosis letters {STATUS:verification}", "Until reviewed, no more than 14 days"],
           ["Verification result {STATUS:verification}", "Same as your household record"],
           ["Sign-in sessions {STATUS:family_portal}", "Up to 7 days, and you’re signed out after 24 hours of inactivity"],
-          ["Linked sign-ins {STATUS:family_portal}", "Which Google, Apple or Facebook sign-in is linked to your household: while your household record exists"],
+          ["Linked sign-ins {STATUS:family_portal}", "Which Google, Apple, Facebook or emailed-code sign-in is linked to your household: while your household record exists"],
           ["Sign-ins we couldn’t match to a household {STATUS:family_portal}", "30 days after last use, then deleted"],
           ["Merged duplicate records", "If we merge duplicate records, we keep an empty placeholder for up to 12 months, and the other email address only to recognize your sign-in."],
           ["Assistance records {STATUS:assistance}", "{ASSISTANCE_RETENTION}"],
@@ -242,7 +242,7 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
-        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple o Facebook. El servicio comparte con nosotros su nombre y correo, y usamos el correo para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta. Cada adulto de un hogar que haya confirmado sus propios datos puede iniciar sesión con el correo con el que confirmó. Cada adulto administra sus propios consentimientos e información, y los padres y tutores administran la información de sus hijos. Nadie ve los consentimientos ni la información de salud de otro adulto.",
+        text: "**Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple, Facebook, o con un código de un solo uso que le enviamos por correo. El servicio (o el correo con el código) nos da su dirección de correo, y la usamos para encontrar su hogar. Guardamos un registro de qué inicio de sesión está vinculado a su hogar. Si no encontramos su hogar, conservamos ese registro hasta 30 días para que la junta pueda ayudarle. Nunca recibimos su contraseña de esos servicios. Una cookie mantiene su sesión abierta. Cada adulto de un hogar que haya confirmado sus propios datos puede iniciar sesión con el correo con el que confirmó. Cada adulto administra sus propios consentimientos e información, y los padres y tutores administran la información de sus hijos. Nadie ve los consentimientos ni la información de salud de otro adulto.",
       },
       {
         t: "p",
@@ -324,7 +324,7 @@ export const privacy: LegalDoc = {
           ["Neon", "Guarda nuestra base de datos"],
           ["Resend", "Envía nuestros correos electrónicos"],
           ["Cloudflare", "Guarda las fotos de los eventos; protege nuestros formularios contra el spam"],
-          ["Auth0", "Inicio de sesión de la junta y de las familias con Google, Apple o Facebook. {STATUS:family_portal}"],
+          ["Auth0", "Inicio de sesión de la junta y de las familias con Google, Apple, Facebook o un código de un solo uso enviado por correo. {STATUS:family_portal}"],
           ["Sanity", "Administra el contenido público del sitio web (sin información de las familias)"],
           ["Google", "Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings} Sugerencias de direcciones mientras escribe, si está activado. {STATUS:address_autocomplete}"],
           ["Railway", "Aloja Puente Live. {STATUS:live_captions}"],
@@ -364,7 +364,7 @@ export const privacy: LegalDoc = {
           ["Cartas de diagnóstico {STATUS:verification}", "Hasta que se revisan, máximo 14 días"],
           ["Resultado de la verificación {STATUS:verification}", "Igual que el registro de su hogar"],
           ["Sesiones de inicio de sesión {STATUS:family_portal}", "Hasta 7 días, y se cierra su sesión tras 24 horas de inactividad"],
-          ["Inicios de sesión vinculados {STATUS:family_portal}", "Qué inicio de sesión de Google, Apple o Facebook está vinculado a su hogar: mientras exista el registro de su hogar"],
+          ["Inicios de sesión vinculados {STATUS:family_portal}", "Qué inicio de sesión de Google, Apple, Facebook o con código por correo está vinculado a su hogar: mientras exista el registro de su hogar"],
           ["Inicios de sesión que no pudimos asociar a un hogar {STATUS:family_portal}", "30 días después del último uso, y luego se borran"],
           ["Registros duplicados fusionados", "Si fusionamos registros duplicados, conservamos un registro vacío hasta 12 meses, y el otro correo electrónico solo para reconocer su inicio de sesión."],
           ["Registros de ayuda financiera {STATUS:assistance}", "{ASSISTANCE_RETENTION}"],

@@ -7,7 +7,7 @@ import MergeDialog from "@/components/admin/merge/MergeDialog";
 interface Unmatched { id: string; provider: string; email: string; lastLoginAt: string; unlinkedByHand: boolean; matches: number }
 interface Person { id: string; name: string; email: string | null; hasHousehold: boolean; boardRoles: string[]; adults: { id: string; name: string }[]; identities: { id: string; provider: string; email: string; linkedVia: string | null; householdMemberId: string | null }[] }
 
-const PROVIDER: Record<string, string> = { "google-oauth2": "Google", apple: "Apple", facebook: "Facebook" };
+const PROVIDER: Record<string, string> = { "google-oauth2": "Google", apple: "Apple", facebook: "Facebook", email: "Email code" };
 const btn = "px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-50";
 
 async function api(url: string, init?: RequestInit) {

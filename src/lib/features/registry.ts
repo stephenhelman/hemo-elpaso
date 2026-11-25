@@ -1,7 +1,7 @@
 /**
  * Feature registry: the switchboard's code side. PURE (no DB, no Next).
  *
- * `family_social_signin` was folded into `family_portal` (family sign-in is Google, Apple or Facebook only). The key is
+ * `family_social_signin` was folded into `family_portal` (family sign-in is Google, Apple, Facebook or an emailed one-time code). The key is
  * retired, not reserved for anything: a stored feature_flags row for it is ignored. A future text-code sign-in would be a
  * new key with its own policy text.
  *
@@ -31,7 +31,7 @@ export interface FeatureDef {
 export const FEATURES: Record<FeatureKey, FeatureDef> = {
   recordings: { key: "recordings", implemented: false, coveredByPolicy: 2, label: { en: "Event recordings and live streams", es: "Grabaciones y transmisiones en vivo de eventos" } },
   live_captions: { key: "live_captions", implemented: false, coveredByPolicy: 2, label: { en: "Live captions and translation (Puente Live)", es: "Subtítulos y traducción en vivo (Puente Live)" } },
-  family_portal: { key: "family_portal", implemented: true, coveredByPolicy: 2, label: { en: "Family page (sign in with Google, Apple or Facebook)", es: "Página familiar (inicio de sesión con Google, Apple o Facebook)" } },
+  family_portal: { key: "family_portal", implemented: true, coveredByPolicy: 2, label: { en: "Family page (sign in with Google, Apple, Facebook or an emailed code)", es: "Página familiar (inicio de sesión con Google, Apple, Facebook o un código por correo)" } },
   verification: { key: "verification", implemented: false, coveredByPolicy: 2, label: { en: "Diagnosis verification", es: "Verificación de diagnóstico" } },
   sms: { key: "sms", implemented: false, coveredByPolicy: 2, label: { en: "Text messages", es: "Mensajes de texto" } },
   newsletter: { key: "newsletter", implemented: false, coveredByPolicy: 2, label: { en: "Newsletter", es: "Boletín" } },

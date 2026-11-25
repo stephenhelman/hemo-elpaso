@@ -12,7 +12,7 @@ export const rsvpModalTranslation: Record<Lang, Record<string, string>> = {
     sentTitle: "Check your email", sent: "If that email address is registered, we've sent you an RSVP link. It can take a few minutes. Please check your spam folder too.",
     byInvitation: "This event is by invitation. If you were invited, enter your email below. Otherwise please call HOEP at {phone}.",
     invitedEmailBody: "Enter the email you registered with and we'll send your RSVP link.",
-    signedInHint: "Already signed in? Your household's RSVP form appears here.", signIn: "Sign in to your family page",
+    signedInHint: "Already signed in? Your household's RSVP form appears here. You can sign in with Google, Apple or Facebook, or get a code by email.", signIn: "Sign in to your family page",
     full: "The in-person spots for this event are full. You can still send a request: we'll put you on the waitlist or find another way to join.",
     // signed in
     send: "Send my request", rsvp: "RSVP", saving: "Saving…",
@@ -40,7 +40,7 @@ export const rsvpModalTranslation: Record<Lang, Record<string, string>> = {
     sentTitle: "Revisa tu correo", sent: "Si ese correo está registrado, te enviamos un enlace para confirmar tu asistencia. Puede tardar unos minutos. Revisa también tu carpeta de spam.",
     byInvitation: "Este evento es solo por invitación. Si te invitaron, escribe tu correo abajo. Si no, llama a HOEP al {phone}.",
     invitedEmailBody: "Escribe el correo con el que te registraste y te enviaremos tu enlace.",
-    signedInHint: "¿Ya iniciaste sesión? El formulario de tu hogar aparece aquí.", signIn: "Inicia sesión en tu página familiar",
+    signedInHint: "¿Ya iniciaste sesión? El formulario de tu hogar aparece aquí. Puedes iniciar sesión con Google, Apple o Facebook, o recibir un código por correo.", signIn: "Inicia sesión en tu página familiar",
     full: "Los lugares presenciales de este evento están llenos. Aún puedes enviar una solicitud: te pondremos en la lista de espera o buscaremos otra forma de participar.",
     send: "Enviar mi solicitud", rsvp: "Confirmar asistencia", saving: "Guardando…",
     requestNote: "Tu hogar no estaba en la lista de invitados de este evento. Envía una solicitud y la mesa directiva te avisará.",

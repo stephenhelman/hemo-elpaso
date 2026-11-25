@@ -1124,3 +1124,28 @@ See those files: every key has EN and ES side by side. Please read especially: `
 | Waitlisted | "All in-person spots are taken for now. If a spot opens, or another way to join is possible, we'll write to you." | does not mention virtual by name (virtual may be off) |
 | Declined | "We're sorry we aren't able to say yes this time… you're always welcome to call us." | kind and general. **Never** gives a reason or a reason code |
 | Confirmed virtual / virtual reminder | Meet link, YouTube link, date and time, how to join | links appear in these emails and virtual invitations only |
+
+
+## Email-code sign-in (fix/email-code-signin)
+
+EN is the source. Needs a native-speaker read. `LEGAL_EFFECTIVE_DATE` untouched.
+
+### Privacy Policy (src/content/legal/privacy.ts): CHANGED
+
+- EN: **When you sign in to your family page.** {STATUS:family_portal} You sign in with Google, Apple, Facebook, or a one-time code we email to you. The service (or the code email) gives us your email address, and we use it to find your household. …
+  ES: **Cuando inicia sesión en su página familiar.** {STATUS:family_portal} Usted inicia sesión con Google, Apple, Facebook, o con un código de un solo uso que le enviamos por correo. El servicio (o el correo con el código) nos da su dirección de correo, y la usamos para encontrar su hogar. …
+- EN: Auth0 | Board sign-in and family sign-in with Google, Apple, Facebook, or a one-time code emailed to you. {STATUS:family_portal}
+  ES: Auth0 | Inicio de sesión de la junta y de las familias con Google, Apple, Facebook o un código de un solo uso enviado por correo. {STATUS:family_portal}
+- EN: Linked sign-ins {STATUS:family_portal} | Which Google, Apple, Facebook or emailed-code sign-in is linked to your household: while your household record exists
+  ES: Inicios de sesión vinculados {STATUS:family_portal} | Qué inicio de sesión de Google, Apple, Facebook o con código por correo está vinculado a su hogar: mientras exista el registro de su hogar
+
+### Feature toggle label (src/lib/features/registry.ts, `family_portal`)
+
+- EN: Family page (sign in with Google, Apple, Facebook or an emailed code)
+  ES: Página familiar (inicio de sesión con Google, Apple, Facebook o un código por correo)
+
+### Sign-in help text
+
+- Login button tooltip (`UserMenu.tsx`). EN: Log in with Google, Apple or Facebook, or get a code by email. ES: Inicie sesión con Google, Apple o Facebook, o reciba un código por correo.
+- RSVP modal hint (`rsvpModal.ts`, `eventRsvp.ts`). EN: … You can sign in with Google, Apple or Facebook, or get a code by email. ES: … Puedes iniciar sesión con Google, Apple o Facebook, o recibir un código por correo.
+- "We couldn't find your household" (`no-household/page.tsx`). EN: … or by asking for a code at a different address. A code sent to the email you registered with always works. ES: … o pidió un código a otra dirección. Un código enviado al correo con el que se registró siempre funciona.

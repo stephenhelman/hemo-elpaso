@@ -18,7 +18,7 @@ import { prisma } from "../src/lib/db";
 import { DEFAULT_MATRIX } from "../src/lib/permission-catalog";
 import { resolvePermissions } from "../src/lib/permissions";
 import {
-  BOARD_PROVIDER, adminMayTouch, canRequireOrg, chooseSurvivor, decideLink, isOrgEmail, isOrgIdentity, providerOf, resolveMode, type SessionFacts,
+  BOARD_PROVIDER, FAMILY_PROVIDERS, emailVerifiedFor, adminMayTouch, canRequireOrg, chooseSurvivor, decideLink, isOrgEmail, isOrgIdentity, providerOf, resolveMode, type SessionFacts,
 } from "../src/lib/identity/rules";
 import { resolveForUser } from "../src/lib/identity/session";
 import { REQUIRE_ORG_KEY } from "../src/lib/identity/settings";
@@ -247,6 +247,41 @@ test("a board session needs an org Google identity; the same person on Apple is 
   await prisma.userIdentity.create({ data: { auth0Sub: a, provider: "apple", email, emailVerified: true, patientId: pid, linkedVia: "auto", linkedAt: new Date() } });
   assert.equal((await resolveForUser(user(a, email))).mode, "family");
 });
+test("emailed one-time code (provider \"email\"): verified by definition, links a family, and can never be board", () => {
+  assert.equal(providerOf("email|64f0c1"), "email");
+  assert.ok((FAMILY_PROVIDERS as readonly string[]).includes("email"));
+  assert.equal(emailVerifiedFor("email", undefined), true, "receiving the code proves the address");
+  assert.equal(emailVerifiedFor("email", false), true);
+  assert.equal(emailVerifiedFor("google-oauth2", undefined), false, "other providers still need the claim");
+  assert.equal(emailVerifiedFor("apple", false), false);
+  assert.equal(emailVerifiedFor("facebook", true), true);
+  // never board: not an org identity even for an org address, and not for a grandfathered "backfill" link either
+  const code = { provider: "email", email: `p@${D}`, emailVerified: true };
+  assert.equal(isOrgIdentity(code, D), false);
+  for (const requireOrgAccount of [true, false]) for (const role of ["admin", "board"]) {
+    assert.equal(resolveMode(facts({ patientRole: role, identity: { ...code, linkedVia: "auto" }, requireOrgAccount })), "family", `${role} requireOrg=${requireOrgAccount}`);
+  }
+  assert.equal(resolveMode(facts({ identity: { ...code, linkedVia: "admin" } })), "family");
+});
+
+test("emailed code in the database: links a household on a verified-by-definition email, and a board member's org address via a code is family only", async () => {
+  const fam = await family("codefam");
+  const s = sub("email", "cf");
+  const r = await resolveForUser({ sub: s, email: em("codefam") }); // passwordless tokens may carry no email_verified claim
+  assert.equal(r.patient?.id, fam);
+  assert.equal(r.mode, "family");
+  assert.equal((await prisma.userIdentity.findUnique({ where: { auth0Sub: s } }))?.provider, "email");
+  // the other providers still need email_verified
+  assert.equal((await resolveForUser({ sub: sub("facebook", "cfu"), email: em("codefam") })).mode, "none");
+  // an officer who asks for a code at their org address: family, never /admin
+  const pid = await boardOnly("bcode", "SECRETARY");
+  const orgEmail = `${tag}.bcode@${D}`;
+  const rc = await resolveForUser({ sub: sub("email", "bc"), email: orgEmail });
+  assert.equal(rc.patient?.id, pid);
+  assert.equal(rc.mode, "family");
+  assert.equal((await resolveForUser(user(sub("google-oauth2", "bcg"), orgEmail))).mode, "board", "the same person on Google Workspace is board");
+});
+
 test("officer transition ON/OFF in the database: a grandfathered Gmail keeps board access only while the setting is off", async () => {
   const pid = await family("old", { role: "board", board: "TREASURER", email: em("old") });
   const s = sub("google-oauth2", "old");

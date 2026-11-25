@@ -5,7 +5,7 @@ import { audit } from "@/lib/audit";
 import { sendLoggedEmail } from "@/lib/email/send";
 import { getRouteRecipients } from "@/lib/email-routing";
 import { siteUrl } from "@/lib/site";
-import { decideLink, isOrgEmail, normalizeEmail, providerOf, type LinkCandidate } from "./rules";
+import { decideLink, emailVerifiedFor, isOrgEmail, normalizeEmail, providerOf, type LinkCandidate } from "./rules";
 import { emailDomain } from "@/lib/site";
 
 export interface AuthUser {
@@ -36,7 +36,7 @@ export async function syncIdentity(user: AuthUser): Promise<UserIdentity | null>
   const now = new Date();
   const existing = await prisma.userIdentity.findUnique({ where: { auth0Sub: user.sub } });
   const email = normalizeEmail(user.email);
-  const verified = user.email_verified === true;
+  const verified = emailVerifiedFor(providerOf(user.sub), user.email_verified); // an emailed one-time code proves the address
 
   if (existing?.patientId) {
     // Keep what the provider says current (an org identity whose provider email changed stops being org), and note use.
