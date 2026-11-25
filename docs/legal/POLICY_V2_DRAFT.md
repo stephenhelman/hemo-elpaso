@@ -33,6 +33,7 @@ The toggle key is the name the admin settings and the policy page share.
 | Community Q&A | Not yet available | `community` |
 | Online donations | Not yet available | `donations` |
 | Volunteer sign-up | Not yet available | `volunteers` |
+| Address suggestions while you type (Google) | Not yet available | `address_autocomplete` |
 
 ## Privacy Policy v2
 
@@ -80,6 +81,7 @@ HOEP is a nonprofit that supports families affected by bleeding disorders in the
 
 ### How we use it
 
+- To review new registrations before sending invitations.
 - To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone's diagnosis.
 - To manage RSVPs, send confirmations and reminders, and check people in.
 - To answer your messages.
@@ -98,7 +100,7 @@ How it works: you upload a letter, the President or Vice President reviews it, a
 
 ### Who can see it
 
-Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.
+Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Other board members may see your contact details and household members to confirm your registration; they never see health information. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.
 
 We use these service providers. They process information only to provide their service to HOEP:
 
@@ -110,7 +112,7 @@ We use these service providers. They process information only to provide their s
 | Cloudflare | Stores event photos; protects our forms from spam |
 | Auth0 | Board sign-in and, *when available*, family sign-in with Google, Apple or Facebook |
 | Sanity | Manages public website content (no family information) |
-| Google | HOEP email; the map on our contact page; *when available*, Google Meet for virtual events and YouTube for recordings |
+| Google | HOEP email; the map on our contact page; *when available*, Google Meet for virtual events and YouTube for recordings; *when available*, address suggestions while you type, if enabled |
 | Railway | *When available:* hosts Puente Live |
 | Deepgram | *When available:* turns speech into text for live captions; audio is kept only while it's processed |
 | Anthropic | *When available:* translates caption text; deleted within 30 days and never used to train models |
