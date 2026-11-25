@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import PatientForm from "@/components/admin/patients/PatientForm";
 import { addressAutocompleteEnabled } from "@/lib/address/server";
-import { emptyAddress } from "@/components/form/AddressFields";
+import { emptyAddress } from "@/lib/address/draft";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import type { Lang } from "@/types";
