@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const p = await prisma.patient.findFirst({
     where: { id: params.id, ...PATIENT_ONLY },
-    select: { id: true, contactProfile: { select: { firstName: true } } },
+    select: { id: true, reviewStatus: true, contactProfile: { select: { firstName: true } } },
   });
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -30,6 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   return NextResponse.json({
     primaryName: p.contactProfile?.firstName ?? "",
+    reviewStatus: p.reviewStatus,
     options: members.map((m) => ({ id: m.id, label: m.firstName ?? "", relationship: m.relationship, ageGroup: m.ageGroup, status: m.status })),
     selected: rsvp
       ? { primary: rsvp.attendees.some((a) => a.isPrimary), memberIds: rsvp.attendees.map((a) => a.householdMemberId).filter(Boolean), guests: rsvp.guestCount }

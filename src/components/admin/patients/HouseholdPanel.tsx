@@ -77,7 +77,7 @@ export default function HouseholdPanel({
       : m.status === "declined" ? t.declinedPlaceholder : t.expiredPlaceholder;
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+    <div className="bg-white rounded-2xl border border-neutral-200 p-6" id="members">
       <h2 className="font-semibold text-neutral-900 mb-3">{t.panelTitle}</h2>
       {members.length === 0 ? (
         <p className="text-sm text-neutral-500">{t.noMembers}</p>

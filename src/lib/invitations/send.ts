@@ -9,6 +9,8 @@ import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { currentConsents } from "@/lib/patients/query";
 import EventInvitation from "@/messages/EventInvitation";
 import { emailBlocker } from "./match";
+import { getGateCutoff } from "@/lib/review/service";
+import { invitationGrandfathered } from "@/lib/review/rules";
 
 const baseUrl = () => siteUrl();
 
@@ -31,10 +33,16 @@ export async function sendInvitations(eventId: string, adminId: string) {
     include: { patient: { include: { contactProfile: true, consentRecords: true } } },
   });
 
+  const cutoff = await getGateCutoff();
   let sent = 0, failed = 0, skipped = 0;
   const errors = new Set<string>(); // Resend error NAMES only
   for (const inv of pending) {
     const p = inv.patient;
+    // Registration review: only approved households are emailed, unless the invitation predates the gate (grandfathered).
+    if (p.reviewStatus !== "approved" && !invitationGrandfathered(inv, cutoff)) {
+      skipped++;
+      continue;
+    }
     const blocker = emailBlocker({
       email: p.email,
       emailOptOut: p.emailOptOut,

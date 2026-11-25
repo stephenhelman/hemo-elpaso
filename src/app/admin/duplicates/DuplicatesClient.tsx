@@ -8,7 +8,7 @@ import MergeDialog from "@/components/admin/merge/MergeDialog";
 interface Person { id: string; name: string; email: string | null; phone: string | null; hasHousehold: boolean; boardRoles: string[]; createdAt: string }
 interface Pair { aId: string; bId: string; reasons: string[]; a: Person; b: Person }
 
-const WHY: Record<string, string> = { flagged: "Flagged at registration", same_email: "Same email", same_phone: "Same phone" };
+const WHY: Record<string, string> = { flagged: "Flagged at registration", same_email: "Same email", same_phone: "Same phone", same_address: "Same address" };
 const btn = "px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-50";
 
 function PersonCell({ p }: { p: Person }) {

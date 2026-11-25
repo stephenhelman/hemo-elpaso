@@ -34,6 +34,8 @@ export default async function AdminPatientsPage() {
     createdAt: p.createdAt.toISOString(),
     confirmation: p.confirmation,
     pendingMembers: p.pendingMembers,
+    noAffected: p.statedDiagnoses.length === 0,
+    reviewStatus: p.reviewStatus,
     duplicateOfId: p.possibleDuplicateOfId,
     duplicateOfName: p.possibleDuplicateOf
       ? `${p.possibleDuplicateOf.contactProfile?.firstName ?? ""} ${p.possibleDuplicateOf.contactProfile?.lastName ?? ""}`.trim()

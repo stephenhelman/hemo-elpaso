@@ -24,6 +24,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     email: p.email,
     firstName: p.contactProfile?.firstName ?? "",
     language: p.preferredLanguage === "es" ? "es" : "en",
+    reviewing: p.reviewStatus !== "approved",
   });
   await auditPatient(admin!.id, AuditAction.PATIENT_UPDATED, p.id, "Confirmation email resent");
   if (!res.ok) return NextResponse.json({ ok: false, error: res.errorName }, { status: 502 });

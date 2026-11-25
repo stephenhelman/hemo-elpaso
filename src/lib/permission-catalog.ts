@@ -18,6 +18,7 @@ export const PERMISSION_CATALOG = [
   { key: "canViewPHI", category: "data", phi: true, label: { en: "View stated diagnoses (health information)", es: "Ver diagnósticos declarados (información de salud)" } },
   { key: "canReviewVerification", category: "data", phi: true, label: { en: "Review diagnosis verification", es: "Revisar la verificación de diagnóstico" } },
   { key: "canManageUsers", category: "data", phi: true, label: { en: "Manage patients and households", es: "Administrar pacientes y hogares" } },
+  { key: "canReviewRegistrations", category: "data", phi: false, label: { en: "Review registrations (contact details and household members, never health information)", es: "Revisar registros (datos de contacto y personas del hogar, nunca información de salud)" } },
   { key: "canViewFinancials", category: "data", phi: false, label: { en: "View financials", es: "Ver finanzas" } },
   { key: "canManageFinancials", category: "data", phi: false, label: { en: "Manage financials", es: "Administrar finanzas" } },
   { key: "canApproveAssistance", category: "data", phi: true, label: { en: "Approve financial assistance", es: "Aprobar ayuda financiera" } },
@@ -82,10 +83,11 @@ export const ROLE_PERMISSIONS: Record<BoardRoleKey, Permission[]> = {
   ],
   SECRETARY: [
     "canEditSiteContent", "canViewAdminDashboard", "canViewEventStats", "canManageMinutes", "canMarkMinutesPublic",
-    "canSendIndividualEmails", "canManageVolunteers",
+    "canSendIndividualEmails", "canManageVolunteers", "canReviewRegistrations",
   ],
   TREASURER: [
     "canEditSiteContent", "canViewAdminDashboard", "canViewEventStats", "canViewFinancials", "canManageFinancials",
+    "canReviewRegistrations",
   ],
   // Community at Large: populate when the roles are staffed.
   EVENTS_COORDINATOR: ["canViewAdminDashboard", "canViewEventStats", "canSelectForNewsletter", "canManageVolunteers"],

@@ -2,6 +2,7 @@ import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { HOUSEHOLD_EVIDENCE } from "@/lib/patients/query";
+import { addressKey } from "@/lib/address/validate";
 import { candidatePairs, pairKey, type DupPair, type DuplicateReason } from "./merge-rules";
 
 export interface DuplicateRow {
@@ -11,7 +12,7 @@ export interface DuplicateRow {
 export interface DupPerson { id: string; name: string; email: string | null; phone: string | null; hasHousehold: boolean; boardRoles: string[]; createdAt: Date }
 
 /**
- * Pairs worth a look for President/VP: the registration flag (possibleDuplicateOfId) plus same email and same phone,
+ * Pairs worth a look for President/VP: the registration flag (possibleDuplicateOfId) plus same email, same phone and same address,
  * across households AND board records. Merged-away records and the settings-only admin are never listed; pairs marked
  * "not a duplicate" stay out.
  */
@@ -20,12 +21,12 @@ export async function listDuplicatePairs(): Promise<DuplicateRow[]> {
     where: { role: { notIn: ["admin", "merged"] }, mergedIntoId: null },
     select: {
       id: true, email: true, possibleDuplicateOfId: true, createdAt: true,
-      contactProfile: { select: { firstName: true, lastName: true, phone: true } },
+      contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, zipCode: true } },
       boardRoles: { where: { active: true }, select: { role: true } },
     },
   });
   const dismissed = new Set((await prisma.duplicateDismissal.findMany({ select: { patientAId: true, patientBId: true } })).map((d) => `${d.patientAId}|${d.patientBId}`));
-  const pairs: DupPair[] = candidatePairs(people.map((p) => ({ id: p.id, email: p.email, phone: p.contactProfile?.phone ?? null, possibleDuplicateOfId: p.possibleDuplicateOfId })), dismissed);
+  const pairs: DupPair[] = candidatePairs(people.map((p) => ({ id: p.id, email: p.email, phone: p.contactProfile?.phone ?? null, possibleDuplicateOfId: p.possibleDuplicateOfId, addressKey: p.contactProfile ? addressKey(p.contactProfile) : null })), dismissed);
   if (pairs.length === 0) return [];
   const withHousehold = new Set((await prisma.patient.findMany({ where: { id: { in: people.map((p) => p.id) }, ...HOUSEHOLD_EVIDENCE }, select: { id: true } })).map((p) => p.id));
   const byId = new Map(people.map((p) => [p.id, p]));

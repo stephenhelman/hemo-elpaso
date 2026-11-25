@@ -79,6 +79,7 @@ export interface PatientFilters {
   language?: string;
   consent?: string; // data_yes | data_no | media_yes | media_no
   duplicates?: boolean;
+  noAffectedMember?: boolean; // nobody in the household stated a bleeding disorder
   pendingConfirmations?: boolean;
 }
 
@@ -92,6 +93,7 @@ export async function listPatients(f: PatientFilters, limit = 2000) {
         : {}),
       ...(f.diagnosis ? { statedDiagnoses: { has: f.diagnosis } } : {}),
       ...(f.duplicates ? { possibleDuplicateOfId: { not: null } } : {}),
+      ...(f.noAffectedMember ? { statedDiagnoses: { isEmpty: true } } : {}),
       ...(q
         ? {
             OR: [
