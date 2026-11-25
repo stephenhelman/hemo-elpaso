@@ -33,7 +33,7 @@ export const auditFamilyOnly = audit;
 
 const EDIT_ACTIONS: AuditAction[] = [
   AuditAction.PORTAL_PROFILE_CHANGED, AuditAction.PORTAL_MEMBER_CHANGED, AuditAction.PORTAL_DIAGNOSES_CHANGED, AuditAction.PORTAL_GUARDIAN_CHANGED,
-  AuditAction.PORTAL_EMAIL_CHANGE_REQUESTED, AuditAction.PORTAL_EMAIL_CHANGED, AuditAction.PORTAL_MEMBER_LEFT, AuditAction.PORTAL_DELETION_REQUESTED, AuditAction.PORTAL_CONSENT_CHANGED,
+  AuditAction.PORTAL_EMAIL_CHANGE_REQUESTED, AuditAction.PORTAL_EMAIL_CHANGED, AuditAction.PORTAL_MEMBER_LEFT, AuditAction.PORTAL_DELETION_REQUESTED, AuditAction.PORTAL_CONSENT_CHANGED, AuditAction.FLYER_DELIVERY_CHANGED,
 ];
 
 /** Changes are rate-limited per person, counted from the audit log (so it holds across serverless instances). */

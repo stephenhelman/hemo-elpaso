@@ -176,6 +176,8 @@ export function EventPageContent({
           <FlyerPreview
             flyerEnUrl={event.flyerEnUrl}
             flyerEsUrl={event.flyerEsUrl}
+            flyerEnAlt={event.flyerEnAlt}
+            flyerEsAlt={event.flyerEsAlt}
             lang={locale}
           />
 

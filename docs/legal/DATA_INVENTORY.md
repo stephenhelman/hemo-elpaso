@@ -150,7 +150,9 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | Audit trail | Neon: `audit_logs` | `details` is meant to hold ids and field names only, but some entries contain emails: board role assigned "by {admin email}", onboarding email "sent to {board email}", test email "to {address}", "Deleted event: {title}" |
 | Contact-form messages | **Not in the database.** Resend → HOEP mailbox | Lives in the receiving mailbox indefinitely |
 | Event photos | **Cloudflare R2** (`src/lib/r2.ts`, key layout in `src/lib/photos/keys.ts`) + `event_photos` row | `uploads/tmp/<eventId>/<uuid>` original with EXIF/GPS, deleted after processing; `photos-pending/<eventId>/<uuid>.webp` + `-t.webp` not approved; `photos/<eventId>/<uuid>.webp` approved and public. Metadata is stripped when processed (`src/lib/photos/process.ts`) |
-| Event flyers | R2 `flyers/<eventId>/…` | Public URLs |
+| Event flyers | R2 `flyers/<eventId>/…` (EN and ES, PNG/JPG/PDF) plus `events.flyerEnAlt/flyerEsAlt` (short descriptions) | Public URLs. Invitation emails to households that chose email show the flyer inline from its public URL (no attachment) |
+| Flyer delivery preference | Neon: `patients.flyerDelivery` (`email` / `mail` / `none`) | Household-level; set at registration, on the family page (any confirmed adult) or by President/VP. Changes are audited with ids and the field name only |
+| Flyer mailing list | Generated on demand (CSV, label sheet) from approved, invited households with `flyerDelivery = mail` and a complete address | President/VP only (`canManageUsers`). Contains names and postal addresses, so the file is personal data once downloaded. Each export writes one audit row: event id, count, actor (no names) |
 | Legacy uploads (diagnosis letters, assistance documents, receipts, tax PDFs, minutes) | R2 | Left in place by the cuts |
 | Board and public-site content | **Sanity** (private dataset `production`, project `ed5kyl4v`) | Read by the server with a Viewer token; edited in the embedded Studio at `/admin/studio` |
 | Board and family logins | **Auth0** tenant + `user_identities` | |

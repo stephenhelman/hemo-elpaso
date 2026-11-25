@@ -29,6 +29,7 @@ export type Action =
   | "consent.edit_own"
   | "diagnoses.edit_own"
   | "address.edit"
+  | "flyer.edit"
   | "member.add"
   | "minor.edit"
   | "minor.diagnoses"
@@ -55,6 +56,7 @@ export function can(actor: Actor, action: Action, ctx: Ctx = {}): boolean {
     case "consent.edit_own":
     case "diagnoses.edit_own":
     case "address.edit":
+    case "flyer.edit":
     case "member.add":
       return true;
     case "minor.edit":

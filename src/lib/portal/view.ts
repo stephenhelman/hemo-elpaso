@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hasCompleteAddress, isFlyerDelivery } from "@/lib/flyers";
 import { isUnstructuredAddress } from "@/lib/review/rules";
 import { loadHousehold, type PortalHousehold } from "./household";
 import { currentValue, type ConsentRow } from "./rules";
@@ -21,6 +22,8 @@ export interface PortalView {
   address: { line1: string; line2: string; city: string; state: string; zip: string; unstructured: boolean } | null;
   /** Registration review: anything but approved shows the "we're reviewing your registration" note. The hold reason is never shown to the family. */
   reviewStatus: string;
+  /** Household-level flyer preference (email | mail | none), plus what the choices depend on. */
+  flyerDelivery: { value: "email" | "mail" | "none"; hasEmail: boolean; hasAddress: boolean };
   consents: { data_and_contact: boolean | null; media: boolean | null; sms: boolean | null; newsletter: boolean | null };
   members: ViewMember[];
   /** Confirmed adults other than me (the primary may designate them as guardians). Names only. */
@@ -42,7 +45,7 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
   const base = await loadHousehold(householdId, now);
   if (!base) return null;
   const [p, members, gs] = await Promise.all([
-    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, preferredLanguage: true, primaryDiagnoses: true, reviewStatus: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, city: true, state: true, zipCode: true } } } }),
+    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, flyerDelivery: true, preferredLanguage: true, primaryDiagnoses: true, reviewStatus: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, city: true, state: true, zipCode: true } } } }),
     prisma.householdMember.findMany({ where: { patientId: householdId }, orderBy: { createdAt: "asc" } }),
     prisma.memberGuardianship.findMany({ where: { child: { patientId: householdId } }, select: { childMemberId: true, guardianMemberId: true, attestedAt: true } }),
   ]);
@@ -87,6 +90,7 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
       ? { line1: p.contactProfile.addressLine1, line2: p.contactProfile.addressLine2 ?? "", city: p.contactProfile.city ?? "", state: p.contactProfile.state ?? "TX", zip: p.contactProfile.zipCode ?? "", unstructured: isUnstructuredAddress(p.contactProfile) }
       : null,
     reviewStatus: p.reviewStatus,
+    flyerDelivery: { value: isFlyerDelivery(p.flyerDelivery) ? p.flyerDelivery : "none", hasEmail: !!p.email?.trim(), hasAddress: hasCompleteAddress(p.contactProfile) },
     consents: {
       data_and_contact: currentValue(consentRows, "data_and_contact"), media: currentValue(consentRows, "media"),
       sms: currentValue(consentRows, "sms"), newsletter: currentValue(consentRows, "newsletter"),

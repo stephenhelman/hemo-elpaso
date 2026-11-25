@@ -49,6 +49,8 @@ export default async function EventPage({ params, searchParams }: Props) {
     descriptionEs: event.descriptionEs,
     flyerEnUrl: event.flyerEnUrl,
     flyerEsUrl: event.flyerEsUrl,
+    flyerEnAlt: event.flyerEnAlt,
+    flyerEsAlt: event.flyerEsAlt,
     eventDate: event.eventDate.toISOString(),
     location: event.location,
     maxCapacity: event.maxCapacity,

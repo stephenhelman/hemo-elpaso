@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { CONSENT_TEXT_VERSION, type ConsentType } from "@/content/consent";
 import { sanitizeDiagnoses } from "./diagnoses";
 import { addressColumns, parseAddress, type Address } from "@/lib/address/validate";
+import { defaultFlyerDelivery, isFlyerDelivery, validateFlyerDelivery, type FlyerDelivery } from "@/lib/flyers";
 import { randomUUID } from "crypto";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { validateMembers, type ValidatedMember } from "@/lib/households/members";
@@ -30,6 +31,7 @@ export interface PatientInput {
   consentSms?: unknown; // optional; needs a phone number
   consentNewsletter?: unknown; // optional; needs an email
   attestation?: unknown; // "I am 18+ and guardian of any minors listed"
+  flyerDelivery?: unknown; // email | mail | none; empty = the default (email if any, else mail if the address is complete, else none)
 }
 
 export type ValidatedPatient = {
@@ -47,6 +49,8 @@ export type ValidatedPatient = {
   consentSms: boolean;
   consentNewsletter: boolean;
   attestation: boolean;
+  /** Create: always resolved. Edit: null = not sent, leave the household's choice alone. */
+  flyerDelivery: FlyerDelivery | null;
 };
 
 export type ValidationResult =
@@ -92,6 +96,18 @@ export function validatePatientInput(
     fs = 1 + members.length;
   }
 
+  // Flyer delivery: empty = default; a value must be valid ("email" needs an email address).
+  const fdRaw = typeof i.flyerDelivery === "string" ? i.flyerDelivery.trim() : "";
+  let flyerDelivery: FlyerDelivery | null;
+  if (fdRaw) {
+    flyerDelivery = validateFlyerDelivery(fdRaw, { email });
+    if (!flyerDelivery) return { ok: false, field: "flyerDelivery" };
+  } else if (i.flyerDelivery != null && i.flyerDelivery !== "" && !isFlyerDelivery(i.flyerDelivery)) {
+    return { ok: false, field: "flyerDelivery" };
+  } else {
+    flyerDelivery = editing ? null : defaultFlyerDelivery({ email, address: addr.value ? { addressLine1: addr.value.line1, city: addr.value.city, state: addr.value.state, zipCode: addr.value.zip } : null });
+  }
+
   const consentDataAndContact = i.consentDataAndContact === true;
   if (opts.requireConsent && !consentDataAndContact)
     return { ok: false, field: "consentDataAndContact" };
@@ -120,6 +136,7 @@ export function validatePatientInput(
       consentSms,
       consentNewsletter,
       attestation,
+      flyerDelivery,
     },
   };
 }
@@ -207,6 +224,7 @@ export async function createPatient(
         email: v.email,
         role: "patient",
         preferredLanguage: v.language,
+        flyerDelivery: v.flyerDelivery ?? "email",
         familySize: v.familySize,
         primaryDiagnoses: v.diagnoses,
         statedDiagnoses: v.diagnoses, // recomputed below

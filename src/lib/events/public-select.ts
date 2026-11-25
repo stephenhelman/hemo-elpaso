@@ -17,6 +17,8 @@ export const publicEventSelect = {
   descriptionEs: true,
   flyerEnUrl: true,
   flyerEsUrl: true,
+  flyerEnAlt: true,
+  flyerEsAlt: true,
   eventDate: true,
   endDate: true,
   location: true,

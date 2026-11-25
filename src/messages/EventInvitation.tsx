@@ -1,6 +1,8 @@
 import {
   Button,
   Heading,
+  Img,
+  Link,
   Text,
 } from "@react-email/components";
 import EmailLayout, { emailH1, emailButton } from "./EmailLayout";
@@ -20,6 +22,13 @@ interface Props {
   description?: string;
   rsvpUrl: string;
   unsubscribeUrl: string;
+  /** Flyer for this household's delivery preference (lib/flyers invitationFlyer). Absent = the email is the plain invitation. */
+  flyer?: {
+    imageUrl: string | null;
+    imageAlt: string;
+    downloadUrl: string | null;
+    mailNote: boolean;
+  } | null;
 }
 
 const copy = {
@@ -34,6 +43,8 @@ const copy = {
     unsub: "Don't want invitations by email?",
     unsubLink: "Unsubscribe",
     sign: "The HOEP Team",
+    download: "Download the flyer",
+    mailNote: "We\u2019ll mail you the flyer.",
   },
   es: {
     preview: (t: string) => `Estás invitado/a: ${t}`,
@@ -46,6 +57,8 @@ const copy = {
     unsub: "¿No quieres invitaciones por correo?",
     unsubLink: "Cancelar suscripción",
     sign: "El equipo de HOEP",
+    download: "Descargar el volante",
+    mailNote: "Le enviaremos el volante por correo postal.",
   },
 };
 
@@ -59,6 +72,7 @@ export default function EventInvitation({
   description,
   rsvpUrl = "#",
   unsubscribeUrl = "#",
+  flyer = null,
 }: Props) {
   const t = copy[lang];
   return (
@@ -77,6 +91,15 @@ export default function EventInvitation({
             <strong>{t.where}:</strong> {location}
           </Text>
           {description ? <Text>{description}</Text> : null}
+          {flyer?.imageUrl ? (
+            <Img src={flyer.imageUrl} alt={flyer.imageAlt} width="520" style={{ width: "100%", maxWidth: "520px", height: "auto", border: "0", margin: "8px 0" }} />
+          ) : null}
+          {flyer?.downloadUrl ? (
+            <Text>
+              <Link href={flyer.downloadUrl}>{t.download}</Link>
+            </Text>
+          ) : null}
+          {flyer?.mailNote ? <Text>{t.mailNote}</Text> : null}
           <Text>{t.ctaHint}</Text>
           <Button
             href={rsvpUrl}

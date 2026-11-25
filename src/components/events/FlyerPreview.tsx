@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileText, Download, X, ExternalLink } from "lucide-react";
+import { pickFlyer } from "@/lib/flyers";
 
 interface Props {
   flyerEnUrl?: string | null;
   flyerEsUrl?: string | null;
+  flyerEnAlt?: string | null;
+  flyerEsAlt?: string | null;
   lang: "en" | "es";
 }
 
@@ -22,6 +25,7 @@ const copy = {
     english: "English Flyer",
     spanish: "Volante en Español",
     download: "Download",
+    downloadFlyer: "Download the flyer",
     fullSize: "Open full size",
     viewPdf: "View PDF",
     close: "Close",
@@ -35,6 +39,7 @@ const copy = {
     english: "English Flyer",
     spanish: "Volante en Español",
     download: "Descargar",
+    downloadFlyer: "Descargar el volante",
     fullSize: "Abrir tamaño completo",
     viewPdf: "Ver PDF",
     close: "Cerrar",
@@ -84,7 +89,7 @@ function useBodyScrollLock(active: boolean) {
   }, [active]);
 }
 
-export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
+export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, flyerEnAlt, flyerEsAlt, lang }: Props) {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<FlyerLang>("en");
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -96,6 +101,10 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
   const both = Boolean(flyerEnUrl && flyerEsUrl);
   const url = urls[current] ?? null;
   const t = copy[lang];
+  const flyers = { flyerEnUrl: flyerEnUrl ?? null, flyerEsUrl: flyerEsUrl ?? null, flyerEnAlt, flyerEsAlt };
+  const primary = pickFlyer(flyers, lang);
+  const secondary = primary && both ? pickFlyer(flyers, primary.lang === "en" ? "es" : "en") : null;
+  const altOf = (l: FlyerLang) => ((l === "en" ? flyerEnAlt : flyerEsAlt) ?? "").trim();
 
   const close = useCallback(() => {
     setOpen(false);
@@ -121,11 +130,11 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
   };
 
   /** Cross-origin `download` attributes are ignored, so fetch the file and save the blob; fall back to a new tab. */
-  const download = async () => {
-    if (!url) return;
-    const name = `flyer-${current}${isPdf(url) ? ".pdf" : ""}`;
+  const download = async (target: string | null = url, language: FlyerLang = current) => {
+    if (!target) return;
+    const name = `flyer-${language}${isPdf(target) ? ".pdf" : ""}`;
     try {
-      const res = await fetch(url);
+      const res = await fetch(target);
       if (!res.ok) throw new Error("fetch failed");
       const blob = await res.blob();
       const href = URL.createObjectURL(blob);
@@ -137,7 +146,7 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(href), 1000);
     } catch {
-      window.open(url, "_blank", "noopener,noreferrer");
+      window.open(target, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -152,26 +161,48 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
           <FileText className="w-5 h-5" />
           {t.title}
         </h2>
-        <div className="flex flex-wrap gap-3">
-          {flyerEnUrl && (
-            <button
-              onClick={(e) => show("en", e.currentTarget)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-colors"
-            >
-              <FileText className="w-4 h-4" />
-              {t.viewEnglish}
-            </button>
-          )}
-          {flyerEsUrl && (
-            <button
-              onClick={(e) => show("es", e.currentTarget)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-colors"
-            >
-              <FileText className="w-4 h-4" />
-              {t.viewSpanish}
-            </button>
-          )}
-        </div>
+        {/* The visitor's language first (the other language when that is the only one), then the other as a smaller option. */}
+        {primary && (
+          <div className="mb-4">
+            {!primary.isPdf && (
+              <button
+                type="button"
+                onClick={(e) => show(primary.lang, e.currentTarget)}
+                className="block w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2 hover:border-primary transition-colors"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={primary.url} alt={primary.alt || (primary.lang === "en" ? t.english : t.spanish)} loading="lazy" className="mx-auto max-h-72 w-auto rounded" />
+              </button>
+            )}
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={(e) => show(primary.lang, e.currentTarget)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                {primary.lang === "en" ? t.viewEnglish : t.viewSpanish}
+              </button>
+              <button
+                type="button"
+                onClick={() => download(primary.url, primary.lang)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                {t.downloadFlyer}
+              </button>
+            </div>
+          </div>
+        )}
+        {secondary && (
+          <button
+            type="button"
+            onClick={(e) => show(secondary.lang, e.currentTarget)}
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            {secondary.lang === "en" ? t.viewEnglish : t.viewSpanish}
+          </button>
+        )}
       </div>
 
       {open && url && (
@@ -253,7 +284,7 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
                 </a>
                 <button
                   type="button"
-                  onClick={download}
+                  onClick={() => download()}
                   className={`${btn} bg-primary text-white hover:bg-primary-600`}
                 >
                   <Download className="h-4 w-4" />
@@ -300,7 +331,7 @@ export default function FlyerPreview({ flyerEnUrl, flyerEsUrl, lang }: Props) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={url}
-                  alt={current === "en" ? t.english : t.spanish}
+                  alt={altOf(current) || (current === "en" ? t.english : t.spanish)}
                   className="h-full w-full object-contain"
                   onClick={(e) => {
                     // object-contain letterboxes inside the <img> box: taps on that dark gap count as the backdrop (mobile)

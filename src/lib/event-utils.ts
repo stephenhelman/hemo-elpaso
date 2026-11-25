@@ -14,6 +14,8 @@ export interface SerializedEvent {
   descriptionEs: string | null;
   flyerEnUrl: string | null;
   flyerEsUrl: string | null;
+  flyerEnAlt?: string | null;
+  flyerEsAlt?: string | null;
   eventDate: string;
   location: string;
   maxCapacity: number | null;

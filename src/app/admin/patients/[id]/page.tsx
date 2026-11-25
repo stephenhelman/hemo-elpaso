@@ -132,6 +132,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
             : emptyAddress(),
           addressUnstructured: !!p.contactProfile && isUnstructuredAddress(p.contactProfile),
           language: p.preferredLanguage === "es" ? "es" : "en",
+          flyerDelivery: p.flyerDelivery === "mail" || p.flyerDelivery === "none" ? p.flyerDelivery : "email",
           familySize: p.familySize,
           diagnoses: canPHI ? p.primaryDiagnoses : [],
           members: [],

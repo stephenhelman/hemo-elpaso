@@ -9,6 +9,7 @@ import { generateUnsubscribeToken } from "@/lib/unsubscribe-token";
 import { currentConsents } from "@/lib/patients/query";
 import EventInvitation from "@/messages/EventInvitation";
 import { emailBlocker } from "./match";
+import { invitationFlyer } from "@/lib/flyers";
 import { getGateCutoff } from "@/lib/review/service";
 import { invitationGrandfathered } from "@/lib/review/rules";
 
@@ -67,6 +68,7 @@ export async function sendInvitations(eventId: string, adminId: string) {
           description:
             (lang === "es" ? event.descriptionEs : event.descriptionEn)?.slice(0, 500) ?? undefined,
           rsvpUrl: withLang(`${baseUrl()}/rsvp/${token}`, lang),
+          flyer: invitationFlyer(event, p.flyerDelivery, lang, lang === "es" ? event.titleEs : event.titleEn),
           unsubscribeUrl: withLang(`${baseUrl()}/api/unsubscribe?token=${generateUnsubscribeToken(p.id)}`, lang),
         }),
       );

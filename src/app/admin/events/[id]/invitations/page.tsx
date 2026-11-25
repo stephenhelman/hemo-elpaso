@@ -69,6 +69,10 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
           <Link href={`/admin/events/${event.id}/invitations/report`} className="font-semibold text-primary hover:underline">
             Matched / sent / removed report
           </Link>
+          {" · "}
+          <Link href={`/admin/events/${event.id}/mailing-list`} className="font-semibold text-primary hover:underline">
+            Mailing list for flyers
+          </Link>
           {removedCount > 0 && <span className="text-neutral-500"> · {removedCount} removed from this event</span>}
         </p>
       )}

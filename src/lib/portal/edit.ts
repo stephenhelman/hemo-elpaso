@@ -12,6 +12,7 @@ import { dropMemberFromRsvps } from "@/lib/rsvp/attendees";
 import { generateToken, hashToken, looksLikeToken } from "@/lib/tokens";
 import { candidatesForEmail } from "@/lib/identity/link";
 import { isOrgEmail } from "@/lib/identity/rules";
+import { setFlyerDelivery } from "@/lib/flyers/delivery";
 import { sendLoggedEmail } from "@/lib/email/send";
 import { getRouteRecipients } from "@/lib/email-routing";
 import { emailDomain, siteUrl } from "@/lib/site";
@@ -96,6 +97,15 @@ export async function updateAddress(ctx: PortalCtx, address: unknown): Promise<E
     await auditFamily(ctx, AuditAction.PORTAL_PROFILE_CHANGED, "Patient", ctx.householdId, "Mailing address changed on the family page", { fields: ["address"] }, tx);
   });
   return { ok: true };
+}
+
+/** The household's flyer delivery preference (email | mail | none). Shared household detail: any confirmed adult. */
+export async function updateFlyerDelivery(ctx: PortalCtx, value: unknown): Promise<EditResult> {
+  if (!can(ctx.actor, "flyer.edit")) return forbidden();
+  if (ctx.actor.kind === "member" && !(await actingMember(ctx))) return forbidden();
+  const r = await setFlyerDelivery(ctx.householdId, value, { type: "family", memberId: actorMemberId(ctx.actor) });
+  if (r.ok) return { ok: true };
+  return r.error === "not_found" ? notFound() : bad("flyerDelivery");
 }
 
 // ── email change (takes effect only through the link sent to the NEW address) ─────────────────────────────────

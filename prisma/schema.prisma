@@ -365,6 +365,8 @@ model Patient {
   reviewHoldReason      String? // NEEDS_CALL | POSSIBLE_DUPLICATE | NO_AFFECTED_MEMBER_STATED | OTHER
   reviewedAt            DateTime?
   reviewedByPatientId   String?
+  // How the household gets event flyers: email | mail | none (CHECK in the migration). Household-level, any confirmed adult may change it.
+  flyerDelivery         String            @default("email")
   rsvpAccessLinks       RsvpAccessLink[]
   duplicateDismissalsA  DuplicateDismissal[] @relation("DismissalA")
   duplicateDismissalsB  DuplicateDismissal[] @relation("DismissalB")
@@ -540,6 +542,8 @@ model Event {
 
   flyerEnUrl String?
   flyerEsUrl String?
+  flyerEnAlt String? // short description of the flyer (email alt text, screen readers)
+  flyerEsAlt String?
 
   eventDate    DateTime
   endDate      DateTime? // optional; RSVP window / past-event logic use it, else eventDate + 12h
@@ -1090,6 +1094,8 @@ enum AuditAction {
   PATIENT_CREATED
   PATIENT_MERGED
   INVITATIONS_SENT
+  FLYER_DELIVERY_CHANGED
+  FLYER_MAILING_EXPORTED
   PATIENT_UPDATED
   SIGNIN_SHEET_PRINTED
   HOUSEHOLD_MEMBER_CONFIRMED
