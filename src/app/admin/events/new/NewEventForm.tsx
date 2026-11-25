@@ -51,7 +51,7 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
     targetAudience: "all",
     language: "both",
     isPriority: false,
-    registrationEnabled: false,
+    rsvpAccess: "any_approved",
     isRecorded: false,
     status: "draft",
 
@@ -380,21 +380,18 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
             </label>
           </FormField>
 
-          <FormField label="Public RSVP">
-            <label className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:border-primary-200 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                checked={formData.registrationEnabled}
-                onChange={(e) =>
-                  updateFormData({ registrationEnabled: e.target.checked })
-                }
-                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-neutral-700">
-                Let anyone RSVP from the public event page (otherwise RSVP is by
-                invitation or phone)
-              </span>
-            </label>
+          <FormField label="Who can RSVP">
+            <select
+              value={formData.rsvpAccess}
+              onChange={(e) => updateFormData({ rsvpAccess: e.target.value })}
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+            >
+              <option value="any_approved">Any approved household</option>
+              <option value="invited_only">Invited households only</option>
+            </select>
+            <p className="text-xs text-neutral-500 mt-1">
+              Invited only: RSVP through the invitation link. Any approved household: an approved household that was not invited can still RSVP. Events that target a diagnosis are always invited only.
+            </p>
           </FormField>
         </Section>
 

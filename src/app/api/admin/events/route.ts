@@ -1,4 +1,5 @@
 import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
+import { isRsvpAccess } from "@/lib/review/rules";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       language: body.language || "both",
       isPriority: body.isPriority || false,
       liveEnabled: body.liveEnabled || false,
-      registrationEnabled: body.registrationEnabled === true,
+      rsvpAccess: isRsvpAccess(body.rsvpAccess) ? body.rsvpAccess : "any_approved",
       isRecorded: body.isRecorded === true,
       createdBy: admin!.email,
       sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) ?? [],

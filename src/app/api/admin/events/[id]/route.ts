@@ -1,4 +1,5 @@
 import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
+import { isRsvpAccess } from "@/lib/review/rules";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
@@ -40,7 +41,7 @@ export async function PATCH(
         isPriority: body.isPriority,
         liveEnabled: body.liveEnabled,
         ...(body.isRecorded !== undefined && { isRecorded: body.isRecorded === true }),
-        ...(body.registrationEnabled !== undefined && { registrationEnabled: body.registrationEnabled === true }),
+        ...(isRsvpAccess(body.rsvpAccess) && { rsvpAccess: body.rsvpAccess }),
         ...(cleanSponsorIds(body.sponsorSanityIds) !== undefined && { sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) }),
         ...(body.eventCost !== undefined && { eventCost: body.eventCost }),
       },

@@ -5,12 +5,14 @@ import { decryptCheckInToken, encryptCheckInToken } from "@/lib/crypto/checkin-t
 import { checkRsvpEligibility, type RsvpBlock } from "./eligibility";
 import { eventHasEnded } from "./window";
 import { sendRsvpEmail } from "./emails";
+import { rsvpGate } from "@/lib/review/service";
 import { applyAttendees, parseSelection, selectableMembers, selectionTotal, type AttendeeSelection } from "./attendees";
 
 const MAX_PARTY_LEGACY = 30;
-export type RsvpSource = "invite" | "public" | "manual";
+// "public" = the retired anonymous event-page form (old rows only). "portal" = a signed-in household. "link" = an emailed RSVP link.
+export type RsvpSource = "invite" | "public" | "manual" | "portal" | "link";
 
-type Fail = { ok: false; code: RsvpBlock | "NOT_FOUND"; error: string; status: number };
+type Fail = { ok: false; code: RsvpBlock | "NOT_FOUND" | "NOT_APPROVED" | "NOT_INVITED"; error: string; status: number };
 
 /** Mark any invitation for this patient/event as answered. */
 async function markInvitation(eventId: string, patientId: string, status: "rsvp_yes" | "rsvp_no") {
@@ -45,6 +47,11 @@ export async function rsvpYes(params: {
   ignoreDeadline?: boolean;
   ignoreCapacity?: boolean;
   sendEmail?: boolean;
+  /**
+   * Board-entered RSVP (call-in, walk-in): bypasses the registration-review gate. If the gate WOULD have refused, one
+   * RSVP_APPROVAL_OVERRIDDEN audit row (ids and codes only) records it. Self-service callers never set this.
+   */
+  boardOverride?: boolean;
 }): Promise<
   | { ok: true; rsvpId: string; token: string | null; created: boolean }
   | Fail
@@ -64,6 +71,19 @@ export async function rsvpYes(params: {
     where: { eventId_patientId: { eventId: params.eventId, patientId: params.patientId } },
   });
   const active = existing && !existing.cancelledAt;
+
+  // Registration review: a NEW (or reactivated) RSVP needs an approved household (and an invitation where the event
+  // requires one). An RSVP that is already active is never re-gated, so existing RSVPs stay valid.
+  let overridden: string | null = null;
+  if (!active) {
+    const gate = await rsvpGate(params.eventId, params.patientId);
+    if (!gate.ok) {
+      if (!params.boardOverride) {
+        return { ok: false, code: gate.code, error: gate.code === "NOT_APPROVED" ? "Registration is under review" : "This event is by invitation", status: 403 };
+      }
+      overridden = gate.code;
+    }
+  }
 
   // Deadline only blocks NEW yes or an INCREASE; lowering is always fine.
   const increasing = !active || partySize > existing!.attendeeCount;
@@ -111,6 +131,14 @@ export async function rsvpYes(params: {
 
   await markInvitation(params.eventId, params.patientId, "rsvp_yes");
   await audit(params.actorId ?? params.patientId, AuditAction.RSVP_CREATED, rsvp.id, `RSVP yes via ${params.source}, party of ${partySize}`);
+  if (overridden) {
+    await prisma.auditLog.create({
+      data: {
+        patientId: params.actorId ?? null, actorType: "board", action: AuditAction.RSVP_APPROVAL_OVERRIDDEN, resourceType: "Rsvp", resourceId: rsvp.id,
+        details: `Board entered an RSVP past the review gate (${overridden})`, changes: { eventId: params.eventId, householdId: params.patientId, code: overridden },
+      },
+    });
+  }
 
   if (params.sendEmail !== false) {
     await sendRsvpEmail({ kind: "confirmation", patient, event, partySize, token });

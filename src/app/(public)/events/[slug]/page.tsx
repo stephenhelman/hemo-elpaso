@@ -11,6 +11,7 @@ import { getSponsorsByIds } from "@/sanity/sponsors";
 import SponsoredBy from "@/components/sanity/SponsoredBy";
 import { registrationState, activeHeadcount } from "@/lib/rsvp";
 import { isFeatureEnabled } from "@/lib/features";
+import { eventRsvpView } from "@/lib/review/event-view";
 
 interface Props {
   params: { slug: string };
@@ -78,6 +79,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         event={serializedEvent}
         rsvpCount={currentRsvpCount}
         registration={await registrationState(event)}
+        rsvpView={await eventRsvpView(event.id)}
         eventId={event.id}
         turnstileSiteKey={process.env.TURNSTILE_SITE_KEY ?? null}
         // The recording line shows only on events marked recorded, and only while the "recordings" toggle is on.

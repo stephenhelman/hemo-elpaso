@@ -3,6 +3,7 @@ import { resolveRsvpToken } from "@/lib/rsvp";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
 import { selectableMembers } from "@/lib/rsvp/attendees";
 import { prisma } from "@/lib/db";
+import { rsvpGate } from "@/lib/review/service";
 import { getLocaleCookie } from "@/lib/locale";
 import LegalLinks from "@/components/legal/LegalLinks";
 import RsvpPanel, { type RsvpPanelProps } from "@/components/rsvp/RsvpPanel";
@@ -22,11 +23,15 @@ export default async function RsvpTokenPage({ params }: { params: { token: strin
   const members = ctx ? await selectableMembers(ctx.patient.id) : [];
   const attendees = ctx?.rsvp ? await prisma.rsvpAttendee.findMany({ where: { rsvpId: ctx.rsvp.id }, select: { isPrimary: true, householdMemberId: true } }) : [];
 
+  // A household that may not start an RSVP (registration review, invitation-only event) sees why instead of the buttons.
+  const gate = ctx && !ctx.rsvp ? await rsvpGate(ctx.event.id, ctx.patient.id) : null;
+
   const props: RsvpPanelProps = ctx
     ? {
         valid: true,
         token: params.token,
         via: ctx.via,
+        blocked: gate && !gate.ok ? (gate.code === "NOT_APPROVED" ? "review" : "invitation") : null,
         // the RSVP's QR token, shown even when the visitor arrived via the invitation link
         qrToken: ctx.via === "checkin" ? params.token : decryptCheckInToken(ctx.rsvp?.checkInTokenEnc),
         firstName: ctx.patient.contactProfile?.firstName ?? "",

@@ -4,12 +4,14 @@ import { EventPageHero } from "./EventPageHero";
 import { EventPageContent } from "./EventPageContent";
 import { useLanguage } from "@/context/LanguageContext";
 import { SerializedEvent } from "@/lib/event-utils";
+import type { EventRsvpView } from "@/lib/review/event-view";
 
 interface Props {
   referrer: string | undefined;
   event: SerializedEvent;
   rsvpCount: number;
-  registration: "open" | "full" | "closed" | "disabled" | "paused";
+  registration: "open" | "full" | "closed" | "disabled";
+  rsvpView: EventRsvpView;
   eventId: string;
   turnstileSiteKey: string | null;
   notices: { recorded: boolean; captions: boolean };
@@ -20,6 +22,7 @@ export function EventSlugPage({
   event,
   rsvpCount,
   registration,
+  rsvpView,
   eventId,
   turnstileSiteKey,
   notices,
@@ -34,6 +37,7 @@ export function EventSlugPage({
         rsvpCount={rsvpCount}
         event={event}
         registration={registration}
+        rsvpView={rsvpView}
         eventId={eventId}
         turnstileSiteKey={turnstileSiteKey}
         notices={notices}

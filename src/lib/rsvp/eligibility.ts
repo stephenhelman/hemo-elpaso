@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
 import { eventHasEnded } from "./window";
-import { registrationOpen } from "@/lib/registration";
 
 export type RsvpBlock = "EVENT_NOT_FOUND" | "ENDED" | "NOT_PUBLISHED" | "DEADLINE_PASSED" | "AT_CAPACITY";
 
@@ -51,13 +50,15 @@ export async function checkRsvpEligibility(params: {
   return { ok: true, event };
 }
 
-/** For the public page: can a NEW public RSVP happen right now? */
+/**
+ * For the event page: is the event open for RSVPs right now? This is about the EVENT only (published, not ended,
+ * deadline, capacity). Who may RSVP (approved, invited) is decided per household by lib/review (decideRsvp).
+ * The anonymous public form is gone: there is no RSVP without a registered, approved household.
+ */
 export async function registrationState(event: {
-  id: string; status: string; eventDate: Date; rsvpDeadline: Date | null; maxCapacity: number | null; registrationEnabled: boolean;
-}): Promise<"open" | "full" | "closed" | "disabled" | "paused"> {
-  // Launch switch (REGISTRATION_OPEN): public RSVP is off for every event until it's turned on.
-  if (!registrationOpen()) return "paused";
-  if (!event.registrationEnabled || event.status !== "published") return "disabled";
+  id: string; status: string; eventDate: Date; rsvpDeadline: Date | null; maxCapacity: number | null;
+}): Promise<"open" | "full" | "closed" | "disabled"> {
+  if (event.status !== "published") return "disabled";
   if (eventHasEnded(event)) return "closed";
   if (event.rsvpDeadline && event.rsvpDeadline < new Date()) return "closed";
   if (event.maxCapacity && (await activeHeadcount(event.id)) >= event.maxCapacity) return "full";

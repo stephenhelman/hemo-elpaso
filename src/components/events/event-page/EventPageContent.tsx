@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import FlyerPreview from "@/components/events/FlyerPreview";
-import RegisterInfoForm from "@/components/register-info/RegisterInfoForm";
+import EventRsvpSection from "@/components/rsvp/EventRsvpSection";
+import type { EventRsvpView } from "@/lib/review/event-view";
 
 import { eventSlugPageTranslation } from "@/translation/eventsPage";
 import { formatEventDate } from "@/lib/event-utils";
@@ -27,7 +28,8 @@ interface Props {
   locale: Lang;
   event: SerializedEvent;
   rsvpCount: number;
-  registration: "open" | "full" | "closed" | "disabled" | "paused";
+  registration: "open" | "full" | "closed" | "disabled";
+  rsvpView: EventRsvpView;
   eventId: string;
   turnstileSiteKey: string | null;
   notices: { recorded: boolean; captions: boolean };
@@ -38,6 +40,7 @@ export function EventPageContent({
   event,
   rsvpCount,
   registration,
+  rsvpView,
   eventId,
   turnstileSiteKey,
   notices,
@@ -71,10 +74,7 @@ export function EventPageContent({
 
           {isUpcoming && registration === "open" && (
             <div id="rsvp" className="scroll-mt-24">
-              <h2 className="font-display font-bold text-neutral-900 text-xl mb-4">
-                {locale === "es" ? "Confirma tu asistencia" : "RSVP for this event"}
-              </h2>
-              <RegisterInfoForm turnstileSiteKey={turnstileSiteKey} eventId={eventId} notices={notices} />
+              <EventRsvpSection view={rsvpView} locale={locale} eventId={eventId} turnstileSiteKey={turnstileSiteKey} notices={notices} />
             </div>
           )}
 
@@ -194,14 +194,6 @@ export function EventPageContent({
                     RSVP
                   </a>
                 </>
-              ) : registration === "paused" ? (
-                <p className="text-neutral-700 text-sm font-semibold">
-                  {withPhone(
-                    locale === "es"
-                      ? "Para confirmar asistencia, llama al {phone}."
-                      : "To RSVP, call {phone}.",
-                  )}
-                </p>
               ) : registration === "full" || registration === "closed" ? (
                 <p className="text-neutral-700 text-sm font-semibold">
                   {withPhone(
@@ -218,8 +210,8 @@ export function EventPageContent({
                 <p className="text-neutral-700 text-sm">
                   {withPhone(
                     locale === "es"
-                      ? "Para confirmar asistencia, usa el enlace de tu invitación o llámanos al {phone}."
-                      : "To RSVP, use the link in your invitation or call us at {phone}.",
+                      ? "Para confirmar asistencia, llámanos al {phone}."
+                      : "To RSVP, call us at {phone}.",
                   )}
                 </p>
               )}

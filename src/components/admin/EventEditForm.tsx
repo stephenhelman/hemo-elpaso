@@ -35,7 +35,7 @@ interface Event {
   language: string;
   isPriority: boolean;
   liveEnabled: boolean;
-  registrationEnabled: boolean;
+  rsvpAccess: string;
   isRecorded?: boolean;
   sponsorSanityIds: string[];
   targeting: {
@@ -83,7 +83,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
     language: event.language,
     isPriority: event.isPriority,
     liveEnabled: event.liveEnabled,
-    registrationEnabled: event.registrationEnabled,
+    rsvpAccess: event.rsvpAccess === "invited_only" ? "invited_only" : "any_approved",
     isRecorded: event.isRecorded ?? false,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
     targetAgeGroups: event.targeting?.targetAgeGroups ?? ([] as string[]),
@@ -118,7 +118,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
         language: formData.language,
         isPriority: formData.isPriority,
         liveEnabled: formData.liveEnabled,
-        registrationEnabled: formData.registrationEnabled,
+        rsvpAccess: formData.rsvpAccess,
         isRecorded: formData.isRecorded,
         targetConditions: formData.targetConditions,
         targetAgeGroups: formData.targetAgeGroups,
@@ -349,19 +349,21 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
                 </span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.registrationEnabled}
-                  onChange={(e) =>
-                    setFormData({ ...formData, registrationEnabled: e.target.checked })
-                  }
-                  className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm font-medium text-neutral-700">
-                  Public RSVP on the event page
-                </span>
-              </label>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5" htmlFor="rsvpAccess">Who can RSVP</label>
+                <select
+                  id="rsvpAccess"
+                  value={formData.rsvpAccess}
+                  onChange={(e) => setFormData({ ...formData, rsvpAccess: e.target.value })}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+                >
+                  <option value="any_approved">Any approved household</option>
+                  <option value="invited_only">Invited households only</option>
+                </select>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Invited only: RSVP through the invitation link. Any approved household: an approved household that was not invited can still RSVP. Events that target a diagnosis are always invited only.
+                </p>
+              </div>
               <label className="flex items-center gap-2 cursor-pointer mt-3">
                 <input
                   type="checkbox"
