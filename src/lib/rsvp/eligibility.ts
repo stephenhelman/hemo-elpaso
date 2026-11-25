@@ -9,10 +9,10 @@ export type RsvpEligibility =
 
 const loadEvent = (eventId: string) => prisma.event.findUnique({ where: { id: eventId } });
 
-/** People already counted against capacity (active RSVPs), optionally excluding one RSVP. */
+/** People already counted against capacity: active IN-PERSON RSVPs only (virtual attendees take no seat), optionally excluding one RSVP. */
 export async function activeHeadcount(eventId: string, excludeRsvpId?: string) {
   const agg = await prisma.rsvp.aggregate({
-    where: { eventId, cancelledAt: null, ...(excludeRsvpId ? { id: { not: excludeRsvpId } } : {}) },
+    where: { eventId, cancelledAt: null, attendanceType: "in_person", ...(excludeRsvpId ? { id: { not: excludeRsvpId } } : {}) },
     _sum: { attendeeCount: true },
   });
   return agg._sum.attendeeCount ?? 0;

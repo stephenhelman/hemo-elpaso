@@ -45,6 +45,10 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
+        text: "**Virtual attendance.** {STATUS:recordings} Some events may offer a way to join online, with a Google Meet link and a YouTube link. We send those links only to households the board has confirmed for virtual attendance, in their invitation, confirmation and reminder emails. They are never shown on the public event page. If you ask to attend an event you weren’t invited to, the board reviews your request and decides whether you attend in person or online.",
+      },
+      {
+        t: "p",
         text: "**Live captions and translation (Puente Live).** {STATUS:live_captions} At some events and meetings, HOEP’s own app, Puente Live, shows live English and Spanish captions of what is said. Speech is sent to a speech-to-text service and the text to a translation service; neither keeps it beyond processing, except as described under “How long we keep it”. HOEP doesn’t save the audio. Captions are machine-made and can be wrong; they are not a replacement for a qualified interpreter. A board member can pause captions at any time, for example when someone shares something personal. Board members may download a transcript after an event to help write newsletters or blog posts. We never publish a whole transcript.",
       },
       {
@@ -58,6 +62,10 @@ export const privacy: LegalDoc = {
       {
         t: "p",
         text: "**Text messages.** {STATUS:sms} If you opt in, your mobile number and whether you agreed to texts. Texts include event reminders, announcements and sign-in codes. Reply STOP at any time.",
+      },
+      {
+        t: "p",
+        text: "**Contact preferences.** If you choose, you can name other confirmed adults in your household who also receive your invitation and confirmation emails (you always receive them), and you can tell us whether a phone number can receive text messages. We keep the answer so we can respect it if we start sending texts. {STATUS:sms} We don’t send texts yet.",
       },
       { t: "p", text: "**Newsletter.** {STATUS:newsletter} If you subscribe, your email and language. You can unsubscribe in any newsletter." },
       {
@@ -87,7 +95,9 @@ export const privacy: LegalDoc = {
         items: [
           "To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.",
           "To review new registrations before sending invitations.",
+          "To review requests to attend an event, and to choose whether you attend in person or virtually.",
           "To manage RSVPs, send confirmations and reminders, and check people in.",
+          "To send the Google Meet and YouTube links for a virtual event, only to households confirmed to attend virtually. {STATUS:recordings}",
           "To answer your messages.",
           "To let you see and update your household’s information, and manage your photo, text and newsletter choices, on your family page. {STATUS:family_portal}",
           "To confirm a diagnosis, if you choose to verify it. {STATUS:verification}",
@@ -224,6 +234,10 @@ export const privacy: LegalDoc = {
       },
       {
         t: "p",
+        text: "**Participación en línea.** {STATUS:recordings} Algunos eventos podrían ofrecer una forma de participar en línea, con un enlace de Google Meet y un enlace de YouTube. Enviamos esos enlaces solo a los hogares que la junta confirmó para participar en línea, en sus correos de invitación, confirmación y recordatorio. Nunca se muestran en la página pública del evento. Si pide asistir a un evento al que no fue invitado, la junta revisa su solicitud y decide si asistirá en persona o en línea.",
+      },
+      {
+        t: "p",
         text: "**Subtítulos y traducción en vivo (Puente Live).** {STATUS:live_captions} En algunos eventos y reuniones, la aplicación propia de HOEP, Puente Live, muestra subtítulos en vivo en inglés y español de lo que se dice. La voz se envía a un servicio que la convierte en texto, y el texto a un servicio de traducción; ninguno la conserva más allá del procesamiento, salvo lo que se indica en “Cuánto tiempo la conservamos”. HOEP no guarda el audio. Los subtítulos los genera una máquina y pueden tener errores; no sustituyen a un intérprete calificado. Un miembro de la junta puede pausar los subtítulos en cualquier momento, por ejemplo cuando alguien comparte algo personal. Los miembros de la junta pueden descargar una transcripción después del evento para ayudar a escribir boletines o artículos del blog. Nunca publicamos una transcripción completa.",
       },
       {
@@ -237,6 +251,10 @@ export const privacy: LegalDoc = {
       {
         t: "p",
         text: "**Mensajes de texto.** {STATUS:sms} Si usted acepta, su número de celular y si aceptó recibir mensajes. Los mensajes incluyen recordatorios de eventos, avisos y códigos para iniciar sesión. Responda STOP en cualquier momento para dejar de recibirlos.",
+      },
+      {
+        t: "p",
+        text: "**Preferencias de contacto.** Si usted lo decide, puede indicar a otros adultos confirmados de su hogar que también reciban sus correos de invitación y confirmación (usted siempre los recibe), y puede decirnos si un número de teléfono puede recibir mensajes de texto. Guardamos la respuesta para respetarla si empezamos a enviar mensajes de texto. {STATUS:sms} Todavía no enviamos mensajes de texto.",
       },
       { t: "p", text: "**Boletín.** {STATUS:newsletter} Si se suscribe, su correo electrónico y su idioma. Puede cancelar la suscripción en cualquier boletín." },
       {
@@ -266,7 +284,9 @@ export const privacy: LegalDoc = {
         items: [
           "Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.",
           "Para revisar los registros nuevos antes de enviar invitaciones.",
+          "Para revisar las solicitudes para asistir a un evento y elegir si asistirá en persona o en línea.",
           "Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.",
+          "Para enviar los enlaces de Google Meet y YouTube de un evento en línea, solo a los hogares confirmados para participar en línea. {STATUS:recordings}",
           "Para responder a sus mensajes.",
           "Para que pueda ver y actualizar la información de su hogar, y administrar sus opciones de fotos, mensajes de texto y boletín, en su página familiar. {STATUS:family_portal}",
           "Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}",

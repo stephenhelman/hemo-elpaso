@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocaleCookie } from "@/lib/locale";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
+import { isFeatureEnabled } from "@/lib/features";
 import EventEditForm from "@/components/admin/EventEditForm";
 import type { Lang } from "@/types";
 import { ArrowLeft } from "lucide-react";
@@ -52,7 +53,7 @@ export default async function EditEventPage({ params }: Props) {
         <EventQuickActions eventId={event.id} />
       </div>
 
-      <EventEditForm event={event} locale={locale} sponsorOptions={sponsorOptions} />
+      <EventEditForm event={event} locale={locale} sponsorOptions={sponsorOptions} recordingsOn={await isFeatureEnabled("recordings")} />
     </div>
   );
 }

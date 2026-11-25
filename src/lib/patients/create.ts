@@ -31,6 +31,7 @@ export interface PatientInput {
   consentSms?: unknown; // optional; needs a phone number
   consentNewsletter?: unknown; // optional; needs an email
   attestation?: unknown; // "I am 18+ and guardian of any minors listed"
+  phoneCanText?: unknown; // true | false | null/absent (not asked / not sure). Ignored without a phone number.
   flyerDelivery?: unknown; // email | mail | none; empty = the default (email if any, else mail if the address is complete, else none)
 }
 
@@ -49,6 +50,8 @@ export type ValidatedPatient = {
   consentSms: boolean;
   consentNewsletter: boolean;
   attestation: boolean;
+  /** The primary's phone can receive texts (null = not stated). Always null without a phone. Stored only: no texting yet. */
+  phoneCanText: boolean | null;
   /** Create: always resolved. Edit: null = not sent, leave the household's choice alone. */
   flyerDelivery: FlyerDelivery | null;
 };
@@ -136,6 +139,7 @@ export function validatePatientInput(
       consentSms,
       consentNewsletter,
       attestation,
+      phoneCanText: phone && typeof i.phoneCanText === "boolean" ? i.phoneCanText : null,
       flyerDelivery,
     },
   };
@@ -225,6 +229,7 @@ export async function createPatient(
         role: "patient",
         preferredLanguage: v.language,
         flyerDelivery: v.flyerDelivery ?? "email",
+        phoneCanText: v.phoneCanText,
         familySize: v.familySize,
         primaryDiagnoses: v.diagnoses,
         statedDiagnoses: v.diagnoses, // recomputed below

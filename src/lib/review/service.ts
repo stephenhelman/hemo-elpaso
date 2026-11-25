@@ -1,7 +1,9 @@
 import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { decideRsvp, isDiagnosisTargeted, normalizeChange, parseCutoff, type RsvpDecision } from "./rules";
+import { normalizeChange, parseCutoff, type RsvpDecision } from "./rules";
+import { decideRsvpPath } from "@/lib/rsvp/request-rules";
+import { promoteWaitingRequests } from "@/lib/rsvp/requests";
 
 export const CUTOFF_KEY = "review_gate_cutoff";
 
@@ -14,14 +16,16 @@ export async function getGateCutoff(): Promise<Date | null> {
 export async function rsvpGate(eventId: string, patientId: string): Promise<RsvpDecision & { reviewStatus: string }> {
   const [patient, event, invitation, cutoff] = await Promise.all([
     prisma.patient.findUnique({ where: { id: patientId }, select: { reviewStatus: true } }),
-    prisma.event.findUnique({ where: { id: eventId }, select: { rsvpAccess: true, targeting: { select: { targetConditions: true, targetSeverity: true, requireInhibitors: true } } } }),
+    prisma.event.findUnique({ where: { id: eventId }, select: { allowUninvitedRequests: true } }),
     prisma.invitation.findUnique({ where: { eventId_patientId: { eventId, patientId } }, select: { createdAt: true, status: true } }),
     getGateCutoff(),
   ]);
   const reviewStatus = patient?.reviewStatus ?? "pending_review";
   if (!event) return { ok: false, code: "NOT_APPROVED", reviewStatus };
-  const d = decideRsvp({ reviewStatus, invitation, event: { rsvpAccess: event.rsvpAccess, diagnosisTargeted: isDiagnosisTargeted(event.targeting) }, cutoff });
-  return { ...d, reviewStatus };
+  // Only the direct path (invited, and approved or invited before the cutoff) may RSVP right away. Everyone else asks to attend (lib/rsvp/requests).
+  const d = decideRsvpPath({ reviewStatus, invitation, event, cutoff });
+  if (d.path === "direct") return { ok: true, reason: reviewStatus === "approved" ? "approved" : "grandfathered_invitation", reviewStatus };
+  return { ok: false, code: d.path === "request" && d.initialStatus === "waiting_household_review" ? "NOT_APPROVED" : "NOT_INVITED", reviewStatus };
 }
 
 /**
@@ -42,5 +46,7 @@ export async function setReviewStatus(actorId: string, householdId: string, stat
     details: `Review status ${p.reviewStatus} -> ${change.status}`,
     changes: { householdId, from: p.reviewStatus, status: change.status, reasonCode: change.reason },
   });
+  // Requests that were waiting on this household's review move to pending.
+  if (change.status === "approved") await promoteWaitingRequests(householdId, actorId);
   return true;
 }

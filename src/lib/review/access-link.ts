@@ -10,7 +10,7 @@ import { currentConsents, PATIENT_ONLY } from "@/lib/patients/query";
 import { isValidEmail, normalizeEmail } from "@/lib/patients/normalize";
 import { eventHasEnded } from "@/lib/rsvp/window";
 import RsvpAccessLinkEmail from "@/messages/RsvpAccessLinkEmail";
-import { decideRsvp, isDiagnosisTargeted } from "./rules";
+import { decideRsvpPath } from "@/lib/rsvp/request-rules";
 import { getGateCutoff } from "./service";
 
 /** "Email me an RSVP link" limits. Counted from audit rows, so they hold across serverless instances. */
@@ -58,8 +58,7 @@ export async function requestRsvpLink(input: { eventId: unknown; email: unknown;
   const event = eventId
     ? await prisma.event.findUnique({
         where: { id: eventId },
-        select: { id: true, status: true, eventDate: true, endDate: true, rsvpDeadline: true, titleEn: true, titleEs: true, rsvpAccess: true,
-          targeting: { select: { targetConditions: true, targetSeverity: true, requireInhibitors: true } } },
+        select: { id: true, status: true, eventDate: true, endDate: true, rsvpDeadline: true, titleEn: true, titleEs: true, allowUninvitedRequests: true },
       })
     : null;
   if (!event || event.status !== "published") { await log("no_event", null); return "no_event"; }
@@ -74,9 +73,11 @@ export async function requestRsvpLink(input: { eventId: unknown; email: unknown;
     prisma.invitation.findUnique({ where: { eventId_patientId: { eventId: event.id, patientId: p.id } }, select: { createdAt: true, status: true } }),
     getGateCutoff(),
   ]);
-  const decision = decideRsvp({ reviewStatus: p.reviewStatus, invitation, event: { rsvpAccess: event.rsvpAccess, diagnosisTargeted: isDiagnosisTargeted(event.targeting) }, cutoff });
+  // Everyone registered gets the link (the RSVP page lets an invited, approved household RSVP and anyone else ask to attend).
+  // Only an invitation-only event refuses households it didn't invite. The reply to the caller is the same neutral one either way.
+  const decision = decideRsvpPath({ reviewStatus: p.reviewStatus, invitation, event, cutoff });
   const closed = eventHasEnded(event, now) || (!!event.rsvpDeadline && event.rsvpDeadline < now);
-  if (!decision.ok || closed || currentConsents(p.consentRecords).data_and_contact !== true) { await log("not_eligible", p.id); return "not_eligible"; }
+  if (decision.path === "refuse" || closed || currentConsents(p.consentRecords).data_and_contact !== true) { await log("not_eligible", p.id); return "not_eligible"; }
 
   const perHousehold = await prisma.rsvpAccessLink.count({
     where: { patientId: p.id, createdAt: { gte: new Date(now.getTime() - LINK_LIMIT_PER_HOUSEHOLD.windowMs) } },

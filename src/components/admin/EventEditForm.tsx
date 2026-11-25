@@ -14,6 +14,7 @@ import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { adminEventEditTranslation } from "@/translation/adminPages";
 import type { Lang } from "@/types";
 import SponsorPicker, { type SponsorOption } from "./SponsorPicker";
+import VirtualSettings from "./VirtualSettings";
 
 interface Event {
   id: string;
@@ -37,7 +38,10 @@ interface Event {
   language: string;
   isPriority: boolean;
   liveEnabled: boolean;
-  rsvpAccess: string;
+  allowUninvitedRequests: boolean;
+  virtualEnabled: boolean;
+  meetUrl: string | null;
+  youtubeUrl: string | null;
   isRecorded?: boolean;
   sponsorSanityIds: string[];
   targeting: {
@@ -56,9 +60,11 @@ interface Props {
   event: Event;
   locale: Lang;
   sponsorOptions?: SponsorOption[];
+  /** The "recordings" feature toggle. Virtual attendance can only be switched on while it is on. */
+  recordingsOn?: boolean;
 }
 
-export default function EventEditForm({ event, locale, sponsorOptions = [] }: Props) {
+export default function EventEditForm({ event, locale, sponsorOptions = [], recordingsOn = false }: Props) {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
@@ -85,7 +91,10 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
     language: event.language,
     isPriority: event.isPriority,
     liveEnabled: event.liveEnabled,
-    rsvpAccess: event.rsvpAccess === "invited_only" ? "invited_only" : "any_approved",
+    allowUninvitedRequests: event.allowUninvitedRequests !== false,
+    virtualEnabled: event.virtualEnabled === true,
+    meetUrl: event.meetUrl ?? "",
+    youtubeUrl: event.youtubeUrl ?? "",
     isRecorded: event.isRecorded ?? false,
     targetConditions: event.targeting?.targetConditions ?? ([] as string[]),
     targetAgeGroups: event.targeting?.targetAgeGroups ?? ([] as string[]),
@@ -120,7 +129,10 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
         language: formData.language,
         isPriority: formData.isPriority,
         liveEnabled: formData.liveEnabled,
-        rsvpAccess: formData.rsvpAccess,
+        allowUninvitedRequests: formData.allowUninvitedRequests,
+        virtualEnabled: formData.virtualEnabled,
+        meetUrl: formData.meetUrl,
+        youtubeUrl: formData.youtubeUrl,
         isRecorded: formData.isRecorded,
         targetConditions: formData.targetConditions,
         targetAgeGroups: formData.targetAgeGroups,
@@ -351,21 +363,8 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
                 </span>
               </label>
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1.5" htmlFor="rsvpAccess">Who can RSVP</label>
-                <select
-                  id="rsvpAccess"
-                  value={formData.rsvpAccess}
-                  onChange={(e) => setFormData({ ...formData, rsvpAccess: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm"
-                >
-                  <option value="any_approved">Any approved household</option>
-                  <option value="invited_only">Invited households only</option>
-                </select>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Invited only: RSVP through the invitation link. Any approved household: an approved household that was not invited can still RSVP. Events that target a diagnosis are always invited only.
-                </p>
-              </div>
+              <VirtualSettings recordingsOn={recordingsOn} value={{ allowUninvitedRequests: formData.allowUninvitedRequests, virtualEnabled: formData.virtualEnabled, meetUrl: formData.meetUrl, youtubeUrl: formData.youtubeUrl }}
+                onChange={(v) => setFormData({ ...formData, ...v })} />
               <label className="flex items-center gap-2 cursor-pointer mt-3">
                 <input
                   type="checkbox"

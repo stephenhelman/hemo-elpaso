@@ -28,7 +28,13 @@ const input =
 export default function RegisterInfoForm({
   turnstileSiteKey,
   addressAutocomplete = false,
+  eventId = null,
+  phoneOnly = false,
 }: {
+  /** The event the visitor came from (validated on the server). Finishing registration also sends a request to attend it. */
+  eventId?: string | null;
+  /** "Register for a phone call": the phone is required and the email optional. */
+  phoneOnly?: boolean;
   turnstileSiteKey: string | null;
   /** The address_autocomplete toggle, decided on the server. Off = the Google script is never loaded. */
   addressAutocomplete?: boolean;
@@ -41,6 +47,7 @@ export default function RegisterInfoForm({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [canText, setCanText] = useState<"yes" | "no" | "">("");
   const [address, setAddress] = useState<AddressDraft>(emptyAddress());
   const [badField, setBadField] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "es">(locale);
@@ -100,6 +107,9 @@ export default function RegisterInfoForm({
           lastName,
           email,
           phone,
+          phoneCanText: phone.trim() ? (canText === "yes" ? true : canText === "no" ? false : null) : null,
+          eventId: eventId ?? undefined,
+          mode: phoneOnly ? "phone" : undefined,
           address,
           language,
           flyerDelivery,
@@ -146,6 +156,8 @@ export default function RegisterInfoForm({
         </h2>
         <p className="text-neutral-600">{t.successBody}</p>
         <p className="text-neutral-700 mt-3 font-medium">{t.reviewNote}</p>
+        {phoneOnly && <p className="text-neutral-700 mt-3 font-medium">{t.successCall}</p>}
+        {eventId && <p className="text-neutral-600 mt-3 text-sm">{t.successEvent}</p>}
       </div>
     );
   }
@@ -161,6 +173,13 @@ export default function RegisterInfoForm({
           strategy="afterInteractive"
           onReady={renderWidget}
         />
+      )}
+
+      {(phoneOnly || eventId) && (
+        <div className="rounded-lg bg-primary-50 border border-primary-200 p-3 text-sm text-neutral-800 space-y-1" role="note">
+          {phoneOnly && <p><strong>{t.phoneMode}.</strong> {t.phoneModeNote}</p>}
+          {eventId && <p>{t.eventNote}</p>}
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -187,13 +206,26 @@ export default function RegisterInfoForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-            {t.phone}
+            {t.phone}{phoneOnly ? " *" : ""}
           </label>
-          <input type="tel" className={input} value={phone} maxLength={40}
+          <input type="tel" className={input} value={phone} maxLength={40} required={phoneOnly}
             onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </div>
       </div>
       <p className="text-xs text-neutral-500 -mt-3">{t.contactHint}</p>
+      {phone.trim() && (
+        <fieldset className="-mt-2">
+          <legend className="block text-sm font-medium text-neutral-700 mb-1.5">{t.canText}</legend>
+          <div className="flex flex-wrap gap-4 text-sm text-neutral-700">
+            {([["yes", t.canTextYes], ["no", t.canTextNo], ["", t.canTextUnsure]] as const).map(([v, label]) => (
+              <label key={v || "unsure"} className="inline-flex items-center gap-2">
+                <input type="radio" name="canText" checked={canText === v} onChange={() => setCanText(v)} />{label}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-neutral-500 mt-1">{t.canTextHint}</p>
+        </fieldset>
+      )}
 
       <div>
         <p className="block text-sm font-medium text-neutral-700 mb-1.5">

@@ -3,7 +3,8 @@ import { resolveRsvpToken } from "@/lib/rsvp";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
 import { selectableMembers } from "@/lib/rsvp/attendees";
 import { prisma } from "@/lib/db";
-import { rsvpGate } from "@/lib/review/service";
+import { getGateCutoff } from "@/lib/review/service";
+import { decideRsvpPath, mayResubmit } from "@/lib/rsvp/request-rules";
 import { getLocaleCookie } from "@/lib/locale";
 import LegalLinks from "@/components/legal/LegalLinks";
 import RsvpPanel, { type RsvpPanelProps } from "@/components/rsvp/RsvpPanel";
@@ -23,15 +24,30 @@ export default async function RsvpTokenPage({ params }: { params: { token: strin
   const members = ctx ? await selectableMembers(ctx.patient.id) : [];
   const attendees = ctx?.rsvp ? await prisma.rsvpAttendee.findMany({ where: { rsvpId: ctx.rsvp.id }, select: { isPrimary: true, householdMemberId: true } }) : [];
 
-  // A household that may not start an RSVP (registration review, invitation-only event) sees why instead of the buttons.
-  const gate = ctx && !ctx.rsvp ? await rsvpGate(ctx.event.id, ctx.patient.id) : null;
+  // No active RSVP: an invited, approved household RSVPs here; anyone else sends a request (or sees the status of the one it has).
+  let mode: "rsvp" | "request" | "invitation" | "blocked" = "rsvp";
+  let reviewing = false;
+  let openRequest: { id: string; status: string } | null = null;
+  if (ctx && !ctx.rsvp) {
+    const [inv, cutoff, open, last] = await Promise.all([
+      prisma.invitation.findUnique({ where: { eventId_patientId: { eventId: ctx.event.id, patientId: ctx.patient.id } }, select: { createdAt: true, status: true } }),
+      getGateCutoff(),
+      prisma.rsvpRequest.findFirst({ where: { eventId: ctx.event.id, patientId: ctx.patient.id, status: { in: ["waiting_household_review", "pending", "waitlisted"] } }, select: { id: true, status: true } }),
+      prisma.rsvpRequest.findFirst({ where: { eventId: ctx.event.id, patientId: ctx.patient.id }, orderBy: { createdAt: "desc" }, select: { status: true, declineReason: true } }),
+    ]);
+    const path = decideRsvpPath({ reviewStatus: ctx.patient.reviewStatus, invitation: inv, event: ctx.event, cutoff });
+    openRequest = open;
+    if (path.path === "refuse") mode = "invitation";
+    else if (path.path === "request") { mode = open ? "request" : mayResubmit(last) ? "request" : "blocked"; reviewing = path.initialStatus === "waiting_household_review"; }
+  }
 
   const props: RsvpPanelProps = ctx
     ? {
         valid: true,
         token: params.token,
         via: ctx.via,
-        blocked: gate && !gate.ok ? (gate.code === "NOT_APPROVED" ? "review" : "invitation") : null,
+        mode, reviewing, openRequest,
+        attendanceType: ctx.rsvp?.attendanceType === "virtual" ? "virtual" : "in_person",
         // the RSVP's QR token, shown even when the visitor arrived via the invitation link
         qrToken: ctx.via === "checkin" ? params.token : decryptCheckInToken(ctx.rsvp?.checkInTokenEnc),
         firstName: ctx.patient.contactProfile?.firstName ?? "",

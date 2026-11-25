@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveRsvpToken, rsvpYes, cancelRsvp, declineInvitation, defaultSelection } from "@/lib/rsvp";
+import { rsvpOrRequest, withdrawRequest } from "@/lib/rsvp/requests";
+import { prisma } from "@/lib/db";
+import { submitResponse } from "@/lib/rsvp/response";
 
 /**
  * Self-service RSVP from a personal link (/rsvp/[token]).
@@ -21,12 +24,23 @@ export async function POST(req: NextRequest) {
       const r = await cancelRsvp({ rsvpId: ctx.rsvp.id });
       if (!r.ok) return NextResponse.json({ ok: false, error: r.error }, { status: r.status });
     } else {
-      await declineInvitation(ctx.event.id, ctx.patient.id);
+      // An open request is withdrawn; an invitation is answered "no".
+      const open = await prisma.rsvpRequest.findFirst({ where: { eventId: ctx.event.id, patientId: ctx.patient.id, status: { in: ["waiting_household_review", "pending", "waitlisted"] } }, select: { id: true } });
+      if (open) await withdrawRequest({ requestId: open.id, patientId: ctx.patient.id });
+      else await declineInvitation(ctx.event.id, ctx.patient.id);
     }
     return NextResponse.json({ ok: true, state: "declined" });
   }
 
   if (body.response !== "yes") return NextResponse.json({ ok: false, error: "bad_request" }, { status: 400 });
+
+  // No active RSVP yet: invited and approved households RSVP right away, everyone else sends a request (same rules as the modal).
+  if (!ctx.rsvp) {
+    const o = await rsvpOrRequest({ eventId: ctx.event.id, patientId: ctx.patient.id, source: "emailed_link", selection: body.selection ?? (await defaultSelection(ctx.patient.id)) });
+    if (o.kind === "rsvp") return NextResponse.json({ ok: true, state: "confirmed", checkInToken: o.token });
+    if (o.kind === "request") return NextResponse.json({ ok: true, state: "requested", status: o.status });
+    return submitResponse(o);
+  }
 
   const r = await rsvpYes({
     eventId: ctx.event.id,

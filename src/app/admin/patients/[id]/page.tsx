@@ -2,6 +2,7 @@ import { SITE_TIMEZONE } from "@/lib/site";
 import { addressAutocompleteEnabled } from "@/lib/address/server";
 import { emptyAddress } from "@/lib/address/draft";
 import { isUnstructuredAddress } from "@/lib/review/rules";
+import ContactPrefsPanel from "@/components/admin/patients/ContactPrefsPanel";
 import ReviewStatusPanel from "@/components/admin/patients/ReviewStatusPanel";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -159,6 +160,13 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           hasEmail: !!m.email,
           diagnoses: canPHI ? m.statedDiagnoses : [], // PHI: server-side gate
         }))}
+      />
+
+      <ContactPrefsPanel
+        patientId={p.id}
+        primary={{ hasPhone: !!p.contactProfile?.phone, phoneCanText: p.phoneCanText }}
+        selected={p.alsoSendToMemberIds}
+        adults={p.householdMembers.filter((m) => m.ageGroup === "18_plus" && m.status === "confirmed").map((m) => ({ id: m.id, name: [m.firstName, m.lastName].filter(Boolean).join(" ") || "—", hasEmail: !!m.email, hasPhone: !!m.phone, phoneCanText: m.phoneCanText }))}
       />
 
       <ConsentPanel patientId={p.id} locale={locale} subjects={consentSubjects} />

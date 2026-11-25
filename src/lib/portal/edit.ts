@@ -13,6 +13,7 @@ import { generateToken, hashToken, looksLikeToken } from "@/lib/tokens";
 import { candidatesForEmail } from "@/lib/identity/link";
 import { isOrgEmail } from "@/lib/identity/rules";
 import { setFlyerDelivery } from "@/lib/flyers/delivery";
+import { setAlsoSendTo, setPhoneCanText } from "@/lib/households/contact-prefs";
 import { sendLoggedEmail } from "@/lib/email/send";
 import { getRouteRecipients } from "@/lib/email-routing";
 import { emailDomain, siteUrl } from "@/lib/site";
@@ -60,7 +61,8 @@ export async function updateProfile(ctx: PortalCtx, i: { firstName: unknown; las
     if ((p.contactProfile?.phone ?? null) !== phone) changed.push("phone");
     if (p.preferredLanguage !== language) changed.push("language");
     await prisma.$transaction(async (tx) => {
-      await tx.patient.update({ where: { id: ctx.householdId }, data: { preferredLanguage: language } });
+      // A different number means the old "can it get texts" answer no longer applies.
+      await tx.patient.update({ where: { id: ctx.householdId }, data: { preferredLanguage: language, ...(changed.includes("phone") ? { phoneCanText: null } : {}) } });
       await tx.contactProfile.upsert({
         where: { patientId: ctx.householdId },
         update: { firstName, lastName, phone },
@@ -78,7 +80,7 @@ export async function updateProfile(ctx: PortalCtx, i: { firstName: unknown; las
   if ((m.phone ?? null) !== phone) changed.push("phone");
   if ((m.preferredLanguage ?? "") !== language) changed.push("language");
   await prisma.$transaction(async (tx) => {
-    await tx.householdMember.update({ where: { id: m.id }, data: { firstName, lastName, phone, preferredLanguage: language } });
+    await tx.householdMember.update({ where: { id: m.id }, data: { firstName, lastName, phone, preferredLanguage: language, ...(changed.includes("phone") ? { phoneCanText: null } : {}) } });
     await auditFamily(ctx, AuditAction.PORTAL_PROFILE_CHANGED, "HouseholdMember", m.id, "Own details changed on the family page", { fields: changed }, tx);
   });
   return { ok: true };
@@ -106,6 +108,24 @@ export async function updateFlyerDelivery(ctx: PortalCtx, value: unknown): Promi
   const r = await setFlyerDelivery(ctx.householdId, value, { type: "family", memberId: actorMemberId(ctx.actor) });
   if (r.ok) return { ok: true };
   return r.error === "not_found" ? notFound() : bad("flyerDelivery");
+}
+
+/** "Also send invitations to": which confirmed adults also get invitation and confirmation emails. Any confirmed adult may change it; each change is logged. */
+export async function updateAlsoSendTo(ctx: PortalCtx, ids: unknown): Promise<EditResult> {
+  if (!can(ctx.actor, "contact.edit")) return forbidden();
+  if (ctx.actor.kind === "member" && !(await actingMember(ctx))) return forbidden();
+  const r = await setAlsoSendTo(ctx.householdId, ids, { type: "family", memberId: actorMemberId(ctx.actor) });
+  if (r.ok) return { ok: true };
+  return r.error === "not_found" ? notFound() : bad("alsoSendTo");
+}
+
+/** "Can this number get texts?" for the acting person's OWN phone (the primary's, or their own as an adult). */
+export async function updatePhoneCanText(ctx: PortalCtx, value: unknown): Promise<EditResult> {
+  if (ctx.actor.kind === "member" && !(await actingMember(ctx))) return forbidden();
+  const target = ctx.actor.kind === "primary" ? ({ kind: "primary" } as const) : ({ kind: "member", memberId: ctx.actor.memberId } as const);
+  const r = await setPhoneCanText(ctx.householdId, target, value, { type: "family", memberId: actorMemberId(ctx.actor) });
+  if (r.ok) return { ok: true };
+  return r.error === "not_found" ? notFound() : bad(r.error === "no_phone" ? "phone" : "phoneCanText");
 }
 
 // ── email change (takes effect only through the link sent to the NEW address) ─────────────────────────────────

@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/db";
 
-/** People (sum of party sizes, cancelled RSVPs excluded) per event. Same basis as the capacity check. */
+/** In-person people (sum of party sizes, cancelled and virtual RSVPs excluded) per event. Same basis as the capacity check. */
 export async function rsvpPeopleByEvent(eventIds: string[]): Promise<Record<string, number>> {
   if (eventIds.length === 0) return {};
   const rows = await prisma.rsvp.groupBy({
     by: ["eventId"],
-    where: { eventId: { in: eventIds }, cancelledAt: null },
+    where: { eventId: { in: eventIds }, cancelledAt: null, attendanceType: "in_person" },
     _sum: { attendeeCount: true },
   });
   return Object.fromEntries(rows.map((r) => [r.eventId, r._sum.attendeeCount ?? 0]));

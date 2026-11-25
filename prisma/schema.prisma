@@ -95,6 +95,11 @@ enum EmailTemplateType {
   MEMBER_LEFT_NOTICE
   DELETION_REQUEST_NOTICE
   RSVP_ACCESS_LINK
+  RSVP_REQUEST_RECEIVED
+  RSVP_CONFIRMED_VIRTUAL
+  RSVP_REQUEST_DECLINED
+  RSVP_WAITLISTED
+  RSVP_REMINDER_VIRTUAL
 }
 
 enum AgeTier {
@@ -352,24 +357,31 @@ model Patient {
 
   // Merge tombstone. A record folded into another keeps only this row (role "merged", no personal data) so audit
   // history and old links resolve to the survivor. Purged 12 months after mergedAt (lib/retention.ts).
-  mergedIntoId          String?
-  mergedInto            Patient?          @relation("PatientMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
-  mergedFrom            Patient[]         @relation("PatientMerge")
-  mergedAt              DateTime?
-  emailAliases          PatientAlias[]
-  emailChangeRequests   EmailChangeRequest[]
+  mergedIntoId        String?
+  mergedInto          Patient?             @relation("PatientMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom          Patient[]            @relation("PatientMerge")
+  mergedAt            DateTime?
+  emailAliases        PatientAlias[]
+  emailChangeRequests EmailChangeRequest[]
 
   // Registration review (lib/review). New web registrations start pending_review; officer-added households start approved.
   // on_hold needs a reason code (CHECK in the migration). reviewedByPatientId = the officer who last changed it.
-  reviewStatus          String            @default("pending_review") // pending_review | approved | on_hold
-  reviewHoldReason      String? // NEEDS_CALL | POSSIBLE_DUPLICATE | NO_AFFECTED_MEMBER_STATED | OTHER
-  reviewedAt            DateTime?
-  reviewedByPatientId   String?
+  reviewStatus         String               @default("pending_review") // pending_review | approved | on_hold
+  reviewHoldReason     String? // NEEDS_CALL | POSSIBLE_DUPLICATE | NO_AFFECTED_MEMBER_STATED | OTHER
+  reviewedAt           DateTime?
+  reviewedByPatientId  String?
   // How the household gets event flyers: email | mail | none (CHECK in the migration). Household-level, any confirmed adult may change it.
-  flyerDelivery         String            @default("email")
-  rsvpAccessLinks       RsvpAccessLink[]
-  duplicateDismissalsA  DuplicateDismissal[] @relation("DismissalA")
-  duplicateDismissalsB  DuplicateDismissal[] @relation("DismissalB")
+  flyerDelivery        String               @default("email")
+  // Confirmed adults (HouseholdMember.id) who ALSO get invitation and confirmation emails. The primary always does.
+  alsoSendToMemberIds  String[]             @default([])
+  phoneCanText         Boolean? // the primary's phone can receive texts (null = not asked). Stored only: no texting yet.
+  rsvpRequests         RsvpRequest[]        @relation("RequestHousehold")
+  rsvpRequestsDecided  RsvpRequest[]        @relation("RequestDecider")
+  callLogs             InvitationCallLog[]  @relation("CallHousehold")
+  callsMade            InvitationCallLog[]  @relation("CallCaller")
+  rsvpAccessLinks      RsvpAccessLink[]
+  duplicateDismissalsA DuplicateDismissal[] @relation("DismissalA")
+  duplicateDismissalsB DuplicateDismissal[] @relation("DismissalB")
 
   @@index([email])
   @@index([possibleDuplicateOfId])
@@ -380,22 +392,26 @@ model Patient {
 
 // Append-only: a change in consent is a NEW row. A DB trigger rejects UPDATE.
 model Invitation {
-  id                   String    @id @default(uuid())
+  id                   String              @id @default(uuid())
   eventId              String
-  event                Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event                Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   patientId            String
-  patient              Patient   @relation("InvitationPatient", fields: [patientId], references: [id], onDelete: Cascade)
-  tokenHash            String    @unique // SHA-256 of the raw token; raw exists only in the email link
-  status               String    @default("pending") // pending | sent | rsvp_yes | rsvp_no
+  patient              Patient             @relation("InvitationPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  tokenHash            String              @unique // SHA-256 of the raw token; raw exists only in the email link
+  status               String              @default("pending") // pending | sent | rsvp_yes | rsvp_no
   sentAt               DateTime?
   sentByBoardUserId    String?
-  sentBy               Patient?  @relation("InvitationSender", fields: [sentByBoardUserId], references: [id], onDelete: SetNull)
+  sentBy               Patient?            @relation("InvitationSender", fields: [sentByBoardUserId], references: [id], onDelete: SetNull)
   // Manual removal (status = "removed"). The row stays so re-running matching never re-adds the household.
   removedAt            DateTime?
   removedByBoardUserId String?
-  removedBy            Patient?  @relation("InvitationRemover", fields: [removedByBoardUserId], references: [id], onDelete: SetNull)
+  removedBy            Patient?            @relation("InvitationRemover", fields: [removedByBoardUserId], references: [id], onDelete: SetNull)
   removalReason        String? // code from lib/invitations/removal.ts; never free text
-  createdAt            DateTime  @default(now())
+  origin               String              @default("matched") // matched | request | manual (CHECK in the migration)
+  attendanceType       String              @default("in_person") // in_person | virtual (CHECK in the migration)
+  createdAt            DateTime            @default(now())
+  callLogs             InvitationCallLog[]
+  rsvpRequest          RsvpRequest?
 
   @@unique([eventId, patientId])
   @@index([patientId])
@@ -427,27 +443,28 @@ model ConsentRecord {
 // A declined/expired member is purged to a placeholder (counted in familySize).
 // CHECK constraints live in the migration (Prisma does not model them).
 model HouseholdMember {
-  id                    String          @id @default(uuid())
+  id                    String               @id @default(uuid())
   patientId             String
-  patient               Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient               Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
   firstName             String?
   lastName              String?
   relationship          String // child | spouse_partner | parent | sibling | other
   ageGroup              String // 0_5 | 6_12 | 13_17 | 18_plus
-  statedDiagnoses       String[]        @default([]) // PHI
+  statedDiagnoses       String[]             @default([]) // PHI
   email                 String?
-  confirmByPhone        Boolean         @default(false)
+  confirmByPhone        Boolean              @default(false)
   phone                 String? // a confirmed adult's own number (family page); never shown to other adults
+  phoneCanText          Boolean? // this adult's phone can receive texts (null = not asked). Stored only: no texting yet.
   preferredLanguage     String? // a confirmed adult's own language (en | es); null = the household's
-  status                String          @default("not_required") // not_required | pending | confirmed | declined | expired
-  confirmTokenHash      String?         @unique
+  status                String               @default("not_required") // not_required | pending | confirmed | declined | expired
+  confirmTokenHash      String?              @unique
   confirmTokenExpiresAt DateTime?
   confirmedAt           DateTime?
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
   consentRecords        ConsentRecord[]
   rsvpAttendees         RsvpAttendee[]
-  identities            UserIdentity[]  @relation("IdentityMember")
+  identities            UserIdentity[]       @relation("IdentityMember")
   guardianOf            MemberGuardianship[] @relation("GuardianAdult")
   guardians             MemberGuardianship[] @relation("GuardianChild")
   emailChangeRequests   EmailChangeRequest[]
@@ -552,15 +569,19 @@ model Event {
   rsvpDeadline DateTime?
   status       String    @default("draft")
 
-  category            String   @default("FAMILY_SUPPORT")
-  targetAudience      String   @default("all")
-  language            String   @default("both")
-  isPriority          Boolean  @default(false)
-  liveEnabled         Boolean  @default(false)
-  registrationEnabled Boolean  @default(false) // DORMANT: the anonymous public RSVP form was removed (review queue)
-  rsvpAccess          String   @default("any_approved") // who can RSVP: invited_only | any_approved (diagnosis-targeted events are always invited-only)
-  isRecorded          Boolean  @default(false) // event is recorded/streamed: the RSVP page shows the recording notice (only while the "recordings" toggle is on)
-  eventCost           Decimal? @db.Decimal(10, 2)
+  category               String   @default("FAMILY_SUPPORT")
+  targetAudience         String   @default("all")
+  language               String   @default("both")
+  isPriority             Boolean  @default(false)
+  liveEnabled            Boolean  @default(false)
+  registrationEnabled    Boolean  @default(false) // DORMANT: the anonymous public RSVP form was removed (review queue)
+  rsvpAccess             String   @default("any_approved") // DORMANT: nothing reads it any more; allowUninvitedRequests replaced it (backfilled from it). Never drop.
+  allowUninvitedRequests Boolean  @default(true) // uninvited households may ask to attend (rsvp_requests). Replaces rsvpAccess, which is now dormant.
+  virtualEnabled         Boolean  @default(false) // offer virtual attendance (needs the "recordings" toggle on)
+  meetUrl                String? // Google Meet link: only in virtual invitations, confirmations and reminders, never on a public page
+  youtubeUrl             String? // YouTube link: same rule as meetUrl
+  isRecorded             Boolean  @default(false) // event is recorded/streamed: the RSVP page shows the recording notice (only while the "recordings" toggle is on)
+  eventCost              Decimal? @db.Decimal(10, 2)
 
   // Recap (post-event)
   recapTitleEn         String?
@@ -593,6 +614,7 @@ model Event {
   timecards            VolunteerTimecard[]
   sponsors             EventSponsor[]
   invitations          Invitation[]
+  rsvpRequests         RsvpRequest[]
 
   // Sanity sponsor document ids shown on the public event page (public listing only; the Sponsor model above is the private CRM)
   sponsorSanityIds String[] @default([])
@@ -786,6 +808,7 @@ model Rsvp {
   checkInTokenHash    String?        @unique // SHA-256 of the raw token (used for lookup)
   checkInTokenEnc     String? // AES-256-GCM copy (CHECKIN_TOKEN_KEY) so the same QR can be re-sent
   cancelledAt         DateTime?
+  attendanceType      String         @default("in_person") // in_person | virtual (CHECK in the migration)
 
   @@unique([eventId, patientId])
 }
@@ -1130,24 +1153,36 @@ enum AuditAction {
   PORTAL_EMAIL_CHANGED
   PORTAL_MEMBER_LEFT
   PORTAL_DELETION_REQUESTED
+
+  // RSVP requests and virtual attendance (ids, statuses and reason codes only)
+  RSVP_REQUEST_CREATED
+  RSVP_REQUEST_PROMOTED
+  RSVP_REQUEST_CONFIRMED
+  RSVP_REQUEST_WAITLISTED
+  RSVP_REQUEST_DECLINED
+  RSVP_REQUEST_WITHDRAWN
+  INVITATION_ATTENDANCE_CHANGED
+  INVITATION_CALL_LOGGED
+  ALSO_SEND_TO_CHANGED
+  PHONE_TEXT_PREF_CHANGED
 }
 
 model AuditLog {
-  id           String      @id @default(uuid())
-  patientId    String?
-  patient      Patient?    @relation(fields: [patientId], references: [id], onDelete: SetNull)
-  action       AuditAction
-  resourceType String?
-  resourceId   String?
-  ipAddress    String?
-  userAgent    String?
-  details      String?
-  changes      Json?
+  id            String      @id @default(uuid())
+  patientId     String?
+  patient       Patient?    @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  action        AuditAction
+  resourceType  String?
+  resourceId    String?
+  ipAddress     String?
+  userAgent     String?
+  details       String?
+  changes       Json?
   // board | family | system | public. NULL = written before actorType existed (unclassified, NOT "board").
-  actorType    String?
+  actorType     String?
   // The household member who acted on the family page (null = the primary, a board member or the system). An id, no FK.
   actorMemberId String?
-  createdAt    DateTime    @default(now())
+  createdAt     DateTime    @default(now())
 
   @@index([actorMemberId])
   @@map("audit_logs")
@@ -1538,23 +1573,23 @@ model FeatureFlag {
 /// One row per Auth0 sign-in (Auth0 makes a separate user per provider). Many identities can belong to one Patient.
 /// patientId NULL = signed in but not matched to a household yet; purged after 30 days (retention job).
 model UserIdentity {
-  id                String    @id @default(uuid())
+  id                String           @id @default(uuid())
   patientId         String? // the HOUSEHOLD (the primary's Patient id); null = not matched
-  patient           Patient?  @relation("IdentityPerson", fields: [patientId], references: [id], onDelete: Cascade)
+  patient           Patient?         @relation("IdentityPerson", fields: [patientId], references: [id], onDelete: Cascade)
   // Set only when the person signing in is a confirmed adult MEMBER of that household (never the primary). CHECK in the
   // migration: householdMemberId is null or patientId is set. Cascade: a removed member can never turn into the primary.
   householdMemberId String?
   householdMember   HouseholdMember? @relation("IdentityMember", fields: [householdMemberId], references: [id], onDelete: Cascade)
-  auth0Sub          String    @unique
+  auth0Sub          String           @unique
   provider          String // google-oauth2 | apple | facebook | ... (from the sub prefix)
   email             String // lowercased, as the provider asserted it
-  emailVerified     Boolean   @default(false)
+  emailVerified     Boolean          @default(false)
   linkedAt          DateTime?
   linkedVia         String? // auto | admin | merge | backfill
   linkedByPatientId String?
-  linkedBy          Patient?  @relation("IdentityLinker", fields: [linkedByPatientId], references: [id], onDelete: SetNull)
-  firstSeenAt       DateTime  @default(now())
-  lastLoginAt       DateTime  @default(now())
+  linkedBy          Patient?         @relation("IdentityLinker", fields: [linkedByPatientId], references: [id], onDelete: SetNull)
+  firstSeenAt       DateTime         @default(now())
+  lastLoginAt       DateTime         @default(now())
 
   @@index([patientId])
   @@index([householdMemberId])
@@ -1613,13 +1648,13 @@ model PatientAlias {
 
 /// "Not a duplicate": this pair is never offered for merging again. Ids are stored in sorted order (patientAId < patientBId).
 model DuplicateDismissal {
-  id                String   @id @default(uuid())
-  patientAId        String
-  patientA          Patient  @relation("DismissalA", fields: [patientAId], references: [id], onDelete: Cascade)
-  patientBId        String
-  patientB          Patient  @relation("DismissalB", fields: [patientBId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(uuid())
+  patientAId           String
+  patientA             Patient  @relation("DismissalA", fields: [patientAId], references: [id], onDelete: Cascade)
+  patientBId           String
+  patientB             Patient  @relation("DismissalB", fields: [patientBId], references: [id], onDelete: Cascade)
   dismissedByPatientId String?
-  createdAt         DateTime @default(now())
+  createdAt            DateTime @default(now())
 
   @@unique([patientAId, patientBId])
   @@index([patientBId])
@@ -1651,4 +1686,57 @@ model RsvpAccessLink {
 
   @@index([eventId, patientId])
   @@map("rsvp_access_links")
+}
+
+/// A request to attend an event from a household that was not (or not yet) invited. The board decides in person or virtual.
+/// Confirming creates the Invitation (origin "request") and the Rsvp together. Ids, statuses and reason codes only: no free text.
+/// Partial unique index "rsvp_requests_one_open" (migration): one open request (waiting_household_review | pending | waitlisted) per event and household.
+model RsvpRequest {
+  id                 String      @id @default(uuid())
+  eventId            String
+  event              Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patientId          String
+  patient            Patient     @relation("RequestHousehold", fields: [patientId], references: [id], onDelete: Cascade)
+  source             String // modal | emailed_link | portal | registration | board
+  status             String      @default("pending") // waiting_household_review | pending | waitlisted | confirmed_in_person | confirmed_virtual | declined | withdrawn
+  // Who is coming: the AttendeeSelection shape (primary, household member ids, unlisted guests). partySize is derived from it.
+  selPrimary         Boolean     @default(true)
+  selMemberIds       String[]    @default([])
+  selGuests          Int         @default(0)
+  partySize          Int
+  declineReason      String? // EVENT_FULL is never used any more (a full event waitlists); NOT_ELIGIBLE_FOR_EVENT | DUPLICATE_REQUEST | FAMILY_WITHDREW | OTHER
+  decidedByPatientId String?
+  decidedBy          Patient?    @relation("RequestDecider", fields: [decidedByPatientId], references: [id], onDelete: SetNull)
+  decidedAt          DateTime?
+  invitationId       String?     @unique
+  invitation         Invitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+  rsvpId             String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  @@index([eventId, status, createdAt])
+  @@index([patientId])
+  @@map("rsvp_requests")
+}
+
+/// One phone call made from the call list. Outcome is a code, never free text. `source` lets the future dialer write here
+/// (source "dialer", providerCallId = the provider's call id); `calledByPatientId` is null for system-placed calls.
+model InvitationCallLog {
+  id                String      @id @default(uuid())
+  eventId           String
+  patientId         String
+  patient           Patient     @relation("CallHousehold", fields: [patientId], references: [id], onDelete: Cascade)
+  invitationId      String? // null while the household has no invitation row yet (matched but never invited)
+  invitation        Invitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+  purpose           String // invitation | confirmation
+  outcome           String // REACHED | VOICEMAIL | NO_ANSWER | WRONG_NUMBER | CALLBACK_NEEDED
+  source            String      @default("manual") // manual | dialer
+  providerCallId    String?
+  calledByPatientId String?
+  calledBy          Patient?    @relation("CallCaller", fields: [calledByPatientId], references: [id], onDelete: SetNull)
+  calledAt          DateTime    @default(now())
+
+  @@index([eventId, patientId, calledAt])
+  @@index([invitationId])
+  @@map("invitation_call_logs")
 }

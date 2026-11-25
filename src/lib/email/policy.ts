@@ -16,6 +16,8 @@ export const ESSENTIAL_EMAIL_KINDS: ReadonlySet<CodeEmailKind> = new Set<CodeEma
   "RSVP_CONFIRMATION",
   "RSVP_REMINDER",
   "RSVP_CANCELLATION",
+  "RSVP_CONFIRMED_VIRTUAL", // the virtual versions of the confirmation and the reminder
+  "RSVP_REMINDER_VIRTUAL",
 ]);
 
 export const isEssentialEmail = (kind: CodeEmailKind) => ESSENTIAL_EMAIL_KINDS.has(kind);

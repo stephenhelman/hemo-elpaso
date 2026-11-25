@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import BilingualInput from "@/components/form/BilingualInput";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import SponsorPicker, { type SponsorOption } from "@/components/admin/SponsorPicker";
+import VirtualSettings from "@/components/admin/VirtualSettings";
 
 const categoryOptions = [
   { value: "EDUCATION", label: "Educational Seminar" },
@@ -23,7 +24,7 @@ const categoryOptions = [
   { value: "FINANCIAL_ASSISTANCE", label: "Financial Assistance" },
 ];
 
-export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?: SponsorOption[] }) {
+export default function NewEventPage({ sponsorOptions = [], recordingsOn = false }: { sponsorOptions?: SponsorOption[]; recordingsOn?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [flyerEn, setFlyerEn] = useState<File | null>(null);
@@ -53,7 +54,10 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
     targetAudience: "all",
     language: "both",
     isPriority: false,
-    rsvpAccess: "any_approved",
+    allowUninvitedRequests: true,
+    virtualEnabled: false,
+    meetUrl: "",
+    youtubeUrl: "",
     isRecorded: false,
     status: "draft",
 
@@ -384,18 +388,9 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
             </label>
           </FormField>
 
-          <FormField label="Who can RSVP">
-            <select
-              value={formData.rsvpAccess}
-              onChange={(e) => updateFormData({ rsvpAccess: e.target.value })}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm"
-            >
-              <option value="any_approved">Any approved household</option>
-              <option value="invited_only">Invited households only</option>
-            </select>
-            <p className="text-xs text-neutral-500 mt-1">
-              Invited only: RSVP through the invitation link. Any approved household: an approved household that was not invited can still RSVP. Events that target a diagnosis are always invited only.
-            </p>
+          <FormField label="Requests and virtual attendance">
+            <VirtualSettings recordingsOn={recordingsOn} value={{ allowUninvitedRequests: formData.allowUninvitedRequests, virtualEnabled: formData.virtualEnabled, meetUrl: formData.meetUrl, youtubeUrl: formData.youtubeUrl }}
+              onChange={(v) => updateFormData(v)} />
           </FormField>
         </Section>
 
