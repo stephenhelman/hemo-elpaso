@@ -94,6 +94,7 @@ enum EmailTemplateType {
   EMAIL_CHANGE_CONFIRMATION
   MEMBER_LEFT_NOTICE
   DELETION_REQUEST_NOTICE
+  RSVP_ACCESS_LINK
 }
 
 enum AgeTier {
@@ -357,12 +358,21 @@ model Patient {
   mergedAt              DateTime?
   emailAliases          PatientAlias[]
   emailChangeRequests   EmailChangeRequest[]
+
+  // Registration review (lib/review). New web registrations start pending_review; officer-added households start approved.
+  // on_hold needs a reason code (CHECK in the migration). reviewedByPatientId = the officer who last changed it.
+  reviewStatus          String            @default("pending_review") // pending_review | approved | on_hold
+  reviewHoldReason      String? // NEEDS_CALL | POSSIBLE_DUPLICATE | NO_AFFECTED_MEMBER_STATED | OTHER
+  reviewedAt            DateTime?
+  reviewedByPatientId   String?
+  rsvpAccessLinks       RsvpAccessLink[]
   duplicateDismissalsA  DuplicateDismissal[] @relation("DismissalA")
   duplicateDismissalsB  DuplicateDismissal[] @relation("DismissalB")
 
   @@index([email])
   @@index([possibleDuplicateOfId])
   @@index([mergedIntoId])
+  @@index([reviewStatus, createdAt])
   @@map("patients")
 }
 
@@ -543,7 +553,8 @@ model Event {
   language            String   @default("both")
   isPriority          Boolean  @default(false)
   liveEnabled         Boolean  @default(false)
-  registrationEnabled Boolean  @default(false) // public RSVP form on the event page
+  registrationEnabled Boolean  @default(false) // DORMANT: the anonymous public RSVP form was removed (review queue)
+  rsvpAccess          String   @default("any_approved") // who can RSVP: invited_only | any_approved (diagnosis-targeted events are always invited-only)
   isRecorded          Boolean  @default(false) // event is recorded/streamed: the RSVP page shows the recording notice (only while the "recordings" toggle is on)
   eventCost           Decimal? @db.Decimal(10, 2)
 
@@ -562,6 +573,7 @@ model Event {
 
   targeting            EventTargeting?
   rsvps                Rsvp[]
+  rsvpAccessLinks      RsvpAccessLink[]
   checkIns             CheckIn[]
   pollCreationTokens   PollCreationToken[]
   photos               EventPhoto[]
@@ -926,6 +938,12 @@ model EventQuestion {
 }
 
 enum AuditAction {
+  // Review queue
+  REVIEWER_VIEWED
+  REVIEW_NEEDS_MERGE_FLAGGED
+  REVIEW_STATUS_CHANGED
+  RSVP_LINK_REQUESTED
+  RSVP_APPROVAL_OVERRIDDEN
   // Patient & Profile
   REGISTRATION_COMPLETED
   PROFILE_UPDATED
@@ -1610,4 +1628,21 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+/// A personal RSVP link emailed on request (event page, "Enter the email you registered with"). Works like an invitation
+/// token: only the SHA-256 hash is stored, the raw token exists only in the email. It does NOT make the household
+/// "invited" (invited-only and diagnosis-targeted events still refuse uninvited households).
+model RsvpAccessLink {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([eventId, patientId])
+  @@map("rsvp_access_links")
 }
