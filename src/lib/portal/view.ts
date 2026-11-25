@@ -24,6 +24,10 @@ export interface PortalView {
   reviewStatus: string;
   /** Household-level flyer preference (email | mail | none), plus what the choices depend on. */
   flyerDelivery: { value: "email" | "mail" | "none"; hasEmail: boolean; hasAddress: boolean };
+  /** "Also send invitations to" (confirmed adults with an email; names only) and whether MY phone can get texts. */
+  contactPrefs: { alsoSend: { options: { id: string; name: string }[]; selected: string[] }; phoneCanText: boolean | null; hasPhone: boolean };
+  /** This household's requests to attend events (open ones can be withdrawn). Titles and statuses only. */
+  requests: { id: string; eventId: string; slug: string; title: { en: string; es: string }; eventDate: string; status: string }[];
   consents: { data_and_contact: boolean | null; media: boolean | null; sms: boolean | null; newsletter: boolean | null };
   members: ViewMember[];
   /** Confirmed adults other than me (the primary may designate them as guardians). Names only. */
@@ -45,7 +49,7 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
   const base = await loadHousehold(householdId, now);
   if (!base) return null;
   const [p, members, gs] = await Promise.all([
-    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, flyerDelivery: true, preferredLanguage: true, primaryDiagnoses: true, reviewStatus: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, city: true, state: true, zipCode: true } } } }),
+    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, flyerDelivery: true, alsoSendToMemberIds: true, phoneCanText: true, preferredLanguage: true, primaryDiagnoses: true, reviewStatus: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, city: true, state: true, zipCode: true } } } }),
     prisma.householdMember.findMany({ where: { patientId: householdId }, orderBy: { createdAt: "asc" } }),
     prisma.memberGuardianship.findMany({ where: { child: { patientId: householdId } }, select: { childMemberId: true, guardianMemberId: true, attestedAt: true } }),
   ]);
@@ -91,6 +95,18 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
       : null,
     reviewStatus: p.reviewStatus,
     flyerDelivery: { value: isFlyerDelivery(p.flyerDelivery) ? p.flyerDelivery : "none", hasEmail: !!p.email?.trim(), hasAddress: hasCompleteAddress(p.contactProfile) },
+    contactPrefs: {
+      alsoSend: {
+        options: members.filter((m) => m.ageGroup === "18_plus" && m.status === "confirmed" && !!m.email).map((m) => ({ id: m.id, name: name(m) })),
+        selected: p.alsoSendToMemberIds,
+      },
+      phoneCanText: meRow ? meRow.phoneCanText : p.phoneCanText,
+      hasPhone: !!(meRow ? meRow.phone : p.contactProfile?.phone),
+    },
+    requests: (await prisma.rsvpRequest.findMany({
+      where: { patientId: householdId, status: { in: ["waiting_household_review", "pending", "waitlisted"] }, event: { eventDate: { gte: now } } },
+      orderBy: { createdAt: "asc" }, include: { event: { select: { id: true, slug: true, titleEn: true, titleEs: true, eventDate: true } } },
+    })).map((r) => ({ id: r.id, eventId: r.event.id, slug: r.event.slug, title: { en: r.event.titleEn, es: r.event.titleEs }, eventDate: r.event.eventDate.toISOString(), status: r.status })),
     consents: {
       data_and_contact: currentValue(consentRows, "data_and_contact"), media: currentValue(consentRows, "media"),
       sms: currentValue(consentRows, "sms"), newsletter: currentValue(consentRows, "newsletter"),

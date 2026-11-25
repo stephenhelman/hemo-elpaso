@@ -19,6 +19,7 @@ import { addressAutocompleteEnabled } from "@/lib/address/server";
 import { openEventsFor } from "@/lib/review/events";
 import ConsentSwitches from "./ConsentSwitches";
 import PortalEditor from "./PortalEditor";
+import RequestList from "./RequestList";
 
 export const metadata: Metadata = { title: "My household", robots: { index: false, follow: false }, referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
@@ -55,7 +56,8 @@ export default async function PortalPage() {
   const h = { firstName: v.me.firstName, upcoming: v.household.upcoming, past: v.household.past, invited: v.household.invited, consents: v.consents };
 
   const features = await getFeatureStates();
-  const openEvents = await openEventsFor(s.patient.id);
+  const requestedIds = new Set(v.requests.map((r) => r.eventId));
+  const openEvents = (await openEventsFor(s.patient.id)).filter((e) => !requestedIds.has(e.id));
   const text = consentTextVersions[CONSENT_TEXT_VERSION as keyof typeof consentTextVersions] as unknown as Record<string, { en: string; es: string }>;
   const when = (iso: string) => formatEventDateTime(iso, lang);
   const evTitle = (x: { title: { en: string; es: string } }) => x.title[lang];
@@ -113,6 +115,7 @@ export default async function PortalPage() {
           pendingAttestations={v.pendingAttestations}
           primaryName={v.primaryName}
           flyerDelivery={v.flyerDelivery}
+          contactPrefs={v.contactPrefs}
         />
 
         <section className={card} aria-labelledby="events">
@@ -135,6 +138,8 @@ export default async function PortalPage() {
           {h.past.length === 0 ? <p className="py-2 text-sm text-neutral-600">{t.noPast}</p> : <ul className="divide-y divide-neutral-100">{h.past.map((r) => <RsvpRow key={r.id} r={r} />)}</ul>}
         </section>
 
+        <RequestList lang={lang} items={v.requests.map((r) => ({ id: r.id, slug: r.slug, title: lang === "es" ? r.title.es : r.title.en, when: when(r.eventDate), status: r.status }))} />
+
         <section className={card} aria-labelledby="open-events">
           <h2 id="open-events" className={h2}>{t.openEvents}</h2>
           {openEvents.length === 0 ? <p className="py-2 text-sm text-neutral-600">{t.openEventsNone}</p> : (
@@ -142,7 +147,7 @@ export default async function PortalPage() {
               {openEvents.map((e) => (
                 <li key={e.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
                   <div><p className="font-medium text-neutral-900">{evTitle(e)}</p><p className="text-sm text-neutral-600">{when(e.eventDate)}</p></div>
-                  <Link href={`/events/${e.slug}`} className="text-sm font-semibold text-primary hover:underline">{t.rsvpOpen}</Link>
+                  <Link href={`/events/${e.slug}`} className="text-sm font-semibold text-primary hover:underline">{e.asRequest ? (lang === "es" ? "Pedir asistir" : "Ask to attend") : t.rsvpOpen}</Link>
                 </li>
               ))}
             </ul>

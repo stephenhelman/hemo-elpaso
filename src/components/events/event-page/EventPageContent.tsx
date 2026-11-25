@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import FlyerPreview from "@/components/events/FlyerPreview";
-import EventRsvpSection from "@/components/rsvp/EventRsvpSection";
+import RsvpModal from "@/components/rsvp/RsvpModal";
 import type { EventRsvpView } from "@/lib/review/event-view";
 
 import { eventSlugPageTranslation } from "@/translation/eventsPage";
@@ -71,12 +71,6 @@ export function EventPageContent({
               </p>
             </div>
           </div>
-
-          {isUpcoming && registration === "open" && (
-            <div id="rsvp" className="scroll-mt-24">
-              <EventRsvpSection view={rsvpView} locale={locale} eventId={eventId} turnstileSiteKey={turnstileSiteKey} notices={notices} />
-            </div>
-          )}
 
           {/* Past Event Notice */}
           {isPast && (
@@ -184,28 +178,19 @@ export function EventPageContent({
           {/* RSVP status card (the form itself is in the main column) */}
           {isUpcoming && (
             <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-              {registration === "open" ? (
+              {registration === "open" || registration === "full" ? (
                 <>
                   <p className="font-display font-bold text-neutral-900 mb-3">
                     {locale === "es" ? "Reserva tu lugar" : "Reserve your spot"}
                   </p>
-                  <a
-                    href="#rsvp"
-                    className="block w-full text-center px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors"
-                  >
-                    RSVP
-                  </a>
+                  <RsvpModal view={rsvpView} locale={locale} eventId={eventId} turnstileSiteKey={turnstileSiteKey} notices={notices} full={registration === "full"} />
                 </>
-              ) : registration === "full" || registration === "closed" ? (
+              ) : registration === "closed" ? (
                 <p className="text-neutral-700 text-sm font-semibold">
                   {withPhone(
-                    registration === "full"
-                      ? locale === "es"
-                        ? "Este evento está lleno. Llámanos al {phone}."
-                        : "This event is full. Please call us at {phone}."
-                      : locale === "es"
-                        ? "El registro está cerrado. Llámanos al {phone}."
-                        : "Registration closed. Please call us at {phone}.",
+                    locale === "es"
+                      ? "El registro está cerrado. Llámanos al {phone}."
+                      : "Registration closed. Please call us at {phone}.",
                   )}
                 </p>
               ) : (

@@ -3,6 +3,7 @@ import { registrationOpen } from "@/lib/registration";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createPatient, validatePatientInput } from "@/lib/patients/create";
 import { sendMemberConfirmations } from "@/lib/households/confirmation";
+import { createRegistrationRequest } from "@/lib/rsvp/requests";
 import { sendRegistrationConfirmation } from "@/lib/patients/confirmation";
 
 /**
@@ -51,10 +52,14 @@ export async function POST(req: NextRequest) {
     consentSms: body.consentSms,
     consentNewsletter: body.consentNewsletter,
     flyerDelivery: body.flyerDelivery,
+    phoneCanText: body.phoneCanText,
   });
   if (!v.ok) {
     return NextResponse.json({ ok: false, error: "invalid", field: v.field }, { status: 400 });
   }
+
+  // "Register for a phone call": the phone is required (the email stays optional).
+  if (body.mode === "phone" && !v.value.phone) return NextResponse.json({ ok: false, error: "invalid", field: "phone" }, { status: 400 });
 
   try {
     const { id, invites } = await createPatient(v.value, { source: "web", method: "web" });
@@ -71,6 +76,8 @@ export async function POST(req: NextRequest) {
       });
     }
     await sendMemberConfirmations(id, v.value.firstName, v.value.language, invites);
+    // Registered from an event's RSVP modal: also ask to attend that event (waits on household review). Never fails the registration.
+    if (body.eventId) await createRegistrationRequest(body.eventId, id).catch(() => console.error("register-info: request to attend not saved"));
   } catch {
     // No details: the payload contains PII and PHI.
     console.error("register-info: failed to store registration");

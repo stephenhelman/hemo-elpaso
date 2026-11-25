@@ -7,6 +7,7 @@ import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import { AGE_GROUPS, RELATIONSHIPS, ageGroupLabels } from "@/lib/households/constants";
 import type { ViewMember } from "@/lib/portal/view";
 import { flyerText } from "@/lib/flyers/text";
+import { contactText } from "@/lib/portal/contact-text";
 import AddressFields from "@/components/form/AddressFields";
 import { emptyAddress, type AddressDraft } from "@/lib/address/draft";
 
@@ -24,6 +25,7 @@ export interface EditorProps {
   pendingAttestations: { childMemberId: string; childName: string }[];
   primaryName: string;
   flyerDelivery: { value: "email" | "mail" | "none"; hasEmail: boolean; hasAddress: boolean };
+  contactPrefs: { alsoSend: { options: { id: string; name: string }[]; selected: string[] }; phoneCanText: boolean | null; hasPhone: boolean };
 }
 
 const input = "w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm";
@@ -380,6 +382,58 @@ function FlyerChoice({ lang, current }: { lang: Lang; current: EditorProps["flye
   );
 }
 
+// ── contact preferences ──────────────────────────────────────────────────────────────────────────────────────
+function ContactPrefs({ lang, current }: { lang: Lang; current: EditorProps["contactPrefs"] }) {
+  const t = editText[lang], c = contactText[lang];
+  const a = useAct(lang);
+  const b = useAct(lang);
+  const [ids, setIds] = useState<string[]>(current.alsoSend.selected.filter((id) => current.alsoSend.options.some((o) => o.id === id)));
+  const [canText, setCanText] = useState<"yes" | "no" | "">(current.phoneCanText === true ? "yes" : current.phoneCanText === false ? "no" : "");
+  const savedText = current.phoneCanText === true ? "yes" : current.phoneCanText === false ? "no" : "";
+  const sameIds = [...ids].sort().join(",") === [...current.alsoSend.selected].sort().join(",");
+  return (
+    <section className={card} aria-labelledby="contact-prefs">
+      <h2 id="contact-prefs" className={h2}>{c.title}</h2>
+      <fieldset>
+        <legend className="text-sm font-medium text-neutral-900">{c.alsoTitle}</legend>
+        <p className="text-xs text-neutral-500 mb-2">{c.alsoHelp}</p>
+        {current.alsoSend.options.length === 0 ? <p className="text-sm text-neutral-600">{c.alsoNone}</p> : (
+          <>
+            <div className="space-y-2">
+              {current.alsoSend.options.map((o) => (
+                <label key={o.id} className="flex items-center gap-2 text-sm text-neutral-800">
+                  <input type="checkbox" checked={ids.includes(o.id)} onChange={(e) => setIds(e.target.checked ? [...ids, o.id] : ids.filter((x) => x !== o.id))} />{o.name}
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <button className={ghostBtn} disabled={a.busy || sameIds} onClick={() => a.act({ action: "also_send_to", memberIds: ids })}>{a.busy ? t.saving : c.save}</button>
+              <Note note={a.note} />
+            </div>
+          </>
+        )}
+      </fieldset>
+      <fieldset className="mt-5 border-t border-neutral-100 pt-4">
+        <legend className="text-sm font-medium text-neutral-900">{c.textTitle}</legend>
+        <p className="text-xs text-neutral-500 mb-2">{current.hasPhone ? c.textHelp : c.noPhone}</p>
+        {current.hasPhone && (
+          <>
+            <div className="flex flex-wrap gap-4 text-sm text-neutral-800">
+              {([["yes", c.yes], ["no", c.no], ["", c.unsure]] as const).map(([v, label]) => (
+                <label key={v || "unsure"} className="inline-flex items-center gap-2"><input type="radio" name="phoneCanText" checked={canText === v} onChange={() => setCanText(v)} />{label}</label>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <button className={ghostBtn} disabled={b.busy || canText === savedText} onClick={() => b.act({ action: "phone_text", canText: canText === "yes" ? true : canText === "no" ? false : null })}>{b.busy ? t.saving : c.save}</button>
+              <Note note={b.note} />
+            </div>
+          </>
+        )}
+      </fieldset>
+    </section>
+  );
+}
+
 export default function PortalEditor(p: EditorProps) {
   const t = editText[p.lang];
   return (
@@ -387,6 +441,7 @@ export default function PortalEditor(p: EditorProps) {
       <GuardianGate lang={p.lang} pending={p.pendingAttestations} />
       <AboutYou lang={p.lang} me={p.me} address={p.address} autocomplete={p.addressAutocomplete} />
       <FlyerChoice lang={p.lang} current={p.flyerDelivery} />
+      <ContactPrefs lang={p.lang} current={p.contactPrefs} />
       <section className={card} aria-labelledby="members">
         <h2 id="members" className={h2}>{t.members}</h2>
         <ul className="divide-y divide-neutral-100">

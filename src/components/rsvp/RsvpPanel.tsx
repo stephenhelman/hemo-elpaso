@@ -16,8 +16,11 @@ export type RsvpPanelProps =
       valid: true;
       token: string;
       via: "checkin" | "invitation" | "link";
-      /** Not an active RSVP and the household may not start one (registration review / invitation-only event). */
-      blocked: "review" | "invitation" | null;
+      /** No active RSVP: "rsvp" (invited + approved), "request" (asks to attend), "invitation" (invitation-only event), "blocked" (an earlier request can't be repeated). */
+      mode: "rsvp" | "request" | "invitation" | "blocked";
+      reviewing: boolean;
+      openRequest: { id: string; status: string } | null;
+      attendanceType: "in_person" | "virtual";
       qrToken: string | null;
       firstName: string;
       hasEmail: boolean;
@@ -39,7 +42,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const [sel, setSel] = useState<AttendeeState>(props.valid ? props.selected : { primary: true, memberIds: [], guests: 0 });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [state, setState] = useState<"normal" | "cancelled" | "declined">(
+  const [state, setState] = useState<"normal" | "cancelled" | "declined" | "requested">(
     props.valid && props.declined ? "declined" : "normal",
   );
 
@@ -57,7 +60,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const title = locale === "es" ? event.titleEs : event.titleEn;
   const d = new Date(event.eventDate);
   const when = formatEventDateTime(d, locale);
-  const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "review" ? t.review : e === "invitation" ? withPhone(t.invitationOnly) : e === "ended" ? t.ended : t.genericError);
+  const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "review" ? t.review : e === "blocked" ? withPhone(t.blocked) : e === "invitation" ? withPhone(t.invitationOnly) : e === "ended" ? t.ended : t.genericError);
 
   const respond = async (response: "yes" | "no") => {
     setBusy(response); setMsg(null);
@@ -69,7 +72,8 @@ export default function RsvpPanel(props: RsvpPanelProps) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setMsg(errText(data.error)); return; }
-      if (response === "no") { setState(props.confirmed ? "cancelled" : "declined"); return; }
+      if (response === "no") { setState(props.confirmed ? "cancelled" : props.openRequest ? "declined" : "declined"); setMsg(props.openRequest ? t.withdrawn : null); return; }
+      if (data.state === "requested") { setState("requested"); setMsg(props.reviewing ? t.requestedDoneReview : t.requestedDone); router.refresh(); return; }
       if (!props.confirmed) trackEvent({ name: "rsvp_submitted", source: "invite" }); // first confirmation only
       if (data.checkInToken) { router.replace(`/rsvp/${data.checkInToken}`); return; }
       setMsg(t.saved); router.refresh();
@@ -98,6 +102,10 @@ export default function RsvpPanel(props: RsvpPanelProps) {
 
   if (props.ended) return <div className={card}>{header}<p className="text-neutral-600">{t.ended}</p></div>;
 
+  if (state === "requested") {
+    return <div className={card}>{header}<p className="text-neutral-700 text-sm" role="status">{msg ?? t.requestedDone}</p></div>;
+  }
+
   if (state === "cancelled" || state === "declined") {
     return (
       <div className={card}>
@@ -120,22 +128,42 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const unchanged = JSON.stringify({ p: sel.primary, m: [...sel.memberIds].sort(), g: sel.guests }) ===
     JSON.stringify({ p: props.selected.primary, m: [...props.selected.memberIds].sort(), g: props.selected.guests });
 
-  if (!props.confirmed && props.blocked) {
-    return <div className={card}>{header}<p className="text-neutral-700 text-sm" role="status">{props.blocked === "review" ? t.review : withPhone(t.invitationOnly)}</p></div>;
+  if (!props.confirmed && (props.mode === "invitation" || props.mode === "blocked")) {
+    return <div className={card}>{header}<p className="text-neutral-700 text-sm" role="status">{props.mode === "invitation" ? withPhone(t.invitationOnly) : withPhone(t.blocked)}</p></div>;
+  }
+
+  // A request already waiting: its status, and a way to withdraw it.
+  if (!props.confirmed && props.mode === "request" && props.openRequest) {
+    const st = props.openRequest.status;
+    return (
+      <div className={card}>
+        {header}
+        <p className="text-neutral-800 text-sm font-medium" role="status">{st === "waiting_household_review" ? t.requestWaiting : st === "waitlisted" ? t.requestWaitlisted : t.requestPending}</p>
+        <div className="mt-4">
+          <button disabled={busy !== null} onClick={() => respond("no")} className={`${btn} border border-neutral-300 text-neutral-700 hover:bg-neutral-50`}>
+            {busy === "no" && <Loader2 className="w-4 h-4 animate-spin" />}{t.withdrawRequest}
+          </button>
+        </div>
+        {msg && <p className="mt-4 text-sm text-red-600" role="alert">{msg}</p>}
+      </div>
+    );
   }
 
   if (!props.confirmed) {
     return (
       <div className={card}>
         {header}
+        {props.mode === "request" && <p className="text-neutral-700 text-sm mb-4">{props.reviewing ? t.requestReviewNote : t.requestNote}</p>}
         {partyInput}
         <div className="flex flex-wrap gap-3">
           <button disabled={busy !== null || !attendeesValid(sel)} onClick={() => respond("yes")} className={`${btn} bg-primary text-white hover:bg-primary-600`}>
-            {busy === "yes" && <Loader2 className="w-4 h-4 animate-spin" />}{t.yes}
+            {busy === "yes" && <Loader2 className="w-4 h-4 animate-spin" />}{props.mode === "request" ? t.requestSend : t.yes}
           </button>
-          <button disabled={busy !== null} onClick={() => respond("no")} className={`${btn} border border-neutral-300 text-neutral-700 hover:bg-neutral-50`}>
-            {t.no}
-          </button>
+          {props.mode !== "request" && (
+            <button disabled={busy !== null} onClick={() => respond("no")} className={`${btn} border border-neutral-300 text-neutral-700 hover:bg-neutral-50`}>
+              {t.no}
+            </button>
+          )}
         </div>
         {msg && <p className="mt-4 text-sm text-red-600" role="alert">{msg}</p>}
       </div>
@@ -149,7 +177,15 @@ export default function RsvpPanel(props: RsvpPanelProps) {
         <span className="text-neutral-500 text-sm">· {t.confirmedFor(props.partySize)}</span>
       </div>
       {header}
-      {props.qrToken ? (
+      {props.attendanceType === "virtual" ? (
+        <div className="mb-6">
+          <h2 className="font-semibold text-neutral-900 mb-1">{t.virtualConfirmed}</h2>
+          <p className="text-sm text-neutral-600 mb-3">{t.virtualHelp}</p>
+          <button disabled={busy !== null} onClick={resend} className={`${btn} bg-primary text-white hover:bg-primary-600`}>
+            {busy === "resend" && <Loader2 className="w-4 h-4 animate-spin" />}{t.resendVirtual}
+          </button>
+        </div>
+      ) : props.qrToken ? (
         <div className="mb-6 text-center">
           <h2 className="font-semibold text-neutral-900 mb-2">{t.qrTitle}</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}
