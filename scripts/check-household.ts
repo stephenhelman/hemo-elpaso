@@ -3,11 +3,14 @@
  * phone confirmation, age-aware matching and PHI hygiene.
  * Runs the real route handlers against the DEV database and deletes the patients it creates.
  * Usage: npm run check:household   (db-guard refuses production)
- * Emails go to Resend's delivered+...@resend.dev test addresses.
+ * Emails are CAPTURED (EMAIL_MODE=capture, forced here): the assertions read the in-memory outbox and the EmailLog status "captured".
  */
 import * as ReactNS from "react"; (globalThis as any).React = ReactNS; // tsx uses the classic JSX runtime; Next uses automatic
 import { config } from "dotenv";
 config({ path: ".env.local" });
+process.env.EMAIL_MODE = "capture"; // check scripts never send email (lib/email/mode.ts)
+process.env.EMAIL_OUTBOX_FILES = "0";
+delete process.env.VERCEL_ENV;
 process.env.REGISTRATION_OPEN = "true";
 process.env.TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"; // Cloudflare always-pass test secret
 
@@ -79,7 +82,9 @@ async function main() {
   const types = patient!.consentRecords.map((c) => c.type).sort().join(",");
   ok(types === "age_guardian_attestation,data_and_contact,media,newsletter,sms", "primary consents + attestation recorded (v3 adds sms and newsletter rows)");
   const mail = await prisma.emailLog.findMany({ where: { patientId: patient!.id, templateType: "MEMBER_CONFIRMATION" } });
-  ok(mail.length === 1 && mail[0].status === "sent", `spouse confirmation email sent via Resend (log rows: ${mail.map((m) => m.status + ":" + m.error)})`);
+  const { emailOutbox } = await import("@/lib/email/send");
+  ok(mail.length === 1 && mail[0].status === "captured", `spouse confirmation email captured, not sent (log rows: ${mail.map((m) => m.status + ":" + m.error)})`);
+  ok(emailOutbox().some((m) => m.kind === "MEMBER_CONFIRMATION" && [m.to].flat().includes(`delivered+${tag}s@resend.dev`)), "the outbox holds the spouse's confirmation email");
 
   // --- spouse confirms ---
   const tok = (await reissueMemberToken(sam.id))!.raw;

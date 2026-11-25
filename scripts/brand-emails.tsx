@@ -1,8 +1,9 @@
 /**
  * Renders every HOEP email with sample data.
  *   npx tsx scripts/brand-emails.tsx preview <outDir>      # HTML files for screenshots (header from the local file)
- *   npx tsx scripts/brand-emails.tsx send <to-address>      # sends ONE test of each kind via Resend
- * `send` uses the real RESEND_API_KEY/EMAIL_FROM from .env.local and attaches the header image inline (CID),
+ *   EMAIL_MODE=allowlist EMAIL_DEV_ALLOWLIST=<to-address> npx tsx scripts/brand-emails.tsx send <to-address>
+ *                                                            # sends ONE test of each kind via Resend (default EMAIL_MODE=capture sends nothing)
+ * `send` uses the RESEND_API_KEY/EMAIL_FROM from .env.local and attaches the header image inline (CID),
  * because the public URL only works after the site is deployed. Subjects are prefixed "[brand test]".
  */
 import fs from "node:fs";
@@ -56,20 +57,20 @@ async function main() {
   }
   if (mode === "send") {
     if (!arg?.includes("@")) throw new Error("usage: send <address>");
-    if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY missing");
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    // Goes through the one sender: with the default EMAIL_MODE (capture) nothing is sent; use EMAIL_MODE=allowlist
+    // EMAIL_DEV_ALLOWLIST=<address> to receive the test in your inbox.
+    const { deliverEmail } = await import("../src/lib/email/send");
     const header = fs.readFileSync("public/brand/email-header.png");
     const from = process.env.EMAIL_FROM || "HOEP <onboarding@resend.dev>";
     for (const [name, subject, el, send] of list) {
       if (!send) continue;
       // inline the header so the test shows it before the site (and /brand/email-header.png) is deployed
       const html = (await render(el)).replace(`${base}/brand/email-header.png`, "cid:hoep-header");
-      const res = await resend.emails.send({
-        from, to: arg, subject: `[brand test] ${subject}`, html,
-        attachments: [{ filename: "email-header.png", content: header, contentId: "hoep-header" } as any],
+      const res = await deliverEmail({
+        kind: `BRAND_${name}`, from, to: arg, subject: `[brand test] ${subject}`, html,
+        attachments: [{ filename: "email-header.png", content: header, contentId: "hoep-header" }],
       });
-      console.log(name.padEnd(28), res.error ? `ERROR ${res.error.name}: ${res.error.message}` : `id ${res.data?.id}`);
+      console.log(name.padEnd(28), !res.ok ? `ERROR ${res.errorName}` : res.captured ? "captured (not sent: see EMAIL_MODE)" : `id ${res.id}`);
     }
     return;
   }

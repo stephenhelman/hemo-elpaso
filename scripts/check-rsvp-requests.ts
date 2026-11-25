@@ -14,13 +14,14 @@
 import "./_load-env";
 import "./_react-global";
 import assert from "node:assert/strict";
-import { test, after, before } from "node:test";
+import { test, after } from "node:test";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { render } from "@react-email/render";
 import { prisma } from "../src/lib/db";
+import { emailOutbox } from "../src/lib/email/send";
 import { rsvpOrRequest, confirmRequest, declineRequest, waitlistRequest, withdrawRequest, promoteWaitingRequests, createRegistrationRequest, setInvitationAttendance } from "../src/lib/rsvp/requests";
 import { decideRsvpPath, confirmBlock, mayResubmit, requestWindowOpen, DECLINE_REASONS, CALL_OUTCOMES } from "../src/lib/rsvp/request-rules";
 import { eventRequestSettings } from "../src/lib/rsvp/event-settings";
@@ -47,25 +48,10 @@ const YT = "https://www.youtube.com/watch?v=test1234";
 const patients: string[] = [];
 const events: string[] = [];
 const startedAt = new Date();
-const sent: { to: string | string[]; subject: string; html: string }[] = [];
-const realFetch = globalThis.fetch;
-
-before(() => {
-  // Capture every email instead of sending it.
-  process.env.RESEND_API_KEY = "re_test";
-  process.env.EMAIL_FROM = "HOEP <info@example.org>";
-  globalThis.fetch = (async (url: unknown, init?: { body?: string }) => {
-    if (String(url).includes("resend")) {
-      const b = JSON.parse(init?.body ?? "{}");
-      sent.push({ to: b.to, subject: b.subject, html: b.html });
-      return new Response(JSON.stringify({ id: `m${sent.length}` }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-    return realFetch(url as never, init as never);
-  }) as typeof fetch;
-});
+// Emails are CAPTURED (EMAIL_MODE=capture is forced by _load-env): `sent` IS the in-memory outbox, cleared with `sent.length = 0`.
+const sent = emailOutbox();
 
 after(async () => {
-  globalThis.fetch = realFetch;
   const rows = await prisma.auditLog.findMany({ where: { createdAt: { gte: startedAt } }, select: { id: true, patientId: true, resourceId: true, changes: true } });
   const ids = [...patients, ...events];
   const mine = rows.filter((r) => (r.patientId && patients.includes(r.patientId)) || (r.resourceId && ids.includes(r.resourceId)) || ids.some((i) => JSON.stringify(r.changes ?? {}).includes(i)));
