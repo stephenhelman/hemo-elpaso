@@ -2,6 +2,7 @@ import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { CONSENT_TEXT_VERSION, type ConsentType } from "@/content/consent";
 import { sanitizeDiagnoses } from "./diagnoses";
+import { addressColumns, parseAddress, type Address } from "@/lib/address/validate";
 import { randomUUID } from "crypto";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { validateMembers, type ValidatedMember } from "@/lib/households/members";
@@ -19,7 +20,7 @@ export interface PatientInput {
   lastName: unknown;
   email: unknown;
   phone: unknown;
-  address: unknown;
+  address: unknown; // { line1, line2, city, state, zip } (lib/address); all empty = no address
   language: unknown;
   familySize: unknown;
   diagnoses: unknown; // the PRIMARY person's own
@@ -36,7 +37,7 @@ export type ValidatedPatient = {
   lastName: string;
   email: string | null;
   phone: string | null;
-  address: string | null;
+  address: Address | null;
   language: "en" | "es";
   familySize: number;
   diagnoses: string[]; // the primary's own (Patient.primaryDiagnoses)
@@ -78,6 +79,9 @@ export function validatePatientInput(
   if (phoneRaw && !phone) return { ok: false, field: "phone" };
   if (!email && !phone) return { ok: false, field: "contact" };
 
+  const addr = parseAddress(i.address);
+  if (!addr.ok) return { ok: false, field: addr.field };
+
   const language = i.language === "es" ? "es" : "en";
   let members: ValidatedMember[] = [];
   let fs = 1;
@@ -106,7 +110,7 @@ export function validatePatientInput(
       lastName,
       email,
       phone,
-      address: cleanText(i.address, 300) || null,
+      address: addr.value,
       language,
       familySize: fs,
       diagnoses: sanitizeDiagnoses(i.diagnoses),
@@ -208,12 +212,16 @@ export async function createPatient(
         statedDiagnoses: v.diagnoses, // recomputed below
         source: ctx.source,
         possibleDuplicateOfId: duplicateOfId,
+        // Registration review: a web registration waits for review; a household an officer adds is approved by that officer.
+        ...(ctx.recordedByBoardUserId
+          ? { reviewStatus: "approved", reviewedAt: new Date(), reviewedByPatientId: ctx.recordedByBoardUserId }
+          : { reviewStatus: "pending_review" }),
         contactProfile: {
           create: {
             firstName: v.firstName,
             lastName: v.lastName,
             phone: v.phone,
-            addressLine1: v.address,
+            ...addressColumns(v.address),
           },
         },
         consentRecords: {
@@ -247,6 +255,16 @@ export async function createPatient(
       details: `Patient created via ${ctx.source} with ${v.members.length} household member(s)${duplicateOfId ? " (possible duplicate flagged)" : ""}`,
     },
   });
+
+  if (ctx.recordedByBoardUserId) {
+    await prisma.auditLog.create({
+      data: {
+        patientId: ctx.recordedByBoardUserId, actorType: "board", action: AuditAction.REVIEW_STATUS_CHANGED, resourceType: "Patient", resourceId: patientId,
+        details: "Review status (new) -> approved: household added by an officer",
+        changes: { householdId: patientId, from: null, status: "approved", reasonCode: null },
+      },
+    });
+  }
 
   return { id: patientId, duplicateOfId, invites, memberIds: memberRows.map((r) => r.id) };
 }

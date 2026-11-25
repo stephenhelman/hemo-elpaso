@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
-import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
+import AddressFields, { type AddressDraft } from "@/components/form/AddressFields";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import HouseholdSection, {
@@ -22,7 +22,9 @@ export interface PatientFormValues {
   lastName: string;
   email: string;
   phone: string;
-  address: string;
+  address: AddressDraft;
+  /** Editing: the address on file is a one-line legacy entry (shown empty with a note; not auto-parsed). */
+  addressUnstructured?: boolean;
   language: "en" | "es";
   familySize: number;
   diagnoses: string[]; // the PRIMARY's own
@@ -42,8 +44,10 @@ export default function PatientForm({
   canViewPHI,
   locale,
   returnEventId,
+  addressAutocomplete = false,
 }: {
   returnEventId?: string;
+  addressAutocomplete?: boolean;
   mode: "create" | "edit";
   patientId?: string;
   initial: PatientFormValues;
@@ -53,8 +57,9 @@ export default function PatientForm({
   const t = adminPatientsTranslation[locale];
   const h = householdTranslation[locale];
   const router = useRouter();
-  const [v, setV] = useState<Required<PatientFormValues>>({ members: [], attestation: false, ...initial });
+  const [v, setV] = useState<Required<PatientFormValues>>({ members: [], attestation: false, addressUnstructured: false, ...initial });
   const [saving, setSaving] = useState(false);
+  const [badField, setBadField] = useState<string | null>(null);
   const set = <K extends keyof Required<PatientFormValues>>(k: K, val: Required<PatientFormValues>[K]) =>
     setV((cur) => ({ ...cur, [k]: val }));
 
@@ -63,7 +68,7 @@ export default function PatientForm({
     if (!v.email.trim() && !v.phone.trim()) return toast.error(t.contactError);
     if (mode === "create" && !householdComplete(v.members)) return toast.error(h.errMembers);
     if (mode === "create" && !v.attestation) return toast.error(h.errAttestation);
-    setSaving(true);
+    setSaving(true); setBadField(null);
     try {
       const res = await fetch(
         mode === "create" ? "/api/admin/patients" : `/api/admin/patients/${patientId}`,
@@ -92,6 +97,7 @@ export default function PatientForm({
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (data.field && !["contact", "members", "familySize", "attestation"].includes(data.field)) setBadField(data.field);
         toast.error(
           data.field === "contact"
             ? t.contactError
@@ -139,8 +145,8 @@ export default function PatientForm({
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1.5">{t.address}</label>
-        <PlacesAutocompleteInput value={v.address} onChange={(a) => set("address", a)} className={input} />
+        <p className="block text-sm font-medium text-neutral-700 mb-1.5">{t.address}</p>
+        <AddressFields value={v.address} onChange={(a) => set("address", a)} locale={locale} autocomplete={addressAutocomplete} invalidField={badField} unstructuredNote={!!v.addressUnstructured} inputClassName={input} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

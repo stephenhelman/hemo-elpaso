@@ -57,7 +57,7 @@ test("matcher excludes a withdrawn household and keeps a consenting one (dev DB)
   const mk = async (name: string, consents: boolean[]) => {
     const p = await prisma.patient.create({
       data: {
-        email: `${tag}.${name}@example.org`, role: "patient", source: "phone", familySize: 1,
+        email: `${tag}.${name}@example.org`, role: "patient", source: "phone", familySize: 1, reviewStatus: "approved",
         contactProfile: { create: { firstName: name, lastName: tag } },
       },
     });

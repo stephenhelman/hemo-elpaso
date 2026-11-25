@@ -20,6 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     source: "manual",
     actorId: admin!.id,
     ignoreDeadline: true,
+    boardOverride: true, // call-ins bypass the review gate; the panel warns and the override is logged
   });
   if (!r.ok) return NextResponse.json({ error: r.error, code: r.code }, { status: r.status });
   return NextResponse.json({ ok: true, rsvpId: r.rsvpId, created: r.created }, { status: 201 });

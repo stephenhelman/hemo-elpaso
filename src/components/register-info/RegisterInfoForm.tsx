@@ -9,14 +9,14 @@ import { withPhone } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import LegalLinks from "@/components/legal/LegalLinks";
 import RichText from "@/components/legal/RichText";
-import { consentText, eventNotices, CONSENT_TEXT_VERSION } from "@/content/consent";
+import { consentText, CONSENT_TEXT_VERSION } from "@/content/consent";
 import { DIAGNOSIS_VALUES, diagnosisLabels } from "@/lib/patients/diagnoses";
 import HouseholdSection, {
   householdComplete,
   membersPayload,
   type MemberDraft,
 } from "@/components/household/HouseholdSection";
-import AttendeeChecklist, { attendeesValid, type AttendeeOption, type AttendeeState } from "@/components/household/AttendeeChecklist";
+import AddressFields, { emptyAddress, type AddressDraft } from "@/components/form/AddressFields";
 import { householdTranslation } from "@/translation/household";
 
 const input =
@@ -24,14 +24,11 @@ const input =
 
 export default function RegisterInfoForm({
   turnstileSiteKey,
-  eventId,
-  notices,
+  addressAutocomplete = false,
 }: {
   turnstileSiteKey: string | null;
-  /** When set, this is a public event RSVP: adds party size, posts to /api/rsvp/public. */
-  eventId?: string;
-  /** RSVP mode: whether to show the recording line (event marked recorded AND the "recordings" toggle on), and whether live captions are on too. */
-  notices?: { recorded: boolean; captions: boolean };
+  /** The address_autocomplete toggle, decided on the server. Off = the Google script is never loaded. */
+  addressAutocomplete?: boolean;
 }) {
   const { locale } = useLanguage();
   const t = registerInfoTranslation[locale];
@@ -41,14 +38,11 @@ export default function RegisterInfoForm({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState<AddressDraft>(emptyAddress());
+  const [badField, setBadField] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "es">(locale);
   const [members, setMembers] = useState<MemberDraft[]>([]);
   const householdSize = members.length + 1; // primary + members: always in sync
-  // RSVP mode: who is coming. Everyone is checked by default, so we track who was UNchecked.
-  const [excluded, setExcluded] = useState<string[]>([]);
-  const [primaryComing, setPrimaryComing] = useState(true);
-  const [guests, setGuests] = useState(0);
   const [attestation, setAttestation] = useState(false);
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [consentData, setConsentData] = useState(false);
@@ -79,21 +73,6 @@ export default function RegisterInfoForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const listed = members.filter((m) => m.firstName.trim());
-  const options: AttendeeOption[] = listed.map((m) => ({
-    id: m.uid, label: m.firstName.trim(), relationship: m.relationship, ageGroup: m.ageGroup,
-    status: m.ageGroup === "18_plus" ? "pending" : "not_required",
-  }));
-  const attendeeState: AttendeeState = {
-    primary: primaryComing, guests,
-    memberIds: options.filter((o) => !excluded.includes(o.id)).map((o) => o.id),
-  };
-  const setAttendees = (v: AttendeeState) => {
-    setPrimaryComing(v.primary);
-    setGuests(v.guests);
-    setExcluded(options.filter((o) => !v.memberIds.includes(o.id)).map((o) => o.id));
-  };
-
   const toggleDiagnosis = (d: string) =>
     setDiagnoses((cur) =>
       cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d],
@@ -101,11 +80,11 @@ export default function RegisterInfoForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError(null); setBadField(null);
     setSubmitting(true);
     try {
       // POST body only: diagnoses never go in a URL or query string.
-      const res = await fetch(eventId ? "/api/rsvp/public" : "/api/register-info", {
+      const res = await fetch("/api/register-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -118,17 +97,6 @@ export default function RegisterInfoForm({
           familySize: householdSize,
           members: membersPayload(members),
           attestation,
-          ...(eventId
-            ? {
-                eventId,
-                // positions in `members` (the server maps them to the new member ids)
-                attendees: {
-                  primary: primaryComing,
-                  memberIndexes: members.map((m, i) => (!excluded.includes(m.uid) && m.firstName.trim() ? i : -1)).filter((i) => i >= 0),
-                  guests,
-                },
-              }
-            : {}),
           diagnoses,
           consentDataAndContact: consentData,
           consentMedia,
@@ -139,14 +107,13 @@ export default function RegisterInfoForm({
         }),
       });
       if (res.ok) {
-        trackEvent(eventId ? { name: "rsvp_submitted", source: "public" } : { name: "register_info_submitted" });
+        trackEvent({ name: "register_info_submitted" });
         setDone(true);
         return;
       }
       const data = await res.json().catch(() => ({}));
       if (data.error === "captcha") setError(t.errors.captcha);
-      else if (data.error === "full") setError(withPhone(t.full));
-      else if (data.error === "closed" || data.error === "disabled") setError(withPhone(t.closed));
+      else if (data.field === "addressLine1" || data.field === "city" || data.field === "state" || data.field === "zip") { setBadField(data.field); setError(null); }
       else if (data.field === "members" || data.field === "familySize") setError(h.errMembers);
       else if (data.field === "attestation") setError(h.errAttestation);
       else if (data.field && data.field in t.errors)
@@ -166,9 +133,10 @@ export default function RegisterInfoForm({
       <div className="bg-white rounded-2xl border border-neutral-200 p-10 text-center">
         <CheckCircle className="w-12 h-12 text-secondary mx-auto mb-4" />
         <h2 className="font-display font-bold text-2xl text-neutral-900 mb-2">
-          {eventId ? t.rsvpSuccessTitle : t.successTitle}
+          {t.successTitle}
         </h2>
-        <p className="text-neutral-600">{eventId ? t.rsvpSuccessBody : t.successBody}</p>
+        <p className="text-neutral-600">{t.successBody}</p>
+        <p className="text-neutral-700 mt-3 font-medium">{t.reviewNote}</p>
       </div>
     );
   }
@@ -219,19 +187,11 @@ export default function RegisterInfoForm({
       <p className="text-xs text-neutral-500 -mt-3">{t.contactHint}</p>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+        <p className="block text-sm font-medium text-neutral-700 mb-1.5">
           {t.address} <span className="text-neutral-400">({t.optional})</span>
-        </label>
-        {/* Plain input on purpose: no Google Places script on a public page where health information is entered. */}
-        <input
-          type="text"
-          className={input}
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder={t.addressPlaceholder}
-          maxLength={300}
-          autoComplete="street-address"
-        />
+        </p>
+        {/* Google suggestions only when the address_autocomplete toggle is on; the script loads after the street field is focused. */}
+        <AddressFields value={address} onChange={setAddress} locale={locale} autocomplete={addressAutocomplete} invalidField={badField} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -248,10 +208,6 @@ export default function RegisterInfoForm({
       </div>
 
       <HouseholdSection locale={locale} members={members} onChange={setMembers} />
-
-      {eventId && (
-        <AttendeeChecklist locale={locale} primaryName={firstName.trim()} options={options} value={attendeeState} onChange={setAttendees} />
-      )}
 
       <fieldset>
         <legend className="block text-sm font-medium text-neutral-700 mb-1">
@@ -309,12 +265,6 @@ export default function RegisterInfoForm({
             <strong>{t.consentMediaLabel}.</strong> <RichText text={consentText.newsletter[locale]} locale={locale} newTab />
           </span>
         </label>
-        {eventId && (
-          <div className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600 space-y-1" data-testid="event-notices">
-            {notices?.recorded && <p>{(notices.captions ? eventNotices.recordedWithCaptions : eventNotices.recorded)[locale]}</p>}
-            <p>{eventNotices.quotes[locale]}</p>
-          </div>
-        )}
         <LegalLinks locale={locale} which={["privacy", "children", "terms"]} />
         <p className="text-[11px] text-neutral-400">v: {CONSENT_TEXT_VERSION}</p>
       </fieldset>
@@ -336,11 +286,11 @@ export default function RegisterInfoForm({
 
       <button
         type="submit"
-        disabled={submitting || !householdComplete(members) || !attestation || (!!eventId && !attendeesValid(attendeeState)) || (!!turnstileSiteKey && !token)}
+        disabled={submitting || !householdComplete(members) || !attestation || (!!turnstileSiteKey && !token)}
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary-600 transition-colors disabled:opacity-60"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-        {submitting ? t.submitting : eventId ? t.rsvpSubmit : t.submit}
+        {submitting ? t.submitting : t.submit}
       </button>
     </form>
   );

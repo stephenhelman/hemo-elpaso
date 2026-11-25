@@ -1,4 +1,5 @@
 import {
+  ClipboardCheck,
   Copy,
   Hourglass,
   KeyRound,
@@ -63,6 +64,12 @@ export const adminNavItemsTranslation = [
     icon: Users,
   },
   {
+    href: "/admin/review",
+    en: "Registration review",
+    es: "Revisión de registros",
+    icon: ClipboardCheck,
+  },
+  {
     href: "/admin/identities",
     en: "Sign-ins",
     es: "Inicios de sesión",
@@ -108,6 +115,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
   "/admin/settings": ["canManageSettings", "canManageEmailTemplates", "canManageEmailRouting", "canAssignBoardRoles"],
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
+  "/admin/review": ["canManageUsers", "canReviewRegistrations"],
   "/admin/identities": "canManageUsers",
   "/admin/duplicates": "canManageUsers",
   "/admin/inactive-households": "canManageUsers",

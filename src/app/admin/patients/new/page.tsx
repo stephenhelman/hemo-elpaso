@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import PatientForm from "@/components/admin/patients/PatientForm";
+import { addressAutocompleteEnabled } from "@/lib/address/server";
+import { emptyAddress } from "@/components/form/AddressFields";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
 import type { Lang } from "@/types";
@@ -24,9 +26,10 @@ export default async function NewPatientPage({ searchParams }: { searchParams: {
       <PatientForm
         mode="create"
         returnEventId={searchParams.eventId}
+        addressAutocomplete={await addressAutocompleteEnabled()}
         canViewPHI={admin.can("canViewPHI")}
         locale={locale}
-        initial={{ firstName: "", lastName: "", email: "", phone: "", address: "", language: "en", familySize: 1, diagnoses: [], members: [], consentData: false, consentMedia: false, attestation: false }}
+        initial={{ firstName: "", lastName: "", email: "", phone: "", address: emptyAddress(), language: "en", familySize: 1, diagnoses: [], members: [], consentData: false, consentMedia: false, attestation: false }}
       />
     </div>
   );

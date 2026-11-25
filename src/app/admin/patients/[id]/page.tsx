@@ -1,4 +1,8 @@
 import { SITE_TIMEZONE } from "@/lib/site";
+import { addressAutocompleteEnabled } from "@/lib/address/server";
+import { emptyAddress } from "@/components/form/AddressFields";
+import { isUnstructuredAddress } from "@/lib/review/rules";
+import ReviewStatusPanel from "@/components/admin/patients/ReviewStatusPanel";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -112,6 +116,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       )}
 
       <PatientForm
+        addressAutocomplete={await addressAutocompleteEnabled()}
         mode="edit"
         patientId={p.id}
         canViewPHI={canPHI}
@@ -121,7 +126,11 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           lastName: p.contactProfile?.lastName ?? "",
           email: p.email ?? "",
           phone: p.contactProfile?.phone ?? "",
-          address: p.contactProfile?.addressLine1 ?? "",
+          // A legacy one-line address is NOT split up: the boxes start empty and the form says why.
+          address: p.contactProfile?.addressLine1 && !isUnstructuredAddress(p.contactProfile)
+            ? { line1: p.contactProfile.addressLine1, line2: p.contactProfile.addressLine2 ?? "", city: p.contactProfile.city ?? "", state: p.contactProfile.state ?? "TX", zip: p.contactProfile.zipCode ?? "" }
+            : emptyAddress(),
+          addressUnstructured: !!p.contactProfile && isUnstructuredAddress(p.contactProfile),
           language: p.preferredLanguage === "es" ? "es" : "en",
           familySize: p.familySize,
           diagnoses: canPHI ? p.primaryDiagnoses : [],
@@ -131,6 +140,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           attestation: false,
         }}
       />
+
+      <ReviewStatusPanel patientId={p.id} status={p.reviewStatus} holdReason={p.reviewHoldReason} />
 
       <HouseholdPanel
         patientId={p.id}

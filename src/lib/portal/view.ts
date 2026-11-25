@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isUnstructuredAddress } from "@/lib/review/rules";
 import { loadHousehold, type PortalHousehold } from "./household";
 import { currentValue, type ConsentRow } from "./rules";
 import { actorMemberId, isGuardianOf, needsAgeCheck, type Actor, type GuardianshipFacts } from "./permissions";
@@ -17,7 +18,9 @@ export interface PortalView {
   actor: Actor;
   household: Pick<PortalHousehold, "upcoming" | "past" | "invited" | "language">;
   me: { firstName: string; lastName: string; phone: string | null; email: string | null; language: "en" | "es"; diagnoses: string[] };
-  address: string | null;
+  address: { line1: string; line2: string; city: string; state: string; zip: string; unstructured: boolean } | null;
+  /** Registration review: anything but approved shows the "we're reviewing your registration" note. The hold reason is never shown to the family. */
+  reviewStatus: string;
   consents: { data_and_contact: boolean | null; media: boolean | null; sms: boolean | null; newsletter: boolean | null };
   members: ViewMember[];
   /** Confirmed adults other than me (the primary may designate them as guardians). Names only. */
@@ -39,7 +42,7 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
   const base = await loadHousehold(householdId, now);
   if (!base) return null;
   const [p, members, gs] = await Promise.all([
-    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, preferredLanguage: true, primaryDiagnoses: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true } } } }),
+    prisma.patient.findUnique({ where: { id: householdId }, select: { email: true, preferredLanguage: true, primaryDiagnoses: true, reviewStatus: true, contactProfile: { select: { firstName: true, lastName: true, phone: true, addressLine1: true, addressLine2: true, city: true, state: true, zipCode: true } } } }),
     prisma.householdMember.findMany({ where: { patientId: householdId }, orderBy: { createdAt: "asc" } }),
     prisma.memberGuardianship.findMany({ where: { child: { patientId: householdId } }, select: { childMemberId: true, guardianMemberId: true, attestedAt: true } }),
   ]);
@@ -80,7 +83,10 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
     me: meRow
       ? { firstName: meRow.firstName ?? "", lastName: meRow.lastName ?? "", phone: meRow.phone, email: meRow.email, language: (meRow.preferredLanguage ?? p.preferredLanguage) === "es" ? "es" : "en", diagnoses: meRow.statedDiagnoses }
       : { firstName: p.contactProfile?.firstName ?? "", lastName: p.contactProfile?.lastName ?? "", phone: p.contactProfile?.phone ?? null, email: p.email, language: p.preferredLanguage === "es" ? "es" : "en", diagnoses: p.primaryDiagnoses },
-    address: p.contactProfile?.addressLine1 ?? null,
+    address: p.contactProfile?.addressLine1
+      ? { line1: p.contactProfile.addressLine1, line2: p.contactProfile.addressLine2 ?? "", city: p.contactProfile.city ?? "", state: p.contactProfile.state ?? "TX", zip: p.contactProfile.zipCode ?? "", unstructured: isUnstructuredAddress(p.contactProfile) }
+      : null,
+    reviewStatus: p.reviewStatus,
     consents: {
       data_and_contact: currentValue(consentRows, "data_and_contact"), media: currentValue(consentRows, "media"),
       sms: currentValue(consentRows, "sms"), newsletter: currentValue(consentRows, "newsletter"),

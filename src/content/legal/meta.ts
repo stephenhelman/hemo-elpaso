@@ -22,10 +22,7 @@ type Bilingual = { en: string; es: string };
  * An optional placeholder that is null is simply left out of the sentence.
  */
 export const PLACEHOLDERS = {
-  /**
-   * How long deleted data can linger in database backups (Neon point-in-time history). NOT VERIFIED from the repo:
-   * confirm in the Neon console (Project > Settings > Storage / history retention) and change both strings.
-   */
+  /** How long deleted data can linger in database backups (Neon point-in-time history). Confirmed: 14 days. */
   BACKUP: { value: { en: "up to 14 days", es: "hasta 14 días" } as Bilingual | null, optional: false },
   /** Downloaded Puente Live transcripts (live_captions). Draft default, to confirm. */
   TRANSCRIPT: { value: { en: "90 days", es: "90 días" } as Bilingual | null, optional: false },

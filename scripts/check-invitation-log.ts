@@ -46,7 +46,7 @@ test("match, remove, re-run, report (dev DB)", async () => {
   const mk = async (name: string, role: string, consent: boolean) => {
     const p = await prisma.patient.create({
       data: {
-        email: `${tag}.${name}@example.org`, role, source: "phone", familySize: 1,
+        email: `${tag}.${name}@example.org`, role, source: "phone", familySize: 1, reviewStatus: "approved",
         primaryDiagnoses: role === "patient" ? ["hemophilia_a"] : [], statedDiagnoses: role === "patient" ? ["hemophilia_a"] : [],
         contactProfile: { create: { firstName: name, lastName: tag } },
       },

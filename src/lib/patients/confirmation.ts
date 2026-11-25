@@ -8,8 +8,10 @@ export async function sendRegistrationConfirmation(p: {
   email: string;
   firstName: string;
   language: "en" | "es";
+  /** Not yet approved by the review queue (the default for a new registration): the email says we may call. */
+  reviewing?: boolean;
 }): Promise<SendResult> {
-  const html = await render(RegistrationInfoConfirmation({ firstName: p.firstName, lang: p.language }));
+  const html = await render(RegistrationInfoConfirmation({ firstName: p.firstName, lang: p.language, reviewing: p.reviewing ?? true }));
   return sendLoggedEmail({
     kind: "REGISTRATION_INFO_CONFIRMATION",
     to: p.email,

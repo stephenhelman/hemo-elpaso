@@ -86,6 +86,7 @@ export const privacy: LegalDoc = {
         t: "ul",
         items: [
           "To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.",
+          "To review new registrations before sending invitations.",
           "To manage RSVPs, send confirmations and reminders, and check people in.",
           "To answer your messages.",
           "To let you see and update your household’s information, and manage your photo, text and newsletter choices, on your family page. {STATUS:family_portal}",
@@ -113,7 +114,7 @@ export const privacy: LegalDoc = {
       { t: "h2", text: "Who can see it" },
       {
         t: "p",
-        text: "Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.",
+        text: "Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Other board members may see your contact details and household members to confirm your registration; they never see health information. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.",
       },
       { t: "p", text: "We use these service providers. They process information only to provide their service to HOEP:" },
       {
@@ -126,7 +127,7 @@ export const privacy: LegalDoc = {
           ["Cloudflare", "Stores event photos; protects our forms from spam"],
           ["Auth0", "Board sign-in and family sign-in with Google, Apple or Facebook. {STATUS:family_portal}"],
           ["Sanity", "Manages public website content (no family information)"],
-          ["Google", "HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings}"],
+          ["Google", "HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings} Address suggestions while you type, if enabled. {STATUS:address_autocomplete}"],
           ["Railway", "Hosts Puente Live. {STATUS:live_captions}"],
           ["Deepgram", "Turns speech into text for live captions; audio is kept only while it’s processed. {STATUS:live_captions}"],
           ["Anthropic", "Translates caption text; deleted within 30 days and never used to train models. {STATUS:live_captions}"],
@@ -264,6 +265,7 @@ export const privacy: LegalDoc = {
         t: "ul",
         items: [
           "Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.",
+          "Para revisar los registros nuevos antes de enviar invitaciones.",
           "Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.",
           "Para responder a sus mensajes.",
           "Para que pueda ver y actualizar la información de su hogar, y administrar sus opciones de fotos, mensajes de texto y boletín, en su página familiar. {STATUS:family_portal}",
@@ -291,7 +293,7 @@ export const privacy: LegalDoc = {
       { t: "h2", text: "Quién puede verla" },
       {
         t: "p",
-        text: "Solo los miembros de la junta de HOEP que la necesitan para su cargo, con acceso limitado según el cargo. La información de salud, incluidas las cartas de diagnóstico, solo la ven la presidencia y la vicepresidencia. Los miembros de la junta inician sesión con cuentas seguras, y cada acceso a los registros de las familias queda anotado. La cuenta que administra la configuración del sitio no puede ver información de las familias.",
+        text: "Solo los miembros de la junta de HOEP que la necesitan para su cargo, con acceso limitado según el cargo. La información de salud, incluidas las cartas de diagnóstico, solo la ven la presidencia y la vicepresidencia. Otros miembros de la junta pueden ver sus datos de contacto y a las personas de su hogar para confirmar su registro; nunca ven información de salud. Los miembros de la junta inician sesión con cuentas seguras, y cada acceso a los registros de las familias queda anotado. La cuenta que administra la configuración del sitio no puede ver información de las familias.",
       },
       { t: "p", text: "Usamos estos proveedores de servicios. Ellos procesan la información únicamente para prestar su servicio a HOEP:" },
       {
@@ -304,7 +306,7 @@ export const privacy: LegalDoc = {
           ["Cloudflare", "Guarda las fotos de los eventos; protege nuestros formularios contra el spam"],
           ["Auth0", "Inicio de sesión de la junta y de las familias con Google, Apple o Facebook. {STATUS:family_portal}"],
           ["Sanity", "Administra el contenido público del sitio web (sin información de las familias)"],
-          ["Google", "Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings}"],
+          ["Google", "Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings} Sugerencias de direcciones mientras escribe, si está activado. {STATUS:address_autocomplete}"],
           ["Railway", "Aloja Puente Live. {STATUS:live_captions}"],
           ["Deepgram", "Convierte la voz en texto para los subtítulos en vivo; el audio se conserva solo mientras se procesa. {STATUS:live_captions}"],
           ["Anthropic", "Traduce el texto de los subtítulos; se borra en un plazo de 30 días y nunca se usa para entrenar modelos. {STATUS:live_captions}"],

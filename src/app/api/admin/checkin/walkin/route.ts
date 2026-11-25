@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   });
   const r = await rsvpYes({
     eventId, patientId, partySize: headcount, source: "manual",
-    actorId: admin!.id, ignoreDeadline: true, ignoreCapacity: true, sendEmail: false,
+    actorId: admin!.id, ignoreDeadline: true, ignoreCapacity: true, sendEmail: false, boardOverride: true,
   });
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
 

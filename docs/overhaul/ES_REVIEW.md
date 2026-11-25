@@ -631,6 +631,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Cómo la usamos
 - EN: To invite you to events. Some events are for specific groups, such as families affected by a particular condition or children of a certain age. Invitations never say why you were invited or mention anyone’s diagnosis.
   ES: Para invitarle a eventos. Algunos eventos son para grupos específicos, como familias afectadas por una condición en particular o niños de cierta edad. Las invitaciones nunca dicen por qué se le invitó ni mencionan el diagnóstico de nadie.
+- EN: To review new registrations before sending invitations.
+  ES: Para revisar los registros nuevos antes de enviar invitaciones.
 - EN: To manage RSVPs, send confirmations and reminders, and check people in.
   ES: Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.
 - EN: To answer your messages.
@@ -660,8 +662,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Cómo funciona: usted sube una carta, la presidencia o la vicepresidencia la revisa y borramos el archivo en cuanto decide, la apruebe o no. Si no se puede aprobar, le explicamos el motivo en términos generales y puede intentarlo de nuevo. Nunca pedimos expedientes médicos aparte de la carta, y nunca compartimos la carta ni el resultado con otras organizaciones.
 - EN: Who can see it
   ES: Quién puede verla
-- EN: Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.
-  ES: Solo los miembros de la junta de HOEP que la necesitan para su cargo, con acceso limitado según el cargo. La información de salud, incluidas las cartas de diagnóstico, solo la ven la presidencia y la vicepresidencia. Los miembros de la junta inician sesión con cuentas seguras, y cada acceso a los registros de las familias queda anotado. La cuenta que administra la configuración del sitio no puede ver información de las familias.
+- EN: Only HOEP board members who need it for their role, with access limited by role. Health information, including diagnosis letters, is visible only to the President and Vice President. Other board members may see your contact details and household members to confirm your registration; they never see health information. Board members sign in with secure accounts, and every access to family records is logged. The account that manages website settings cannot see family information.
+  ES: Solo los miembros de la junta de HOEP que la necesitan para su cargo, con acceso limitado según el cargo. La información de salud, incluidas las cartas de diagnóstico, solo la ven la presidencia y la vicepresidencia. Otros miembros de la junta pueden ver sus datos de contacto y a las personas de su hogar para confirmar su registro; nunca ven información de salud. Los miembros de la junta inician sesión con cuentas seguras, y cada acceso a los registros de las familias queda anotado. La cuenta que administra la configuración del sitio no puede ver información de las familias.
 - EN: We use these service providers. They process information only to provide their service to HOEP:
   ES: Usamos estos proveedores de servicios. Ellos procesan la información únicamente para prestar su servicio a HOEP:
 - EN: Vercel | Hosts the website; privacy-friendly page statistics
@@ -676,8 +678,8 @@ Also new: RSVP-form error messages `consentSms` and `consentNewsletter` (src/tra
   ES: Auth0 | Inicio de sesión de la junta y de las familias con Google, Apple o Facebook. {STATUS:family_portal}
 - EN: Sanity | Manages public website content (no family information)
   ES: Sanity | Administra el contenido público del sitio web (sin información de las familias)
-- EN: Google | HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings}
-  ES: Google | Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings}
+- EN: Google | HOEP email; the map on our contact page. Google Meet for virtual events and YouTube for recordings. {STATUS:recordings} Address suggestions while you type, if enabled. {STATUS:address_autocomplete}
+  ES: Google | Correo de HOEP; el mapa de nuestra página de contacto. Google Meet para eventos virtuales y YouTube para las grabaciones. {STATUS:recordings} Sugerencias de direcciones mientras escribe, si está activado. {STATUS:address_autocomplete}
 - EN: Railway | Hosts Puente Live. {STATUS:live_captions}
   ES: Railway | Aloja Puente Live. {STATUS:live_captions}
 - EN: Deepgram | Turns speech into text for live captions; audio is kept only while it’s processed. {STATUS:live_captions}
@@ -1069,3 +1071,24 @@ Function-valued strings show a placeholder for the name.
 - Confirm your new email (to the NEW address). Subject: Confirm your new email / Confirme su nuevo correo.
 - An adult left your household (to the primary). Subject: An adult left your household / Un adulto salió de su hogar.
 - A privacy request needs review (to the `privacy.requests` route). Subject: A privacy request needs review / Una solicitud de privacidad necesita revisión.
+
+
+### Reviewer tier and registration review (added with `feat/review-queue`)
+
+- EN: Other board members may see your contact details and household members to confirm your registration; they never see health information. (in "Who can see it")
+  ES: Otros miembros de la junta pueden ver sus datos de contacto y a las personas de su hogar para confirmar su registro; nunca ven información de salud.
+- EN: To review new registrations before sending invitations. (in "How we use it")
+  ES: Para revisar los registros nuevos antes de enviar invitaciones.
+- EN: Address suggestions while you type, if enabled. (Google row)
+  ES: Sugerencias de direcciones mientras escribe, si está activado.
+- EN: We'll review your registration and may call you. (registration emails and the confirmation screen)
+  ES: Revisaremos tu registro y es posible que te llamemos.
+- EN: HOEP is reviewing your registration and may call you. You can still use this page to see and update your information. Invitations to events start after the review. (family page)
+  ES: HOEP está revisando su registro y es posible que le llamemos. Todavía puede usar esta página para ver y actualizar su información. Las invitaciones a eventos empiezan después de la revisión.
+- EN: Events you can RSVP to / No events are open for your RSVP right now. / RSVP (family page)
+  ES: Eventos a los que puede confirmar asistencia / Por ahora no hay eventos abiertos para su confirmación. / Confirmar asistencia
+- EN: Enter the email you registered with. / Email me an RSVP link / If your household is registered and approved, we've emailed you an RSVP link. / No email? Call HOEP to RSVP at {phone}. / Not registered yet? Register first (event page; see `src/translation/eventRsvp.ts`)
+  ES: Escribe el correo con el que te registraste. / Envíame un enlace para confirmar / Si tu hogar está registrado y aprobado, te enviamos un enlace para confirmar tu asistencia. / ¿Sin correo? Llama a HOEP para confirmar tu asistencia al {phone}. / ¿Aún no te has registrado? Regístrate primero
+- Address form labels, errors and the "suggestions come from Google" line: `src/translation/address.ts` (EN and ES side by side).
+- RSVP link email (subject "Your RSVP link" / "Su enlace para confirmar asistencia", body in `src/messages/RsvpAccessLinkEmail.tsx`, EN and ES in one file).
+- Registration confirmation line in the email: "We'll review your registration and may call you." / "Revisaremos tu registro y es posible que te llamemos."

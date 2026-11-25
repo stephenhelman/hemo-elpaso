@@ -13,6 +13,8 @@ import { portalText } from "@/lib/portal/text";
 import { formatEventDateTime } from "@/lib/datetime";
 import { CONSENT_TEXT_VERSION, consentTextVersions } from "@/content/consent";
 import LegalLinks from "@/components/legal/LegalLinks";
+import { addressAutocompleteEnabled } from "@/lib/address/server";
+import { openEventsFor } from "@/lib/review/events";
 import ConsentSwitches from "./ConsentSwitches";
 import PortalEditor from "./PortalEditor";
 
@@ -51,6 +53,7 @@ export default async function PortalPage() {
   const h = { firstName: v.me.firstName, upcoming: v.household.upcoming, past: v.household.past, invited: v.household.invited, consents: v.consents };
 
   const features = await getFeatureStates();
+  const openEvents = await openEventsFor(s.patient.id);
   const text = consentTextVersions[CONSENT_TEXT_VERSION as keyof typeof consentTextVersions] as unknown as Record<string, { en: string; es: string }>;
   const when = (iso: string) => formatEventDateTime(iso, lang);
   const evTitle = (x: { title: { en: string; es: string } }) => x.title[lang];
@@ -75,11 +78,16 @@ export default async function PortalPage() {
           <p className="mt-2 text-sm text-neutral-600">{t.intro} <Link href="/contact" className="text-primary font-semibold hover:underline">{t.contact}</Link></p>
         </div>
 
+        {v.reviewStatus !== "approved" && (
+          <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="status">{t.reviewNote}</p>
+        )}
+
         <PortalEditor
           lang={lang}
           isPrimary={v.actor.kind === "primary"}
           me={v.me}
           address={v.address}
+          addressAutocomplete={await addressAutocompleteEnabled()}
           members={v.members}
           otherAdults={v.otherAdults}
           pendingAttestations={v.pendingAttestations}
@@ -103,6 +111,20 @@ export default async function PortalPage() {
           )}
           <h3 className="mt-5 text-sm font-semibold text-neutral-500 uppercase tracking-wide">{t.past}</h3>
           {h.past.length === 0 ? <p className="py-2 text-sm text-neutral-600">{t.noPast}</p> : <ul className="divide-y divide-neutral-100">{h.past.map((r) => <RsvpRow key={r.id} r={r} />)}</ul>}
+        </section>
+
+        <section className={card} aria-labelledby="open-events">
+          <h2 id="open-events" className={h2}>{t.openEvents}</h2>
+          {openEvents.length === 0 ? <p className="py-2 text-sm text-neutral-600">{t.openEventsNone}</p> : (
+            <ul className="divide-y divide-neutral-100">
+              {openEvents.map((e) => (
+                <li key={e.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
+                  <div><p className="font-medium text-neutral-900">{evTitle(e)}</p><p className="text-sm text-neutral-600">{when(e.eventDate)}</p></div>
+                  <Link href={`/events/${e.slug}`} className="text-sm font-semibold text-primary hover:underline">{t.rsvpOpen}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section aria-labelledby="consents">

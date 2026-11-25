@@ -15,6 +15,9 @@ export const adminPatientsTranslation = {
       media_no: "Media: no / none",
     },
     duplicatesOnly: "Possible duplicates only",
+    noAffectedOnly: "No affected member stated",
+    reviewPending: "Pending review",
+    reviewHold: "On hold",
     count: (n: number, total: number) => `Showing ${n} of ${total}`,
     none: "No patients match.",
     cols: {
@@ -80,6 +83,9 @@ export const adminPatientsTranslation = {
       media_no: "Medios: no / ninguno",
     },
     duplicatesOnly: "Solo posibles duplicados",
+    noAffectedOnly: "Sin persona afectada indicada",
+    reviewPending: "En revisión",
+    reviewHold: "En espera",
     count: (n: number, total: number) => `Mostrando ${n} de ${total}`,
     none: "Ningún paciente coincide.",
     cols: {

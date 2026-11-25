@@ -299,7 +299,7 @@ test("an adult edits only their own diagnoses, profile and email; nothing reache
   assert.equal((await updateProfile(A1, { firstName: "", lastName: "x", phone: "", language: "en" })).ok, false);
   assert.deepEqual(await updateProfile(A1, { firstName: "A", lastName: "B", phone: "12", language: "en" }), { ok: false, status: 400, error: "invalid", field: "phone" });
   // the address is the household's: any adult may update it
-  assert.equal((await updateAddress(A1, "9 New Rd")).ok, true);
+  assert.equal((await updateAddress(A1, { line1: "9 New Rd", line2: "", city: "El Paso", state: "TX", zip: "79901" })).ok, true);
   assert.equal((await prisma.contactProfile.findUnique({ where: { patientId: h.id } }))?.addressLine1, "9 New Rd");
 
   // the primary can't be left without a way to reach them

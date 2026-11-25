@@ -148,8 +148,8 @@ test("event notices: quotes always, recording line only for recorded events with
   assert.match(eventNotices.recordedWithCaptions.en, /live English and Spanish captions/);
   const page = readFileSync("src/app/(public)/events/[slug]/page.tsx", "utf8");
   assert.ok(page.includes('event.isRecorded && (await isFeatureEnabled("recordings"))'));
-  const form = readFileSync("src/components/register-info/RegisterInfoForm.tsx", "utf8");
-  assert.ok(form.includes("notices?.recorded") && form.includes("eventNotices.quotes"));
+  const form = readFileSync("src/components/rsvp/EventRsvpSection.tsx", "utf8");
+  assert.ok(form.includes("notices.recorded") && form.includes("eventNotices.quotes"));
 });
 
 test("only canManageEvents holders can set the recorded flag (event routes are gated)", () => {

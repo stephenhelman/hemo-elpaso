@@ -27,6 +27,9 @@ export interface PatientRow {
   duplicateOfName: string | null;
   confirmation: "sent" | "failed" | "missing" | "n/a";
   pendingMembers: number;
+  /** true = no one in the household stated a bleeding disorder (a yes/no only; never the diagnoses). */
+  noAffected: boolean;
+  reviewStatus: string;
 }
 
 const field =
@@ -49,6 +52,7 @@ export default function PatientsTable({
   const [consent, setConsent] = useState("");
   const [duplicates, setDuplicates] = useState(false);
   const [pendingOnly, setPendingOnly] = useState(false);
+  const [noAffectedOnly, setNoAffectedOnly] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -67,6 +71,7 @@ export default function PatientsTable({
       if (language && r.language !== language) return false;
       if (duplicates && !r.duplicateOfId) return false;
       if (pendingOnly && r.pendingMembers === 0) return false;
+      if (noAffectedOnly && !r.noAffected) return false;
       if (consent) {
         const [type, val] = consent.split("_");
         const cur = type === "data" ? r.consentData : r.consentMedia;
@@ -74,7 +79,7 @@ export default function PatientsTable({
       }
       return true;
     });
-  }, [rows, q, diagnosis, language, consent, duplicates, pendingOnly]);
+  }, [rows, q, diagnosis, language, consent, duplicates, pendingOnly, noAffectedOnly]);
 
   const merge = async (id: string) => {
     if (!window.confirm(t.mergeConfirm)) return;
@@ -125,7 +130,7 @@ export default function PatientsTable({
       const res = await fetch("/api/admin/patients/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q, diagnosis, language, consent, duplicates, pendingConfirmations: pendingOnly }),
+        body: JSON.stringify({ q, diagnosis, language, consent, duplicates, pendingConfirmations: pendingOnly, noAffectedMember: noAffectedOnly }),
       });
       if (!res.ok) throw new Error();
       const blob = await res.blob();
@@ -175,6 +180,10 @@ export default function PatientsTable({
         <label className="flex items-center gap-2 text-sm text-neutral-700">
           <input type="checkbox" checked={pendingOnly} onChange={(e) => setPendingOnly(e.target.checked)} />
           {householdTranslation[locale].pendingFilter}
+        </label>
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
+          <input type="checkbox" checked={noAffectedOnly} onChange={(e) => setNoAffectedOnly(e.target.checked)} />
+          {t.noAffectedOnly}
         </label>
         <button onClick={exportCsv} disabled={exporting}
           className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50">
@@ -235,6 +244,9 @@ export default function PatientsTable({
                 <td className="px-4 py-3 uppercase">{r.language}</td>
                 <td className="px-4 py-3">
                   {r.familySize}
+                  {r.reviewStatus !== "approved" && (
+                    <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">{r.reviewStatus === "on_hold" ? t.reviewHold : t.reviewPending}</span>
+                  )}
                   {r.pendingMembers > 0 && (
                     <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
                       {householdTranslation[locale].pendingBadge(r.pendingMembers)}

@@ -130,12 +130,13 @@ export function resolvePhone(keepPhone: string | null, dropPhone: string | null,
 export const unionList = (a: string[], b: string[]) => Array.from(new Set([...a, ...b]));
 
 // ── duplicate detection ──────────────────────────────────────────────────────────────────────────────────────
-export type DuplicateReason = "flagged" | "same_email" | "same_phone";
-export interface DupRecord { id: string; email: string | null; phone: string | null; possibleDuplicateOfId: string | null }
+export type DuplicateReason = "flagged" | "same_email" | "same_phone" | "same_address";
+/** addressKey: lib/address addressKey(), the normalized street + ZIP (null = no usable address). */
+export interface DupRecord { id: string; email: string | null; phone: string | null; possibleDuplicateOfId: string | null; addressKey?: string | null }
 export interface DupPair { aId: string; bId: string; reasons: DuplicateReason[] }
 
 /**
- * Candidate pairs from the records given: the registration flag plus same email (case-insensitive) and same phone.
+ * Candidate pairs from the records given: the registration flag plus same email (case-insensitive), same phone and same address.
  * Dismissed pairs (keys from pairKey joined with "|") are left out. Three records sharing an address give three pairs.
  */
 export function candidatePairs(records: DupRecord[], dismissed: Set<string>): DupPair[] {
@@ -156,5 +157,6 @@ export function candidatePairs(records: DupRecord[], dismissed: Set<string>): Du
   };
   group((r) => normEmail(r.email) || null, "same_email");
   group((r) => r.phone || null, "same_phone");
+  group((r) => r.addressKey || null, "same_address");
   return Array.from(found.entries()).map(([key, why]) => { const [aId, bId] = key.split("|"); return { aId, bId, reasons: Array.from(why) }; });
 }

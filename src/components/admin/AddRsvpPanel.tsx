@@ -17,6 +17,7 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
   const [picked, setPicked] = useState<Hit | null>(preselect ?? null);
   const [options, setOptions] = useState<AttendeeOption[]>([]);
   const [primaryName, setPrimaryName] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<string>("approved");
   const [sel, setSel] = useState<AttendeeState>({ primary: true, memberIds: [], guests: 0 });
 
   // Load the household's people for whoever is picked (everyone checked by default).
@@ -25,7 +26,7 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
     let live = true;
     fetch(`/api/admin/patients/${picked.id}/rsvp-options?eventId=${eventId}`)
       .then((r) => r.json())
-      .then((d) => { if (live && d.options) { setOptions(d.options); setPrimaryName(d.primaryName); setSel(d.selected); } });
+      .then((d) => { if (live && d.options) { setOptions(d.options); setPrimaryName(d.primaryName); setReviewStatus(d.reviewStatus ?? "approved"); setSel(d.selected); } });
     return () => { live = false; };
   }, [picked, eventId]);
   const [busy, setBusy] = useState(false);
@@ -66,6 +67,11 @@ export default function AddRsvpPanel({ eventId, preselect }: { eventId: string; 
             <p className="text-sm font-semibold">{picked.name}</p>
             <p className="text-xs text-neutral-500">{picked.email ?? picked.phone ?? ""}</p>
           </div>
+          {reviewStatus !== "approved" && (
+            <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="alert">
+              This household is not approved yet ({reviewStatus === "on_hold" ? "on hold" : "pending review"}). You can still add the RSVP; it will be logged as a board override.
+            </p>
+          )}
           <AttendeeChecklist locale="en" primaryName={primaryName} options={options} value={sel} onChange={setSel} />
           <div className="flex gap-3 items-center">
             <button onClick={add} disabled={busy || !attendeesValid(sel)}

@@ -29,6 +29,8 @@ export const rsvpPageTranslation = {
     saved: "Saved.",
     genericError: "Something went wrong. Please try again.",
     changeAnswer: "Change my answer",
+    review: "HOEP is reviewing your registration and may call you. You'll be able to RSVP once the review is done.",
+    invitationOnly: "This event is by invitation. Please use the link in your invitation email or call us at {phone}.",
   },
   es: {
     invalidTitle: "Este enlace no es válido",
@@ -60,5 +62,7 @@ export const rsvpPageTranslation = {
     saved: "Guardado.",
     genericError: "Algo salió mal. Inténtalo de nuevo.",
     changeAnswer: "Cambiar mi respuesta",
+    review: "HOEP está revisando tu registro y es posible que te llamemos. Podrás confirmar tu asistencia cuando termine la revisión.",
+    invitationOnly: "Este evento es solo por invitación. Usa el enlace de tu correo de invitación o llámanos al {phone}.",
   },
 };

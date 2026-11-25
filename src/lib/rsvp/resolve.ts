@@ -3,9 +3,10 @@ import { hashToken, looksLikeToken } from "@/lib/tokens";
 import { eventHasEnded } from "./window";
 
 /**
- * Resolve a raw token from a link to its context. Two token kinds exist:
+ * Resolve a raw token from a link to its context. Three token kinds exist:
  * - check-in token  -> an active RSVP (shown with QR)
  * - invitation token -> an invitation (may or may not have an RSVP yet)
+ * - RSVP access link -> emailed on request from the event page; works like an invitation token but does NOT count as invited
  * Unknown/invalid tokens all return null (callers show one generic message).
  */
 export async function resolveRsvpToken(raw: unknown) {
@@ -35,6 +36,22 @@ export async function resolveRsvpToken(raw: unknown) {
       rsvp: r && !r.cancelledAt ? r : null,
       invitation: inv,
       ended: eventHasEnded(inv.event),
+    };
+  }
+
+  const link = await prisma.rsvpAccessLink.findUnique({
+    where: { tokenHash: hash },
+    include: { event: true, patient: { include: { contactProfile: true } } },
+  });
+  if (link && link.expiresAt > new Date() && !link.patient.mergedIntoId) {
+    const r = await prisma.rsvp.findUnique({ where: { eventId_patientId: { eventId: link.eventId, patientId: link.patientId } } });
+    return {
+      via: "link" as const,
+      event: link.event,
+      patient: link.patient,
+      rsvp: r && !r.cancelledAt ? r : null,
+      invitation: null,
+      ended: eventHasEnded(link.event),
     };
   }
   return null;

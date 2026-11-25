@@ -1,0 +1,36 @@
+import type { Lang } from "@/types";
+
+export const eventRsvpTranslation: Record<Lang, Record<string, string>> = {
+  en: {
+    title: "RSVP for this event",
+    yes: "RSVP", saving: "Saving…",
+    done: "You're on the list! We've emailed your confirmation.", doneManage: "See your RSVP or change it on your family page.", familyPage: "Go to my family page",
+    already: "You're on the list for this event.", alreadyManage: "Change or cancel your RSVP on your family page.",
+    review: "HOEP is reviewing your registration and may call you. You'll be able to RSVP once the review is done.",
+    invitationOnly: "This event is by invitation. Use the link in your invitation email, or call HOEP at {phone}.",
+    full: "This event is full. Please call us at {phone}.", closed: "Registration is closed. Please call us at {phone}.", ended: "This event has ended.",
+    error: "Something went wrong. Please try again.", signedOut: "Please sign in again.",
+    emailLabel: "Enter the email you registered with.", emailButton: "Email me an RSVP link", sending: "Sending…",
+    neutral: "If your household is registered and approved, we've emailed you an RSVP link.",
+    badEmail: "That email address doesn't look right.", captcha: "Please complete the security check and try again.", rateLimited: "Too many tries. Please wait a few minutes and try again.",
+    noEmail: "No email? Call HOEP to RSVP at {phone}.",
+    notRegistered: "Not registered yet?", registerFirst: "Register first",
+    signedInHint: "Already signed in? Your household's RSVP form appears here.", signIn: "Sign in to your family page",
+  },
+  es: {
+    title: "Confirma tu asistencia",
+    yes: "Confirmar asistencia", saving: "Guardando…",
+    done: "¡Estás en la lista! Te enviamos la confirmación por correo.", doneManage: "Ve tu confirmación o cámbiala en tu página familiar.", familyPage: "Ir a mi página familiar",
+    already: "Ya estás en la lista de este evento.", alreadyManage: "Cambia o cancela tu asistencia en tu página familiar.",
+    review: "HOEP está revisando tu registro y es posible que te llamemos. Podrás confirmar tu asistencia cuando termine la revisión.",
+    invitationOnly: "Este evento es solo por invitación. Usa el enlace de tu correo de invitación o llama a HOEP al {phone}.",
+    full: "Este evento está lleno. Llámanos al {phone}.", closed: "El registro está cerrado. Llámanos al {phone}.", ended: "Este evento ya terminó.",
+    error: "Algo salió mal. Inténtalo de nuevo.", signedOut: "Inicia sesión de nuevo.",
+    emailLabel: "Escribe el correo con el que te registraste.", emailButton: "Envíame un enlace para confirmar", sending: "Enviando…",
+    neutral: "Si tu hogar está registrado y aprobado, te enviamos un enlace para confirmar tu asistencia.",
+    badEmail: "Ese correo electrónico no parece correcto.", captcha: "Completa la verificación de seguridad e inténtalo de nuevo.", rateLimited: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    noEmail: "¿Sin correo? Llama a HOEP para confirmar tu asistencia al {phone}.",
+    notRegistered: "¿Aún no te has registrado?", registerFirst: "Regístrate primero",
+    signedInHint: "¿Ya iniciaste sesión? El formulario de tu hogar aparece aquí.", signIn: "Inicia sesión en tu página familiar",
+  },
+};

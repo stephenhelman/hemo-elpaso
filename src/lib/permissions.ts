@@ -144,3 +144,16 @@ export async function requireAnyPermission(
 
   return { admin, error: null };
 }
+
+/**
+ * The decision behind requirePermission / requireAnyPermission, pure so it can be tested without a session:
+ * no admin = 401, none of the permissions held = 403. A permission must be named exactly: holding canReviewRegistrations
+ * never satisfies a route that asks for canManageUsers.
+ */
+export function accessDecision(
+  admin: { can: (p: Permission) => boolean } | null,
+  permissions: readonly Permission[],
+): "ok" | "unauthorized" | "forbidden" {
+  if (!admin) return "unauthorized";
+  return permissions.some((p) => admin.can(p)) ? "ok" : "forbidden";
+}

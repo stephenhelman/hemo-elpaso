@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
     eventId: ctx.event.id,
     patientId: ctx.patient.id,
     selection: body.selection ?? (await defaultSelection(ctx.patient.id)),
-    source: ctx.rsvp?.source === "public" || ctx.rsvp?.source === "manual" ? (ctx.rsvp.source as "public" | "manual") : "invite",
+    source: ctx.rsvp?.source === "public" || ctx.rsvp?.source === "manual" ? (ctx.rsvp.source as "public" | "manual") : ctx.via === "link" ? "link" : "invite",
   });
-  if (!r.ok) return NextResponse.json({ ok: false, error: r.code === "AT_CAPACITY" ? "full" : r.code === "DEADLINE_PASSED" ? "closed" : r.error }, { status: r.status });
+  if (!r.ok) return NextResponse.json({ ok: false, error: r.code === "AT_CAPACITY" ? "full" : r.code === "DEADLINE_PASSED" ? "closed" : r.code === "NOT_APPROVED" ? "review" : r.code === "NOT_INVITED" ? "invitation" : r.error }, { status: r.status });
   return NextResponse.json({ ok: true, state: "confirmed", checkInToken: r.token });
 }

@@ -34,7 +34,8 @@ export async function matchPatientsForEvent(eventId: string) {
   if (!event) return null;
 
   const patients = await prisma.patient.findMany({
-    where: PATIENT_ONLY,
+    // Only approved households are matched (registration review). Cut-off households keep invitations created before the gate.
+    where: { ...PATIENT_ONLY, reviewStatus: "approved" },
     include: { contactProfile: true, preferences: true, consentRecords: true, householdMembers: true },
     orderBy: { createdAt: "asc" },
   });

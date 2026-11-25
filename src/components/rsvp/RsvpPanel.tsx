@@ -15,7 +15,9 @@ export type RsvpPanelProps =
   | {
       valid: true;
       token: string;
-      via: "checkin" | "invitation";
+      via: "checkin" | "invitation" | "link";
+      /** Not an active RSVP and the household may not start one (registration review / invitation-only event). */
+      blocked: "review" | "invitation" | null;
       qrToken: string | null;
       firstName: string;
       hasEmail: boolean;
@@ -55,7 +57,7 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   const title = locale === "es" ? event.titleEs : event.titleEn;
   const d = new Date(event.eventDate);
   const when = formatEventDateTime(d, locale);
-  const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "ended" ? t.ended : t.genericError);
+  const errText = (e?: string) => (e === "full" ? withPhone(t.full) : e === "closed" ? withPhone(t.closed) : e === "review" ? t.review : e === "invitation" ? withPhone(t.invitationOnly) : e === "ended" ? t.ended : t.genericError);
 
   const respond = async (response: "yes" | "no") => {
     setBusy(response); setMsg(null);
@@ -117,6 +119,10 @@ export default function RsvpPanel(props: RsvpPanelProps) {
   );
   const unchanged = JSON.stringify({ p: sel.primary, m: [...sel.memberIds].sort(), g: sel.guests }) ===
     JSON.stringify({ p: props.selected.primary, m: [...props.selected.memberIds].sort(), g: props.selected.guests });
+
+  if (!props.confirmed && props.blocked) {
+    return <div className={card}>{header}<p className="text-neutral-700 text-sm" role="status">{props.blocked === "review" ? t.review : withPhone(t.invitationOnly)}</p></div>;
+  }
 
   if (!props.confirmed) {
     return (
