@@ -27,6 +27,7 @@
     "check:legal": "tsx --test scripts/check-legal.ts",
     "check:legal-placeholders": "tsx scripts/check-legal-placeholders.ts",
     "check:features": "tsx --test scripts/check-features.ts",
+    "check:flyers": "tsx scripts/db-guard.ts && tsx --test scripts/check-flyers.ts",
     "check:review": "tsx scripts/db-guard.ts && tsx --test scripts/check-review.ts",
     "check:address": "tsx --test scripts/check-address.ts",
     "check:portal": "tsx scripts/db-guard.ts && tsx --test scripts/check-portal.ts",
