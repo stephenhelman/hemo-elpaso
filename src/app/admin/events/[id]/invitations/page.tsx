@@ -3,10 +3,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { matchPatientsForEvent } from "@/lib/invitations/match";
+import { eventCallList } from "@/lib/rsvp/call-list";
+import { isFeatureEnabled } from "@/lib/features";
+import { confirmBlock } from "@/lib/rsvp/request-rules";
 import { invitationNamesCondition, CONDITION_WARNING } from "@/lib/invitations/condition-terms";
 import { getLocaleCookie } from "@/lib/locale";
-import InvitationsManager, { type InvRow, type CallRow } from "@/components/admin/invitations/InvitationsManager";
+import InvitationsManager, { type InvRow } from "@/components/admin/invitations/InvitationsManager";
 
 export default async function EventInvitationsPage({ params }: { params: { id: string } }) {
   const admin = await getAdminWithPermissions();
@@ -25,7 +27,8 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
   const removedCount = await prisma.invitation.count({ where: { eventId: event.id, status: "removed" } });
   const warnLocale = (await getLocaleCookie()) === "es" ? "es" : "en";
   const namesCondition = invitationNamesCondition(event);
-  const match = await matchPatientsForEvent(event.id);
+  const [callRows, recordingsOn] = await Promise.all([eventCallList(event.id), isFeatureEnabled("recordings")]);
+  const virtualBlock = confirmBlock({ type: "virtual", status: "pending", householdApproved: true, partySize: 1, inPersonTaken: 0, event, recordingsOn });
 
   const rows: InvRow[] = invitations.map((i) => ({
     id: i.id,
@@ -36,17 +39,9 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
     diagnoses: canPHI ? i.patient.statedDiagnoses : [],
     status: i.status,
     sentAt: i.sentAt?.toISOString() ?? null,
+    origin: i.origin === "request" ? "request" : i.origin === "manual" ? "manual" : "matched",
+    attendanceType: i.attendanceType === "virtual" ? "virtual" : "in_person",
   }));
-  const call: CallRow[] = (match?.callList ?? []).map((p) => ({
-    id: p.id,
-    name: `${p.contactProfile?.firstName ?? ""} ${p.contactProfile?.lastName ?? ""}`.trim() || "—",
-    phone: p.contactProfile?.phone ?? "",
-    language: p.preferredLanguage === "es" ? "es" : "en",
-    familySize: p.familySize,
-    diagnoses: canPHI ? p.statedDiagnoses : [],
-    confirmFor: match?.confirmFor.get(p.id) ?? [],
-  }));
-
   return (
     <div className="p-4 md:p-8 max-w-5xl">
       <Link href="/admin/events" className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-6">
@@ -66,6 +61,8 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
       )}
       {admin.can("canManageUsers") && (
         <p className="mb-4 text-sm">
+          <Link href={`/admin/events/${event.id}/requests`} className="font-semibold text-primary hover:underline">RSVP requests</Link>
+          {" · "}
           <Link href={`/admin/events/${event.id}/invitations/report`} className="font-semibold text-primary hover:underline">
             Matched / sent / removed report
           </Link>
@@ -76,7 +73,7 @@ export default async function EventInvitationsPage({ params }: { params: { id: s
           {removedCount > 0 && <span className="text-neutral-500"> · {removedCount} removed from this event</span>}
         </p>
       )}
-      <InvitationsManager eventId={event.id} rows={rows} callList={call} canViewPHI={canPHI} warning={namesCondition ? CONDITION_WARNING[warnLocale] : null} />
+      <InvitationsManager eventId={event.id} rows={rows} callList={callRows} canViewPHI={canPHI} virtualLock={virtualBlock} warning={namesCondition ? CONDITION_WARNING[warnLocale] : null} />
     </div>
   );
 }

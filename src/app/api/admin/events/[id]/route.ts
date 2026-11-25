@@ -1,5 +1,6 @@
 import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
-import { isRsvpAccess } from "@/lib/review/rules";
+import { eventRequestSettings, virtualLinksMissing } from "@/lib/rsvp/event-settings";
+import { isFeatureEnabled } from "@/lib/features";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
@@ -25,6 +26,14 @@ export async function PATCH(
     const text = eventTextFields(body);
     if (!text.ok) return NextResponse.json({ error: text.error }, { status: 400 });
 
+    const current = await prisma.event.findUnique({ where: { id: params.id }, select: { virtualEnabled: true, meetUrl: true, youtubeUrl: true } });
+    if (!current) return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    const settings = eventRequestSettings(body, { recordingsOn: await isFeatureEnabled("recordings"), current });
+    if (!settings.ok) return NextResponse.json({ error: settings.error }, { status: 400 });
+    if (virtualLinksMissing({ virtualEnabled: settings.data.virtualEnabled ?? current.virtualEnabled, meetUrl: settings.data.meetUrl === undefined ? current.meetUrl : settings.data.meetUrl, youtubeUrl: settings.data.youtubeUrl === undefined ? current.youtubeUrl : settings.data.youtubeUrl })) {
+      return NextResponse.json({ error: "Add both the Google Meet link and the YouTube link before turning on virtual attendance." }, { status: 400 });
+    }
+
     const updatedEvent = await prisma.event.update({
       where: { id: params.id },
       data: {
@@ -41,7 +50,7 @@ export async function PATCH(
         isPriority: body.isPriority,
         liveEnabled: body.liveEnabled,
         ...(body.isRecorded !== undefined && { isRecorded: body.isRecorded === true }),
-        ...(isRsvpAccess(body.rsvpAccess) && { rsvpAccess: body.rsvpAccess }),
+        ...settings.data,
         ...(cleanSponsorIds(body.sponsorSanityIds) !== undefined && { sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) }),
         ...(body.eventCost !== undefined && { eventCost: body.eventCost }),
       },

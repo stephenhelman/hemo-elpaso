@@ -57,6 +57,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       data: {
         email: n.email,
         preferredLanguage: n.language,
+        ...((cp?.phone ?? null) !== n.phone ? { phoneCanText: null } : {}), // a different number: the old "can it get texts" answer no longer applies
         ...(updateDx ? { primaryDiagnoses: n.diagnoses } : {}),
       },
     });

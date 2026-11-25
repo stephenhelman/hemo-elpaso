@@ -1,5 +1,6 @@
 import { cleanSponsorIds } from "@/lib/events/sponsor-ids";
-import { isRsvpAccess } from "@/lib/review/rules";
+import { eventRequestSettings, virtualLinksMissing } from "@/lib/rsvp/event-settings";
+import { isFeatureEnabled } from "@/lib/features";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -33,6 +34,12 @@ export async function POST(req: NextRequest) {
   const text = eventTextFields(body);
   if (!text.ok) return NextResponse.json({ error: text.error }, { status: 400 });
 
+  const settings = eventRequestSettings(body, { recordingsOn: await isFeatureEnabled("recordings") });
+  if (!settings.ok) return NextResponse.json({ error: settings.error }, { status: 400 });
+  if (virtualLinksMissing({ virtualEnabled: settings.data.virtualEnabled ?? false, meetUrl: settings.data.meetUrl ?? null, youtubeUrl: settings.data.youtubeUrl ?? null })) {
+    return NextResponse.json({ error: "Add both the Google Meet link and the YouTube link before turning on virtual attendance." }, { status: 400 });
+  }
+
   const event = await prisma.event.create({
     data: {
       slug: body.slug,
@@ -48,7 +55,7 @@ export async function POST(req: NextRequest) {
       language: body.language || "both",
       isPriority: body.isPriority || false,
       liveEnabled: body.liveEnabled || false,
-      rsvpAccess: isRsvpAccess(body.rsvpAccess) ? body.rsvpAccess : "any_approved",
+      ...settings.data,
       isRecorded: body.isRecorded === true,
       createdBy: admin!.email,
       sponsorSanityIds: cleanSponsorIds(body.sponsorSanityIds) ?? [],

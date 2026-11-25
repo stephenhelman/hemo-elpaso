@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminWithPermissions } from "@/lib/permissions";
 import { getActiveSponsorOptions } from "@/sanity/sponsors";
+import { isFeatureEnabled } from "@/lib/features";
 import NewEventForm from "./NewEventForm";
 
 export default async function NewEventPage() {
@@ -8,5 +9,5 @@ export default async function NewEventPage() {
   if (!admin) redirect("/");
   if (!admin.can("canManageEvents")) redirect("/admin/events");
 
-  return <NewEventForm sponsorOptions={await getActiveSponsorOptions()} />;
+  return <NewEventForm sponsorOptions={await getActiveSponsorOptions()} recordingsOn={await isFeatureEnabled("recordings")} />;
 }
