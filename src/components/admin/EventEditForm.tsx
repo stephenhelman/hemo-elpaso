@@ -24,6 +24,8 @@ interface Event {
   descriptionEs: string | null;
   flyerEnUrl: string | null;
   flyerEsUrl: string | null;
+  flyerEnAlt: string | null;
+  flyerEsAlt: string | null;
   eventDate: Date;
   endDate: Date | null;
   location: string;
@@ -433,6 +435,8 @@ export default function EventEditForm({ event, locale, sponsorOptions = [] }: Pr
               eventId={event.id}
               currentFlyerEn={event.flyerEnUrl}
               currentFlyerEs={event.flyerEsUrl}
+              currentAltEn={event.flyerEnAlt}
+              currentAltEs={event.flyerEsAlt}
               onUploadComplete={handleFlyerUploadComplete}
             />
           </div>

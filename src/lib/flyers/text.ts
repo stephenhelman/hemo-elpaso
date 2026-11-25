@@ -1,0 +1,33 @@
+/** Flyer strings (EN / ES), shared by registration, the family page and the admin patient page. */
+export const flyerText = {
+  en: {
+    question: "How would you like to get event flyers?",
+    help: "Flyers go with event invitations. You can change this any time.",
+    email: "By email",
+    mail: "By mail (a printed flyer to your address)",
+    none: "I don’t need flyers",
+    needsEmail: "Add an email address to choose email.",
+    needsAddress: "Add a complete mailing address so we can mail flyers.",
+    error: "That choice isn’t available. If you chose email, add an email address first.",
+    flyer: "Flyer",
+    download: "Download the flyer",
+    otherLanguage: "This flyer is in English.",
+    otherLanguageEs: "Este volante está en español.",
+    saved: "Saved.",
+  },
+  es: {
+    question: "¿Cómo quiere recibir los volantes de los eventos?",
+    help: "Los volantes acompañan las invitaciones a los eventos. Puede cambiarlo cuando quiera.",
+    email: "Por correo electrónico",
+    mail: "Por correo postal (un volante impreso a su dirección)",
+    none: "No necesito volantes",
+    needsEmail: "Agregue un correo electrónico para elegir esta opción.",
+    needsAddress: "Agregue una dirección postal completa para poder enviarle volantes.",
+    error: "Esa opción no está disponible. Si eligió correo electrónico, agregue primero un correo.",
+    flyer: "Volante",
+    download: "Descargar el volante",
+    otherLanguage: "This flyer is in English.",
+    otherLanguageEs: "Este volante está en español.",
+    saved: "Guardado.",
+  },
+} as const;

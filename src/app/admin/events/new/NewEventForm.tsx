@@ -3,7 +3,7 @@
 import { siteHost } from "@/lib/site";
 import { fromSiteDatetimeLocal } from "@/lib/datetime";
 import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Upload, FileText, X } from "lucide-react";
 import Link from "next/link";
@@ -28,6 +28,8 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
   const [loading, setLoading] = useState(false);
   const [flyerEn, setFlyerEn] = useState<File | null>(null);
   const [flyerEs, setFlyerEs] = useState<File | null>(null);
+  const [altEn, setAltEn] = useState("");
+  const [altEs, setAltEs] = useState("");
   const flyerEnRef = useRef<HTMLInputElement>(null);
   const flyerEsRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -128,8 +130,10 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
         const event = await response.json();
 
         // Upload flyers if selected
-        if (flyerEn || flyerEs) {
+        if (flyerEn || flyerEs || altEn.trim() || altEs.trim()) {
           const fd = new FormData();
+          fd.append("flyerEnAlt", altEn);
+          fd.append("flyerEsAlt", altEs);
           if (flyerEn) fd.append("flyerEn", flyerEn);
           if (flyerEs) fd.append("flyerEs", flyerEs);
           const flyerRes = await fetch(`/api/admin/events/${event.id}/flyers`, {
@@ -503,6 +507,8 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
                   </button>
                 )}
               </div>
+              <FlyerLocalPreview file={flyerEn} alt={altEn} />
+              <input type="text" value={altEn} maxLength={300} onChange={(e) => setAltEn(e.target.value)} placeholder="Short description (English): read by screen readers, shown if images are blocked" aria-label="English flyer short description" className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm" />
             </FormField>
 
             {/* Spanish Flyer */}
@@ -539,6 +545,8 @@ export default function NewEventPage({ sponsorOptions = [] }: { sponsorOptions?:
                   </button>
                 )}
               </div>
+              <FlyerLocalPreview file={flyerEs} alt={altEs} />
+              <input type="text" value={altEs} maxLength={300} onChange={(e) => setAltEs(e.target.value)} placeholder="Descripción corta (español): la leen los lectores de pantalla, se muestra si se bloquean las imágenes" aria-label="Spanish flyer short description" className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm" />
             </FormField>
           </div>
         </Section>
@@ -614,3 +622,18 @@ const inputClass = `
   focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
   transition-colors bg-white
 `.trim();
+
+
+/** Image preview of a just-selected flyer (a PDF shows nothing here: its name is already on the picker). */
+function FlyerLocalPreview({ file, alt }: { file: File | null; alt: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file || !file.type.startsWith("image/")) { setUrl(null); return; }
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  if (!url) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt={alt || "Flyer preview"} className="mt-2 max-h-48 w-auto rounded border border-neutral-200" />;
+}
