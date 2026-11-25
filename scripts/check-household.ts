@@ -146,6 +146,8 @@ async function main() {
   const cpb = await prisma.contactProfile.findFirst({ where: { lastName: tag + "b" } });
   created.push(cpb!.patientId!);
   await prisma.householdMember.updateMany({ where: { patientId: cpb!.patientId! }, data: { statedDiagnoses: ["hemophilia_a"] } });
+  // New registrations start pending_review; only approved households are matched, so approve both for this check.
+  await prisma.patient.updateMany({ where: { id: { in: created } }, data: { reviewStatus: "approved" } });
   const match = await matchPatientsForEvent(ev.id);
   const ids = new Set(match!.emailMatches.map((p) => p.id));
   ok(ids.has(patient!.id), "event (Hemophilia A, ages 6-12) matches household with the 8-year-old with Hemophilia A");

@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { FEATURES, FEATURE_KEYS, canEnable, lockText, resolveStates, type FeatureDef, type FeatureKey } from "../src/lib/features/registry";
 import { toggleFeature } from "../src/lib/features/change";
 
-const POLICY_KEYS = ["recordings", "live_captions", "family_portal", "verification", "sms", "newsletter", "stories", "assistance", "live_interaction", "community", "donations", "volunteers"];
+const POLICY_KEYS = ["recordings", "live_captions", "family_portal", "verification", "sms", "newsletter", "stories", "assistance", "live_interaction", "community", "donations", "volunteers", "address_autocomplete"];
 const actor = { id: "a", name: "Admin" };
 const withFeature = (patch: Partial<FeatureDef>): Record<FeatureKey, FeatureDef> => ({ ...FEATURES, sms: { ...FEATURES.sms, ...patch } });
 
@@ -15,10 +15,11 @@ test("registry keys are exactly the policy's Feature status toggle keys", () => 
   for (const k of FEATURE_KEYS) assert.ok(draft.includes("`" + k + "`"), k);
 });
 
-test("only the family page is built so far; everything else is locked until its code ships", () => {
+test("only the family page and address suggestions are built so far; everything else is locked until its code ships", () => {
   for (const k of FEATURE_KEYS) {
-    assert.equal(FEATURES[k].implemented, k === "family_portal", k);
-    if (k === "family_portal") assert.deepEqual(canEnable(k, 2), { ok: true });
+    const built = k === "family_portal" || k === "address_autocomplete";
+    assert.equal(FEATURES[k].implemented, built, k);
+    if (built) assert.deepEqual(canEnable(k, 2), { ok: true });
     else assert.deepEqual(canEnable(k, 99), { ok: false, reason: "not_built" });
   }
   assert.equal(canEnable("family_portal", 1).ok, false, "still needs the policy that covers it");

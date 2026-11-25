@@ -18,7 +18,7 @@ const ok = (c: boolean, m: string) => { say((c ? "PASS " : "FAIL ") + m); if (!c
 async function main() {
   const { NextRequest } = await import("next/server");
   const { prisma } = await import("@/lib/db");
-  const pub = await import("@/app/api/rsvp/public/route");
+  const reg = await import("@/app/api/register-info/route");
   const { rsvpYes, rsvpPeopleByEvent } = await import("@/lib/rsvp");
   const { ATTENDEE_WITH_MEMBER, mapPeople } = await import("@/lib/rsvp/people");
   const { checkInRsvp, undoAttendeeCheckIn } = await import("@/lib/checkin");
@@ -66,7 +66,7 @@ async function main() {
     await prisma.event.deleteMany({ where: { id: legacy[0].eventId } });
   } else say("SKIP backfill assertions (no legacy seed rows present)");
 
-  // --- household of 4 RSVPs for 3 + 1 guest through the public form ---
+  // --- household of 4 RSVPs for 3 + 1 guest (registered through the form, approved, then RSVPs) ---
   const ev = await mkEvent({ maxCapacity: 5 });
   const members = [
     { firstName: "Sam", lastName: "", relationship: "spouse_partner", ageGroup: "18_plus", email: `delivered+${tag}s@resend.dev`, confirmByPhone: false, diagnoses: [] },
@@ -75,20 +75,23 @@ async function main() {
   ];
   const body = (over: object = {}) => ({
     firstName: "Pat", lastName: tag, email: `delivered+${tag}a@resend.dev`, phone: "", address: "", language: "en", familySize: 4, diagnoses: [],
-    members, consentDataAndContact: true, consentMedia: false, attestation: true, website: "", turnstileToken: "XXXX.DUMMY.TOKEN.XXXX", eventId: ev.id,
-    attendees: { primary: true, memberIndexes: [0, 1], guests: 1 }, ...over,
+    members, consentDataAndContact: true, consentMedia: false, attestation: true, website: "", turnstileToken: "XXXX.DUMMY.TOKEN.XXXX", ...over,
   });
-  let r = await post(pub.POST, body({ attendees: { primary: false, memberIndexes: [], guests: 0 } }));
-  ok(r.status === 400, "public RSVP needs at least one person or guest");
-  r = await post(pub.POST, body({ attendees: { primary: true, memberIndexes: [7], guests: 0 } }));
-  ok(r.status === 400, "public RSVP rejects a member position that doesn't exist");
-  r = await post(pub.POST, body({ attendees: { primary: true, memberIndexes: [], guests: 11 } }));
-  ok(r.status === 400, "guests are limited to 10");
-  r = await post(pub.POST, body());
-  ok(r.status === 200, "household of 4 RSVPs for 3 people + 1 guest");
-  const cp = await prisma.contactProfile.findFirst({ where: { lastName: tag } });
-  const pid = cp!.patientId!;
-  patients.push(pid);
+  // Register through the real form endpoint, approve the household (the review queue gate), then RSVP for the chosen people.
+  const registerAndRsvp = async (over: object, eventId: string, pick: { primary: boolean; memberNames: string[]; guests: number }) => {
+    const r = await post(reg.POST, body(over));
+    const last = (over as any).lastName ?? tag;
+    const pidX = (await prisma.contactProfile.findFirst({ where: { lastName: last } }))!.patientId!;
+    patients.push(pidX);
+    await prisma.patient.update({ where: { id: pidX }, data: { reviewStatus: "approved" } });
+    const mems = await prisma.householdMember.findMany({ where: { patientId: pidX }, orderBy: { createdAt: "asc" } });
+    const res = await rsvpYes({ eventId, patientId: pidX, source: "manual", sendEmail: false,
+      selection: { primary: pick.primary, memberIds: mems.filter((m) => pick.memberNames.includes(m.firstName!)).map((m) => m.id), guests: pick.guests } });
+    return { r, pidX, res };
+  };
+  const first4 = await registerAndRsvp({}, ev.id, { primary: true, memberNames: ["Sam", "Kid"], guests: 1 });
+  ok(first4.r.status === 200 && first4.res.ok, "household of 4 RSVPs for 3 people + 1 guest");
+  const pid = first4.pidX;
   const rsvp = (await prisma.rsvp.findFirst({ where: { patientId: pid, eventId: ev.id }, include: { attendees: true } }))!;
   const mem = await prisma.householdMember.findMany({ where: { patientId: pid }, orderBy: { createdAt: "asc" } });
   const byName = Object.fromEntries(mem.map((m) => [m.firstName!, m]));
@@ -98,7 +101,7 @@ async function main() {
 
   // second household of 3 can't fit (4 + 3 > 5), then fits after the first drops to 2
   const mk = async (name: string, body2: any = {}) => {
-    const p = await prisma.patient.create({ data: { role: "patient", email: null, contactProfile: { create: { firstName: name, lastName: tag + name } }, ...body2 } });
+    const p = await prisma.patient.create({ data: { role: "patient", email: null, reviewStatus: "approved", contactProfile: { create: { firstName: name, lastName: tag + name } }, ...body2 } });
     patients.push(p.id);
     return p;
   };
@@ -106,7 +109,7 @@ async function main() {
   let o = await rsvpYes({ eventId: ev.id, patientId: other.id, selection: { primary: true, memberIds: [], guests: 2 }, source: "manual", sendEmail: false });
   ok(!o.ok && o.code === "AT_CAPACITY", "another household of 3 is refused while 4 of 5 are taken");
   const sel2 = { primary: true, memberIds: [byName.Kid.id], guests: 0 };
-  const up = await rsvpYes({ eventId: ev.id, patientId: pid, selection: sel2, source: "public", sendEmail: false });
+  const up = await rsvpYes({ eventId: ev.id, patientId: pid, selection: sel2, source: "manual", sendEmail: false });
   const after = await prisma.rsvp.findUnique({ where: { id: rsvp.id }, include: { attendees: true } });
   ok(up.ok && after!.attendeeCount === 2 && after!.attendees.length === 2 && after!.guestCount === 0, "changing to 2 people updates rows, guests and attendeeCount");
   ok((await rsvpPeopleByEvent([ev.id]))[ev.id] === 2, "capacity now counts 2 (two spots freed)");
@@ -114,9 +117,9 @@ async function main() {
   ok(o.ok, "the household of 3 now fits");
 
   // invalid selections
-  let bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: false, memberIds: [], guests: 0 }, source: "public", sendEmail: false });
+  let bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: false, memberIds: [], guests: 0 }, source: "manual", sendEmail: false });
   ok(!bad.ok, "a yes with nobody listed is rejected");
-  bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: true, memberIds: ["not-a-member"], guests: 0 }, source: "public", sendEmail: false });
+  bad = await rsvpYes({ eventId: ev.id, patientId: pid, selection: { primary: true, memberIds: ["not-a-member"], guests: 0 }, source: "manual", sendEmail: false });
   ok(!bad.ok, "a member that isn't in the household is rejected");
 
   // increase re-runs the deadline check; lowering is always fine
@@ -131,10 +134,9 @@ async function main() {
   // --- per-person NO PHOTOS ---
   // Household N: primary declined media; child inherits that; adult1 confirmed + granted own media; adult2 pending.
   const evN = await mkEvent();
-  const rN = await post(pub.POST, body({ lastName: tag + "N", email: `delivered+${tag}n@resend.dev`, consentMedia: false, eventId: evN.id, attendees: { primary: true, memberIndexes: [0, 1, 2], guests: 0 } }));
-  ok(rN.status === 200, "household N RSVPs (primary declined media)");
-  const pN = (await prisma.contactProfile.findFirst({ where: { lastName: tag + "N" } }))!.patientId!;
-  patients.push(pN);
+  const hN = await registerAndRsvp({ lastName: tag + "N", email: `delivered+${tag}n@resend.dev`, consentMedia: false }, evN.id, { primary: true, memberNames: ["Sam", "Kid", "Gran"], guests: 0 });
+  ok(hN.r.status === 200 && hN.res.ok, "household N RSVPs (primary declined media)");
+  const pN = hN.pidX;
   const mN = await prisma.householdMember.findMany({ where: { patientId: pN } });
   const samN = mN.find((m) => m.firstName === "Sam")!;
   // adult Sam confirms by phone WITH media; adult Gran stays pending
@@ -147,12 +149,12 @@ async function main() {
   ok(nm.Sam.noPhotos === false, "confirmed adult who granted media: no marker");
   ok(nm.Gran.noPhotos === true, "pending adult: NO PHOTOS");
   // household Y: primary granted media
-  const rY = await post(pub.POST, body({ lastName: tag + "Y", email: `delivered+${tag}y@resend.dev`, consentMedia: true, attendees: { primary: true, memberIndexes: [1], guests: 0 }, eventId: evN.id }));
-  const pY = (await prisma.contactProfile.findFirst({ where: { lastName: tag + "Y" } }))!.patientId!;
-  patients.push(pY);
+  const hY = await registerAndRsvp({ lastName: tag + "Y", email: `delivered+${tag}y@resend.dev`, consentMedia: true }, evN.id, { primary: true, memberNames: ["Kid"], guests: 0 });
+  const rY = hY.r;
+  const pY = hY.pidX;
   const rowsY = await prisma.rsvp.findFirst({ where: { patientId: pY, eventId: evN.id } });
   const pplY = await people(rowsY!.id);
-  ok(rY.status === 200 && pplY.every((p) => p.noPhotos === false), "primary granted media: primary and minor show no marker");
+  ok(rY.status === 200 && hY.res.ok && pplY.every((p) => p.noPhotos === false), "primary granted media: primary and minor show no marker");
 
   // --- partial check-in: 2 of 3 people + 1 guest, then undo one ---
   const evC = await mkEvent();
