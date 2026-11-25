@@ -19,6 +19,7 @@ export function SignInLink({ lang, familyPortal, variant, onClick }: { lang: Lan
     <a
       href={signInHref(familyPortal)}
       onClick={onClick}
+      title={lang === "es" ? "Inicie sesión con Google, Apple o Facebook, o reciba un código por correo" : "Log in with Google, Apple or Facebook, or get a code by email"}
       className={
         variant === "desktop"
           ? "hidden lg:inline-flex items-center px-3 py-2 rounded-full border border-neutral-300 text-neutral-700 text-sm font-semibold whitespace-nowrap hover:border-primary hover:text-primary transition-colors duration-200"

@@ -221,10 +221,10 @@ test("the old portal navigation is gone: one nav, one sign-in", () => {
   scan("src");
   assert.deepEqual(loginLinks.sort(), ["src/components/layout/UserMenu.tsx"]);
 });
-test("policy text: Google, Apple or Facebook only; no email-link sign-in anywhere", () => {
+test("policy text: Google, Apple, Facebook or an emailed one-time CODE; no sign-in LINK anywhere", () => {
   const all = ["privacy", "terms", "children"].map((f) => readFileSync(`src/content/legal/${f}.ts`, "utf8")).join("\n");
   assert.ok(!/one-time sign-in link|enlace de un solo uso para iniciar|Sign-in links|Los enlaces de inicio de sesión|Los enlaces para iniciar/.test(all));
   assert.ok(!all.includes("family_social_signin"));
-  assert.ok(all.includes("You sign in with Google, Apple or Facebook") && all.includes("Usted inicia sesión con Google, Apple o Facebook"));
+  assert.ok(all.includes("You sign in with Google, Apple, Facebook, or a one-time code we email to you") && all.includes("Usted inicia sesión con Google, Apple, Facebook, o con un código de un solo uso que le enviamos por correo"));
   assert.ok(all.includes("Your sign-in is personal") && all.includes("Su inicio de sesión es personal"));
 });

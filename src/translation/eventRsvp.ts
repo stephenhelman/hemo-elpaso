@@ -15,7 +15,7 @@ export const eventRsvpTranslation: Record<Lang, Record<string, string>> = {
     badEmail: "That email address doesn't look right.", captcha: "Please complete the security check and try again.", rateLimited: "Too many tries. Please wait a few minutes and try again.",
     noEmail: "No email? Call HOEP to RSVP at {phone}.",
     notRegistered: "Not registered yet?", registerFirst: "Register first",
-    signedInHint: "Already signed in? Your household's RSVP form appears here.", signIn: "Sign in to your family page",
+    signedInHint: "Already signed in? Your household's RSVP form appears here. You can sign in with Google, Apple or Facebook, or get a code by email.", signIn: "Sign in to your family page",
   },
   es: {
     title: "Confirma tu asistencia",
@@ -31,6 +31,6 @@ export const eventRsvpTranslation: Record<Lang, Record<string, string>> = {
     badEmail: "Ese correo electrónico no parece correcto.", captcha: "Completa la verificación de seguridad e inténtalo de nuevo.", rateLimited: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     noEmail: "¿Sin correo? Llama a HOEP para confirmar tu asistencia al {phone}.",
     notRegistered: "¿Aún no te has registrado?", registerFirst: "Regístrate primero",
-    signedInHint: "¿Ya iniciaste sesión? El formulario de tu hogar aparece aquí.", signIn: "Inicia sesión en tu página familiar",
+    signedInHint: "¿Ya iniciaste sesión? El formulario de tu hogar aparece aquí. Puedes iniciar sesión con Google, Apple o Facebook, o recibir un código por correo.", signIn: "Inicia sesión en tu página familiar",
   },
 };

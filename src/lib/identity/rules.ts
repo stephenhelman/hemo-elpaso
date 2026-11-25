@@ -11,8 +11,22 @@
  * Nothing about the mode is stored in a cookie: it is recomputed on every request, so it can't be forged or go stale.
  */
 
-/** Board mode needs a Google Workspace org account. An Apple or Facebook identity can never reach /admin. */
+/** Board mode needs a Google Workspace org account. An Apple, Facebook or emailed-code identity can never reach /admin. */
 export const BOARD_PROVIDER = "google-oauth2";
+
+/**
+ * Providers a family can sign in with. "email" is Auth0 passwordless (a one-time code sent to the address, connection
+ * "email", sub "email|..."): receiving the code proves the address, so it is verified by definition. Board mode is NOT
+ * affected: it needs BOARD_PROVIDER (google-oauth2) AND an org-domain address, so a code sent to an @org address still
+ * gives family mode only.
+ */
+export const FAMILY_PROVIDERS = ["google-oauth2", "apple", "facebook", "email"] as const;
+export const EMAIL_CODE_PROVIDER = "email";
+
+/** Is this sign-in's email verified? The provider's claim, or true by definition for an emailed one-time code. */
+export function emailVerifiedFor(provider: string, claim: boolean | null | undefined): boolean {
+  return claim === true || provider === EMAIL_CODE_PROVIDER;
+}
 
 export type LinkedVia = "auto" | "admin" | "merge" | "backfill";
 
