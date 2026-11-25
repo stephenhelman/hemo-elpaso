@@ -10,7 +10,7 @@ import { applyAttendees, parseSelection, selectableMembers, selectionTotal, type
 
 const MAX_PARTY_LEGACY = 30;
 // "public" = the retired anonymous event-page form (old rows only). "portal" = a signed-in household. "link" = an emailed RSVP link.
-export type RsvpSource = "invite" | "public" | "manual" | "portal" | "link";
+export type RsvpSource = "invite" | "public" | "manual" | "portal" | "link" | "request";
 
 type Fail = { ok: false; code: RsvpBlock | "NOT_FOUND" | "NOT_APPROVED" | "NOT_INVITED"; error: string; status: number };
 
@@ -47,6 +47,8 @@ export async function rsvpYes(params: {
   ignoreDeadline?: boolean;
   ignoreCapacity?: boolean;
   sendEmail?: boolean;
+  /** in_person (default): counts against capacity, gets the QR. virtual: takes no seat, gets the Meet and YouTube links. Only set for a NEW RSVP. */
+  attendanceType?: "in_person" | "virtual";
   /**
    * Board-entered RSVP (call-in, walk-in): bypasses the registration-review gate. If the gate WOULD have refused, one
    * RSVP_APPROVAL_OVERRIDDEN audit row (ids and codes only) records it. Self-service callers never set this.
@@ -66,6 +68,9 @@ export async function rsvpYes(params: {
   }
   if (!sel) return { ok: false, code: "NOT_FOUND", error: "Choose at least one person (guests 0 to 10)", status: 400 };
   const partySize = selectionTotal(sel);
+  // A NEW RSVP follows its invitation (the board may have switched a matched invitation to virtual) unless the caller says otherwise.
+  const invitedType = params.attendanceType ? null : (await prisma.invitation.findUnique({ where: { eventId_patientId: { eventId: params.eventId, patientId: params.patientId } }, select: { attendanceType: true, status: true } }));
+  const attendanceType: "in_person" | "virtual" = params.attendanceType ?? (invitedType && invitedType.status !== "removed" && invitedType.attendanceType === "virtual" ? "virtual" : "in_person");
 
   const existing = await prisma.rsvp.findUnique({
     where: { eventId_patientId: { eventId: params.eventId, patientId: params.patientId } },
@@ -92,7 +97,7 @@ export async function rsvpYes(params: {
     partySize,
     excludeRsvpId: active ? existing!.id : undefined,
     ignoreDeadline: params.ignoreDeadline || !increasing,
-    ignoreCapacity: params.ignoreCapacity,
+    ignoreCapacity: params.ignoreCapacity || attendanceType === "virtual",
   });
   if (!elig.ok) return elig;
   const { event } = elig;
@@ -120,6 +125,7 @@ export async function rsvpYes(params: {
     cancelledAt: null,
     reminderSent: false,
     rsvpDate: new Date(),
+    attendanceType,
   };
   const rsvp = await prisma.$transaction(async (tx) => {
     const row = existing
@@ -141,7 +147,7 @@ export async function rsvpYes(params: {
   }
 
   if (params.sendEmail !== false) {
-    await sendRsvpEmail({ kind: "confirmation", patient, event, partySize, token });
+    await sendRsvpEmail({ kind: "confirmation", patient, event, partySize, token, attendanceType });
   }
   return { ok: true, rsvpId: rsvp.id, token, created: true };
 }
@@ -195,6 +201,6 @@ export async function reissueCheckInToken(rsvpId: string, kind: "confirmation" |
       data: { checkInTokenHash: hashToken(token), checkInTokenEnc: encryptCheckInToken(token) },
     });
   }
-  const sent = await sendRsvpEmail({ kind, patient: rsvp.patient, event: rsvp.event, partySize: rsvp.attendeeCount, token });
+  const sent = await sendRsvpEmail({ kind, patient: rsvp.patient, event: rsvp.event, partySize: rsvp.attendeeCount, token, attendanceType: rsvp.attendanceType === "virtual" ? "virtual" : "in_person" });
   return { token, sent };
 }

@@ -29,6 +29,8 @@ interface Props {
     downloadUrl: string | null;
     mailNote: boolean;
   } | null;
+  /** A VIRTUAL invitation: the event is attended online. Only then do the Meet and YouTube links appear (never in an in-person invitation). */
+  virtual?: { meetUrl: string; youtubeUrl: string } | null;
 }
 
 const copy = {
@@ -45,6 +47,7 @@ const copy = {
     sign: "The HOEP Team",
     download: "Download the flyer",
     mailNote: "We\u2019ll mail you the flyer.",
+    online: "Online", links: "Your links to join online", meet: "Google Meet", youtube: "YouTube", linksNote: "These links are only for you and your household. Please don't share them.",
   },
   es: {
     preview: (t: string) => `Estás invitado/a: ${t}`,
@@ -59,6 +62,7 @@ const copy = {
     sign: "El equipo de HOEP",
     download: "Descargar el volante",
     mailNote: "Le enviaremos el volante por correo postal.",
+    online: "En línea", links: "Sus enlaces para participar en línea", meet: "Google Meet", youtube: "YouTube", linksNote: "Estos enlaces son solo para usted y su hogar. Por favor no los comparta.",
   },
 };
 
@@ -73,6 +77,7 @@ export default function EventInvitation({
   rsvpUrl = "#",
   unsubscribeUrl = "#",
   flyer = null,
+  virtual = null,
 }: Props) {
   const t = copy[lang];
   return (
@@ -88,9 +93,20 @@ export default function EventInvitation({
           <Text>
             <strong>{t.when}:</strong> {eventDate}, {eventTime}
             <br />
-            <strong>{t.where}:</strong> {location}
+            <strong>{t.where}:</strong> {virtual ? t.online : location}
           </Text>
           {description ? <Text>{description}</Text> : null}
+          {virtual ? (
+            <>
+              <Heading as="h2" style={{ fontSize: 18 }}>{t.links}</Heading>
+              <Text>
+                <strong>{t.meet}:</strong> <Link href={virtual.meetUrl}>{virtual.meetUrl}</Link>
+                <br />
+                <strong>{t.youtube}:</strong> <Link href={virtual.youtubeUrl}>{virtual.youtubeUrl}</Link>
+              </Text>
+              <Text style={{ fontSize: 13 }}>{t.linksNote}</Text>
+            </>
+          ) : null}
           {flyer?.imageUrl ? (
             <Img src={flyer.imageUrl} alt={flyer.imageAlt} width="520" style={{ width: "100%", maxWidth: "520px", height: "auto", border: "0", margin: "8px 0" }} />
           ) : null}
