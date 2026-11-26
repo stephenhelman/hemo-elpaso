@@ -20,6 +20,7 @@
     "db:seed-templates": "tsx scripts/db-guard.ts && tsx scripts/seed-templates.ts",
     "check:timezone": "tsx --test scripts/check-timezone.ts",
     "check:conferences": "tsx --test scripts/check-conferences.ts",
+    "check:announcements": "tsx --test scripts/check-announcements.ts",
     "check:retention": "tsx scripts/db-guard.ts && tsx --test scripts/check-retention.ts",
     "check:host-redirects": "tsx --test scripts/check-host-redirects.ts",
     "check:legacy-redirects": "tsx --test scripts/check-legacy-redirects.ts",
