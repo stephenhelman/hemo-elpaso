@@ -9,6 +9,7 @@ import { auditPatient } from "@/lib/patients/audit";
 import { setFlyerDelivery } from "@/lib/flyers/delivery";
 import { defaultFlyerDelivery } from "@/lib/flyers";
 import { addressColumns } from "@/lib/address/validate";
+import { lapseSmsConsent } from "@/lib/consent/sms-lapse";
 
 type Ctx = { params: { id: string } };
 
@@ -67,6 +68,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       update: { firstName: n.firstName, lastName: n.lastName, phone: n.phone, ...nextAddr },
       create: { patientId: existing.id, firstName: n.firstName, lastName: n.lastName, phone: n.phone, ...nextAddr },
     });
+    if ((cp?.phone ?? null) !== n.phone) await lapseSmsConsent(tx, { patientId: existing.id }, n.phone, admin!.id);
   });
 
   // Flyer delivery: an explicit choice, or (when the email was removed) the default for what the household still has.

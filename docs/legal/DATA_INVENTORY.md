@@ -298,7 +298,7 @@ Not sent today (code or templates still exist): check-in confirmation, event pub
 
 ### 7a. Types and how they are recorded
 
-Table `consent_records` (`prisma/schema.prisma:361`): `patientId` **or** `householdMemberId`, `type`, `granted`, `textVersion`, `method` (`web` or `phone`), `recordedByBoardUserId` (set for phone), `createdAt`. **Append-only:** a database trigger rejects UPDATE; a change is a new row, and the newest row per type wins (`currentConsents` in `src/lib/patients/query.ts`). Rows disappear only when their patient or member is deleted.
+Table `consent_records` (`prisma/schema.prisma:361`): `patientId` **or** `householdMemberId`, `type`, `granted`, `textVersion`, `method` (`web` or `phone`), `recordedByBoardUserId` (set for phone), `phoneNumber` (texting consent only: the number the yes was given for; changing the number appends a refusal, method `system`), `createdAt`. **Append-only:** a database trigger rejects UPDATE; a change is a new row, and the newest row per type wins (`currentConsents` in `src/lib/patients/query.ts`). Rows disappear only when their patient or member is deleted.
 
 | Type | Whose | Required? | Stored when |
 | --- | --- | --- | --- |

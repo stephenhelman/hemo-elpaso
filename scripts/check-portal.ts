@@ -38,7 +38,7 @@ async function household(name: string, diagnoses: string[] = ["hemophilia_a"]) {
   const p = await prisma.patient.create({
     data: {
       email: `${tag}.${name}@example.org`, role: "patient", source: "web", primaryDiagnoses: diagnoses, statedDiagnoses: diagnoses,
-      contactProfile: { create: { firstName: name, lastName: tag } },
+      contactProfile: { create: { firstName: name, lastName: tag, phone: "+19155550101" } },
       consentRecords: { create: [{ type: "data_and_contact", granted: true, textVersion: "v3", method: "web" }, { type: "media", granted: false, textVersion: "v3", method: "web" }] },
     },
   });

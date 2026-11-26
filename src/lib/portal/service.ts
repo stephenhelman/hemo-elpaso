@@ -2,12 +2,14 @@ import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
+import { normalizePhone } from "@/lib/patients/normalize";
 import { CONSENT_CHANGES_PER_MINUTE, consentChange, type PortalConsentType } from "./rules";
 
 export type ConsentResult =
   | { ok: true; changed: boolean; granted: boolean }
   | { ok: false; status: 429; error: "rate_limited" }
-  | { ok: false; status: 403; error: "forbidden" };
+  | { ok: false; status: 403; error: "forbidden" }
+  | { ok: false; status: 409; error: "needs_phone" };
 
 /** The family page's activity log row: actorType "family", ids and codes only. `actorMemberId` = the adult who looked (null = the primary). */
 export const auditPortalView = (patientId: string, actorMemberId: string | null = null) =>
@@ -25,17 +27,23 @@ export async function recordPortalConsent(patientId: string, type: PortalConsent
   });
   if (recent >= CONSENT_CHANGES_PER_MINUTE) return { ok: false, status: 429, error: "rate_limited" };
 
+  let phone: string | null = null; // the acting person's own number (only texting consent needs it)
   if (actorMemberId) {
     // only a CONFIRMED adult of this household may record on their own row
-    const m = await prisma.householdMember.findFirst({ where: { id: actorMemberId, patientId, status: "confirmed", ageGroup: "18_plus" }, select: { id: true } });
+    const m = await prisma.householdMember.findFirst({ where: { id: actorMemberId, patientId, status: "confirmed", ageGroup: "18_plus" }, select: { id: true, phone: true } });
     if (!m) return { ok: false, status: 403, error: "forbidden" };
+    phone = m.phone;
+  } else if (type === "sms") {
+    phone = (await prisma.contactProfile.findUnique({ where: { patientId }, select: { phone: true } }))?.phone ?? null;
   }
+  const number = type === "sms" && granted ? normalizePhone(phone) : null;
+  if (type === "sms" && granted && !number) return { ok: false, status: 409, error: "needs_phone" };
   const subject = actorMemberId ? { householdMemberId: actorMemberId } : { patientId };
-  const rows = await prisma.consentRecord.findMany({ where: { ...subject, type }, select: { type: true, granted: true, createdAt: true } });
-  if (consentChange(rows, type, granted) === "noop") return { ok: true, changed: false, granted };
+  const rows = await prisma.consentRecord.findMany({ where: { ...subject, type }, select: { type: true, granted: true, createdAt: true, phoneNumber: true } });
+  if (consentChange(rows, type, granted, number) === "noop") return { ok: true, changed: false, granted };
 
   await prisma.$transaction([
-    prisma.consentRecord.create({ data: { ...subject, type, granted, textVersion: CONSENT_TEXT_VERSION, method: "portal" } }),
+    prisma.consentRecord.create({ data: { ...subject, type, granted, textVersion: CONSENT_TEXT_VERSION, method: "portal", ...(number ? { phoneNumber: number } : {}) } }),
     prisma.auditLog.create({
       data: {
         patientId, actorType: "family", actorMemberId, action: AuditAction.PORTAL_CONSENT_CHANGED, resourceType: "ConsentRecord", resourceId: actorMemberId ?? patientId,

@@ -4,11 +4,12 @@ import { audit } from "@/lib/audit";
 import { isFeatureEnabled } from "@/lib/features";
 import { formatEventDate, formatEventTime } from "@/lib/datetime";
 import { matchPatientsForEvent } from "@/lib/invitations/match";
+import { currentConsents } from "@/lib/patients/query";
 import { isCallOutcome, type AttendanceType, type CallOutcome } from "./request-rules";
 
 /**
  * The call list: households with NO email who need their invitation or their confirmation by phone.
- * (Households with an email get emails.) It is the stopgap until the dialer exists; the dialer will write the same
+ * (Households with an email get emails.) A household that withdrew contact consent is never listed for an invitation. It is the stopgap until the dialer exists; the dialer will write the same
  * invitation_call_logs rows (source "dialer").
  */
 export interface CallListRow {
@@ -44,9 +45,12 @@ export async function eventCallList(eventId: string, opts: { recordingsOn?: bool
   // 2. invited (any origin), no email, no RSVP yet
   const invs = await prisma.invitation.findMany({
     where: { eventId, status: { in: ["pending", "sent"] }, patient: { email: null, mergedIntoId: null } },
-    include: { patient: { include: { contactProfile: true, householdMembers: true } } },
+    include: { patient: { include: { contactProfile: true, householdMembers: true, consentRecords: { where: { type: "data_and_contact" }, select: { type: true, granted: true, createdAt: true } } } } },
   });
   for (const i of invs) {
+    // Withdrawn contact consent: no invitation call, even if the invitation was created before they withdrew.
+    // (Group 3 stays: a confirmation for an RSVP the household keeps is essential, like the email.)
+    if (currentConsents(i.patient.consentRecords).data_and_contact === false) continue;
     cands.set(i.patientId, {
       id: i.patientId, ...name(i.patient), phone: i.patient.contactProfile?.phone ?? null, lang: i.patient.preferredLanguage, familySize: i.patient.familySize,
       purpose: "invitation", type: i.attendanceType === "virtual" && virtualOk ? "virtual" : "in_person",

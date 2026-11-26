@@ -4,12 +4,14 @@
  * Consent is append-only. A change is a NEW consent_records row (method "portal", the current text version); nothing is
  * updated. The current value of a type is its newest row.
  */
+import { smsConsentCovers } from "@/lib/consent/sms";
+
 export const PORTAL_CONSENT_TYPES = ["media", "sms", "newsletter"] as const;
 export type PortalConsentType = (typeof PORTAL_CONSENT_TYPES)[number];
 export const isPortalConsentType = (t: unknown): t is PortalConsentType =>
   typeof t === "string" && (PORTAL_CONSENT_TYPES as readonly string[]).includes(t);
 
-export interface ConsentRow { type: string; granted: boolean; createdAt: Date }
+export interface ConsentRow { type: string; granted: boolean; createdAt: Date; phoneNumber?: string | null }
 
 /** Newest row of a type: true / false, or null if it was never recorded. */
 export function currentValue(rows: ConsentRow[], type: string): boolean | null {
@@ -18,9 +20,13 @@ export function currentValue(rows: ConsentRow[], type: string): boolean | null {
   return best ? best.granted : null;
 }
 
-/** Re-saving what is already true writes nothing (the log stays a record of real decisions). */
-export function consentChange(rows: ConsentRow[], type: PortalConsentType, granted: boolean): "record" | "noop" {
-  return currentValue(rows, type) === granted ? "noop" : "record";
+/**
+ * Re-saving what is already true writes nothing (the log stays a record of real decisions). A texting YES is only
+ * "already true" if it covers `phone`, the number on file now (lib/consent/sms.ts).
+ */
+export function consentChange(rows: ConsentRow[], type: PortalConsentType, granted: boolean, phone: string | null = null): "record" | "noop" {
+  const now = type === "sms" && granted ? smsConsentCovers(rows, phone) : currentValue(rows, type);
+  return now === granted ? "noop" : "record";
 }
 
 /** Max consent changes per person per minute (counted from the audit log, so it holds across serverless instances). */

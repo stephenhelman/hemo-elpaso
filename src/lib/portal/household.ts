@@ -1,3 +1,4 @@
+import { currentSmsConsent } from "@/lib/consent/sms";
 import { prisma } from "@/lib/db";
 import { decryptCheckInToken } from "@/lib/crypto/checkin-token";
 import { householdLang, pickFlyer, type PickedFlyer } from "@/lib/flyers";
@@ -42,9 +43,9 @@ export async function loadHousehold(patientId: string, now = new Date()): Promis
     select: {
       preferredLanguage: true,
       primaryDiagnoses: true,
-      contactProfile: { select: { firstName: true, lastName: true } },
+      contactProfile: { select: { firstName: true, lastName: true, phone: true } },
       householdMembers: { orderBy: { createdAt: "asc" }, select: { id: true, firstName: true, lastName: true, relationship: true, ageGroup: true, statedDiagnoses: true } },
-      consentRecords: { select: { type: true, granted: true, createdAt: true } },
+      consentRecords: { select: { type: true, granted: true, createdAt: true, phoneNumber: true } },
       rsvps: {
         orderBy: { rsvpDate: "desc" },
         select: {
@@ -94,7 +95,7 @@ export async function loadHousehold(patientId: string, now = new Date()): Promis
     consents: {
       data_and_contact: currentValue(rows, "data_and_contact"),
       media: currentValue(rows, "media"),
-      sms: currentValue(rows, "sms"),
+      sms: currentSmsConsent(rows, p.contactProfile?.phone),
       newsletter: currentValue(rows, "newsletter"),
     },
   };

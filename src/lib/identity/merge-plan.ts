@@ -3,8 +3,8 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { HOUSEHOLD_EVIDENCE } from "@/lib/patients/query";
 import { chooseSurvivor } from "./rules";
 import {
-  normEmail, pairMembers, pickCheckIn, pickInvitation, pickMember, pickRsvp, resolveConsents, resolveEmail, resolvePhone, unionList,
-  type ConsentResolution, type ContactChoice,
+  normEmail, openRequestsToWithdraw, pairMembers, pickCheckIn, pickInvitation, pickMember, pickRsvp, resolveConsents, resolveEmail, resolvePhone, unionList,
+  type ConsentResolution, type ContactChoice, type RequestWithdrawRule,
 } from "./merge-rules";
 
 export type Db = PrismaClient | Prisma.TransactionClient;
@@ -16,7 +16,7 @@ export interface MergeOptions {
   primaryPhone?: ContactChoice;
 }
 
-export type ConflictKind = "rsvp" | "check_in" | "invitation" | "member" | "consent" | "email" | "phone" | "diagnoses" | "preferences" | "volunteer" | "family";
+export type ConflictKind = "rsvp" | "check_in" | "invitation" | "member" | "consent" | "email" | "phone" | "diagnoses" | "preferences" | "volunteer" | "family" | "rsvp_request";
 export interface Conflict { kind: ConflictKind; label: string; kept: string | null; dropped: string | null; rule: string; ids?: { keptId?: string; droppedId?: string } }
 
 export interface RecordSummary {
@@ -35,6 +35,9 @@ export interface Instructions {
   email: { primary: string | null; alias: string | null };
   phone: string | null;
   identities: string[];
+  /** RSVP requests that move to the survivor, and the open ones closed because of the merge. */
+  requests: { move: string[]; withdraw: { id: string; eventId: string; rule: RequestWithdrawRule }[] };
+  callLogs: string[];
   boardRoles: { move: string[]; merged: { keepRoleId: string; dropRoleId: string }[] };
   invitationsSent: number;
   other: {
@@ -83,6 +86,8 @@ const loadRecord = (db: Db, id: string) =>
       identities: { select: { id: true } },
       boardRoles: true,
       emailAliases: { select: { email: true } },
+      rsvpRequests: { select: { id: true, eventId: true, status: true, createdAt: true } },
+      callLogs: { select: { id: true } },
     },
   });
 type Loaded = NonNullable<Awaited<ReturnType<typeof loadRecord>>>;
@@ -139,6 +144,13 @@ export async function planMerge(db: Db, aId: string, bId: string, opts: MergeOpt
     rsvps.conflicts.push({ eventId: d.eventId, keepId: k.id, dropId: d.id, winner: pick.winner, rule: pick.rule });
     conflicts.push({ kind: "rsvp", label: "Both records have an RSVP for the same event", kept: pick.winner === "keep" ? "survivor's RSVP" : "other record's RSVP", dropped: pick.winner === "keep" ? "other record's RSVP" : "survivor's RSVP", rule: pick.rule, ids: { keptId: pick.winner === "keep" ? k.id : d.id, droppedId: pick.winner === "keep" ? d.id : k.id } });
   }
+
+  // RSVP requests: all of them move; an open one that would collide (or is already answered by an RSVP) is closed
+  const attending = (list: { eventId: string; cancelledAt: Date | null }[]) => new Set(list.filter((r) => !r.cancelledAt).map((r) => r.eventId));
+  const withdraw = openRequestsToWithdraw(keep.rsvpRequests, drop.rsvpRequests, attending(keep.rsvps), attending(drop.rsvps));
+  const requests: Instructions["requests"] = { move: drop.rsvpRequests.map((r) => r.id), withdraw };
+  for (const w of withdraw)
+    conflicts.push({ kind: "rsvp_request", label: "An open RSVP request is closed by this merge", kept: null, dropped: "the open request (marked withdrawn)", rule: w.rule, ids: { droppedId: w.id } });
 
   // Check-ins
   const keepCi = new Map(keep.checkIns.map((c) => [c.eventId, c]));
@@ -223,6 +235,8 @@ export async function planMerge(db: Db, aId: string, bId: string, opts: MergeOpt
     email: { primary: email.primary, alias: email.alias },
     phone: phone.primary,
     identities: drop.identities.map((i) => i.id),
+    requests,
+    callLogs: drop.callLogs.map((c) => c.id),
     boardRoles,
     invitationsSent: drop.invitations.length,
     other: { emailLogs, communicationLogs, eventQuestions, assistanceApplications, legacyFamilyMembers, familyMemberships, preferences, volunteer, family },
@@ -233,6 +247,8 @@ export async function planMerge(db: Db, aId: string, bId: string, opts: MergeOpt
     { label: "Check-ins", count: checkIns.move.length },
     { label: "Invitations (including removed ones)", count: invitations.move.length },
     { label: "Household members", count: members.move.length },
+    { label: "RSVP requests", count: requests.move.length },
+    { label: "Call history", count: drop.callLogs.length },
     { label: "Consent records (original rows, original dates)", count: drop.consentRecords.length },
     { label: "Sign-in identities", count: drop.identities.length },
     { label: "Board roles", count: boardRoles.move.length },

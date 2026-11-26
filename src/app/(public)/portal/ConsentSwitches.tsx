@@ -11,7 +11,7 @@ export default function ConsentSwitches({ lang, initial, texts, available }: { l
   const t = portalText[lang];
   const [values, setValues] = useState<Values>(initial);
   const [busy, setBusy] = useState<PortalConsentType | null>(null);
-  const [note, setNote] = useState<{ type: PortalConsentType; ok: boolean } | null>(null);
+  const [note, setNote] = useState<{ type: PortalConsentType; ok: boolean; needsPhone?: boolean } | null>(null);
 
   async function flip(type: PortalConsentType) {
     const next = values[type] !== true;
@@ -19,7 +19,11 @@ export default function ConsentSwitches({ lang, initial, texts, available }: { l
     setNote(null);
     try {
       const res = await fetch("/api/portal/consent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type, granted: next }) });
-      if (!res.ok) throw new Error("save failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setNote({ type, ok: false, needsPhone: data?.error === "needs_phone" });
+        return;
+      }
       setValues((v) => ({ ...v, [type]: next }));
       setNote({ type, ok: true });
     } catch {
@@ -42,7 +46,7 @@ export default function ConsentSwitches({ lang, initial, texts, available }: { l
                 <p className="mt-1 text-sm text-neutral-600">{texts[type]}</p>
                 {!available[type] && <p className="mt-1 text-xs text-neutral-500">{t.notYet}</p>}
                 <p className="mt-2 text-xs text-neutral-500" role="status" aria-live="polite">
-                  {busy === type ? t.saving : note?.type === type ? (note.ok ? t.saved : <span className="text-red-600">{t.failed}</span>) : values[type] === null ? t.notAsked : ""}
+                  {busy === type ? t.saving : note?.type === type ? (note.ok ? t.saved : <span className="text-red-600">{note.needsPhone ? t.needsPhone : t.failed}</span>) : values[type] === null ? t.notAsked : ""}
                 </p>
               </div>
               <button
