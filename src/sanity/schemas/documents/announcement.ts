@@ -83,7 +83,7 @@ export const announcement = defineType({
           to: [{ type: "conference" }],
           hidden: only("conference"),
           options: { filter: "active == true" },
-          description: "Links to its card on the Resources page and shows the organizer's name.",
+          description: "Links to its card on the Resources page and shows the organizer's name. While this announcement is live, it replaces the conference's automatic registration announcement.",
         }),
         defineField({
           name: "url",

@@ -8,6 +8,9 @@
  *  1. `announcement` documents written in the Studio.
  *  2. Automatic ones, derived from conferences with "Announce when registration opens". Nothing is written to Sanity,
  *     so editing a conference's dates takes effect on its own.
+ *
+ * While a hand-written announcement for a conference is live, it REPLACES that conference's automatic one, so the board
+ * can word it themselves.
  */
 import { siteDateKey, siteDayRangeUtc } from "@/lib/datetime";
 import { eventHasEnded, eventEndsAt } from "@/lib/rsvp/window";
@@ -53,7 +56,7 @@ export const referencedEventSlugs = (data: AnnouncementsData): string[] =>
     ),
   );
 
-interface Resolved { href: string; external: boolean; organizer?: string; until?: number }
+interface Resolved { href: string; external: boolean; organizer?: string; until?: number; conferenceId?: string }
 interface Context { events: Map<string, number>; hasConferenceSection: boolean; registrationOpen: boolean; now: Date }
 
 const dayStart = (key: string) => siteDayRangeUtc(key).start.getTime();
@@ -78,7 +81,7 @@ function resolveTarget(target: AnnouncementData["target"], ctx: Context): Resolv
       // The card on /resources must exist, and the announcement must be able to name the organizer.
       if (!ctx.hasConferenceSection || !c || c.active !== true || !c.organizer || !c.slug || !CONFERENCE_SLUG.test(c.slug)) return null;
       if (!isDateKey(c.endDate) || !conferenceIsUpcoming(c.endDate, ctx.now)) return null;
-      return { href: `/resources#${conferenceAnchor(c.slug)}`, external: false, organizer: c.organizer, until: dayEnd(c.endDate) };
+      return { href: `/resources#${conferenceAnchor(c.slug)}`, external: false, organizer: c.organizer, until: dayEnd(c.endDate), conferenceId: c._id };
     }
     case "external": {
       const url = safeHttpsUrl(target.url);
@@ -91,7 +94,8 @@ function resolveTarget(target: AnnouncementData["target"], ctx: Context): Resolv
 
 const hasEnglish = (f: Localized) => !!f?.en?.trim();
 
-type Ranked = PublicAnnouncement & { order: number };
+/** An announcement plus what is needed to sort and de-duplicate it. Neither extra field leaves this module. */
+type Ranked = PublicAnnouncement & { order: number; conferenceId?: string };
 
 function written(data: AnnouncementsData, ctx: Context): Ranked[] {
   const t = ctx.now.getTime();
@@ -104,7 +108,8 @@ function written(data: AnnouncementsData, ctx: Context): Ranked[] {
     if (t >= until) return [];
     return [{
       key: a._id, title: a.title, text: a.text ?? undefined, buttonLabel: a.buttonLabel ?? undefined, organizer: target.organizer,
-      href: target.href, external: target.external, endsAt: new Date(until).toISOString(), order: a.order ?? DEFAULT_ORDER,
+      href: target.href, external: target.external, endsAt: new Date(until).toISOString(),
+      order: a.order ?? DEFAULT_ORDER, conferenceId: target.conferenceId,
     }];
   });
 }
@@ -133,6 +138,7 @@ function automatic(data: AnnouncementsData, ctx: Context): Ranked[] {
       external: false,
       endsAt: new Date(until).toISOString(),
       order: DEFAULT_ORDER,
+      conferenceId: c._id,
     }];
   });
 }
@@ -144,8 +150,11 @@ export function buildAnnouncements(input: { data: AnnouncementsData; events: Eve
     registrationOpen: input.registrationOpen,
     now: input.now,
   };
+  const byHand = written(input.data, ctx);
+  // Only announcements actually shown right now replace an automatic one: one that is scheduled, over or dropped does not.
+  const replaced = new Set(byHand.map((a) => a.conferenceId));
   // Lower order first, then whatever ends soonest.
-  return [...written(input.data, ctx), ...automatic(input.data, ctx)]
+  return [...byHand, ...automatic(input.data, ctx).filter((a) => !replaced.has(a.conferenceId))]
     .sort((a, b) => a.order - b.order || a.endsAt.localeCompare(b.endsAt) || a.key.localeCompare(b.key))
-    .map(({ order: _order, ...a }) => a);
+    .map(({ order: _order, conferenceId: _conferenceId, ...a }) => a);
 }

@@ -221,7 +221,7 @@ A small card in the corner of public pages that cycles through the live announce
 | Conference | the conference is shown, has not ended, and the Conference list is on the Resources page. The card names the organizer |
 | External website | the address starts with https:// |
 
-**Automatic conference announcements:** tick *Announce when registration opens* on a conference. It shows from the opening time until registration closes (or until the first conference day when there is no closing time). Nothing appears in the Announcements list. If you also write one for the same conference, both show.
+**Automatic conference announcements:** tick *Announce when registration opens* on a conference. It shows from the opening time until registration closes (or until the first conference day when there is no closing time). Nothing appears in the Announcements list. To use your own wording, write an announcement that links to the same conference: while yours is live it replaces the automatic one. Before it starts and after it ends, the automatic one shows again (a visitor who closed only yours will then see it).
 
 **Where the card never appears:** admin, the family page, RSVP and confirmation links, unsubscribe, Register for Information, access-denied and no-household pages. It also skips an announcement on the page it links to (a conference announcement is skipped on all of /resources).
 
