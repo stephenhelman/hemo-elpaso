@@ -71,6 +71,28 @@ Then **Redeploy Production with "use existing build cache" unticked** (`NEXT_PUB
 
 **11. After 30 days:** remove the old Auth0 callback/logout/origin URLs, the old Sanity CORS origin and the old Turnstile hostname, and delete `NEXT_PUBLIC_BASE_URL`.
 
+## When HOEP's Twilio number goes live (phone system)
+
+**(915) 539-7353 is an officer's personal number. It does not move to Twilio. Take it off the site when the new HOEP
+number goes live** (after the phone menu, voicemail and policy v3 are live; see `PHONE_AUDIT.md`).
+
+- [ ] **Code:** change the five fields of `SITE_PHONE` in `src/lib/site.ts`. That one constant feeds the footer, contact
+      page, scholarship contacts, every email, the RSVP and registration messages (`{phone}`), the legal pages
+      (`{PHONE}`), the schema.org data, the Sanity fallback and `scripts/seed-sanity.ts`.
+- [ ] **Code, examples only:** the sample number in `src/sanity/schemas/documents/siteSettings.ts`,
+      `src/sanity/schemas/objects/link.ts` and `scripts/check-conferences.ts`.
+- [ ] **Sanity (production dataset):** Studio → Site settings → phone (display and E.164). Then search the other
+      documents for the old number, including links of type "phone" and people or resource entries. The site shows the
+      Sanity value over the code value.
+- [ ] **Flyer templates:** the repository has none. Check the design files flyers are made from, and flyers already
+      uploaded for upcoming events; replace and re-upload any that print the number.
+- [ ] **Letterhead:** `npx tsx scripts/make-letterhead.ts`, then re-export `brand/HOEP-letterhead.pdf`.
+- [ ] **Database email templates:** Admin → Settings → Email Templates: look for the number.
+- [ ] **Legal pages:** they change with `SITE_PHONE`; set the effective date with the policy v3 release.
+- [ ] **Outside the site:** Facebook group, business listings, printed material.
+- [ ] **Verify:** `grep -rnE "539[-. )]*7353|5397353" src scripts` finds nothing, and the live home, contact and privacy
+      pages show the new number.
+
 ## Old-site URLs (the previous hemoelpaso.org website)
 
 `scripts/legacy-redirects.mjs` (loaded by `next.config.mjs` after the host rules) sends the old site's URLs to the closest new page with a 308 (query kept):
