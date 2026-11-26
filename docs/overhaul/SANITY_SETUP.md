@@ -43,7 +43,7 @@ The embedded Studio talks to Sanity from the browser. In <https://www.sanity.io/
 | URL | `https://<your-domain>/api/revalidate` |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
-| Filter | `_type in ["siteSettings","person","scholarship","resource","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
+| Filter | `_type in ["siteSettings","person","scholarship","sponsor","resource","conference","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
 | Projection | `{_type, _id}` |
 | HTTP method | `POST` |
 | Drafts | leave **off** (only published changes matter) |
@@ -57,6 +57,8 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `scholarshipsPage` | `page:scholarships` | Scholarships page + its SEO |
 | `scholarship` | `scholarship` | Scholarships page |
 | `resource` | `resource` | Resources page (all five lists) |
+| `conference` | `conference` | Resources page (Conference list) |
+| `sponsor` | `sponsor` | Sponsor strips, footer sponsors, event "Sponsored by" rows |
 | `resourcesPage` | `page:resources` | Resources page + its SEO |
 | `person` | `person` | any page with a People block (Scholarships contact card today) |
 | `aboutPage` | `page:about` | About page + its SEO (it also reads `person`, so edits to people refresh it) |
@@ -180,3 +182,23 @@ I could not test with a real photo from here (no token; anonymous queries return
 - **Title/description** in the page's SEO fields replace the site-wide ones for the home page only; the seed copies today's values, so nothing changes until you edit them.
 
 **Seed:** `npm run seed:sanity -- --write` creates `homePage` if missing (27 documents in total). `--repair` also handles stat rows.
+
+## 10. Conferences (feat/conferences)
+
+Conferences are **external** events run by other organizations. HOEP shares them; the site takes no registrations and collects no travel requests.
+
+**Webhook: change the filter** in section 1.4 so it includes `conference` (and `sponsor`, which the revalidate route already handled but the documented filter left out). Until then a conference edit takes up to an hour to appear.
+
+**Add the block once** (after this version is deployed, so the Studio knows the type):
+
+1. Admin > **Site content** > **Pages** > **Resources page**.
+2. Under **Sections**, choose **Add item** > **Conference list**.
+3. Fill in the header (eyebrow, heading, subheading in EN and ES), pick the background that alternates with its neighbours, and drag it to where it should appear.
+4. **Publish**. Do not re-run the seed with `--overwrite`; it would reset the page.
+
+**Add a conference:** Studio > **Conferences** > **+**. Required: name, web address name (press *Generate*; never change it after publishing), organizer, summary, first and last day, website and *Last verified*. Publish. It appears at `/resources#conference-<web address name>`.
+
+- The list shows active conferences whose last day has not passed (El Paso time), soonest first. With none to show, the whole block is hidden.
+- Registration times are entered in El Paso time. After registration closes the card says so and hides the registration button.
+- **Travel assistance:** when switched on the card shows "HOEP travel assistance available" with the note, last day and link. It is hidden the day after the last day to ask. The link should point to an existing page (usually `/contact`) or an https address.
+- The Studio warns when *Last verified* is more than 60 days old, and when registration has closed while the conference is still shown.
