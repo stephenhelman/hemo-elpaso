@@ -254,6 +254,8 @@ export async function createPatient(
             textVersion: CONSENT_TEXT_VERSION,
             method: ctx.method,
             recordedByBoardUserId: ctx.recordedByBoardUserId ?? null,
+            // a texting yes is for this number only (lib/consent/sms.ts)
+            ...(c.type === "sms" && c.granted ? { phoneNumber: v.phone } : {}),
           })),
         },
         householdMembers: { create: memberRows },

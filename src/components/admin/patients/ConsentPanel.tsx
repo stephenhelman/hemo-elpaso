@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { BOARD_REASONS, isFamilyAsked, type BoardReason } from "@/lib/consent/board-rules";
 
 export interface ConsentHistoryRow { id: string; when: string; granted: boolean; method: string; version: string; reason: string | null }
-export interface ConsentLine { type: string; current: boolean | null; history: ConsentHistoryRow[] }
+export interface ConsentLine { type: string; current: boolean | null; history: ConsentHistoryRow[]; /** texting: a yes is on file, but not for the number on file now */ needsReconsent?: boolean }
 export interface ConsentSubject { memberId: string | null; title: string; lines: ConsentLine[] }
 
 const T = {
@@ -15,6 +15,7 @@ const T = {
     history: "History", when: "When", value: "Value", method: "Method", version: "Text", why: "Reason",
     note: "A change adds a new record; nothing is edited. Withdrawing is always allowed. Turning a consent on needs the family to have asked.",
     saved: "Recorded", failed: "Could not record that change.",
+    reconsent: "A yes is on file, but not for the current phone number. Texting stays off until the family agrees again.", phoneChanged: "Phone number changed",
     types: { data_and_contact: "Store my information and contact me", media: "Photos, video and recordings", sms: "Text messages", newsletter: "Newsletter" } as Record<string, string>,
     reasons: { FAMILY_ASKED_PHONE: "Family asked by phone", FAMILY_ASKED_EMAIL: "Family asked by email", FAMILY_ASKED_IN_PERSON: "Family asked in person", OTHER: "Other (withdraw only)" } as Record<BoardReason, string>,
     errors: { family_ask_required: "Turning a consent on needs a “Family asked…” reason.", needs_phone: "Add a phone number first.", needs_email: "Add an email first.", no_change: "That is already the current value.", bad_reason: "Choose a reason." } as Record<string, string>,
@@ -24,6 +25,7 @@ const T = {
     history: "Historial", when: "Cuándo", value: "Valor", method: "Método", version: "Texto", why: "Motivo",
     note: "Un cambio agrega un registro nuevo; nada se edita. Siempre se puede retirar un consentimiento. Activarlo requiere que la familia lo haya pedido.",
     saved: "Registrado", failed: "No se pudo registrar el cambio.",
+    reconsent: "Hay un sí registrado, pero no para el número de teléfono actual. Los mensajes siguen desactivados hasta que la familia acepte de nuevo.", phoneChanged: "Cambió el número de teléfono",
     types: { data_and_contact: "Guardar mi información y contactarme", media: "Fotos, video y grabaciones", sms: "Mensajes de texto", newsletter: "Boletín" } as Record<string, string>,
     reasons: { FAMILY_ASKED_PHONE: "La familia lo pidió por teléfono", FAMILY_ASKED_EMAIL: "La familia lo pidió por correo", FAMILY_ASKED_IN_PERSON: "La familia lo pidió en persona", OTHER: "Otro (solo para retirar)" } as Record<BoardReason, string>,
     errors: { family_ask_required: "Activar un consentimiento requiere un motivo “La familia lo pidió…”.", needs_phone: "Agregue primero un teléfono.", needs_email: "Agregue primero un correo.", no_change: "Ese ya es el valor actual.", bad_reason: "Elija un motivo." } as Record<string, string>,
@@ -67,12 +69,13 @@ function Line({ patientId, memberId, line, locale }: { patientId: string; member
         </button>
         <button onClick={() => setOpen((o) => !o)} className="text-xs underline text-neutral-500">{t.history} ({line.history.length})</button>
       </div>
+      {line.needsReconsent && <p className="mt-1 text-xs text-amber-800">{t.reconsent}</p>}
       {open && (
         <table className="w-full text-xs mt-2">
           <thead className="text-left uppercase text-neutral-500"><tr><th className="py-1">{t.when}</th><th>{t.value}</th><th>{t.method}</th><th>{t.version}</th><th>{t.why}</th></tr></thead>
           <tbody className="divide-y divide-neutral-100">
             {line.history.map((h) => (
-              <tr key={h.id}><td className="py-1">{h.when}</td><td>{h.granted ? t.on : t.off}</td><td>{h.method}</td><td>{h.version}</td><td>{h.reason ? (t.reasons[h.reason as BoardReason] ?? h.reason) : "—"}</td></tr>
+              <tr key={h.id}><td className="py-1">{h.when}</td><td>{h.granted ? t.on : t.off}</td><td>{h.method}</td><td>{h.version}</td><td>{h.reason === "PHONE_CHANGED" ? t.phoneChanged : h.reason ? (t.reasons[h.reason as BoardReason] ?? h.reason) : "—"}</td></tr>
             ))}
           </tbody>
         </table>

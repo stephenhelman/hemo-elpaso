@@ -29,6 +29,8 @@ const RULES: Record<string, string> = {
   primary_by_choice_other_discarded: "you choose which is primary; the other is discarded",
   union: "both are kept",
   survivor_wins: "the surviving record's is kept",
+  already_attending: "the household already has an RSVP for that event",
+  one_open_request: "one open request per event: the one further along, then the older, is kept",
 };
 const btn = "px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-50";
 const short = (iso: string) => new Date(iso).toLocaleDateString("en-US");

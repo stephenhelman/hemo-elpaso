@@ -77,6 +77,35 @@ export function pickCheckIn(keep: { checkInTime: Date; headcount: number | null 
   };
 }
 
+// ── RSVP requests ────────────────────────────────────────────────────────────────────────────────────────────
+/** A household may have ONE open request per event (database index). Further along beats less far; then the older. */
+const REQUEST_RANK: Record<string, number> = { waitlisted: 3, pending: 2, waiting_household_review: 1 };
+export interface RequestFacts { id: string; eventId: string; status: string; createdAt: Date }
+export type RequestWithdrawRule = "already_attending" | "one_open_request";
+
+/**
+ * Which OPEN requests a merge must close. A request is moot when the other record already has an active RSVP for that
+ * event; two open requests for one event keep the stronger one. Closed requests are history and simply move.
+ */
+export function openRequestsToWithdraw(
+  keep: RequestFacts[], drop: RequestFacts[], keepAttending: Set<string>, dropAttending: Set<string>,
+): { id: string; eventId: string; rule: RequestWithdrawRule }[] {
+  const open = (list: RequestFacts[]) => new Map(list.filter((r) => REQUEST_RANK[r.status]).map((r) => [r.eventId, r]));
+  const k = open(keep), d = open(drop);
+  const out: { id: string; eventId: string; rule: RequestWithdrawRule }[] = [];
+  const close = (r: RequestFacts, rule: RequestWithdrawRule) => out.push({ id: r.id, eventId: r.eventId, rule });
+  for (const eventId of Array.from(new Set([...Array.from(k.keys()), ...Array.from(d.keys())]))) {
+    let a = k.get(eventId), b = d.get(eventId);
+    if (a && dropAttending.has(eventId)) { close(a, "already_attending"); a = undefined; }
+    if (b && keepAttending.has(eventId)) { close(b, "already_attending"); b = undefined; }
+    if (!a || !b) continue;
+    const diff = REQUEST_RANK[a.status] - REQUEST_RANK[b.status];
+    const keepWins = diff > 0 || (diff === 0 && a.createdAt <= b.createdAt);
+    close(keepWins ? b : a, "one_open_request");
+  }
+  return out;
+}
+
 // ── consents ─────────────────────────────────────────────────────────────────────────────────────────────────
 export const MERGE_CONSENT_TYPES = ["data_and_contact", "media", "sms", "newsletter"] as const;
 export type MergeConsentType = (typeof MERGE_CONSENT_TYPES)[number];

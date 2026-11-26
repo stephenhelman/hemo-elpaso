@@ -34,6 +34,7 @@ export const portalText = {
     saving: "Saving…",
     saved: "Saved.",
     failed: "Could not save. Please try again.",
+    needsPhone: "Add your phone number to your details first.",
     items: {
       media: "Photos, video and recordings",
       sms: "Text messages",
@@ -82,6 +83,7 @@ export const portalText = {
     saving: "Guardando…",
     saved: "Guardado.",
     failed: "No se pudo guardar. Inténtelo de nuevo.",
+    needsPhone: "Primero agregue su número de teléfono a sus datos.",
     items: {
       media: "Fotos, video y grabaciones",
       sms: "Mensajes de texto",

@@ -330,6 +330,7 @@ test("consents: an adult's choice goes on their own row, never the household's o
   const h = await household("cs");
   const a = await h.mem("A", { age: "18_plus", status: "confirmed", email: em("csa"), rel: "spouse_partner" });
   const b = await h.mem("B", { age: "18_plus", status: "confirmed", email: em("csb"), rel: "sibling" });
+  await prisma.householdMember.update({ where: { id: a.id }, data: { phone: "+19155550102" } }); // a texting yes needs a number
   assert.deepEqual(await recordPortalConsent(h.id, "sms", true, a.id), { ok: true, changed: true, granted: true });
   assert.equal(await prisma.consentRecord.count({ where: { householdMemberId: a.id, type: "sms", granted: true, method: "portal" } }), 1);
   assert.equal(await prisma.consentRecord.count({ where: { OR: [{ householdMemberId: b.id }, { patientId: h.id }], type: "sms" } }), 0);

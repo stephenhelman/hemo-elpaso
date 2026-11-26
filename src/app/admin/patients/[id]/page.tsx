@@ -22,6 +22,7 @@ import ResendConfirmationButton from "@/components/admin/patients/ResendConfirma
 import ConsentPanel, { type ConsentSubject, type ConsentLine } from "@/components/admin/patients/ConsentPanel";
 import { PATIENT_BOARD_TYPES, MEMBER_BOARD_TYPES } from "@/lib/consent/board-rules";
 import { newest } from "@/lib/identity/merge-rules";
+import { currentSmsConsent, smsNeedsReconsent } from "@/lib/consent/sms";
 import { confirmationStatus } from "@/lib/patients/query";
 import { getLocaleCookie } from "@/lib/locale";
 import { adminPatientsTranslation } from "@/translation/adminPatients";
@@ -58,7 +59,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
   const lines = (types: readonly string[], rows: typeof p.consentRecords): ConsentLine[] =>
     types.map((type) => ({
       type,
-      current: newest(rows, type),
+      current: type === "sms" ? currentSmsConsent(rows, p.contactProfile?.phone) : newest(rows, type),
+      needsReconsent: type === "sms" && smsNeedsReconsent(rows, p.contactProfile?.phone),
       history: rows.filter((r) => r.type === type).map((r) => ({ id: r.id, when: fmt(r.createdAt), granted: r.granted, method: r.method, version: r.textVersion, reason: r.reasonCode })),
     }));
   const consentSubjects: ConsentSubject[] = [

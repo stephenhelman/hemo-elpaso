@@ -1,3 +1,4 @@
+import { currentSmsConsent } from "@/lib/consent/sms";
 import { prisma } from "@/lib/db";
 import { hasCompleteAddress, isFlyerDelivery } from "@/lib/flyers";
 import { isUnstructuredAddress } from "@/lib/review/rules";
@@ -60,8 +61,8 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
   if (actor.kind === "member" && !meRow) return null;
 
   const consentRows: ConsentRow[] = meRow
-    ? await prisma.consentRecord.findMany({ where: { householdMemberId: meRow.id }, select: { type: true, granted: true, createdAt: true } })
-    : await prisma.consentRecord.findMany({ where: { patientId: householdId }, select: { type: true, granted: true, createdAt: true } });
+    ? await prisma.consentRecord.findMany({ where: { householdMemberId: meRow.id }, select: { type: true, granted: true, createdAt: true, phoneNumber: true } })
+    : await prisma.consentRecord.findMany({ where: { patientId: householdId }, select: { type: true, granted: true, createdAt: true, phoneNumber: true } });
 
   const byId = new Map(members.map((m) => [m.id, m]));
   const view: ViewMember[] = members
@@ -109,7 +110,7 @@ export async function loadPortalView(householdId: string, actor: Actor, now = ne
     })).map((r) => ({ id: r.id, eventId: r.event.id, slug: r.event.slug, title: { en: r.event.titleEn, es: r.event.titleEs }, eventDate: r.event.eventDate.toISOString(), status: r.status })),
     consents: {
       data_and_contact: currentValue(consentRows, "data_and_contact"), media: currentValue(consentRows, "media"),
-      sms: currentValue(consentRows, "sms"), newsletter: currentValue(consentRows, "newsletter"),
+      sms: currentSmsConsent(consentRows, meRow ? meRow.phone : p.contactProfile?.phone), newsletter: currentValue(consentRows, "newsletter"),
     },
     members: view,
     otherAdults: members.filter((m) => m.ageGroup === "18_plus" && m.status === "confirmed" && m.id !== meId).map((m) => ({ id: m.id, name: name(m) })),

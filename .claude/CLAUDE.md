@@ -41,7 +41,7 @@ The app is being narrowed to a lean core (see `docs/overhaul/RESTORE.md`). Snaps
 
 1. Never drop or rename database tables or columns. Migrations are additive only. Cut features leave their tables dormant.
 2. Each removed feature is done on its own branch named `cut/<feature>` and merged to main with `--no-ff` so it can be undone with `git revert -m 1`.
-3. Run `npx tsc --noEmit` and `npm run build` before every merge. Note: `next.config.mjs` sets `ignoreBuildErrors`, so the build does NOT catch type errors — compare tsc against `docs/overhaul/tsc-baseline.txt`.
+3. Run `npx tsc --noEmit` and `npm run build` before every merge. Both must pass with no errors: `next.config.mjs` sets `typescript.ignoreBuildErrors: false`, so a type error fails the build. `docs/overhaul/tsc-baseline.txt` is a historical record from before the errors were cleared.
 4. Stated diagnosis is protected health information: never put it in emails, URLs, QR payloads, logs, or client-side code that unauthenticated users can access.
 5. Auth0 login is for board members only. `/admin/*` and `/api/admin/*` are gated by `src/middleware.ts`; keep route-level `requirePermission()` checks as well.
 6. Claude Code never commits, merges, or pushes. It may create and switch branches, edit files, and run tsc/build/tests. When work is done, it provides one or more commit messages, each with the exact file paths it covers and the git add / git commit commands, plus the merge command (git checkout main && git merge --no-ff <branch>). Stephen runs them.

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { auditData, type AuditValue } from "@/lib/audit";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
 import { recomputeHousehold } from "@/lib/households/sync";
+import { lapseSmsConsent } from "@/lib/consent/sms-lapse";
 import { planMerge, type MergeOptions, type MergePlan, type RecordSummary, type Db } from "./merge-plan";
 import { unionList } from "./merge-rules";
 
@@ -69,6 +70,7 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
   const rsvpDropped: AuditValue[] = [];
   for (const c of ins.rsvps.conflicts) {
     const loser = c.winner === "keep" ? c.dropId : c.keepId;
+    await tx.rsvpRequest.updateMany({ where: { rsvpId: loser }, data: { rsvpId: c.winner === "keep" ? c.keepId : c.dropId } }); // no FK: re-point by hand
     await tx.rsvp.delete({ where: { id: loser } }); // attendees cascade; its QR / check-in link stops working (the winner's still works)
     rsvpDropped.push({ droppedId: loser, keptId: c.winner === "keep" ? c.keepId : c.dropId, eventId: c.eventId, rule: c.rule });
   }
@@ -92,6 +94,11 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
   const invDropped: AuditValue[] = [];
   for (const c of ins.invitations.conflicts) {
     const loser = c.winner === "keep" ? c.dropId : c.keepId;
+    const winner = c.winner === "keep" ? c.keepId : c.dropId;
+    // calls and a request that hang off the losing invitation follow the one kept (deleting it would blank the link)
+    await tx.invitationCallLog.updateMany({ where: { invitationId: loser }, data: { invitationId: winner } });
+    if (!(await tx.rsvpRequest.findUnique({ where: { invitationId: winner }, select: { id: true } })))
+      await tx.rsvpRequest.updateMany({ where: { invitationId: loser }, data: { invitationId: winner } });
     await tx.invitation.delete({ where: { id: loser } });
     invDropped.push({ droppedId: loser, keptId: c.winner === "keep" ? c.keepId : c.dropId, eventId: c.eventId, rule: c.rule });
   }
@@ -135,6 +142,26 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
   }
   if (ins.members.move.length) await tx.householdMember.updateMany({ where: { id: { in: ins.members.move } }, data: { patientId: keepId } });
   audit.members = { moved: [...ins.members.move, ...ins.members.pairs.filter((p) => p.winner === "drop").map((p) => p.dropId)], dropped: memberDropped };
+
+  // ── RSVP requests: close the colliding open ones FIRST (one open request per household per event), then move all ──
+  if (ins.requests.withdraw.length) await tx.rsvpRequest.updateMany({ where: { id: { in: ins.requests.withdraw.map((w) => w.id) } }, data: { status: "withdrawn" } });
+  await tx.rsvpRequest.updateMany({ where: { patientId: dropId }, data: { patientId: keepId } });
+  await tx.rsvpRequest.updateMany({ where: { decidedByPatientId: dropId }, data: { decidedByPatientId: keepId } });
+  for (const p of ins.members.pairs) {
+    const winnerId = p.winner === "keep" ? p.keepId : p.dropId;
+    const loserId = p.winner === "keep" ? p.dropId : p.keepId;
+    // the people a request names follow the member entry that is kept
+    for (const r of await tx.rsvpRequest.findMany({ where: { patientId: keepId, selMemberIds: { has: loserId } }, select: { id: true, selMemberIds: true, partySize: true } })) {
+      const selMemberIds = unionList(r.selMemberIds.map((x) => (x === loserId ? winnerId : x)), []);
+      await tx.rsvpRequest.update({ where: { id: r.id }, data: { selMemberIds, partySize: r.partySize - (r.selMemberIds.length - selMemberIds.length) } });
+    }
+  }
+  audit.rsvpRequests = { moved: ins.requests.move, withdrawn: ins.requests.withdraw };
+
+  // ── call history (the household's calls, and calls this person made as a board member) ──
+  await tx.invitationCallLog.updateMany({ where: { patientId: dropId }, data: { patientId: keepId } });
+  await tx.invitationCallLog.updateMany({ where: { calledByPatientId: dropId }, data: { calledByPatientId: keepId } });
+  audit.callLogs = { moved: ins.callLogs };
 
   // RSVP party sizes follow the attendee rows
   for (const rsvpId of [...rsvpMoveIds, ...ins.rsvps.conflicts.filter((c) => c.winner === "keep").map((c) => c.keepId)]) {
@@ -213,6 +240,10 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
   } else if (dcp && !kcp) {
     await tx.contactProfile.update({ where: { id: dcp.id }, data: { patientId: keepId, phone: ins.phone ?? dcp.phone } });
   }
+
+  // A texting yes is for one number: if the survivor's number changed here, a yes for another number lapses.
+  const finalPhone = (await tx.contactProfile.findUnique({ where: { patientId: keepId }, select: { phone: true } }))?.phone ?? null;
+  if ((kcp?.phone ?? null) !== finalPhone) await lapseSmsConsent(tx, { patientId: keepId }, finalPhone, actorId);
 
   const earliest = (x: Date | null, y: Date | null) => (x && y ? (x < y ? x : y) : x ?? y);
   await tx.patient.update({

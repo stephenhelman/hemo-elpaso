@@ -2,6 +2,7 @@ import { AuditAction } from "@prisma/client";
 import { addressColumns, parseAddress } from "@/lib/address/validate";
 import { prisma } from "@/lib/db";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
+import { lapseSmsConsent } from "@/lib/consent/sms-lapse";
 import { cleanText, isValidEmail, normalizeEmail, normalizePhone } from "@/lib/patients/normalize";
 import { sanitizeDiagnoses } from "@/lib/patients/diagnoses";
 import { validateMembers } from "@/lib/households/members";
@@ -68,6 +69,7 @@ export async function updateProfile(ctx: PortalCtx, i: { firstName: unknown; las
         update: { firstName, lastName, phone },
         create: { patientId: ctx.householdId, firstName, lastName, phone },
       });
+      if (changed.includes("phone")) await lapseSmsConsent(tx, { patientId: ctx.householdId }, phone);
       await auditFamily(ctx, AuditAction.PORTAL_PROFILE_CHANGED, "Patient", ctx.householdId, "Own details changed on the family page", { fields: changed }, tx);
     });
     return { ok: true };
@@ -81,6 +83,7 @@ export async function updateProfile(ctx: PortalCtx, i: { firstName: unknown; las
   if ((m.preferredLanguage ?? "") !== language) changed.push("language");
   await prisma.$transaction(async (tx) => {
     await tx.householdMember.update({ where: { id: m.id }, data: { firstName, lastName, phone, preferredLanguage: language, ...(changed.includes("phone") ? { phoneCanText: null } : {}) } });
+    if (changed.includes("phone")) await lapseSmsConsent(tx, { householdMemberId: m.id }, phone);
     await auditFamily(ctx, AuditAction.PORTAL_PROFILE_CHANGED, "HouseholdMember", m.id, "Own details changed on the family page", { fields: changed }, tx);
   });
   return { ok: true };

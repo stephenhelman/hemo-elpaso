@@ -430,7 +430,8 @@ model ConsentRecord {
   method                String // web | phone
   recordedByBoardUserId String?
   recordedBy            Patient?         @relation("ConsentRecorder", fields: [recordedByBoardUserId], references: [id], onDelete: SetNull)
-  reasonCode            String? // board changes only (method "board"): FAMILY_ASKED_PHONE | FAMILY_ASKED_EMAIL | FAMILY_ASKED_IN_PERSON | OTHER; "MERGE" for merge-appended refusals
+  reasonCode            String? // board changes only (method "board"): FAMILY_ASKED_PHONE | FAMILY_ASKED_EMAIL | FAMILY_ASKED_IN_PERSON | OTHER; "MERGE" for merge-appended refusals; "PHONE_CHANGED" (method "system")
+  phoneNumber           String? // type "sms", granted only: the number the consent was given for (lib/consent/sms.ts). Never logged.
   createdAt             DateTime         @default(now())
 
   @@index([patientId, type, createdAt])

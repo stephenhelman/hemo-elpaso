@@ -49,6 +49,7 @@
     "check:household": "tsx scripts/db-guard.ts && tsx scripts/check-household.ts",
     "check:event-save": "tsx scripts/check-event-save.ts",
     "check:r2-config": "tsx --test scripts/check-r2-config.ts",
+    "check:phone-prereqs": "tsx scripts/db-guard.ts && tsx --test scripts/check-phone-prereqs.ts",
     "check:flyer-upload": "tsx scripts/db-guard.ts && tsx --test scripts/check-flyer-upload.ts",
     "check:photo-pipeline": "tsx scripts/db-guard.ts && tsx scripts/check-photo-pipeline.ts",
     "photos:backfill": "tsx scripts/db-guard.ts && tsx scripts/backfill-event-photos.ts",
