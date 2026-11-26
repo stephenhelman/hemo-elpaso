@@ -37,3 +37,23 @@ Log the completion date. If anything couldn't be done (for example, a copy held 
 | Inactive households (3 years) | Admin → Inactive households: "Mark contacted", then "Delete" if there is no reply |
 
 Withdrawn contact consent blocks invitations and every other non-essential email (`src/lib/email/policy.ts`). RSVP confirmation and reminder emails for an RSVP the person keeps still go out unless the RSVP is cancelled.
+
+## Phone system (Twilio) console access
+
+Anyone who can sign in to the Twilio console can see callers' numbers and, once voicemail is on, play recordings. Voicemail
+can contain health information, which the Privacy Policy limits to the President and Vice President. So:
+
+| Account | Twilio console |
+| --- | --- |
+| vicepresident@hemoelpaso.org | **Owner**, with two-factor authentication |
+| president@hemoelpaso.org | User, with two-factor authentication |
+| admin@hemoelpaso.org | **No access** (the settings account never holds family data) |
+| Everyone else | No access |
+
+- No shared logins. Add each person as a user of the account; both turn on two-factor authentication.
+- When the President or Vice President changes: add the new officer, remove the former one, then create a new auth token
+  (and API key) and update them in Vercel. If the Vice President leaves, move ownership first.
+- Review the user list once a year and whenever officers change.
+- The auth token and API key live only in Vercel's Production environment variables. Whoever pastes them there can read
+  the account through the API, so treat that as the same access: the President or Vice President enters them.
+- Changing who is on phone duty needs no Twilio access: that is done in the site (Settings → Phone).

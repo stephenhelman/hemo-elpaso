@@ -7,3 +7,6 @@ config();
 process.env.EMAIL_MODE = "capture";
 process.env.EMAIL_OUTBOX_FILES = "0"; // tests read the in-memory outbox; no .email-outbox/ files
 delete process.env.VERCEL_ENV;
+// Check scripts NEVER ring a phone and never see real Twilio credentials (lib/twilio/mode.ts).
+process.env.TWILIO_MODE = "capture";
+for (const name of Object.keys(process.env)) if (name.startsWith("TWILIO_") && name !== "TWILIO_MODE") delete process.env[name];

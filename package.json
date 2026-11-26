@@ -50,6 +50,8 @@
     "check:event-save": "tsx scripts/check-event-save.ts",
     "check:r2-config": "tsx --test scripts/check-r2-config.ts",
     "check:phone-prereqs": "tsx scripts/db-guard.ts && tsx --test scripts/check-phone-prereqs.ts",
+    "check:twilio-guard": "tsx --test scripts/check-twilio-guard.ts",
+    "check:twilio-webhook": "tsx --test scripts/check-twilio-webhook.ts",
     "check:flyer-upload": "tsx scripts/db-guard.ts && tsx --test scripts/check-flyer-upload.ts",
     "check:photo-pipeline": "tsx scripts/db-guard.ts && tsx scripts/check-photo-pipeline.ts",
     "photos:backfill": "tsx scripts/db-guard.ts && tsx scripts/backfill-event-photos.ts",
@@ -103,7 +105,8 @@
     "sharp": "^0.34.5",
     "styled-components": "^6.6.0",
     "tailwind-merge": "^3.4.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "twilio": "^6.3.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
