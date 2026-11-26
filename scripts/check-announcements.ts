@@ -4,6 +4,7 @@
  *  - time windows applied in code (Mountain Time days), not in the cached query
  *  - events: only published, open to requests, not over; by-invitation excluded
  *  - automatic conference announcements from the registration window; organizer always named
+ *  - a live hand-written announcement for a conference replaces its automatic one
  *  - page exclusions, skip on the target page, dismissals stored as ids only
  *  - the real GROQ query; the card's accessibility controls; the Studio warning; the policy sentence
  */
@@ -163,6 +164,50 @@ test("automatic: custom wording wins; the dismissal key survives an hour change 
   assert.notEqual(key("2027-03-02T15:00:00Z"), key("2027-03-01T15:00:00Z"));
 });
 
+// ── Hand-written replaces automatic ──────────────────────────────────────────
+const aboutConference = (id: string, conferenceId = "c1", extra: Partial<AnnouncementData> = {}) =>
+  ann(id, { kind: "conference", conference: { _id: conferenceId, active: true, slug: "annual", organizer: "Example Org", endDate: "2027-08-07" } }, extra);
+const AUTO = "conference:c1:2027-03-01";
+
+test("a live hand-written announcement for a conference is shown instead of the automatic one", () => {
+  const list = build({ announcements: [aboutConference("ours", "c1", { title: { en: "Our wording" } })], conferences: [conf()] });
+  assert.deepEqual(keys(list), ["ours"]);
+  assert.deepEqual([list[0].title, list[0].organizer, list[0].href], [{ en: "Our wording" }, "Example Org", "/resources#conference-annual"]);
+  assert.ok(!("conferenceId" in list[0]) && !("order" in list[0]));
+});
+
+test("only while the two windows overlap: before and after the hand-written one, the automatic one shows", () => {
+  const d = {
+    announcements: [aboutConference("ours", "c1", { startsAt: "2027-03-10T18:00:00Z", endsAt: "2027-03-20T18:00:00Z" })],
+    conferences: [conf()],
+  };
+  const at = (v: string) => keys(build(d, { now: new Date(v) }));
+  assert.deepEqual(at("2027-03-10T17:59:59Z"), [AUTO]);
+  assert.deepEqual(at("2027-03-10T18:00:00Z"), ["ours"]);
+  assert.deepEqual(at("2027-03-20T17:59:59Z"), ["ours"]);
+  assert.deepEqual(at("2027-03-20T18:00:00Z"), [AUTO]);
+});
+
+test("before registration opens, a hand-written one shows on its own", () => {
+  const d = { announcements: [aboutConference("teaser")], conferences: [conf({ registrationOpensAt: "2027-03-20T00:00:00Z" })] };
+  assert.deepEqual(keys(build(d)), ["teaser"]);
+});
+
+test("a hand-written one that is not shown, or is about something else, replaces nothing", () => {
+  const dropped = aboutConference("untitled", "c1", { title: {} });
+  const otherConference = aboutConference("other", "c2");
+  const pageLink = ann("page", { kind: "page", page: "/resources" });
+  const external = ann("site", { kind: "external", url: "https://example.org" });
+  assert.deepEqual(keys(build({ announcements: [dropped], conferences: [conf()] })), [AUTO]);
+  assert.deepEqual(keys(build({ announcements: [otherConference, pageLink, external], conferences: [conf()] })).sort(), [AUTO, "other", "page", "site"].sort());
+});
+
+test("only the matching conference is replaced, even by more than one hand-written announcement", () => {
+  const second = conf({ _id: "c2", slug: "summit" });
+  const list = build({ announcements: [aboutConference("one"), aboutConference("two")], conferences: [conf(), second] });
+  assert.deepEqual(keys(list).sort(), ["conference:c2:2027-03-01", "one", "two"]);
+});
+
 test("order: lower number first, then whatever ends soonest; nothing extra leaves the server", () => {
   const list = build({
     announcements: [ann("late", undefined, { order: 100, endsAt: "2027-09-01T00:00:00Z" }), ann("top", undefined, { order: 1 }), ann("soon", undefined, { endsAt: "2027-03-12T00:00:00Z" })],
@@ -238,6 +283,21 @@ test("GROQ: switched-off items excluded, unpublished references empty, conferenc
   assert.ok(!/secret|lastVerified/.test(JSON.stringify(r)));
   assert.notEqual((await run(dataset.slice(1))).hasConferenceSection, true);
   assert.notEqual((await run([doc("resourcesPage", { _type: "resourcesPage" })])).hasConferenceSection, true);
+});
+
+test("through the real query: the reference matches the conference; switched off, the automatic one returns", async () => {
+  const base = [
+    { _id: "resourcesPage", _type: "resourcesPage", sections: [{ _key: "k", _type: "conferenceList" }] },
+    { _id: "c1", _type: "conference", slug: { current: "annual" }, name: { en: "Annual Meeting" }, organizer: "Example Org", active: true,
+      announceRegistration: true, startDate: "2027-08-05", endDate: "2027-08-07", registrationOpensAt: "2027-03-01T15:00:00Z" },
+  ];
+  const ours = (active: boolean) => ({ ...ann("ours", { kind: "conference", conference: { _type: "reference", _ref: "c1" } as never }), _type: "announcement", active });
+  const shown = async (ds: object[]) => {
+    const result = (await (await evaluate(parse(announcementsQuery), { dataset: ds as never })).get()) as AnnouncementsData;
+    return keys(buildAnnouncements({ data: result, events: [], registrationOpen: true, now: NOW }));
+  };
+  assert.deepEqual(await shown([...base, ours(true)]), ["ours"]);
+  assert.deepEqual(await shown([...base, ours(false)]), [AUTO]);
 });
 
 const src = (f: string) => readFileSync(f, "utf8");
