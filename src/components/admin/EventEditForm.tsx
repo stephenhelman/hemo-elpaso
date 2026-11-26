@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
@@ -8,7 +8,7 @@ import { toSiteDatetimeLocal, fromSiteDatetimeLocal } from "@/lib/datetime";
 
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
-import FlyerUpload from "./FlyerUpload";
+import FlyerUpload, { type FlyerUploadHandle } from "./FlyerUpload";
 import BilingualInput from "@/components/form/BilingualInput";
 import PlacesAutocompleteInput from "@/components/form/PlacesAutocompleteInput";
 import { adminEventEditTranslation } from "@/translation/adminPages";
@@ -69,6 +69,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [], reco
   const { confirm, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const flyerRef = useRef<FlyerUploadHandle>(null);
   const t = adminEventEditTranslation[locale];
 
   const [formData, setFormData] = useState({
@@ -145,6 +146,12 @@ export default function EventEditForm({ event, locale, sponsorOptions = [], reco
       });
 
       if (response.ok) {
+        // A picked flyer is saved with the form: leaving the page would otherwise drop it without a word.
+        if ((await flyerRef.current?.saveIfDirty()) === false) {
+          toast.error("Event details saved, but the flyer was not. See the message under the flyers.", { duration: 10000 });
+          router.refresh();
+          return;
+        }
         router.push("/admin/events");
         router.refresh();
       } else {
@@ -431,6 +438,7 @@ export default function EventEditForm({ event, locale, sponsorOptions = [], reco
             </h3>
             <p className="text-sm text-neutral-600 mb-4">{t.flyersDesc}</p>
             <FlyerUpload
+              ref={flyerRef}
               eventId={event.id}
               currentFlyerEn={event.flyerEnUrl}
               currentFlyerEs={event.flyerEsUrl}
