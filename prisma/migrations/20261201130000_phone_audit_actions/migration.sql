@@ -1,0 +1,8 @@
+-- Phone routing audit actions. Additive only. The routing itself is a row in app_settings: no table.
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_NUMBER_ADDED';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_NUMBER_REMOVED';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_VERIFY_CALL';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_NUMBER_VERIFIED';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_VERIFY_FAILED';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_ROUTING_CHANGED';
+ALTER TYPE "AuditAction" ADD VALUE 'PHONE_DUTY_SWAPPED';

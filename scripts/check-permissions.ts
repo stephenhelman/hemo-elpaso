@@ -142,7 +142,8 @@ test("changeMatrix: persists, audits via persist, invalidates, notifies; rejects
 
 test("applyLocks drops unknown roles and permissions", () => {
   const m = applyLocks({ PRESIDENT: ["canViewPHI", "bogus"], GHOST: ["canViewPHI"] });
-  assert.deepEqual(m.PRESIDENT, ["canViewPHI"]);
+  // canSwapPhoneDuty is locked ON for the President and VP, so it is there whether or not it was asked for
+  assert.deepEqual(m.PRESIDENT, ["canViewPHI", "canSwapPhoneDuty"]);
 });
 
 test("the permissions API is gated by canManagePermissions first, and the recap route uses requirePermission", () => {

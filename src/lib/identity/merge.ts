@@ -4,6 +4,7 @@ import { auditData, type AuditValue } from "@/lib/audit";
 import { CONSENT_TEXT_VERSION } from "@/content/consent";
 import { recomputeHousehold } from "@/lib/households/sync";
 import { lapseSmsConsent } from "@/lib/consent/sms-lapse";
+import { repointDutyOwner } from "@/lib/phone/store";
 import { planMerge, type MergeOptions, type MergePlan, type RecordSummary, type Db } from "./merge-plan";
 import { unionList } from "./merge-rules";
 
@@ -223,6 +224,7 @@ async function apply(tx: Prisma.TransactionClient, plan: MergePlan, actorId: str
     tx.invitation.updateMany({ where: { sentByBoardUserId: dropId }, data: { sentByBoardUserId: keepId } }),
     tx.invitation.updateMany({ where: { removedByBoardUserId: dropId }, data: { removedByBoardUserId: keepId } }),
   ]);
+  other.phoneDutyNumbers = await repointDutyOwner(tx, dropId, keepId);
   audit.other = other;
 
   // ── contact details and scalars ──

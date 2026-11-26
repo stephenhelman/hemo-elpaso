@@ -112,7 +112,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
   "/admin/dashboard": "canViewAdminDashboard",
   "/admin/events": "canViewAdminDashboard",
   // Settings holds the admin pages (settings, toggles, permissions, routing, board) and the officers' email templates.
-  "/admin/settings": ["canManageSettings", "canManageEmailTemplates", "canManageEmailRouting", "canAssignBoardRoles"],
+  "/admin/settings": ["canManageSettings", "canManageEmailTemplates", "canManageEmailRouting", "canAssignBoardRoles", "canManagePhoneRouting", "canSwapPhoneDuty"],
   "/admin/attendance": "canViewEventStats",
   "/admin/patients": "canManageUsers",
   "/admin/review": ["canManageUsers", "canReviewRegistrations"],

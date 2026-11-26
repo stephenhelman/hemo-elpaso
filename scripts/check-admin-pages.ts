@@ -9,6 +9,8 @@
  *   - the review page's data route works
  *   - President sees the household's diagnoses (own and members') on the patient page
  *   - a reviewer (Secretary) is turned away from the patient page and its data route carries no diagnoses
+ *   - Settings > Phone: admin@ manages, the President swaps, the Secretary gets neither; numbers are masked
+ *   - the phone webhook answers a signed request and refuses others (TWILIO_MODE=capture, throw-away credentials)
  *   - a static scan: no server module calls or reads a value imported from a "use client" module (components as JSX only)
  */
 import "./_load-env";
@@ -16,9 +18,11 @@ import assert from "node:assert/strict";
 import { test, before, after } from "node:test";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { createHmac } from "node:crypto";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { prisma } from "../src/lib/db";
+import { ROUTING_KEY } from "../src/lib/phone/store";
 
 const require_ = createRequire(join(process.cwd(), "package.json"));
 // jose is the Auth0 SDK's own dependency (the session cookie is a JWE made with it)
@@ -62,6 +66,11 @@ async function boardPerson(role: "PRESIDENT" | "SECRETARY") {
 }
 
 let president = "", secretary = "";
+const PHONE_ENV = {
+  TWILIO_MODE: "capture", TWILIO_ACCOUNT_SID: `AC${"6".repeat(32)}`, TWILIO_AUTH_TOKEN: "admin-pages-token", TWILIO_PHONE_NUMBER: "+19155550100",
+  TWILIO_WEBHOOK_BASE_URL: "https://phone.check.example",
+};
+let routingBefore: unknown;
 
 before(async () => {
   assert.ok(existsSync(".next/BUILD_ID"), "no production build: run `npm run build` (npm run check:admin-pages does it)");
@@ -88,7 +97,7 @@ before(async () => {
   president = await boardPerson("PRESIDENT");
   secretary = await boardPerson("SECRETARY");
 
-  server = spawn("npx", ["next", "start", "-p", String(PORT)], { env: { ...process.env, AUTH0_BASE_URL: BASE, PORT: String(PORT) }, stdio: ["ignore", "pipe", "pipe"] });
+  server = spawn("npx", ["next", "start", "-p", String(PORT)], { env: { ...process.env, ...PHONE_ENV, AUTH0_BASE_URL: BASE, PORT: String(PORT) }, stdio: ["ignore", "pipe", "pipe"] });
   server.stdout!.on("data", (d) => (serverLog += d));
   server.stderr!.on("data", (d) => (serverLog += d));
   const until = Date.now() + 60_000;
@@ -171,6 +180,66 @@ test("production build: a reviewer (Secretary) reaches the review page but not t
   const patient = await get(`/admin/patients/${houseId}`, secretary);
   assert.ok(patient.status >= 300 && patient.status < 400, `redirected away, got ${patient.status}`);
   assert.ok(!(await patient.text()).includes("hemophilia_b"));
+});
+
+// ── phone ──
+test("production build: Settings > Phone is open to admin@ and the President only, with numbers masked", async () => {
+  routingBefore = (await prisma.appSetting.findUnique({ where: { key: ROUTING_KEY } }))?.value;
+  const email = `${tag}.admin@${domain}`;
+  const account = await prisma.patient.create({ data: { email, role: "admin", familySize: 1, contactProfile: { create: { firstName: "Admin", lastName: tag } } } });
+  patients.push(account.id);
+  subs.push(`google-oauth2|${tag}ADMIN`);
+  const adminCookie = await cookieFor(`google-oauth2|${tag}ADMIN`, email);
+  const owner = async (role: "PRESIDENT" | "SECRETARY") => (await prisma.patient.findFirstOrThrow({ where: { email: `${tag}.${role.toLowerCase()}@${domain}` } })).id;
+  const num = (id: string, ownerId: string, number: string) => ({ id, ownerId, number, addedAt: new Date().toISOString(), verifiedAt: new Date().toISOString(), challenge: null });
+  const value = {
+    numbers: [num("check-1", await owner("PRESIDENT"), "+19155550161"), num("check-2", await owner("SECRETARY"), "+19155550162")],
+    options: { events: { numberId: "check-1", hours: null }, spanish: { numberId: null, hours: null }, officer: { numberId: null, hours: null } },
+  };
+  await prisma.appSetting.upsert({ where: { key: ROUTING_KEY }, create: { key: ROUTING_KEY, value }, update: { value } });
+  const full = /555-?01[0-9]{2}(?![0-9])/;
+
+  for (const [who, cookie, manages] of [["admin@", adminCookie, true], ["President", president, false]] as const) {
+    const res = await get("/admin/settings/phone", cookie);
+    const html = await res.text();
+    assert.equal(res.status, 200, `${who}: ${res.status}\n${serverLog.slice(-1500)}`);
+    notBroken(html, `settings/phone (${who})`);
+    assert.ok(html.includes("0161") && !full.test(html), `${who}: masked numbers only`);
+    assert.equal(html.includes("Add a number"), manages, `${who}: managing numbers`);
+    const api = await get("/api/admin/settings/phone-routing", cookie);
+    assert.equal(api.status, 200);
+    assert.ok(!full.test(await api.text()));
+  }
+  const denied = await get("/admin/settings/phone", secretary);
+  assert.ok(denied.status >= 300 && denied.status < 400 || !(await denied.text()).includes("0161"), "the Secretary sees no duty numbers");
+  assert.equal((await get("/api/admin/settings/phone-routing", secretary)).status, 403);
+
+  const send = (method: string, path: string, cookie: string, body?: unknown) =>
+    fetch(`${BASE}${path}`, { method, headers: { cookie, "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined, redirect: "manual" });
+  const duty = "/api/admin/settings/phone-routing/duty";
+  assert.equal((await send("PUT", duty, secretary, { option: "events", numberId: "check-2" })).status, 403);
+  assert.equal((await send("POST", "/api/admin/settings/phone-routing", president, { ownerId: "x", number: "915-555-0163" })).status, 403, "officers can't add numbers");
+  assert.equal((await send("DELETE", "/api/admin/settings/phone-routing/numbers/check-2", president)).status, 403);
+  assert.equal((await send("PUT", "/api/admin/settings/phone-routing/hours", president, { option: "events", hours: null })).status, 403);
+  assert.equal((await send("PUT", duty, president, { option: "events", numberId: null })).status, 400, "an officer can't leave a line empty");
+  assert.equal((await send("PUT", duty, president, { option: "events", numberId: "check-2" })).status, 200);
+  assert.equal((await send("DELETE", "/api/admin/settings/phone-routing/numbers/check-2", adminCookie)).status, 200);
+  await prisma.auditLog.deleteMany({ where: { resourceType: "PhoneRouting", resourceId: { in: ["events", "check-1", "check-2"] } } });
+  if (routingBefore === undefined) await prisma.appSetting.delete({ where: { key: ROUTING_KEY } });
+  else await prisma.appSetting.update({ where: { key: ROUTING_KEY }, data: { value: routingBefore as never } });
+});
+
+test("production build: the phone webhook answers a signed request and refuses an unsigned one", async () => {
+  const path = "/api/twilio/voice";
+  const params = { AccountSid: PHONE_ENV.TWILIO_ACCOUNT_SID, CallSid: "CAcheck" };
+  const signature = createHmac("sha1", PHONE_ENV.TWILIO_AUTH_TOKEN)
+    .update(`${PHONE_ENV.TWILIO_WEBHOOK_BASE_URL}${path}` + Object.entries(params).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => k + v).join("")).digest("base64");
+  const post = (headers: Record<string, string>) => fetch(`${BASE}${path}`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", ...headers }, body: new URLSearchParams(params).toString(), redirect: "manual" });
+  const res = await post({ "x-twilio-signature": signature });
+  assert.equal(res.status, 200, `${res.status}\n${serverLog.slice(-1500)}`);
+  assert.match(await res.text(), /<Response><Gather[\s\S]*press 1/);
+  assert.equal((await post({})).status, 403);
+  assert.ok(serverLog.includes("TWILIO_MODE=capture"));
 });
 
 // ── static: a server module may only render a client component, never call or read a client module's other exports ──

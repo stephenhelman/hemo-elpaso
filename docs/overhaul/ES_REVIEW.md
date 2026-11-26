@@ -1201,3 +1201,95 @@ EN is the source. Needs a native-speaker read. Written in usted. `LEGAL_EFFECTIV
 | newTab | (opens in a new tab) | (se abre en una pestaña nueva) |
 | hostedBy | Conference hosted by {organizer} | Conferencia organizada por {organizer} |
 | registrationOpen | Registration is open: {conference} | Inscripciones abiertas: {conference} |
+
+## Phone line and Phone settings (feat/phone-ivr)
+
+New spoken and on-screen text. Spanish is a draft: please review it, the spoken lines first.
+
+### Spoken by the phone line (`src/lib/phone/prompts.ts`)
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| welcome | Thank you for calling Hemophilia Outreach of El Paso. | Gracias por llamar a Hemophilia Outreach of El Paso. |
+| emergency | If this is a medical emergency, hang up and call 9 1 1. | Si es una emergencia médica, cuelgue y llame al 9 1 1. |
+| invalid | That is not one of the choices. | Esa no es una de las opciones. |
+| goodbye | We did not get your choice. Please call again. Goodbye. | No recibimos su opción. Por favor llame de nuevo. Adiós. |
+| unanswered | We could not connect your call. Please call again later, or email info at hemoelpaso dot org. If this is a medical emergency, call 9 1 1. Goodbye. | No pudimos comunicar su llamada. Por favor llame más tarde o escriba a info arroba hemoelpaso punto org. Si es una emergencia médica, llame al 9 1 1. Adiós. |
+| connecting | Connecting. | Comunicando. |
+| accept | Press 1 to accept. | Oprima 1 para contestar. |
+| verify | This is H O E P, confirming this number for phone duty. Enter the 6 digit code. | Le llama H O E P para confirmar este número de guardia. Marque el código de 6 dígitos. |
+| verified | Thank you. This number is confirmed. Goodbye. | Gracias. Este número quedó confirmado. Adiós. |
+| wrongCode | That code is not correct. | Ese código no es correcto. |
+| notVerified | This number was not confirmed. Ask for a new call. Goodbye. | Este número no se confirmó. Pida una nueva llamada. Adiós. |
+| screen.events | H O E P call for the events line. | Llamada de H O E P para la línea de eventos. |
+| screen.spanish | H O E P call for the Spanish line. | Llamada de H O E P para la línea en español. |
+| screen.officer | H O E P call for an officer. | Llamada de H O E P para un directivo. |
+| menu (option 2) | (Spanish only) | Para español, oprima 2. |
+| menu (option 3) | To speak with an officer, press 3. | Para hablar con un directivo, oprima 3. |
+
+### Settings → Phone (`src/app/admin/settings/phone/PhoneClient.tsx`)
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| title | Phone | Teléfono |
+| intro | Who answers each choice on the HOEP phone line. Every change is recorded and emailed to the four officers. Whoever answers must press 1 to take the call. | Quién atiende cada opción de la línea telefónica de HOEP. Cada cambio se registra y se envía por correo a los cuatro directivos. Quien contesta debe oprimir 1 para tomar la llamada. |
+| capture | Test mode: no phone is rung. | Modo de prueba: no suena ningún teléfono. |
+| allowlist | Development mode: only allowed test numbers are rung. | Modo de desarrollo: solo suenan los números de prueba permitidos. |
+| notConfigured | The phone credentials are not set, so the phone line does not work yet. | Faltan las credenciales del teléfono; la línea todavía no funciona. |
+| duty | Who answers | Quién atiende |
+| nobody | Nobody | Nadie |
+| choose | Choose a number… | Elija un número… |
+| save | Save | Guardar |
+| saved | Saved. The officers were emailed. | Guardado. Se avisó a los directivos. |
+| savedNoNotice | Saved, but the officer email was not sent. | Guardado, pero no se envió el correo a los directivos. |
+| ringsNow | Rings now | Suena ahora |
+| notRinging | Not ringing now | No suena ahora |
+| confirmDuty | Hand “{option}” to {who}? The four officers will be emailed. | ¿Pasar “{option}” a {who}? Se avisará por correo a los cuatro directivos. |
+| noneVerified | No verified numbers yet. The admin account adds and verifies them. | Aún no hay números verificados. La cuenta de administración los agrega y verifica. |
+| hours | Hours (El Paso time) | Horario (hora de El Paso) |
+| anyTime | Any time | A cualquier hora |
+| from | From | Desde |
+| to | To | Hasta |
+| saveHours | Save hours | Guardar horario |
+| numbers | Duty numbers | Números de guardia |
+| numbersIntro | Board members' numbers. A number can be rung only after its owner confirms it by phone. | Números de miembros de la junta. Un número solo puede recibir llamadas después de que su dueño lo confirme por teléfono. |
+| empty | No numbers yet. | Aún no hay números. |
+| verified | Verified | Verificado |
+| unverified | Not verified | Sin verificar |
+| leftBoard | No longer on the board: never rung | Ya no está en la junta: no recibe llamadas |
+| verify | Verify by phone | Verificar por teléfono |
+| verifyAgain | Verify again | Verificar de nuevo |
+| remove | Remove | Eliminar |
+| confirmRemove | Remove {who}? Any choice that uses it will ring nobody. | ¿Eliminar {who}? Las opciones que lo usan no sonarán. |
+| codeTitle | HOEP is calling {who}. Tell that person this code; they type it on their phone: | HOEP está llamando a {who}. Dígale este código para que lo marque en su teléfono: |
+| codeCaptured | Test mode: no call was placed. The code would be: | Modo de prueba: no se hizo la llamada. El código sería: |
+| codeNote | The code works for 10 minutes and 3 tries. Then press Refresh. | El código sirve 10 minutos y 3 intentos. Después oprima Actualizar. |
+| refresh | Refresh | Actualizar |
+| add | Add a number | Agregar un número |
+| person | Board member | Miembro de la junta |
+| pick | Choose a person… | Elija una persona… |
+| number | US phone number | Teléfono de EE. UU. |
+| addButton | Add | Agregar |
+| invalid | Enter a US phone number. | Escriba un teléfono de EE. UU. |
+| not_us | Only US numbers can be used. | Solo se pueden usar números de EE. UU. |
+| not_allowed | That kind of number can't be used. | Ese tipo de número no se puede usar. |
+| hoep_number | That is HOEP's own number. | Ese es el número de HOEP. |
+| duplicate | That number is already listed. | Ese número ya está en la lista. |
+| too_many | There are too many numbers. Remove one first. | Hay demasiados números. Elimine uno primero. |
+| not_board_member | Only current board members can be on duty. | Solo miembros actuales de la junta pueden estar de guardia. |
+| not_verified | Verify that number first. | Primero verifique ese número. |
+| needs_number | Choose a verified number. | Elija un número verificado. |
+| no_change | Nothing changed. | Nada cambió. |
+| bad_hours | Choose at least one day and a start before the end. | Elija al menos un día y una hora de inicio anterior a la final. |
+| unknown_number | That number is no longer listed. Refresh the page. | Ese número ya no está en la lista. Actualice la página. |
+| unknown_option | Unknown choice. | Opción desconocida. |
+| rate_limited | Too many calls to that number. Try again in an hour. | Demasiadas llamadas a ese número. Intente en una hora. |
+| call_failed | Twilio did not place the call. | Twilio no hizo la llamada. |
+| not_configured | The phone credentials are not set. | Faltan las credenciales del teléfono. |
+| generic | Something went wrong. | Algo salió mal. |
+
+Also: the days (Dom, Lun, Mar, Mié, Jue, Vie, Sáb), the menu option names in `src/lib/phone/definitions.ts`, the officer
+email lines in `src/lib/phone/notify.ts`, the permission labels "Cambiar quién atiende el teléfono" and "Administrar
+números y desvío de llamadas", and the consent panel notes about texting to a changed number
+(`src/components/admin/patients/ConsentPanel.tsx`) and "Primero agregue su número de teléfono a sus datos."
+
