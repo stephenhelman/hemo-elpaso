@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink, Megaphone, Pause, Play, X } from "lucide-react";
@@ -43,6 +43,8 @@ export default function AnnouncementCard({ announcements }: { announcements: Pub
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const card = useRef<HTMLElement>(null);
+  const [room, setRoom] = useState(0); // the tallest the card has been while showing
 
   useEffect(() => {
     let raw: string | null = null;
@@ -89,6 +91,15 @@ export default function AnnouncementCard({ announcements }: { announcements: Pub
     setFocused(false);
   }, [total]);
 
+  const showing = !!current;
+  useEffect(() => {
+    const el = card.current;
+    if (!el) return setRoom(0);
+    const observer = new ResizeObserver(() => setRoom((h) => Math.max(h, el.offsetHeight)));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showing]);
+
   if (!current) return null;
 
   const t = announcementTranslation[locale];
@@ -109,59 +120,64 @@ export default function AnnouncementCard({ announcements }: { announcements: Pub
   };
 
   return (
-    <aside
-      aria-label={t.region}
-      className="fixed inset-x-3 bottom-3 z-30 print:hidden sm:left-auto sm:right-4 sm:bottom-4 sm:w-96"
-      onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
-      }}
-    >
-      <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg motion-safe:animate-in motion-safe:fade-in">
-        <div className="flex items-start gap-3">
-          <Megaphone className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
-          {/* Announced only when it is not moving by itself. */}
-          <div className="min-w-0 flex-1" aria-live={rotating ? "off" : "polite"} aria-atomic="true">
-            {current.organizer && <p className="mb-0.5 text-xs font-semibold text-neutral-500">{t.hostedBy(current.organizer)}</p>}
-            <p className="font-display text-sm font-bold leading-snug text-neutral-900">{title}</p>
-            {text && <p className="mt-1 line-clamp-3 text-sm text-neutral-600">{text}</p>}
-            {current.external ? (
-              <a href={current.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                {label}
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only">{t.newTab}</span>
-              </a>
-            ) : (
-              <Link href={current.href} className={linkClass}>
-                {label}
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
-            )}
+    <>
+      {/* Room below the footer, so at the bottom of a page the card never covers the footer's links. */}
+      <div aria-hidden="true" data-announcement-room className="bg-neutral-900 print:hidden" style={{ height: room + 16 }} />
+      <aside
+        ref={card}
+        aria-label={t.region}
+        className="fixed inset-x-3 bottom-3 z-30 print:hidden sm:left-auto sm:right-4 sm:bottom-4 sm:w-96"
+        onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        }}
+      >
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg motion-safe:animate-in motion-safe:fade-in">
+          <div className="flex items-start gap-3">
+            <Megaphone className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
+            {/* Announced only when it is not moving by itself. */}
+            <div className="min-w-0 flex-1" aria-live={rotating ? "off" : "polite"} aria-atomic="true">
+              {current.organizer && <p className="mb-0.5 text-xs font-semibold text-neutral-500">{t.hostedBy(current.organizer)}</p>}
+              <p className="font-display text-sm font-bold leading-snug text-neutral-900">{title}</p>
+              {text && <p className="mt-1 line-clamp-3 text-sm text-neutral-600">{text}</p>}
+              {current.external ? (
+                <a href={current.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                  {label}
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="sr-only">{t.newTab}</span>
+                </a>
+              ) : (
+                <Link href={current.href} className={linkClass}>
+                  {label}
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              )}
+            </div>
+            <button type="button" onClick={dismiss} className={`${iconButton} -mr-1 -mt-1`} aria-label={t.dismiss(title)}>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
-          <button type="button" onClick={dismiss} className={`${iconButton} -mr-1 -mt-1`} aria-label={t.dismiss(title)}>
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
 
-        {total > 1 && (
-          <div className="mt-2 flex items-center justify-end gap-1 border-t border-neutral-100 pt-2">
-            {!reducedMotion && (
-              <button type="button" onClick={() => setPaused((p) => !p)} className={`${iconButton} mr-auto`} aria-label={paused ? t.play : t.pause}>
-                {paused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
+          {total > 1 && (
+            <div className="mt-2 flex items-center justify-end gap-1 border-t border-neutral-100 pt-2">
+              {!reducedMotion && (
+                <button type="button" onClick={() => setPaused((p) => !p)} className={`${iconButton} mr-auto`} aria-label={paused ? t.play : t.pause}>
+                  {paused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              )}
+              <button type="button" onClick={() => setIndex(position + total - 1)} className={iconButton} aria-label={t.previous}>
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
-            )}
-            <button type="button" onClick={() => setIndex(position + total - 1)} className={iconButton} aria-label={t.previous}>
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <span className="text-xs tabular-nums text-neutral-500">{t.position(position + 1, total)}</span>
-            <button type="button" onClick={() => setIndex(position + 1)} className={iconButton} aria-label={t.next}>
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        )}
-      </div>
-    </aside>
+              <span className="text-xs tabular-nums text-neutral-500">{t.position(position + 1, total)}</span>
+              <button type="button" onClick={() => setIndex(position + 1)} className={iconButton} aria-label={t.next}>
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }
