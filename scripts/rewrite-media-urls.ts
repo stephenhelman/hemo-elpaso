@@ -1,9 +1,9 @@
 /**
- * One-off, for the R2 custom-domain switch (R2_PUBLIC_URL -> https://media.hemoelpaso.org).
+ * One-off, for the R2 custom-domain switch (a new R2_PUBLIC_URL).
  * Stored photo and flyer URLs are FULL URLs written when each file was uploaded, so changing R2_PUBLIC_URL only
  * affects new files. This rewrites the prefix on existing rows. DRY RUN unless --apply. Prints counts only.
  *
- *   npx tsx scripts/rewrite-media-urls.ts --from https://pub-xxxx.r2.dev --to https://media.hemoelpaso.org
+ *   npx tsx scripts/rewrite-media-urls.ts --from <old R2_PUBLIC_URL> --to <new R2_PUBLIC_URL>
  *   npx tsx scripts/rewrite-media-urls.ts --from ... --to ... --apply
  *
  * Uses DATABASE_URL from the environment (.env.local = dev). For production put the production DATABASE_URL in your

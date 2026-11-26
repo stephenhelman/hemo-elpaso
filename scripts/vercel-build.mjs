@@ -2,7 +2,7 @@
 /**
  * Vercel Build Command (see vercel.json).  Plain Node on purpose: no TypeScript runner needed at build time.
  *
- *   VERCEL_ENV=production          prisma migrate deploy -> prisma generate -> legal placeholder check (--db) -> next build
+ *   VERCEL_ENV=production          R2 settings check -> prisma migrate deploy -> prisma generate -> legal placeholder check (--db) -> next build
  *   anything else (preview,
  *   development, unset/local)      prisma generate -> legal placeholder check (static) -> next build   (NO migrations, ever)
  *
@@ -59,10 +59,10 @@ if (isProduction) {
 }
 
 const steps = isProduction
-  ? [["npx", ["prisma", "migrate", "deploy"]], ["npx", ["prisma", "generate"]], ["npx", ["tsx", "scripts/check-legal-placeholders.ts", "--db"]], ["npx", ["next", "build"]]]
+  ? [["npx", ["tsx", "scripts/require-r2-env.ts"]], ["npx", ["prisma", "migrate", "deploy"]], ["npx", ["prisma", "generate"]], ["npx", ["tsx", "scripts/check-legal-placeholders.ts", "--db"]], ["npx", ["next", "build"]]]
   : [["npx", ["prisma", "generate"]], ["npx", ["tsx", "scripts/check-legal-placeholders.ts"]], ["npx", ["next", "build"]]];
 
-log(isProduction ? "PATH: production -> prisma migrate deploy, prisma generate, legal placeholder check (reads feature toggles), next build" : "PATH: non-production -> SKIPPING prisma migrate deploy; prisma generate, legal placeholder check (static), next build");
+log(isProduction ? "PATH: production -> R2 settings check, prisma migrate deploy, prisma generate, legal placeholder check (reads feature toggles), next build" : "PATH: non-production -> SKIPPING prisma migrate deploy; prisma generate, legal placeholder check (static), next build");
 
 for (const [cmd, args] of steps) {
   const line = `${cmd} ${args.join(" ")}`;

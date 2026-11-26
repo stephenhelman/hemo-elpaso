@@ -5,13 +5,15 @@
  *   npx tsx scripts/legacy-data-counts.ts            # uses .env.local (dev branch)
  *
  * To run against production, put the production DATABASE_URL and the R2_* values in your shell for ONE command:
- *   DATABASE_URL="…prod…" R2_BUCKET_NAME=… R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… \
+ *   DATABASE_URL="…prod…" R2_BUCKET_NAME=… R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… R2_PUBLIC_URL=… \
  *     npx tsx scripts/legacy-data-counts.ts
  * (this script does not use the db-guard: it only reads).
  */
 import "./_load-env";
 import { PrismaClient } from "@prisma/client";
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { r2Client } from "../src/lib/r2";
+import { missingR2Env, r2Config } from "../src/lib/r2-config";
 
 const prisma = new PrismaClient();
 
@@ -58,17 +60,14 @@ async function main() {
     catch (e) { console.log(`   error  ${name}: ${(e as Error).message.split("\n")[0]}`); }
   }
 
-  if (!process.env.R2_BUCKET_NAME || !process.env.R2_ACCOUNT_ID) { console.log("\nR2 not configured, skipping."); return; }
-  const s3 = new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY! },
-  });
+  const missing = missingR2Env();
+  if (missing.length) { console.log(`\nR2 not configured (missing ${missing.join(", ")}), skipping.`); return; }
+  const { bucket } = r2Config();
   // Count objects by their first path segment (and second, for photos/uploads).
   const counts = new Map<string, number>();
   let token: string | undefined;
   do {
-    const r = await s3.send(new ListObjectsV2Command({ Bucket: process.env.R2_BUCKET_NAME, ContinuationToken: token }));
+    const r = await r2Client().send(new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: token }));
     for (const o of r.Contents ?? []) {
       const parts = (o.Key ?? "").split("/");
       const prefix = parts.length > 1 ? `${parts[0]}/` : "(root)";
@@ -76,7 +75,7 @@ async function main() {
     }
     token = r.IsTruncated ? r.NextContinuationToken : undefined;
   } while (token);
-  console.log(`\nR2 bucket ${process.env.R2_BUCKET_NAME}: objects per top-level prefix`);
+  console.log(`\nR2 bucket ${bucket}: objects per top-level prefix`);
   Array.from(counts.entries()).sort().forEach(([p, n]) => console.log(`  ${String(n).padStart(6)}  ${p}`));
 }
 

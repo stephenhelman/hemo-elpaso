@@ -45,8 +45,8 @@ after(async () => {
   await prisma.$disconnect();
 });
 
-const EN = "https://media.hemoelpaso.org/flyers/e1/en-flyer.png";
-const ES = "https://media.hemoelpaso.org/flyers/e1/es-flyer.jpg";
+const EN = "https://media.example.org/flyers/e1/en-flyer.png";
+const ES = "https://media.example.org/flyers/e1/es-flyer.jpg";
 const both = { flyerEnUrl: EN, flyerEsUrl: ES, flyerEnAlt: "Picnic flyer in English", flyerEsAlt: "Volante del picnic en español" };
 const GOOD = { addressLine1: "1 Main St", city: "El Paso", state: "TX", zipCode: "79901" };
 
@@ -127,7 +127,7 @@ test("alt text falls back to the event title when the board wrote none", () => {
 });
 
 test("a PDF flyer: download link only (no first-page image)", async () => {
-  const pdf = { flyerEnUrl: "https://media.hemoelpaso.org/flyers/e1/en-flyer.pdf", flyerEsUrl: null };
+  const pdf = { flyerEnUrl: "https://media.example.org/flyers/e1/en-flyer.pdf", flyerEsUrl: null };
   const f = invitationFlyer(pdf, "email", "en", "T");
   assert.equal(f?.imageUrl, null);
   assert.equal(f?.downloadUrl, pdf.flyerEnUrl);

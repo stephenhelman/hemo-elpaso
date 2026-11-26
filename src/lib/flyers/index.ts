@@ -91,6 +91,14 @@ export function invitationFlyer(e: EventFlyers, delivery: string | null | undefi
 export const FLYER_MAX_BYTES = 10 * 1024 * 1024;
 export const FLYER_MIME = ["image/png", "image/jpeg", "application/pdf"] as const;
 export const FLYER_ALT_MAX = 300;
+export const LANG_LABEL: Record<Lang, string> = { en: "English", es: "Spanish" };
+/** Why this file cannot be a flyer, or null. The browser checks before uploading; the server checks again. */
+export const flyerFileError = (f: { type: string; size: number }): string | null => {
+  if (!(FLYER_MIME as readonly string[]).includes(f.type)) return "Flyers must be PNG, JPG or PDF";
+  if (!Number.isInteger(f.size) || f.size <= 0) return "That file is empty";
+  if (f.size > FLYER_MAX_BYTES) return "Flyers must be 10 MB or smaller";
+  return null;
+};
 export const cleanAlt = (v: unknown): string | null => {
   if (typeof v !== "string") return null;
   const t = v.replace(/\s+/g, " ").trim().slice(0, FLYER_ALT_MAX);

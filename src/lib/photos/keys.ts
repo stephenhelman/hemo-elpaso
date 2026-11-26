@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
  * R2 key layout for event photos.
  *
  *   uploads/tmp/<eventId>/<uuid>          browser upload target; the original (with its EXIF/GPS). Deleted after processing.
+ *   uploads/tmp/<eventId>/flyer-<uuid>    browser upload target for a flyer (lib/flyers/upload.ts). Deleted after saving.
  *   photos-pending/<eventId>/<uuid>.webp  processed, NOT approved. Never linked from a public page.
  *   photos/<eventId>/<uuid>.webp          processed and approved. These are the only keys public pages use.
  *

@@ -10,15 +10,19 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import sharp from "sharp";
+import { r2Config } from "./r2-config";
 
-const r2Client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
+// Bucket, endpoint, credentials and public URL come from r2-config.ts and nowhere else. Clients are built on first use,
+// so importing this module (e.g. during `next build`) needs no settings; the server checks them when it starts.
+const connection = () => {
+  const { endpoint, accessKeyId, secretAccessKey } = r2Config();
+  return { region: "auto", endpoint, credentials: { accessKeyId, secretAccessKey } };
+};
+
+let client: S3Client | undefined;
+export const r2Client = (): S3Client => (client ??= new S3Client(connection()));
+
+const bucket = (): string => r2Config().bucket;
 
 // Upload any file (PDF, images, etc)
 export async function uploadToR2(
@@ -27,15 +31,15 @@ export async function uploadToR2(
   contentType: string,
 ): Promise<string> {
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket(),
     Key: key,
     Body: file,
     ContentType: contentType,
   });
 
-  await r2Client.send(command);
+  await r2Client().send(command);
 
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
+  return r2PublicUrl(key);
 }
 
 // Upload and optimize image
@@ -56,35 +60,35 @@ export async function uploadImageToR2(
   const webpKey = key.replace(/\.(jpg|jpeg|png)$/i, ".webp");
 
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket(),
     Key: webpKey,
     Body: optimized,
     ContentType: "image/webp",
   });
 
-  await r2Client.send(command);
+  await r2Client().send(command);
 
-  return `${process.env.R2_PUBLIC_URL}/${webpKey}`;
+  return r2PublicUrl(webpKey);
 }
 
 // Delete file from R2
 export async function deleteFromR2(key: string): Promise<void> {
   const command = new DeleteObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket(),
     Key: key,
   });
 
-  await r2Client.send(command);
+  await r2Client().send(command);
 }
 
 // List all files with a prefix (e.g., all photos for an event)
 export async function listFilesInR2(prefix: string): Promise<string[]> {
   const command = new ListObjectsV2Command({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket(),
     Prefix: prefix,
   });
 
-  const response = await r2Client.send(command);
+  const response = await r2Client().send(command);
   return response.Contents?.map((item) => item.Key!).filter(Boolean) || [];
 }
 
@@ -108,36 +112,29 @@ export function generateFileKey(folder: string, filename: string): string {
  * Separate client for presigning only. The SDK's default "flexible checksum" would add an
  * x-amz-checksum-crc32 parameter that R2 rejects on presigned PUTs, so it is switched to "when required".
  */
-const presignClient = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
-});
+let signer: S3Client | undefined;
+const presignClient = (): S3Client =>
+  (signer ??= new S3Client({ ...connection(), requestChecksumCalculation: "WHEN_REQUIRED", responseChecksumValidation: "WHEN_REQUIRED" }));
 
-/** Public URL of a key (the bucket is served on R2_PUBLIC_URL). */
+/** Public URL of a key. */
 export function r2PublicUrl(key: string): string {
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
+  return `${r2Config().publicUrl}/${key}`;
 }
 
 /** Presigned PUT. The content type and exact length are part of the signature, so a different file will not upload. */
 export async function presignPut(key: string, contentType: string, contentLength: number, expiresInSeconds = 300): Promise<string> {
   return getSignedUrl(
-    presignClient,
-    new PutObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key, ContentType: contentType, ContentLength: contentLength }),
+    presignClient(),
+    new PutObjectCommand({ Bucket: bucket(), Key: key, ContentType: contentType, ContentLength: contentLength }),
     { expiresIn: expiresInSeconds, signableHeaders: new Set(["content-type", "content-length"]) },
   );
 }
 
-/** Size in bytes, or null if the object does not exist. */
-export async function headR2(key: string): Promise<{ size: number } | null> {
+/** Size in bytes and stored content type, or null if the object does not exist. */
+export async function headR2(key: string): Promise<{ size: number; contentType: string } | null> {
   try {
-    const r = await r2Client.send(new HeadObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }));
-    return { size: r.ContentLength ?? 0 };
+    const r = await r2Client().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
+    return { size: r.ContentLength ?? 0, contentType: r.ContentType ?? "" };
   } catch (err: any) {
     if (err?.$metadata?.httpStatusCode === 404 || err?.name === "NotFound") return null;
     throw err;
@@ -145,18 +142,18 @@ export async function headR2(key: string): Promise<{ size: number } | null> {
 }
 
 export async function getR2Buffer(key: string): Promise<Buffer> {
-  const r = await r2Client.send(new GetObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }));
+  const r = await r2Client().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
   const bytes = await r.Body!.transformToByteArray();
   return Buffer.from(bytes);
 }
 
 /** Server-side copy inside the bucket (no download). */
 export async function copyInR2(fromKey: string, toKey: string): Promise<void> {
-  await r2Client.send(
+  await r2Client().send(
     new CopyObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
+      Bucket: bucket(),
       Key: toKey,
-      CopySource: `${process.env.R2_BUCKET_NAME}/${encodeURI(fromKey)}`,
+      CopySource: `${bucket()}/${encodeURI(fromKey)}`,
     }),
   );
 }
@@ -165,9 +162,13 @@ export async function copyInR2(fromKey: string, toKey: string): Promise<void> {
 export async function deleteManyFromR2(keys: string[]): Promise<void> {
   const unique = Array.from(new Set(keys.filter(Boolean)));
   if (unique.length === 0) return;
-  await r2Client.send(
-    new DeleteObjectsCommand({ Bucket: process.env.R2_BUCKET_NAME, Delete: { Objects: unique.map((Key) => ({ Key })), Quiet: true } }),
+  const result = await r2Client().send(
+    new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: unique.map((Key) => ({ Key })), Quiet: true } }),
   );
+  // A per-object failure does not throw: log it, or it disappears.
+  if (result.Errors?.length) {
+    console.error("[r2] some objects were not deleted", { count: result.Errors.length, codes: Array.from(new Set(result.Errors.map((e) => e.Code))) });
+  }
 }
 
 /**
@@ -179,8 +180,8 @@ export async function deleteR2Prefix(prefix: string): Promise<number> {
   let deleted = 0;
   let token: string | undefined;
   do {
-    const page = await r2Client.send(
-      new ListObjectsV2Command({ Bucket: process.env.R2_BUCKET_NAME, Prefix: prefix, ContinuationToken: token }),
+    const page = await r2Client().send(
+      new ListObjectsV2Command({ Bucket: bucket(), Prefix: prefix, ContinuationToken: token }),
     );
     const keys = (page.Contents ?? []).map((o) => o.Key!).filter(Boolean);
     if (keys.length) {

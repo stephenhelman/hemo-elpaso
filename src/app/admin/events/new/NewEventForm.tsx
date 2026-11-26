@@ -2,6 +2,8 @@
 
 import { siteHost } from "@/lib/site";
 import { fromSiteDatetimeLocal } from "@/lib/datetime";
+import { flyerFileError } from "@/lib/flyers";
+import { saveFlyers } from "@/lib/flyers/upload-client";
 import AgeGroupPicker from "@/components/admin/events/AgeGroupPicker";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -88,6 +90,19 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
     });
   };
 
+  /** Refuse a file that cannot be a flyer when it is picked, before the event is created. */
+  const pickFlyerFile = (input: HTMLInputElement, set: (f: File | null) => void) => {
+    const file = input.files?.[0] ?? null;
+    const problem = file && flyerFileError(file);
+    if (problem) {
+      toast.error(problem);
+      input.value = "";
+      set(null);
+      return;
+    }
+    set(file);
+  };
+
   const toggleArrayValue = (
     field: "targetConditions" | "targetSeverity" | "targetAgeGroups",
     value: string,
@@ -135,17 +150,13 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
 
         // Upload flyers if selected
         if (flyerEn || flyerEs || altEn.trim() || altEs.trim()) {
-          const fd = new FormData();
-          fd.append("flyerEnAlt", altEn);
-          fd.append("flyerEsAlt", altEs);
-          if (flyerEn) fd.append("flyerEn", flyerEn);
-          if (flyerEs) fd.append("flyerEs", flyerEs);
-          const flyerRes = await fetch(`/api/admin/events/${event.id}/flyers`, {
-            method: "POST",
-            body: fd,
-          });
-          if (!flyerRes.ok) {
-            toast.error("Event created, but flyer upload failed. Add flyers from the edit page.");
+          try {
+            await saveFlyers(event.id, { files: { en: flyerEn, es: flyerEs }, alt: { en: altEn, es: altEs } });
+          } catch (err) {
+            const reason = err instanceof Error ? err.message : "unknown error";
+            toast.error(`Event created, but the flyer was not saved. ${reason} Add it from this edit page.`, { duration: 15000 });
+            router.push(`/admin/events/${event.id}/edit`);
+            return;
           }
         }
 
@@ -469,7 +480,7 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* English Flyer */}
-            <FormField label="English Flyer (PDF, JPG, PNG)">
+            <FormField label="English Flyer (PDF, JPG, PNG, max 10 MB)">
               <div className="relative">
                 <input
                   ref={flyerEnRef}
@@ -477,7 +488,7 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="hidden"
                   id="newFlyerEn"
-                  onChange={(e) => setFlyerEn(e.target.files?.[0] ?? null)}
+                  onChange={(e) => pickFlyerFile(e.target, setFlyerEn)}
                 />
                 <label
                   htmlFor="newFlyerEn"
@@ -507,7 +518,7 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
             </FormField>
 
             {/* Spanish Flyer */}
-            <FormField label="Spanish Flyer (PDF, JPG, PNG)">
+            <FormField label="Spanish Flyer (PDF, JPG, PNG, max 10 MB)">
               <div className="relative">
                 <input
                   ref={flyerEsRef}
@@ -515,7 +526,7 @@ export default function NewEventPage({ sponsorOptions = [], recordingsOn = false
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="hidden"
                   id="newFlyerEs"
-                  onChange={(e) => setFlyerEs(e.target.files?.[0] ?? null)}
+                  onChange={(e) => pickFlyerFile(e.target, setFlyerEs)}
                 />
                 <label
                   htmlFor="newFlyerEs"

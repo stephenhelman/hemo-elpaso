@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { FLYER_ALT_MAX, FLYER_MAX_BYTES, FLYER_MIME, isPdfUrl } from "@/lib/flyers";
+import { FLYER_ALT_MAX, flyerFileError, isPdfUrl } from "@/lib/flyers";
+import { saveFlyers } from "@/lib/flyers/upload-client";
 
 interface Props {
   eventId: string;
@@ -12,6 +13,11 @@ interface Props {
   currentAltEn?: string | null;
   currentAltEs?: string | null;
   onUploadComplete?: () => void;
+}
+
+export interface FlyerUploadHandle {
+  /** Saves a picked file or edited description. true = saved, or nothing to save; false = failed (message shown). */
+  saveIfDirty: () => Promise<boolean>;
 }
 
 /** One language: preview (new file, else the saved one), file picker, and the short description used as alt text. */
@@ -31,8 +37,8 @@ function FlyerSlot(p: {
   const showsPdf = p.file ? p.file.type === "application/pdf" : p.saved ? isPdfUrl(p.saved) : false;
 
   const pick = (f: File | null) => {
-    if (f && !(FLYER_MIME as readonly string[]).includes(f.type)) { toast.error("Flyers must be PNG, JPG or PDF"); return; }
-    if (f && f.size > FLYER_MAX_BYTES) { toast.error("Flyers must be 10 MB or smaller"); return; }
+    const problem = f && flyerFileError(f);
+    if (problem) { toast.error(problem); return; }
     p.setFile(f);
   };
 
@@ -52,7 +58,7 @@ function FlyerSlot(p: {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={showUrl!} alt={p.alt || p.label} className="mx-auto max-h-64 w-auto rounded" />
           )}
-          {p.file && <p className="mt-1 px-1 text-xs text-amber-700">Not saved yet: press “Save flyers”.</p>}
+          {p.file && <p className="mt-1 px-1 text-xs text-amber-700">Not saved yet: press “Save flyers” (or “Save changes” at the bottom).</p>}
         </div>
       )}
 
@@ -81,43 +87,54 @@ function FlyerSlot(p: {
   );
 }
 
-export default function FlyerUpload({ eventId, currentFlyerEn, currentFlyerEs, currentAltEn, currentAltEs, onUploadComplete }: Props) {
+const FlyerUpload = forwardRef<FlyerUploadHandle, Props>(function FlyerUpload(
+  { eventId, currentFlyerEn, currentFlyerEs, currentAltEn, currentAltEs, onUploadComplete }: Props,
+  ref,
+) {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [flyerEn, setFlyerEn] = useState<File | null>(null);
   const [flyerEs, setFlyerEs] = useState<File | null>(null);
   const [altEn, setAltEn] = useState(currentAltEn ?? "");
   const [altEs, setAltEs] = useState(currentAltEs ?? "");
+  const inFlight = useRef<Promise<boolean> | null>(null);
 
   const dirty = !!flyerEn || !!flyerEs || altEn !== (currentAltEn ?? "") || altEs !== (currentAltEs ?? "");
+
+  const save = async (): Promise<boolean> => {
+    setUploading(true);
+    setError(null);
+    try {
+      const saved = await saveFlyers(eventId, { files: { en: flyerEn, es: flyerEs }, alt: { en: altEn, es: altEs } });
+      toast.success("Flyers saved");
+      setFlyerEn(null);
+      setFlyerEs(null);
+      setAltEn(saved.flyerEnAlt ?? "");
+      setAltEs(saved.flyerEsAlt ?? "");
+      return true;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Saving the flyer failed";
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /** One save at a time: a second request while one is running gets the same result. */
+  const saveOnce = () => (inFlight.current ??= save().finally(() => { inFlight.current = null; }));
+
+  useImperativeHandle(ref, () => ({
+    saveIfDirty: () => inFlight.current ?? (dirty ? saveOnce() : Promise.resolve(true)),
+  }));
 
   const handleUpload = async () => {
     if (!dirty) {
       toast.error("Nothing to save yet");
       return;
     }
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      if (flyerEn) formData.append("flyerEn", flyerEn);
-      if (flyerEs) formData.append("flyerEs", flyerEs);
-      formData.append("flyerEnAlt", altEn);
-      formData.append("flyerEsAlt", altEs);
-
-      const response = await fetch(`/api/admin/events/${eventId}/flyers`, { method: "POST", body: formData });
-      if (response.ok) {
-        toast.success("Flyers saved");
-        setFlyerEn(null);
-        setFlyerEs(null);
-        onUploadComplete?.();
-      } else {
-        const data = await response.json().catch(() => ({}));
-        toast.error(data.error || "Upload failed");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Upload failed");
-    } finally {
-      setUploading(false);
-    }
+    if (await saveOnce()) onUploadComplete?.();
   };
 
   return (
@@ -132,6 +149,7 @@ export default function FlyerUpload({ eventId, currentFlyerEn, currentFlyerEs, c
           saved={currentFlyerEs} file={flyerEs} setFile={setFlyerEs} alt={altEs} setAlt={setAltEs}
         />
       </div>
+      {error && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
       <button
         type="button" onClick={handleUpload} disabled={uploading || !dirty}
         className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 flex items-center gap-2"
@@ -140,4 +158,6 @@ export default function FlyerUpload({ eventId, currentFlyerEn, currentFlyerEs, c
       </button>
     </div>
   );
-}
+});
+
+export default FlyerUpload;

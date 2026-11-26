@@ -37,7 +37,7 @@ Wait for the green check and issued certificate on both domains in Vercel (minut
   - Keep the old URLs for 30 days.
 - **Cloudflare Turnstile** → widget → Hostnames: add `hemoelpaso.org` and `www.hemoelpaso.org`.
 - **Sanity** (manage.sanity.io → API → CORS origins): add `https://hemoelpaso.org`, **Allow credentials** ticked.
-- **R2 bucket CORS**: add `https://hemoelpaso.org` to AllowedOrigins (methods PUT, GET, HEAD; headers `content-type`, `content-length`; the admin photo upload PUTs straight from the browser). Check what is allowed today and keep the existing entries.
+- **R2 bucket CORS**: add `https://hemoelpaso.org` to AllowedOrigins (methods PUT, GET, HEAD; headers `content-type`, `content-length`; the admin photo and flyer uploads PUT straight from the browser). Check what is allowed today and keep the existing entries.
 - **Google Cloud** (only if the Places key has HTTP-referrer restrictions): add `https://hemoelpaso.org/*`. The key is used on admin forms only.
 
 **4. Production environment variables** (Vercel → Settings → Environment Variables → Production):
@@ -130,7 +130,7 @@ Replace `<token>` with a real invitation or check-in token where noted. `-I` sho
 | New domain not resolving / wrong certificate | Not an app problem. Wait for Vercel's green check. DNS only (grey cloud) records, and no Cloudflare proxy in front |
 | **Login fails** (callback mismatch) | Auth0 URLs missing (step 3). Meanwhile set `AUTH0_BASE_URL` and `NEXT_PUBLIC_SITE_URL` back to the old domain and redeploy |
 | Sign-up/contact form fails the security check | Turnstile hostnames (step 3) |
-| Photo upload fails in admin | R2 bucket CORS (step 3) |
+| Photo or flyer upload fails in admin | The error on screen and the Vercel log (`[flyers]` / `[photos]`) name the step; if it is the upload itself, R2 bucket CORS (step 3) |
 | Photos or flyers broken after step 6 | Put `R2_PUBLIC_URL` back; if rows were rewritten, run `rewrite-media-urls.ts` with `--from`/`--to` swapped |
 | Edits in Sanity don't appear | Webhook URL (step 5) or Sanity CORS |
 | Anything else after the redeploy | Vercel → Deployments → previous good deployment → ⋯ → **Promote to Production** (instant) |
@@ -164,6 +164,6 @@ Seed the email template catalogue (admin → Settings → Email templates) or it
 | `CHECKIN_TOKEN_KEY` | **new, required**: 64 hex chars (`openssl rand -hex 32`). Keep a copy somewhere safe. |
 | `CRON_SECRET` | reminder cron auth |
 | `REGISTRATION_OPEN` | `false` / `true` |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | flyers/photos |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | **required** (flyers/photos): the production build fails and the server will not start without them |
 | `DEEPL_API_KEY` | board-only translate |
 | `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | address autocomplete |

@@ -3,7 +3,7 @@
  * Every check script, one after another. Run: npm run check:all
  * Picks up each "check:*" script in package.json, so a new one is included without editing this file.
  * Scripts that touch a database keep their own guard (scripts/db-guard.ts refuses production).
- * check:photo-pipeline writes to R2 (and cleans up); check:admin-pages builds the app first, so this takes a while.
+ * check:photo-pipeline and check:flyer-upload write to R2 (and clean up); check:admin-pages builds the app first, so this takes a while.
  * Type checking and the production build are separate: npx tsc --noEmit, npm run build.
  */
 import { spawnSync } from "node:child_process";

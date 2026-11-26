@@ -46,9 +46,14 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
   const session = await getSession(req, res);
+  // A flyer request refused here never reaches its route, so it has to be logged here.
+  const logRefusedFlyer = (status: number) => {
+    if (isApi && pathname.includes("/flyers")) console.error("[flyers] auth failed", { path: pathname, httpStatus: status });
+  };
 
   if (!session?.user) {
     if (isApi) {
+      logRefusedFlyer(401);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const login = new URL("/api/auth/login", req.url);
@@ -77,6 +82,7 @@ export async function middleware(req: NextRequest) {
 
   if (!allowed) {
     if (isApi) {
+      logRefusedFlyer(403);
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     // A signed-in family never sees the board side; send them to their own page. Someone we can't match is told so.
