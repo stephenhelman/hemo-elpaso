@@ -61,15 +61,22 @@ export const lockText = (c: EnableCheck, lang: "en" | "es"): string | null =>
       : lang === "es" ? `Requiere la política v${c.version}` : `Requires policy v${c.version}`;
 
 export interface FlagRow { key: string; enabled: boolean; enabledAt: Date | null }
+/** The same row after a trip through Next's data cache, which stores JSON: the date comes back as a string. */
+export type CachedFlagRow = Omit<FlagRow, "enabledAt"> & { enabledAt: Date | string | null };
 export interface FeatureState { enabled: boolean; enabledAt: Date | null }
 
+const toDate = (v: Date | string | null): Date | null => {
+  const d = v ? new Date(v) : null;
+  return d && !Number.isNaN(d.getTime()) ? d : null;
+};
+
 /** Effective state of every feature. A stored ON row for a feature that can no longer be enabled counts as OFF. */
-export function resolveStates(rows: FlagRow[] | null | undefined, liveVersion: number, registry: Record<FeatureKey, FeatureDef> = FEATURES): Record<FeatureKey, FeatureState> {
+export function resolveStates(rows: CachedFlagRow[] | null | undefined, liveVersion: number, registry: Record<FeatureKey, FeatureDef> = FEATURES): Record<FeatureKey, FeatureState> {
   const out = {} as Record<FeatureKey, FeatureState>;
   for (const key of FEATURE_KEYS) {
     const row = rows?.find((r) => r.key === key);
     const on = !!row?.enabled && canEnable(key, liveVersion, registry).ok;
-    out[key] = { enabled: on, enabledAt: on ? row!.enabledAt : null };
+    out[key] = { enabled: on, enabledAt: on ? toDate(row!.enabledAt) : null };
   }
   return out;
 }

@@ -7,7 +7,7 @@ import { AuditAction } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { LIVE_POLICY_VERSION } from "@/content/legal/meta";
 import { notifyOfficersOfAdminAction } from "@/lib/admin-notice";
-import { FEATURES, FEATURE_KEYS, resolveStates, type FeatureKey, type FeatureState, type FlagRow } from "./registry";
+import { FEATURES, FEATURE_KEYS, resolveStates, type CachedFlagRow, type FeatureKey, type FeatureState, type FlagRow } from "./registry";
 import type { ToggleDeps, ToggleRecord } from "./change";
 import { placeholdersBlocking, unitsOf } from "@/content/legal/analyze";
 import { privacy } from "@/content/legal/privacy";
@@ -16,8 +16,9 @@ import { children } from "@/content/legal/children";
 
 export const FEATURES_TAG = "feature-flags";
 
+// Cached as JSON: a cache hit returns `enabledAt` as a string. resolveStates turns it back into a Date.
 const readRows = unstable_cache(
-  async (): Promise<FlagRow[]> => prisma.featureFlag.findMany({ select: { key: true, enabled: true, enabledAt: true } }),
+  async (): Promise<CachedFlagRow[]> => prisma.featureFlag.findMany({ select: { key: true, enabled: true, enabledAt: true } }),
   ["feature-flags-all"],
   { tags: [FEATURES_TAG], revalidate: 86400 },
 );

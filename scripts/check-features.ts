@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { calendarDateIn } from "../src/content/legal/status";
 import { FEATURES, FEATURE_KEYS, canEnable, lockText, resolveStates, type FeatureDef, type FeatureKey } from "../src/lib/features/registry";
 import { toggleFeature } from "../src/lib/features/change";
 
@@ -42,6 +43,20 @@ test("a stored ON row never turns on a feature that is locked; everything defaul
   assert.equal(resolveStates(rows, 1, withFeature({ implemented: true })).sms.enabled, false);
   for (const k of FEATURE_KEYS) assert.equal(resolveStates([], 2)[k].enabled, false);
   assert.equal(resolveStates(null, 2).sms.enabledAt, null);
+});
+
+// Regression: with any feature ON, /privacy, /terms and /children answered 500 from the second request on.
+test("the date a feature was turned on survives the data cache, which hands it back as a string", () => {
+  const rows = [{ key: "family_portal", enabled: true, enabledAt: new Date("2026-11-20T18:00:00Z") }];
+  const cached = JSON.parse(JSON.stringify(rows)); // what unstable_cache returns on a hit
+  for (const input of [rows, cached]) {
+    const at = resolveStates(input, 2).family_portal.enabledAt;
+    assert.ok(at instanceof Date);
+    assert.equal(calendarDateIn(at, "America/Denver"), "2026-11-20"); // the call the legal pages make
+  }
+  for (const bad of ["", "not a date", null]) {
+    assert.deepEqual(resolveStates([{ key: "family_portal", enabled: true, enabledAt: bad }], 2).family_portal, { enabled: true, enabledAt: null });
+  }
 });
 
 function deps(live: number, current = false) {
