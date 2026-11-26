@@ -5,23 +5,26 @@
  *  1. admin never holds a data permission (separation of duties).
  *  2. phi permissions (health information, family contact details) belong to President and Vice President only,
  *     because the published Privacy Policy says so. Changing that requires a privacy policy change.
- *  3. canManageSettings, canManageFeatureToggles, canManagePermissions, canManageEmailRouting and
- *     canAssignBoardRoles are admin-only, and admin always holds them (so admin can never lock itself out).
+ *  3. canManageSettings, canManageFeatureToggles, canManagePermissions, canManageEmailRouting,
+ *     canAssignBoardRoles and canManagePhoneRouting are admin-only, and admin always holds them (so admin can never
+ *     lock itself out).
  *  4. At least one of President / Vice President always holds canManageUsers, so the board can't lock itself
  *     out of family records.
+ *  5. canSwapPhoneDuty is held by the President and Vice President, both, and nobody else.
  */
 import {
-  ADMIN_ONLY_PERMISSIONS, DEFAULT_MATRIX, PERMISSION_CATALOG, PERMISSION_KEYS, PHI_ROLES, ROLE_KEYS, permissionDef,
+  ADMIN_ONLY_PERMISSIONS, DEFAULT_MATRIX, OFFICERS_ONLY_PERMISSIONS, PERMISSION_CATALOG, PERMISSION_KEYS, PHI_ROLES, ROLE_KEYS, permissionDef,
   type Matrix, type Permission, type RoleKey,
 } from "./permission-catalog";
 
-export type LockReason = "admin_no_data" | "phi_policy" | "admin_only";
+export type LockReason = "admin_no_data" | "phi_policy" | "admin_only" | "officers_only";
 export type Lock = { reason: LockReason; value: boolean };
 
 export const LOCK_TEXT: Record<LockReason, { en: string; es: string }> = {
   phi_policy: { en: "Changing this requires a privacy policy change.", es: "Cambiar esto requiere un cambio en la política de privacidad." },
   admin_no_data: { en: "The admin account can never hold data permissions (separation of duties).", es: "La cuenta de administración nunca puede tener permisos de datos (separación de funciones)." },
   admin_only: { en: "Settings permission: held by the admin account only.", es: "Permiso de configuración: solo lo tiene la cuenta de administración." },
+  officers_only: { en: "Held by the President and Vice President only.", es: "Solo lo tienen la presidencia y la vicepresidencia." },
 };
 
 /** null = editable. Otherwise the cell is fixed at `value`. */
@@ -33,6 +36,7 @@ export function cellLock(role: RoleKey, perm: Permission): Lock | null {
     return null;
   }
   if (ADMIN_ONLY_PERMISSIONS.includes(perm)) return { reason: "admin_only", value: false };
+  if (OFFICERS_ONLY_PERMISSIONS.includes(perm)) return { reason: "officers_only", value: PHI_ROLES.includes(role) };
   // phi: only President / VP may hold it (their cells stay editable, subject to rule 4).
   if (def.phi && !PHI_ROLES.includes(role)) return { reason: "phi_policy", value: false };
   return null;

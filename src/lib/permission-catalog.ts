@@ -32,6 +32,8 @@ export const PERMISSION_CATALOG = [
   { key: "canManagePermissions", category: "settings", phi: false, label: { en: "Manage the permissions matrix", es: "Administrar la matriz de permisos" } },
   { key: "canManageEmailRouting", category: "settings", phi: false, label: { en: "Manage email routing", es: "Administrar el enrutamiento de correo" } },
   { key: "canAssignBoardRoles", category: "settings", phi: false, label: { en: "Assign board roles", es: "Asignar cargos de la junta" } },
+  { key: "canSwapPhoneDuty", category: "data", phi: false, label: { en: "Change who is on phone duty", es: "Cambiar quién atiende el teléfono" } },
+  { key: "canManagePhoneRouting", category: "settings", phi: false, label: { en: "Manage phone numbers and call routing", es: "Administrar números y desvío de llamadas" } },
   { key: "canEditSiteContent", category: "settings", phi: false, label: { en: "Edit site content (Sanity)", es: "Editar el contenido del sitio (Sanity)" } },
 ] as const;
 
@@ -63,7 +65,11 @@ export const PHI_ROLES: readonly RoleKey[] = ["PRESIDENT", "VICE_PRESIDENT"];
 /** Settings permissions held by `admin` only. canEditSiteContent is the one settings permission officers keep. */
 export const ADMIN_ONLY_PERMISSIONS: readonly Permission[] = [
   "canManageSettings", "canManageFeatureToggles", "canManagePermissions", "canManageEmailRouting", "canAssignBoardRoles",
+  "canManagePhoneRouting",
 ];
+
+/** Held by the President and Vice President, and by nobody else; not editable in the matrix. */
+export const OFFICERS_ONLY_PERMISSIONS: readonly Permission[] = ["canSwapPhoneDuty"];
 
 /**
  * Code defaults. The role_permissions table is seeded from these, and they are the fallback whenever the table is
@@ -74,12 +80,13 @@ export const ROLE_PERMISSIONS: Record<BoardRoleKey, Permission[]> = {
     "canReviewVerification", "canEditSiteContent", "canViewAdminDashboard", "canManageEvents", "canViewEventStats",
     "canSelectForNewsletter", "canApproveNewsletter", "canViewPHI", "canManageUsers", "canViewFinancials",
     "canApproveAssistance", "canSendBulkEmails", "canSendIndividualEmails", "canManageEmailTemplates",
-    "canViewAuditLogs", "canManageVolunteers",
+    "canViewAuditLogs", "canManageVolunteers", "canSwapPhoneDuty",
   ],
   VICE_PRESIDENT: [
     "canReviewVerification", "canEditSiteContent", "canViewAdminDashboard", "canManageEvents", "canViewEventStats",
     "canSelectForNewsletter", "canViewPHI", "canManageUsers", "canViewFinancials", "canApproveAssistance",
     "canSendBulkEmails", "canSendIndividualEmails", "canManageEmailTemplates", "canViewAuditLogs", "canManageVolunteers",
+    "canSwapPhoneDuty",
   ],
   SECRETARY: [
     "canEditSiteContent", "canViewAdminDashboard", "canViewEventStats", "canManageMinutes", "canMarkMinutesPublic",
@@ -102,7 +109,7 @@ export const ROLE_PERMISSIONS: Record<BoardRoleKey, Permission[]> = {
 /** The settings-only admin account. Never a data permission. */
 export const ADMIN_PERMISSIONS: Permission[] = [
   "canManageSettings", "canManageFeatureToggles", "canManagePermissions", "canManageEmailRouting", "canAssignBoardRoles",
-  "canEditSiteContent",
+  "canEditSiteContent", "canManagePhoneRouting",
 ];
 
 export type Matrix = Record<RoleKey, Permission[]>;
