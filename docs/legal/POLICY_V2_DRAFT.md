@@ -34,6 +34,7 @@ The toggle key is the name the admin settings and the policy page share.
 | Online donations | Not yet available | `donations` |
 | Volunteer sign-up | Not yet available | `volunteers` |
 | Address suggestions while you type (Google) | Not yet available | `address_autocomplete` |
+| Site announcements | Not yet available | `site_announcements` |
 
 ## Privacy Policy v2
 
@@ -52,6 +53,8 @@ HOEP is a nonprofit that supports families affected by bleeding disorders in the
 **When you contact us:** your name, email, phone (optional) and message. Messages go to HOEP's email and are not stored in our database. Please don't include medical details; we will follow up privately.
 
 **When you visit the website:** privacy-friendly page-view statistics that use no cookies and don't identify you, and one cookie that remembers your language. Our hosting provider sees standard technical information, such as your IP address, to deliver the site.
+
+**Site announcements.** *Not yet available.* If you close an announcement, your browser remembers that on your device. It isn’t sent to us.
 
 **Photos at events:** we publish photos only of people who consented to photo use.
 

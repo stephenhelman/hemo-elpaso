@@ -43,7 +43,7 @@ The embedded Studio talks to Sanity from the browser. In <https://www.sanity.io/
 | URL | `https://<your-domain>/api/revalidate` |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
-| Filter | `_type in ["siteSettings","person","scholarship","sponsor","resource","conference","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
+| Filter | `_type in ["siteSettings","person","scholarship","sponsor","resource","conference","announcement","homePage","aboutPage","resourcesPage","getInvolvedPage","scholarshipsPage","contactPage"]` |
 | Projection | `{_type, _id}` |
 | HTTP method | `POST` |
 | Drafts | leave **off** (only published changes matter) |
@@ -57,7 +57,8 @@ What each document type refreshes (`src/app/api/revalidate/route.ts`):
 | `scholarshipsPage` | `page:scholarships` | Scholarships page + its SEO |
 | `scholarship` | `scholarship` | Scholarships page |
 | `resource` | `resource` | Resources page (all five lists) |
-| `conference` | `conference` | Resources page (Conference list) |
+| `conference` | `conference` | Resources page (Conference list) and automatic announcements |
+| `announcement` | `announcement` | The announcement card on public pages |
 | `sponsor` | `sponsor` | Sponsor strips, footer sponsors, event "Sponsored by" rows |
 | `resourcesPage` | `page:resources` | Resources page + its SEO |
 | `person` | `person` | any page with a People block (Scholarships contact card today) |
@@ -202,3 +203,26 @@ Conferences are **external** events run by other organizations. HOEP shares them
 - Registration times are entered in El Paso time. After registration closes the card says so and hides the registration button.
 - **Travel assistance:** when switched on the card shows "HOEP travel assistance available" with the note, last day and link. It is hidden the day after the last day to ask. The link should point to an existing page (usually `/contact`) or an https address.
 - The Studio warns when *Last verified* is more than 60 days old, and when registration has closed while the conference is still shown.
+
+## 11. Site announcements (feat/site-announcements)
+
+A small card in the corner of public pages that cycles through the live announcements. Visitors can close each one; that choice is kept on their device only.
+
+**Webhook:** the filter in section 1.4 must include `announcement`.
+
+**Turn it on** (it ships off): set `LEGAL_EFFECTIVE_DATE` in `src/content/legal/meta.ts` on deploy day, deploy, then Admin > **Settings** > **Feature toggles** > **Site announcements**. Switching it off hides the card from the next page load.
+
+**Write one:** Studio > **Announcements** > **+**: title (EN, ES), optional short text and link label, what it links to, *Show from* and *Show until* (El Paso time), then publish. **Nothing about any individual family or person's health.**
+
+| Links to | Shows only while |
+| --- | --- |
+| Page on this site | always within its dates (*Register for Information* also needs registration open) |
+| HOEP event | the event is published, accepts requests from uninvited households, and is not over. By-invitation events never show |
+| Conference | the conference is shown, has not ended, and the Conference list is on the Resources page. The card names the organizer |
+| External website | the address starts with https:// |
+
+**Automatic conference announcements:** tick *Announce when registration opens* on a conference. It shows from the opening time until registration closes (or until the first conference day when there is no closing time). Nothing appears in the Announcements list. If you also write one for the same conference, both show.
+
+**Where the card never appears:** admin, the family page, RSVP and confirmation links, unsubscribe, Register for Information, access-denied and no-household pages. It also skips an announcement on the page it links to (a conference announcement is skipped on all of /resources).
+
+The Studio's event check uses the site you are editing on, while the content dataset is shared. In a local or preview Studio an event that exists only in production shows a warning.

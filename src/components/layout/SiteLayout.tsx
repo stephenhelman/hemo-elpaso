@@ -9,15 +9,18 @@ import Footer from "./Footer";
 
 import { SiteFlagsProvider } from "@/context/SiteFlagsContext";
 import ToastProvider from "@/components/providers/ToastProvider";
+import AnnouncementCard from "@/components/announcements/AnnouncementCard";
+import type { PublicAnnouncement } from "@/lib/announcements/display";
 import { SiteSettingsProvider, type PublicSiteInfo } from "@/context/SiteSettingsContext";
 import type { Lang } from "@/types";
 
-function LayoutInner({ children }: { children: React.ReactNode }) {
+function LayoutInner({ children, announcements }: { children: React.ReactNode; announcements: PublicAnnouncement[] }) {
   return (
     <div className="overflow-x-clip">
       <Navbar />
       {children}
       <Footer />
+      <AnnouncementCard announcements={announcements} />
     </div>
   );
 }
@@ -28,12 +31,14 @@ export default function SiteLayout({
   familyPortal,
   initialLocale,
   siteInfo,
+  announcements,
 }: {
   children: React.ReactNode;
   registrationOpen: boolean;
   familyPortal: boolean;
   initialLocale: Lang;
   siteInfo: PublicSiteInfo;
+  announcements: PublicAnnouncement[];
 }) {
   return (
     <SiteFlagsProvider registrationOpen={registrationOpen} familyPortal={familyPortal}>
@@ -41,7 +46,7 @@ export default function SiteLayout({
       <LanguageProvider initialLocale={initialLocale}>
       <SiteSettingsProvider value={siteInfo}>
         <EventsProvider>
-          <LayoutInner>
+          <LayoutInner announcements={announcements}>
             {children}
             <ToastProvider />
           </LayoutInner>

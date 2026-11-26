@@ -1171,3 +1171,33 @@ EN is the source. Needs a native-speaker read. Written in usted, like the rest o
 | travelTitle | HOEP travel assistance available | Ayuda de HOEP para viajes disponible |
 | travelDeadline | Last day to ask: {date} | Último día para solicitarla: {date} |
 | travelLink | Ask about travel assistance | Preguntar sobre la ayuda para viajes |
+
+## Site announcements (feat/site-announcements)
+
+EN is the source. Needs a native-speaker read. Written in usted. `LEGAL_EFFECTIVE_DATE` untouched.
+
+### Privacy Policy (src/content/legal/privacy.ts): NEW paragraph
+
+- EN: **Site announcements.** {STATUS:site_announcements} If you close an announcement, your browser remembers that on your device. It isn’t sent to us.
+  ES: **Anuncios del sitio.** {STATUS:site_announcements} Si cierra un anuncio, su navegador lo recuerda en su dispositivo. Esa información no se nos envía.
+
+### Feature toggle label (src/lib/features/registry.ts, `site_announcements`)
+
+- EN: Site announcements
+  ES: Anuncios del sitio
+
+### Announcement card (`src/translation/announcements.ts`)
+
+| Key | EN | ES |
+| --- | --- | --- |
+| region | Announcements | Anuncios |
+| previous | Previous announcement | Anuncio anterior |
+| next | Next announcement | Anuncio siguiente |
+| pause | Pause announcements | Pausar los anuncios |
+| play | Play announcements | Reanudar los anuncios |
+| dismiss | Dismiss announcement: {title} | Cerrar el anuncio: {title} |
+| position | {n} of {total} | {n} de {total} |
+| learnMore | Learn more | Más información |
+| newTab | (opens in a new tab) | (se abre en una pestaña nueva) |
+| hostedBy | Conference hosted by {organizer} | Conferencia organizada por {organizer} |
+| registrationOpen | Registration is open: {conference} | Inscripciones abiertas: {conference} |

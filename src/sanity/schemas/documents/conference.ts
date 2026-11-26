@@ -4,6 +4,7 @@ import { INTERNAL_ROUTES } from "../../options";
 import {
   CONFERENCE_SLUG, CONFERENCE_STALE_AFTER_DAYS, closedButShown, safeHttpsUrl, verificationIsStale,
 } from "../../helpers/conferences";
+import { PUBLIC_TEXT_WARNING } from "../../helpers/warnings";
 
 /** Times are entered and shown in El Paso time, whatever zone the editor's computer is in. Stored as UTC. */
 const denver = { displayTimeZone: SITE_TIMEZONE, allowTimeZoneSwitch: false };
@@ -115,14 +116,14 @@ export const conference = defineType({
       type: "boolean",
       group: "registration",
       initialValue: false,
-      description: "Shows a site announcement while registration is open. Takes effect once site announcements are switched on.",
+      description: "Shows a site announcement while registration is open (until the first day if there is no closing date). Needs the Site announcements feature switched on and the Conference list on the Resources page.",
     }),
     defineField({
       name: "announcementTitle",
       title: "Announcement title (optional)",
       type: "localizedString",
       group: "registration",
-      description: "Public. Nothing about any individual family or person's health. Empty = “Registration is open: <name>”.",
+      description: `${PUBLIC_TEXT_WARNING} Empty = “Registration is open: <name>”.`,
       hidden: ({ document }) => !document?.announceRegistration,
     }),
     defineField({
@@ -130,7 +131,7 @@ export const conference = defineType({
       title: "Announcement text (optional)",
       type: "localizedText",
       group: "registration",
-      description: "Public. Nothing about any individual family or person's health.",
+      description: PUBLIC_TEXT_WARNING,
       hidden: ({ document }) => !document?.announceRegistration,
     }),
     defineField({
