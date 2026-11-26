@@ -1149,3 +1149,25 @@ EN is the source. Needs a native-speaker read. `LEGAL_EFFECTIVE_DATE` untouched.
 - Login button tooltip (`UserMenu.tsx`). EN: Log in with Google, Apple or Facebook, or get a code by email. ES: Inicie sesión con Google, Apple o Facebook, o reciba un código por correo.
 - RSVP modal hint (`rsvpModal.ts`, `eventRsvp.ts`). EN: … You can sign in with Google, Apple or Facebook, or get a code by email. ES: … Puedes iniciar sesión con Google, Apple o Facebook, o recibir un código por correo.
 - "We couldn't find your household" (`no-household/page.tsx`). EN: … or by asking for a code at a different address. A code sent to the email you registered with always works. ES: … o pidió un código a otra dirección. Un código enviado al correo con el que se registró siempre funciona.
+
+## Conferences on the Resources page (feat/conferences)
+
+EN is the source. Needs a native-speaker read. Written in usted, like the rest of the Resources page.
+
+### Conference cards (`src/translation/conferences.ts`)
+
+| Key | EN | ES |
+| --- | --- | --- |
+| hostedBy | Hosted by {organizer}. Registration is on their website. | Organizado por {organizer}. La inscripción se hace en su sitio web. |
+| website | Conference website | Sitio web de la conferencia |
+| register | Register on their website | Inscribirse en su sitio web |
+| newTab | (opens in a new tab) | (se abre en una pestaña nueva) |
+| registrationOpens | Registration opens {date} | La inscripción abre el {date} |
+| registrationCloses | Registration closes {date} | La inscripción cierra el {date} |
+| registrationClosed | Registration is closed | La inscripción está cerrada |
+| mode.inPerson | In person | Presencial |
+| mode.virtual | Online | En línea |
+| mode.hybrid | In person and online | Presencial y en línea |
+| travelTitle | HOEP travel assistance available | Ayuda de HOEP para viajes disponible |
+| travelDeadline | Last day to ask: {date} | Último día para solicitarla: {date} |
+| travelLink | Ask about travel assistance | Preguntar sobre la ayuda para viajes |

@@ -4,6 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import type { Section } from "@/sanity/types";
 import SectionRenderer from "./SectionRenderer";
 import CardGridBlock from "./CardGridBlock";
+import { sectionAnchors } from "@/sanity/helpers/anchors";
 
 type Grid = Extract<Section, { _type: "cardGrid" }>;
 
@@ -13,6 +14,8 @@ type Grid = Extract<Section, { _type: "cardGrid" }>;
  */
 export default function PageSections({ sections }: { sections: Section[] }) {
   const { locale } = useLanguage();
+
+  const anchors = sectionAnchors(sections);
 
   const out: React.ReactNode[] = [];
   for (let i = 0; i < sections.length; i++) {
@@ -28,7 +31,7 @@ export default function PageSections({ sections }: { sections: Section[] }) {
       }
       out.push(<CardGridBlock key={s._key} blocks={group} locale={locale} />);
     } else {
-      out.push(<SectionRenderer key={s._key} section={s} locale={locale} />);
+      out.push(<SectionRenderer key={s._key} section={s} locale={locale} anchorId={anchors[s._key]} />);
     }
   }
   return <>{out}</>;

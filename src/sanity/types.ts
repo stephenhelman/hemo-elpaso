@@ -46,6 +46,32 @@ export type ResourceItem = {
   order?: number | null;
 };
 
+/** An external conference (another organization's event). The last three fields are computed per request, never stored. */
+export type ConferenceItem = {
+  _id: string;
+  name?: Localized;
+  slug?: string | null;
+  organizer?: string | null;
+  summary?: Localized;
+  startDate?: string | null; // YYYY-MM-DD
+  endDate?: string | null; // YYYY-MM-DD
+  venue?: string | null;
+  city?: string | null;
+  state?: string | null;
+  attendanceMode?: "inPerson" | "virtual" | "hybrid" | null;
+  websiteUrl?: string | null;
+  registrationUrl?: string | null;
+  registrationOpensAt?: string | null; // ISO instant
+  registrationClosesAt?: string | null; // ISO instant
+  travelAssistance?: boolean | null;
+  travelAssistanceNote?: Localized;
+  travelAssistanceDeadline?: string | null; // YYYY-MM-DD
+  travelAssistanceLink?: { type?: string | null; value?: string | null } | null;
+  anchor?: string | null;
+  registration?: "upcoming" | "open" | "closed" | null;
+  travelOpen?: boolean;
+};
+
 export type Section =
   | { _key: string; _type: "pageHero"; decoration?: "one" | "two"; width?: "narrow" | "wide"; variant?: "full" | "compact" | "titleOnly"; eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized;
       buttons?: { style?: string; link: LinkData }[]; badges?: { text: Localized; icon?: string }[] }
@@ -65,6 +91,7 @@ export type Section =
   | { _key: string; _type: "featuredPerson"; eyebrow?: Localized; subtitle?: Localized; quote?: Localized; body?: Localized<PT>; badges?: Localized[]; background?: "dark"; person?: PersonData | null }
   | { _key: string; _type: "resourceList"; header?: SectionHeaderData; category: string; layout?: "rich" | "org" | "provider" | "program" | "linkCard";
       columns?: number; items?: ResourceItem[] }
+  | { _key: string; _type: "conferenceList"; header?: SectionHeaderData; background?: "white" | "neutral"; items?: ConferenceItem[] }
   | { _key: string; _type: "sponsorStrip"; header?: SectionHeaderData; mode?: "allActive" | "selected"; layout?: "grid" | "row"; showNames?: boolean; sponsors?: SponsorData[] | null }
   | { _key: string; _type: "peopleGrid"; header?: SectionHeaderData; layout?: "card" | "compact" | "contact"; people?: PersonData[] };
 

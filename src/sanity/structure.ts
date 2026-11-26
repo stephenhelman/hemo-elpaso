@@ -25,6 +25,16 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem("person").title("People"),
       S.documentTypeListItem("scholarship").title("Scholarships"),
       S.listItem()
+        .title("Conferences")
+        .id("conferences")
+        .child(
+          S.documentList()
+            .title("Conferences")
+            .schemaType("conference")
+            .filter('_type == "conference"')
+            .defaultOrdering([{ field: "startDate", direction: "asc" }]),
+        ),
+      S.listItem()
         .title("Sponsors")
         .id("sponsors")
         .child(

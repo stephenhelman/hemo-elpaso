@@ -8,6 +8,7 @@ import type { Lang } from "@/types";
 import { pick } from "@/sanity/helpers/pick";
 import { iconFor } from "@/sanity/icons";
 import { DEFAULT_LINK_LABEL } from "@/sanity/resourcesSource";
+import { categoryAnchor } from "@/sanity/helpers/anchors";
 import type { ResourceItem, Section as SectionData } from "@/sanity/types";
 import SectionHeaderView from "./SectionHeaderView";
 import { RichText } from "./RichText";
@@ -54,23 +55,23 @@ const GRID: Record<string, Record<number, string>> = {
     3: "grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto",
   },
 };
-const SECTION: Record<string, { bg: "white" | "neutral"; id: string }> = {
-  rich: { bg: "neutral", id: "conditions" },
-  org: { bg: "white", id: "national" },
-  provider: { bg: "neutral", id: "local" },
-  program: { bg: "white", id: "camps" },
-  linkCard: { bg: "neutral", id: "financial" },
+const BACKGROUND: Record<string, "white" | "neutral"> = {
+  rich: "neutral",
+  org: "white",
+  provider: "neutral",
+  program: "white",
+  linkCard: "neutral",
 };
 
-export default function ResourceListBlock({ block, locale }: { block: List; locale: Lang }) {
+export default function ResourceListBlock({ block, locale, anchorId }: { block: List; locale: Lang; anchorId?: string }) {
   const layout = block.layout ?? "org";
   const items = block.items ?? [];
   if (items.length === 0) return null;
   const cols = block.columns === 2 ? 2 : 3;
-  const sec = SECTION[layout] ?? SECTION.org;
 
   return (
-    <Section background={sec.bg} id={sec.id}>
+    // scroll-mt clears the 64px sticky header when the page is opened at this anchor
+    <Section background={BACKGROUND[layout] ?? "white"} id={anchorId ?? categoryAnchor(block.category)} className="scroll-mt-16">
       <SectionHeaderView header={block.header} locale={locale} />
       <div className={GRID[layout]?.[cols] ?? GRID.org[cols]}>
         {items.map((r) => {

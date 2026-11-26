@@ -203,3 +203,19 @@ export const resourceList = defineType({
     prepare: ({ title, category, layout }: any) => ({ title: title || "Resource list", subtitle: `${category} · ${layout}` }),
   },
 });
+
+export const conferenceList = defineType({
+  name: "conferenceList",
+  title: "Conference list",
+  type: "object",
+  description:
+    "Shows every active conference that has not ended, soonest first. Add or edit them under Conferences. Nothing shows when there are none.",
+  fields: [
+    defineField({ name: "header", type: "sectionHeader" }),
+    defineField({ name: "background", type: "string", initialValue: "white", options: { list: ["white", "neutral"], layout: "radio" } }),
+  ],
+  preview: {
+    select: { title: "header.heading.en.0.children.0.text" },
+    prepare: ({ title }: any) => ({ title: title || "Conference list" }),
+  },
+});

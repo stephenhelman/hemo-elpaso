@@ -6,12 +6,13 @@ import { siteSettings } from "./documents/siteSettings";
 import { person } from "./documents/person";
 import { resource } from "./documents/resource";
 import { scholarship } from "./documents/scholarship";
+import { conference } from "./documents/conference";
 import { sponsor } from "./documents/sponsor";
 import { pageDocuments } from "./documents/pages";
 import { textWithAside, cardGrid, featuredPerson } from "./blocks/aboutBlocks";
 import { statsRow, eventsFeed } from "./blocks/homeBlocks";
 import { sponsorStrip } from "./blocks/sponsorBlocks";
-import { pageHero, richText, ctaButton, ctaBanner, peopleGrid, resourceList } from "./blocks/blocks";
+import { pageHero, richText, ctaButton, ctaBanner, peopleGrid, resourceList, conferenceList } from "./blocks/blocks";
 
 export const schemaTypes = [
   localizedString,
@@ -28,6 +29,7 @@ export const schemaTypes = [
   ctaBanner,
   peopleGrid,
   resourceList,
+  conferenceList,
   textWithAside,
   cardGrid,
   featuredPerson,
@@ -39,6 +41,7 @@ export const schemaTypes = [
   scholarship,
   sponsor,
   resource,
+  conference,
   ...pageDocuments,
 ];
 

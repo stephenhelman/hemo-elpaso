@@ -13,9 +13,10 @@ import TextWithAsideBlock from "./TextWithAsideBlock";
 import CardGridBlock from "./CardGridBlock";
 import FeaturedPersonBlock from "./FeaturedPersonBlock";
 import SponsorStripBlock from "./SponsorStripBlock";
+import ConferenceListBlock from "./ConferenceListBlock";
 
 /** Maps a Sanity section to its component. Unknown types render nothing. */
-export default function SectionRenderer({ section, locale }: { section: Section; locale: Lang }) {
+export default function SectionRenderer({ section, locale, anchorId }: { section: Section; locale: Lang; anchorId?: string }) {
   switch (section._type) {
     case "pageHero":
       return <PageHeroBlock block={section} locale={locale} />;
@@ -34,7 +35,9 @@ export default function SectionRenderer({ section, locale }: { section: Section;
     case "featuredPerson":
       return <FeaturedPersonBlock block={section} locale={locale} />;
     case "resourceList":
-      return <ResourceListBlock block={section} locale={locale} />;
+      return <ResourceListBlock block={section} locale={locale} anchorId={anchorId} />;
+    case "conferenceList":
+      return <ConferenceListBlock block={section} locale={locale} anchorId={anchorId} />;
     case "peopleGrid":
       return <PeopleGridBlock block={section} locale={locale} />;
     case "sponsorStrip":
