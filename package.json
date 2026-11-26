@@ -28,6 +28,8 @@
     "check:invitation-guard": "tsx --test scripts/check-invitation-guard.ts",
     "check:legal": "tsx --test scripts/check-legal.ts",
     "check:legal-placeholders": "tsx scripts/check-legal-placeholders.ts",
+    "check:legal-links": "tsx --test scripts/check-legal-links.ts",
+    "check:all": "node scripts/check-all.mjs",
     "check:features": "tsx --test scripts/check-features.ts",
     "check:admin-pages": "tsx scripts/db-guard.ts && npm run build && tsx --test scripts/check-admin-pages.ts",
     "check:flyers": "tsx scripts/db-guard.ts && tsx --test scripts/check-flyers.ts",

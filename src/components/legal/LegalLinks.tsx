@@ -5,6 +5,9 @@ const L = {
   es: { privacy: "Política de Privacidad", children: "Política para Menores y Edad", terms: "Términos de Uso" },
 } as const;
 
+/** Written out in full so check:legal-links can match each one against a real route. */
+const HREF = { privacy: "/privacy", children: "/children", terms: "/terms" } as const;
+
 /** One small line of links to the legal pages. Opens in a new tab by default so a half-filled form is not lost. */
 export default function LegalLinks({
   locale, which = ["privacy"], newTab = true, className = "text-xs text-neutral-500",
@@ -16,7 +19,7 @@ export default function LegalLinks({
         <span key={k}>
           {i > 0 && " · "}
           <Link
-            href={`/${k}`}
+            href={HREF[k]}
             className="underline underline-offset-2 hover:text-neutral-800"
             {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
