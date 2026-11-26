@@ -17,6 +17,11 @@ export const resourceFragment = groq`
   "link": link{ label, type, value },
   accent, icon, order`;
 // lastVerified is deliberately NOT projected: it is an editor-only field.
+/** Public conference fields. lastVerified, active and the announcement settings are not projected. */
+export const conferenceFragment = groq`
+  _id, name, "slug": slug.current, organizer, summary, startDate, endDate, venue, city, state, attendanceMode,
+  websiteUrl, registrationUrl, registrationOpensAt, registrationClosesAt,
+  travelAssistance, travelAssistanceNote, travelAssistanceDeadline, "travelAssistanceLink": travelAssistanceLink{ type, value }`;
 
 export const sectionsFragment = groq`sections[]{
   _key, _type,
@@ -27,6 +32,8 @@ export const sectionsFragment = groq`sections[]{
                              buttons[]{ style, icon, showIfRegistrationOpen, link${linkFragment} } },
   _type == "resourceList" => { header, category, layout, columns,
                              "items": *[_type == "resource" && category == ^.category && active == true]|order(order asc){ ${resourceFragment} } },
+  _type == "conferenceList" => { header, background,
+                             "items": *[_type == "conference" && active == true && defined(slug.current)]|order(startDate asc){ ${conferenceFragment} } },
   _type == "statsRow"   => { header, stats[]{ _key, source, value, suffix, label, animate } },
   _type == "eventsFeed" => { header, limit, showViewAllLink },
   _type == "textWithAside" => { eyebrow, heading, body, creditTitle, aside, foundedLabel, foundedCaption, pastPresidentsHeading,

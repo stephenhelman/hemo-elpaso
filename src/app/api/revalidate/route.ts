@@ -16,6 +16,7 @@ const TAGS_BY_TYPE: Record<string, string[]> = {
   scholarship: ["scholarship"],
   sponsor: ["sponsor"],
   resource: ["resource"],
+  conference: ["conference"],
   homePage: ["page:home"],
   aboutPage: ["page:about"],
   resourcesPage: ["page:resources"],

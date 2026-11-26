@@ -1,5 +1,6 @@
 import { getResourcesPage } from "@/sanity/data";
 import PageSections from "@/components/sanity/PageSections";
+import { prepareConferenceSections } from "@/sanity/helpers/conferences";
 
 /**
  * Rendered from Sanity (resourcesPage + resource documents), with today's dictionary copy as the
@@ -8,5 +9,7 @@ import PageSections from "@/components/sanity/PageSections";
  */
 export default async function ResourcesPage() {
   const data = await getResourcesPage();
-  return <PageSections sections={data.sections} />;
+  // Per request (this route is dynamic: the layout reads the locale cookie), so ended conferences drop off on time
+  // even while the Sanity response is cached.
+  return <PageSections sections={prepareConferenceSections(data.sections)} />;
 }

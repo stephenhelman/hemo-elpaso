@@ -6,6 +6,9 @@ export const SECTION_TYPES = ["pageHero", "richText", "ctaBanner", "peopleGrid",
 /** Pages that may show a sponsor strip (the others do not offer the block in the Studio). */
 const SPONSOR_PAGES = ["homePage", "aboutPage", "getInvolvedPage"];
 
+/** Blocks only one page offers. */
+const PAGE_ONLY_TYPES: Record<string, string[]> = { resourcesPage: ["conferenceList"] };
+
 export const PAGE_TYPES = [
   { name: "homePage", title: "Home" },
   { name: "aboutPage", title: "About" },
@@ -26,7 +29,9 @@ const page = (name: string, title: string, extra: any[] = []) =>
       defineField({
         name: "sections",
         type: "array",
-        of: [...SECTION_TYPES, ...(SPONSOR_PAGES.includes(name) ? ["sponsorStrip"] : [])].map((type) => ({ type })),
+        of: [...SECTION_TYPES, ...(SPONSOR_PAGES.includes(name) ? ["sponsorStrip"] : []), ...(PAGE_ONLY_TYPES[name] ?? [])].map((type) => ({ type })),
+        validation: (r) =>
+          r.custom((v: any) => (v?.filter((s: any) => s?._type === "conferenceList").length ?? 0) <= 1 || "Add the Conference list only once."),
       }),
     ],
     preview: { prepare: () => ({ title: `${title} page` }) },

@@ -6,4 +6,4 @@ export const resourcesPageQuery = groq`
     ${seoFragment},
     ${sectionsFragment}
   }`;
-export const RESOURCES_TAGS = ["page:resources", "resource", "siteSettings"];
+export const RESOURCES_TAGS = ["page:resources", "resource", "conference", "siteSettings"];
