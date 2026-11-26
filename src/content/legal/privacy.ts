@@ -38,6 +38,7 @@ export const privacy: LegalDoc = {
         t: "p",
         text: "**When you visit the website:** privacy-friendly page-view statistics that use no cookies and don’t identify you, and one cookie that remembers your language. Our hosting provider sees standard technical information, such as your IP address, to deliver the site.",
       },
+      { t: "p", text: "**Site announcements.** {STATUS:site_announcements} If you close an announcement, your browser remembers that on your device. It isn’t sent to us." },
       { t: "p", text: "**Photos at events:** we publish photos only of people who consented to photo use." },
       {
         t: "p",
@@ -227,6 +228,7 @@ export const privacy: LegalDoc = {
         t: "p",
         text: "**Cuando visita el sitio web:** estadísticas de visitas que respetan la privacidad, no usan cookies y no lo identifican, y una sola cookie que recuerda su idioma. Nuestro proveedor de alojamiento web ve información técnica estándar, como su dirección IP, para poder mostrarle el sitio.",
       },
+      { t: "p", text: "**Anuncios del sitio.** {STATUS:site_announcements} Si cierra un anuncio, su navegador lo recuerda en su dispositivo. Esa información no se nos envía." },
       { t: "p", text: "**Fotos en los eventos:** solo publicamos fotos de las personas que dieron su consentimiento para el uso de fotos." },
       {
         t: "p",

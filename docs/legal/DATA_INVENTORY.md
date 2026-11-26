@@ -109,6 +109,7 @@ Nothing from this form is written to the database. It is emailed (via Resend) to
 | Page views: sanitized path, country, device, browser, OS, referrer | Vercel Web Analytics (`src/components/analytics/SiteAnalytics.tsx`, `src/lib/analytics.ts`, `docs/overhaul/ANALYTICS.md`) | Public pages only. `/admin`, `/api`, tokens and query strings are stripped or dropped in the browser |
 | Custom events (`register_info_submitted`, `rsvp_submitted`, `language_switched`) | Same | **Off** unless `NEXT_PUBLIC_ANALYTICS_CUSTOM_EVENTS=true` |
 | Language choice | `locale` cookie | See section 5 |
+| Closed site announcements (`site_announcements` toggle) | `hoep.dismissedAnnouncements` in the visitor's browser (localStorage) | Never sent to the server. See section 5 |
 
 ### 1h. Photos
 
@@ -165,6 +166,7 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | Sent email copies | **Resend** | Full body and recipient |
 | Request logs, page-view analytics | **Vercel** | |
 | Language preference | `locale` cookie in the visitor's browser; `patients.preferredLanguage` in Neon | |
+| Closed site announcements | Visitor's browser only (localStorage) | Not stored by HOEP |
 
 ### 2b. Who can access what (admin)
 
@@ -263,7 +265,8 @@ Consent withdrawal: a board member can edit consents on the patient page (adds a
 | Sanity Studio browser storage | Sanity (`/admin/studio`) | Studio login/state | Per Sanity | Board only |
 | Third-party browser storage possible from embeds | Cloudflare Turnstile (`/contact`, `/register-info`), Google Maps iframe (`/contact`), Google Places script (`/register-info`, admin forms) | Bot check; map; autocomplete | Unknown | **Not verified.** Open DevTools → Application on the production site |
 
-- `localStorage`, `sessionStorage`, IndexedDB: **none** in the app code (grep over `src/`).
+- `localStorage`: **one entry**, `hoep.dismissedAnnouncements` (`src/components/announcements/AnnouncementCard.tsx`, `src/lib/announcements/display.ts`). Written only when a visitor closes an announcement. A list of up to 50 announcement ids (Sanity document ids; for automatic conference announcements also the registration opening date): no personal or health data, never sent to the server, kept until the visitor clears browser data.
+- `sessionStorage`, IndexedDB: **none** in the app code (grep over `src/`).
 - No Google Analytics, Tag Manager, Meta pixel, Hotjar, Sentry or similar anywhere in the code or `package.json`.
 - Vercel Web Analytics: documented by Vercel as cookie-less (re-check their current page, per `ANALYTICS.md`).
 - There is no cookie banner and no cookie policy page.

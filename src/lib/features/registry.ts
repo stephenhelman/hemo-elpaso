@@ -17,6 +17,7 @@
 export const FEATURE_KEYS = [
   "recordings", "live_captions", "family_portal", "verification", "sms", "newsletter",
   "stories", "assistance", "live_interaction", "community", "donations", "volunteers", "address_autocomplete",
+  "site_announcements",
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 export const isFeatureKey = (k: unknown): k is FeatureKey => typeof k === "string" && (FEATURE_KEYS as readonly string[]).includes(k);
@@ -41,6 +42,7 @@ export const FEATURES: Record<FeatureKey, FeatureDef> = {
   community: { key: "community", implemented: false, coveredByPolicy: 2, label: { en: "Community Q&A", es: "Preguntas y respuestas de la comunidad" } },
   donations: { key: "donations", implemented: false, coveredByPolicy: 2, label: { en: "Online donations", es: "Donaciones en línea" } },
   address_autocomplete: { key: "address_autocomplete", implemented: true, coveredByPolicy: 2, label: { en: "Address suggestions while you type (Google)", es: "Sugerencias de direcciones mientras escribe (Google)" } },
+  site_announcements: { key: "site_announcements", implemented: true, coveredByPolicy: 2, label: { en: "Site announcements", es: "Anuncios del sitio" } },
   volunteers: { key: "volunteers", implemented: false, coveredByPolicy: 2, label: { en: "Volunteer sign-up", es: "Registro de voluntarios" } },
 };
 
