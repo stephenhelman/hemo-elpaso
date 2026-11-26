@@ -22,6 +22,16 @@ export const structure: StructureResolver = (S) =>
             .items(PAGE_TYPES.map((p) => singleton(S, p.name, p.title))),
         ),
       S.divider(),
+      S.listItem()
+        .title("Announcements")
+        .id("announcements")
+        .child(
+          S.documentList()
+            .title("Announcements")
+            .schemaType("announcement")
+            .filter('_type == "announcement"')
+            .defaultOrdering([{ field: "startsAt", direction: "desc" }]),
+        ),
       S.documentTypeListItem("person").title("People"),
       S.documentTypeListItem("scholarship").title("Scholarships"),
       S.listItem()

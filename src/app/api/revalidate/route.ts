@@ -17,6 +17,7 @@ const TAGS_BY_TYPE: Record<string, string[]> = {
   sponsor: ["sponsor"],
   resource: ["resource"],
   conference: ["conference"],
+  announcement: ["announcement"],
   homePage: ["page:home"],
   aboutPage: ["page:about"],
   resourcesPage: ["page:resources"],

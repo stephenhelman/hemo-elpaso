@@ -72,6 +72,34 @@ export type ConferenceItem = {
   travelOpen?: boolean;
 };
 
+/** Raw announcement content (lib/announcements turns it into what the browser gets). */
+export type AnnouncementData = {
+  _id: string;
+  title?: Localized;
+  text?: Localized;
+  buttonLabel?: Localized;
+  order?: number | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  target?: {
+    kind?: "page" | "event" | "conference" | "external" | null;
+    page?: string | null;
+    eventSlug?: string | null;
+    url?: string | null;
+    conference?: { _id: string; active?: boolean | null; slug?: string | null; organizer?: string | null; endDate?: string | null } | null;
+  } | null;
+};
+/** A conference with "Announce when registration opens". */
+export type AnnouncingConferenceData = Pick<
+  ConferenceItem,
+  "_id" | "slug" | "name" | "organizer" | "startDate" | "endDate" | "registrationOpensAt" | "registrationClosesAt"
+> & { announcementTitle?: Localized; announcementText?: Localized };
+export type AnnouncementsData = {
+  announcements: AnnouncementData[] | null;
+  conferences: AnnouncingConferenceData[] | null;
+  hasConferenceSection: boolean | null;
+};
+
 export type Section =
   | { _key: string; _type: "pageHero"; decoration?: "one" | "two"; width?: "narrow" | "wide"; variant?: "full" | "compact" | "titleOnly"; eyebrow?: Localized; heading?: Localized<PT>; subheading?: Localized;
       buttons?: { style?: string; link: LinkData }[]; badges?: { text: Localized; icon?: string }[] }

@@ -3,6 +3,7 @@ import { getLocaleCookie } from "../../lib/locale";
 import { siteUrl } from "@/lib/site";
 import { registrationOpen } from "@/lib/registration";
 import { isFeatureEnabled } from "@/lib/features";
+import { getLiveAnnouncements } from "@/lib/announcements/service";
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import SiteLayout from "@/components/layout/SiteLayout";
@@ -139,6 +140,7 @@ export default async function RootLayout({
           registrationOpen={registrationOpen()}
           familyPortal={await isFeatureEnabled("family_portal")}
           initialLocale={locale === "es" ? "es" : "en"}
+          announcements={await getLiveAnnouncements()}
           siteInfo={{
             orgName: settings.orgName,
             tagline: settings.tagline,

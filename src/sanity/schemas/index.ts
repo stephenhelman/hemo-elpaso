@@ -7,6 +7,7 @@ import { person } from "./documents/person";
 import { resource } from "./documents/resource";
 import { scholarship } from "./documents/scholarship";
 import { conference } from "./documents/conference";
+import { announcement } from "./documents/announcement";
 import { sponsor } from "./documents/sponsor";
 import { pageDocuments } from "./documents/pages";
 import { textWithAside, cardGrid, featuredPerson } from "./blocks/aboutBlocks";
@@ -42,6 +43,7 @@ export const schemaTypes = [
   sponsor,
   resource,
   conference,
+  announcement,
   ...pageDocuments,
 ];
 
