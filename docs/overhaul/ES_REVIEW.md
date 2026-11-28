@@ -1208,24 +1208,38 @@ New spoken and on-screen text. Spanish is a draft: please review it, the spoken 
 
 ### Spoken by the phone line (`src/lib/phone/prompts.ts`)
 
+Updated with voicemail (feat/phone-voicemail). Every prompt says the organization in full, **Hemophilia Outreach of El
+Paso**, which stays in English inside the Spanish prompts. A recording made later (`src/lib/phone/recordings.ts`) must
+say the same words.
+
 | Key | English | Spanish |
 | --- | --- | --- |
 | welcome | Thank you for calling Hemophilia Outreach of El Paso. | Gracias por llamar a Hemophilia Outreach of El Paso. |
 | emergency | If this is a medical emergency, hang up and call 9 1 1. | Si es una emergencia médica, cuelgue y llame al 9 1 1. |
+| menu_events | For events in English, press 1. | (English only) |
+| menu_spanish | (Spanish only) | Para español, oprima 2. |
+| menu_officer | To speak with an officer, press 3. | Para hablar con un directivo, oprima 3. |
 | invalid | That is not one of the choices. | Esa no es una de las opciones. |
 | goodbye | We did not get your choice. Please call again. Goodbye. | No recibimos su opción. Por favor llame de nuevo. Adiós. |
 | unanswered | We could not connect your call. Please call again later, or email info at hemoelpaso dot org. If this is a medical emergency, call 9 1 1. Goodbye. | No pudimos comunicar su llamada. Por favor llame más tarde o escriba a info arroba hemoelpaso punto org. Si es una emergencia médica, llame al 9 1 1. Adiós. |
-| connecting | Connecting. | Comunicando. |
+| voicemail_greeting | Nobody can answer right now. You may leave a message. It will be recorded. Please leave out medical details. If this is a medical emergency, hang up and call 9 1 1. After the tone, say your name and phone number, then your message. You have up to 2 minutes. When you are done, press the pound key. | En este momento nadie puede contestar. Puede dejar un mensaje, que se grabará. Por favor no incluya detalles médicos. Si es una emergencia médica, cuelgue y llame al 9 1 1. Después del tono, diga su nombre y su número de teléfono, y luego su mensaje. Tiene hasta 2 minutos. Cuando termine, oprima la tecla numeral. |
+| voicemail_thanks | Thank you. Your message was recorded. Goodbye. | Gracias. Su mensaje quedó grabado. Adiós. |
+| voicemail_none | We did not get a message. Please call again. Goodbye. | No recibimos ningún mensaje. Por favor llame de nuevo. Adiós. |
+| screen_events | A call from Hemophilia Outreach of El Paso, for the events line. | Llamada de Hemophilia Outreach of El Paso para la línea de eventos. |
+| screen_spanish | A call from Hemophilia Outreach of El Paso, for the Spanish line. | Llamada de Hemophilia Outreach of El Paso para la línea en español. |
+| screen_officer | A call from Hemophilia Outreach of El Paso, for an officer. | Llamada de Hemophilia Outreach of El Paso para un directivo. |
 | accept | Press 1 to accept. | Oprima 1 para contestar. |
-| verify | This is H O E P, confirming this number for phone duty. Enter the 6 digit code. | Le llama H O E P para confirmar este número de guardia. Marque el código de 6 dígitos. |
+| connecting | Connecting. | Comunicando. |
+| verify | This is Hemophilia Outreach of El Paso, confirming this number for phone duty. Enter the 6 digit code. | Le llama Hemophilia Outreach of El Paso para confirmar este número de guardia. Marque el código de 6 dígitos. |
 | verified | Thank you. This number is confirmed. Goodbye. | Gracias. Este número quedó confirmado. Adiós. |
-| wrongCode | That code is not correct. | Ese código no es correcto. |
-| notVerified | This number was not confirmed. Ask for a new call. Goodbye. | Este número no se confirmó. Pida una nueva llamada. Adiós. |
-| screen.events | H O E P call for the events line. | Llamada de H O E P para la línea de eventos. |
-| screen.spanish | H O E P call for the Spanish line. | Llamada de H O E P para la línea en español. |
-| screen.officer | H O E P call for an officer. | Llamada de H O E P para un directivo. |
-| menu (option 2) | (Spanish only) | Para español, oprima 2. |
-| menu (option 3) | To speak with an officer, press 3. | Para hablar con un directivo, oprima 3. |
+| wrong_code | That code is not correct. | Ese código no es correcto. |
+| not_verified | This number was not confirmed. Ask for a new call. Goodbye. | Este número no se confirmó. Pida una nueva llamada. Adiós. |
+
+### Twilio-hosted fallback (TwiML Bin, `docs/overhaul/TWILIO_SETUP.md`)
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| fallback | Thank you for calling Hemophilia Outreach of El Paso. We cannot take your call right now. If this is a medical emergency, hang up and call 9 1 1. Please call again later, visit hemoelpaso dot org, or email info at hemoelpaso dot org. | Gracias por llamar a Hemophilia Outreach of El Paso. En este momento no podemos atender su llamada. Si es una emergencia médica, cuelgue y llame al 9 1 1. Por favor llame más tarde, visite hemoelpaso punto org o escriba a info arroba hemoelpaso punto org. |
 
 ### Settings → Phone (`src/app/admin/settings/phone/PhoneClient.tsx`)
 
@@ -1293,3 +1307,61 @@ email lines in `src/lib/phone/notify.ts`, the permission labels "Cambiar quién 
 números y desvío de llamadas", and the consent panel notes about texting to a changed number
 (`src/components/admin/patients/ConsentPanel.tsx`) and "Primero agregue su número de teléfono a sus datos."
 
+## Voicemail (feat/phone-voicemail)
+
+New on-screen and email text. The spoken lines are in the table above (voicemail_greeting, voicemail_thanks,
+voicemail_none): please review those first.
+
+### Admin → Voicemail (`src/app/admin/voicemails/VoicemailsClient.tsx`)
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| title | Voicemail | Mensajes de voz |
+| intro | Messages left on the HOEP phone line. Only the President and Vice President can open this page. Every play, and every time a number is shown, is recorded. Messages are deleted after 30 days. | Mensajes dejados en la línea telefónica de HOEP. Solo la presidencia y la vicepresidencia pueden abrir esta página. Cada reproducción, y cada vez que se muestra un número, queda registrada. Los mensajes se borran a los 30 días. |
+| empty | No messages. | No hay mensajes. |
+| noneFound | No messages from that number. | No hay mensajes de ese número. |
+| off | Callers can’t leave messages: the PHONE_DATA_KEY setting is missing. | No se pueden dejar mensajes: falta la configuración PHONE_DATA_KEY. |
+| unprotected | Warning: recordings can be fetched without signing in. Turn on “Enforce HTTP Auth on Media URLs” in the Twilio console (Voice settings). | Advertencia: las grabaciones se pueden obtener sin iniciar sesión. Active “Enforce HTTP Auth on Media URLs” en la consola de Twilio (configuración de voz). |
+| overdue | Some messages are past 30 days and could not be deleted. Delete them here, or ask for help if that fails. | Algunos mensajes pasaron de 30 días y no se pudieron borrar. Bórrelos aquí o pida ayuda si falla. |
+| caller | Caller | Quien llamó |
+| hidden | Number not available | Número no disponible |
+| showNumber | Show number | Mostrar número |
+| length | {n} seconds | {n} segundos |
+| unknownLength | Length unknown | Duración desconocida |
+| new | New | Nuevo |
+| heard | Played | Escuchado |
+| handled | Handled by {who} | Atendido por {who} |
+| handledPlain | Handled | Atendido |
+| play | Play | Escuchar |
+| playFailed | The message could not be played. | No se pudo reproducir el mensaje. |
+| markHandled | Mark handled | Marcar como atendido |
+| markOpen | Not handled | No atendido |
+| remove | Delete | Borrar |
+| confirmRemove | Delete this message for good? | ¿Borrar este mensaje definitivamente? |
+| removed | Message deleted. | Mensaje borrado. |
+| find | Find a caller’s messages | Buscar los mensajes de una persona |
+| findHelp | Use this when a caller asks you to delete their messages. | Úselo cuando alguien pida que se borren sus mensajes. |
+| number | Phone number | Teléfono |
+| findButton | Find | Buscar |
+| showAll | Show all | Ver todos |
+| deleteFound | Delete these {n} | Borrar estos {n} |
+| confirmFound | Delete these {n} messages for good? | ¿Borrar definitivamente estos {n} mensajes? |
+| captured | Test mode: nothing is sent to the phone provider. | Modo de prueba: no se envía nada al proveedor telefónico. |
+| not_configured | The phone credentials are not set. | Faltan las credenciales del teléfono. |
+| failed | The phone provider did not answer. Try again. | El proveedor telefónico no respondió. Intente de nuevo. |
+| not_found | That message is gone. Refresh the page. | Ese mensaje ya no está. Actualice la página. |
+| no_number | That number is not available. | Ese número no está disponible. |
+| invalid | Enter a full phone number (add + and the country code outside the US). | Escriba el número completo (fuera de EE. UU., con + y el código del país). |
+| unavailable | Search needs the PHONE_DATA_KEY setting. | La búsqueda necesita la configuración PHONE_DATA_KEY. |
+| generic | Something went wrong. | Algo salió mal. |
+
+### Elsewhere
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| menu item | Voicemail | Mensajes de voz |
+| email subject and text | New voicemail | Nuevo mensaje de voz |
+| permission | Listen to and delete voicemail, and see callers’ numbers (health information) | Escuchar y borrar mensajes de voz y ver los números de quienes llaman (información de salud) |
+| email route | New voicemail on the phone line | Nuevo mensaje de voz en la línea telefónica |
+| email route help | Who is told that a voicemail is waiting. The email contains only a link: no number, name, audio or transcript. Only the President and Vice President can be chosen. | A quién se avisa que hay un mensaje de voz. El correo solo contiene un enlace: sin número, nombre, audio ni transcripción. Solo se puede elegir a la presidencia y la vicepresidencia. |
+| Settings → Phone warning | Callers can’t leave messages: the PHONE_DATA_KEY setting is missing. | No se pueden dejar mensajes: falta la configuración PHONE_DATA_KEY. |

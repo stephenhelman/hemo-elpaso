@@ -100,6 +100,7 @@ enum EmailTemplateType {
   RSVP_REQUEST_DECLINED
   RSVP_WAITLISTED
   RSVP_REMINDER_VIRTUAL
+  VOICEMAIL_NOTICE
 }
 
 enum AgeTier {
@@ -1173,6 +1174,12 @@ enum AuditAction {
   PHONE_VERIFY_FAILED
   PHONE_ROUTING_CHANGED
   PHONE_DUTY_SWAPPED
+  VOICEMAIL_RECEIVED
+  VOICEMAIL_PLAYED
+  VOICEMAIL_HANDLED
+  VOICEMAIL_SEARCHED
+  VOICEMAIL_DELETED
+  VOICEMAIL_CALLER_VIEWED
 }
 
 model AuditLog {
@@ -1747,4 +1754,35 @@ model InvitationCallLog {
   @@index([eventId, patientId, calledAt])
   @@index([invitationId])
   @@map("invitation_call_logs")
+}
+
+/// One voicemail on HOEP's phone line (lib/phone/voicemail.ts). The AUDIO stays at the phone provider (never in our
+/// storage). The row is made when recording is offered, becomes "ready" when the provider reports the recording, and is
+/// marked "deleted" only after the provider confirms deletion. Ids, codes and times; the caller's number is encrypted
+/// and its keyed hash limits messages per caller and finds them on request. Both are cleared on deletion.
+model PhoneVoicemail {
+  id              String    @id @default(uuid())
+  callSid         String    @unique
+  recordingSid    String?   @unique
+  mailbox         String // menu option: events | spanish | officer
+  status          String    @default("pending") // pending | ready | deleted
+  language        String // en | es | en+es (the language(s) of the greeting)
+  durationSeconds Int?
+  callerEnc       String? // AES-256-GCM of the caller's number (PHONE_DATA_KEY)
+  callerHash      String? // keyed hash of the caller's number
+  createdAt       DateTime  @default(now())
+  receivedAt      DateTime?
+  noticeSentAt    DateTime?
+  listenedAt      DateTime?
+  listenedById    String? // patientId of the board member who first played it
+  handledAt       DateTime?
+  handledById     String?
+  deletedAt       DateTime?
+  deletedReason   String? // retention | manual | no_message | orphaned
+  deletedById     String?
+  deleteAttempts  Int       @default(0)
+
+  @@index([callerHash, createdAt])
+  @@index([status, createdAt])
+  @@map("phone_voicemails")
 }

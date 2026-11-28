@@ -4,6 +4,7 @@
  *  - TWILIO_MODE: live only by default in production; capture everywhere else; live outside production THROWS
  *  - capture places no call and writes no <Dial>; allowlist reaches only listed numbers
  *  - every <Dial> is screened
+ *  - recordings: nothing in capture mode; audio is fetched only with HTTP auth
  *  - the production account is refused outside production; allowlist needs it to be recorded
  *  - missing credentials break phone code only (nothing reads them at server start)
  *  - one module uses the SDK, one writes TwiML, one reads the settings; every webhook uses the signature wrapper
@@ -15,7 +16,7 @@ import { beforeEach, test } from "node:test";
 import { maskNumber, mayReach, reachFrom, resolveTwilioMode, toUsE164 } from "../src/lib/twilio/mode";
 import { TwilioConfigError, fallbackNumber, readTwilioConfig, sha256Hex } from "../src/lib/twilio/config";
 import { PRODUCTION_ACCOUNT_SID_SHA256 } from "../src/lib/twilio/production-account";
-import { placeCall, type CreateCall } from "../src/lib/twilio/client";
+import { placeCall, twilioRecordings, type CreateCall, type RestFailure } from "../src/lib/twilio/client";
 import { VoiceTwiml } from "../src/lib/twilio/twiml";
 import { clearTwilioOutbox, twilioOutbox } from "../src/lib/twilio/outbox";
 
@@ -148,6 +149,43 @@ test("the fallback number: a US number that isn't HOEP's own (that would loop)",
   for (const v of [HOEP, "911", "", undefined]) assert.equal(fallbackNumber({ TWILIO_FALLBACK_NUMBER: v, TWILIO_PHONE_NUMBER: HOEP }), null);
 });
 
+test("the provider client: media with HTTP auth only, delete of a missing recording succeeds, nothing in capture mode", async () => {
+  const seen: { url: string; auth: string | null }[] = [];
+  let status = 200;
+  const fake = (async (url: string | URL | Request, init?: RequestInit) => {
+    seen.push({ url: String(url), auth: new Headers(init?.headers).get("authorization") });
+    return new Response(status < 300 ? new Uint8Array([7]) : null, { status });
+  }) as typeof fetch;
+  let removeError: unknown = null;
+  const api = twilioRecordings({ fetch: fake, sdk: () => ({ list: async () => [{ sid: "RE1", callSid: "CA1", status: "completed", dateCreated: new Date(), duration: "7" }], remove: async () => { if (removeError) throw removeError; } }) });
+  const sid = `RE${"a".repeat(32)}`;
+  const TOKEN = "token";
+  Object.assign(process.env, env());
+
+  const captured: RestFailure = { ok: false, error: "captured" };
+  assert.deepEqual([await api.list(), await api.remove(sid), await api.media(sid), await api.openToPublic(sid)], [captured, captured, captured, null]);
+  assert.equal(seen.length, 0);
+
+  process.env.TWILIO_MODE = "allowlist";
+  try {
+    const media = await api.media(sid);
+    assert.ok(media.ok && media.audio[0] === 7);
+    assert.equal(seen[0].url, `https://api.twilio.com/2010-04-01/Accounts/${SID}/Recordings/${sid}.mp3`);
+    assert.equal(seen[0].auth, `Basic ${Buffer.from(`${SID}:${TOKEN}`).toString("base64")}`);
+    assert.equal(await api.openToPublic(sid), true);
+    assert.equal(seen[1].auth, null, "the probe signs in as nobody");
+    status = 401; assert.equal(await api.openToPublic(sid), false);
+    status = 404; assert.deepEqual(await api.media(sid), { ok: false, error: "not_found" });
+    status = 500; assert.deepEqual(await api.media(sid), { ok: false, error: "failed" });
+    assert.deepEqual(await api.media("../../Calls"), { ok: false, error: "not_found" });
+    const list = await api.list();
+    assert.ok(list.ok && list.items[0].durationSeconds === 7);
+    assert.deepEqual(await api.remove(sid), { ok: true });
+    removeError = { status: 404 }; assert.deepEqual(await api.remove(sid), { ok: true });
+    removeError = { status: 500, code: 20500 }; assert.deepEqual(await api.remove(sid), { ok: false, error: "failed" });
+  } finally { clear(); }
+});
+
 // ── one place for each thing ────────────────────────────────────────────────
 const walk = (dir: string): string[] => readdirSync(dir).flatMap((f) => { const p = join(dir, f); return f === "node_modules" || f === ".next" ? [] : statSync(p).isDirectory() ? walk(p) : /\.(ts|tsx|mjs|js)$/.test(f) ? [p.split(sep).join("/")] : []; });
 const src = walk("src");
@@ -158,7 +196,9 @@ const offenders = (files: string[], re: RegExp, allow: string[] = []) => files.f
 test("only lib/twilio/client.ts uses the Twilio SDK or its API", () => {
   const all = [...src, ...walk("scripts"), "next.config.mjs"].filter((f) => !f.startsWith("scripts/check-twilio"));
   assert.deepEqual(offenders(all, /(from\s+|import\(\s*|require\(\s*|import\s+)["'](twilio|@twilio\/[^"']+)(\/[^"']*)?["']/, ["src/lib/twilio/client.ts"]), []);
-  assert.deepEqual(offenders(all, /api\.twilio\.com|new\s+Twilio\s*\(/), []);
+  assert.deepEqual(offenders(all, /api\.twilio\.com|new\s+Twilio\s*\(/, ["src/lib/twilio/client.ts"]), []);
+  // recording audio is only ever addressed there, and never from the address a webhook sends
+  assert.deepEqual(offenders(all.filter((f) => f.startsWith("src/")), /RecordingUrl/), []);
 });
 
 test("only the config modules read TWILIO_* settings, and none is exposed to the browser", () => {
@@ -189,6 +229,7 @@ test("check scripts are forced to capture and lose real credentials; .env.exampl
   const loader = readFileSync("scripts/_load-env.ts", "utf8");
   assert.match(loader, /TWILIO_MODE = "capture"/);
   assert.match(loader, /delete process\.env\[name\]/);
+  assert.match(loader, /delete process\.env\.PHONE_DATA_KEY/);
   const example = readFileSync(".env.example", "utf8");
-  for (const v of ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER", "TWILIO_API_KEY_SID", "TWILIO_API_KEY_SECRET", "TWILIO_FALLBACK_NUMBER"]) assert.match(example, new RegExp(`^${v}=$`, "m"), v);
+  for (const v of ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER", "TWILIO_API_KEY_SID", "TWILIO_API_KEY_SECRET", "TWILIO_FALLBACK_NUMBER", "PHONE_DATA_KEY"]) assert.match(example, new RegExp(`^${v}=$`, "m"), v);
 });

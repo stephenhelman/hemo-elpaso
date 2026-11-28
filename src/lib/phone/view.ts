@@ -3,10 +3,13 @@ import { maskNumber, resolveTwilioMode, type TwilioMode } from "@/lib/twilio/mod
 import { hoepNumber, twilioConfig } from "@/lib/twilio/config";
 import { OPTION_KEYS, OPTIONS, destinationFor, type Hours, type OptionKey } from "./definitions";
 import { boardPeople, readRouting } from "./store";
+import { callerDataReady } from "./caller";
 
 export interface PhoneView {
   mode: TwilioMode;
   configured: boolean;
+  /** Callers can leave a message (PHONE_DATA_KEY is set). */
+  voicemailReady: boolean;
   numbers: { id: string; owner: string; masked: string; verified: boolean; onBoard: boolean }[];
   options: { key: OptionKey; label: { en: string; es: string }; numberId: string | null; hours: Hours; ringsNow: boolean }[];
   /** Only for admin@, to add a number. */
@@ -21,6 +24,7 @@ export async function phoneView(canManage: boolean, now = new Date()): Promise<P
   return {
     mode: resolveTwilioMode(process.env),
     configured,
+    voicemailReady: callerDataReady(),
     numbers: routing.numbers.map((n) => ({
       id: n.id, owner: people.find((p) => p.id === n.ownerId)?.name ?? "—", masked: maskNumber(n.number), verified: !!n.verifiedAt, onBoard: boardIds.has(n.ownerId),
     })),

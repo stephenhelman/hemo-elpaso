@@ -11,6 +11,8 @@
  *   - a reviewer (Secretary) is turned away from the patient page and its data route carries no diagnoses
  *   - Settings > Phone: admin@ manages, the President swaps, the Secretary gets neither; numbers are masked
  *   - the phone webhook answers a signed request and refuses others (TWILIO_MODE=capture, throw-away credentials)
+ *   - Voicemail: the President sees masked numbers and can ask for one in full (audited); nobody else gets the page,
+ *     the audio or a number, or can delete
  *   - a static scan: no server module calls or reads a value imported from a "use client" module (components as JSX only)
  */
 import "./_load-env";
@@ -18,11 +20,12 @@ import assert from "node:assert/strict";
 import { test, before, after } from "node:test";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { createHmac } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { prisma } from "../src/lib/db";
 import { ROUTING_KEY } from "../src/lib/phone/store";
+import { encryptCaller } from "../src/lib/phone/caller";
 
 const require_ = createRequire(join(process.cwd(), "package.json"));
 // jose is the Auth0 SDK's own dependency (the session cookie is a JWE made with it)
@@ -68,7 +71,7 @@ async function boardPerson(role: "PRESIDENT" | "SECRETARY") {
 let president = "", secretary = "";
 const PHONE_ENV = {
   TWILIO_MODE: "capture", TWILIO_ACCOUNT_SID: `AC${"6".repeat(32)}`, TWILIO_AUTH_TOKEN: "admin-pages-token", TWILIO_PHONE_NUMBER: "+19155550100",
-  TWILIO_WEBHOOK_BASE_URL: "https://phone.check.example",
+  TWILIO_WEBHOOK_BASE_URL: "https://phone.check.example", PHONE_DATA_KEY: "ab".repeat(32),
 };
 let routingBefore: unknown;
 
@@ -240,6 +243,57 @@ test("production build: the phone webhook answers a signed request and refuses a
   assert.match(await res.text(), /<Response><Gather[\s\S]*press 1/);
   assert.equal((await post({})).status, 403);
   assert.ok(serverLog.includes("TWILIO_MODE=capture"));
+});
+
+test("production build: Voicemail is for the President (and Vice President) only; audio and deletion too", async () => {
+  const id = randomUUID(), caller = "+19155550164";
+  await prisma.phoneVoicemail.create({
+    data: { id, callSid: `CA${tag}`, recordingSid: `RE${randomUUID().replace(/-/g, "")}`, mailbox: "events", language: "en", status: "ready", durationSeconds: 9, receivedAt: new Date(), noticeSentAt: new Date(), callerEnc: encryptCaller(caller, PHONE_ENV) },
+  });
+  try {
+    const email = `${tag}.vmadmin@${domain}`;
+    const admin = await prisma.patient.create({ data: { email, role: "admin", familySize: 1, contactProfile: { create: { firstName: "Settings", lastName: tag } } } });
+    patients.push(admin.id);
+    subs.push(`google-oauth2|${tag}vmadmin`);
+    const adminCookie = await cookieFor(`google-oauth2|${tag}vmadmin`, email);
+
+    const page = await get("/admin/voicemails", president);
+    const html = await page.text();
+    assert.equal(page.status, 200, `${page.status}\n${serverLog.slice(-1500)}`);
+    notBroken(html, "voicemails");
+    assert.ok(html.includes("0164") && !html.includes("5550164"), "masked");
+    const send = (method: string, path: string, cookie: string, body?: unknown) =>
+      fetch(`${BASE}${path}`, { method, headers: { cookie, "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined, redirect: "manual" });
+    for (const [who, cookie] of [["Secretary", secretary], ["admin@", adminCookie], ["signed out", ""]] as const) {
+      const denied = await get("/admin/voicemails", cookie);
+      assert.ok(denied.status >= 300 && denied.status < 400 || !(await denied.text()).includes("0164"), `${who}: no page`);
+      const want = cookie ? 403 : 401;
+      assert.equal((await get(`/api/admin/voicemails/${id}/audio`, cookie)).status, want, `${who}: audio`);
+      assert.equal((await send("DELETE", `/api/admin/voicemails/${id}`, cookie)).status, want, `${who}: delete`);
+      assert.equal((await send("PATCH", `/api/admin/voicemails/${id}`, cookie, { handled: true })).status, want);
+      const number = await send("POST", `/api/admin/voicemails/${id}/caller`, cookie);
+      assert.equal(number.status, want, `${who}: number`);
+      assert.ok(!(await number.text()).includes("555"), `${who}: no number in the refusal`);
+      assert.equal((await send("POST", "/api/admin/voicemails/search", cookie, { number: caller })).status, want);
+    }
+    const views = () => prisma.auditLog.count({ where: { action: "VOICEMAIL_CALLER_VIEWED", resourceId: id } });
+    assert.equal(await views(), 0, "refused requests and page loads are not views");
+    const shown = await send("POST", `/api/admin/voicemails/${id}/caller`, president);
+    assert.deepEqual([shown.status, shown.headers.get("cache-control"), await shown.json()], [200, "private, no-store", { number: "(915) 555-0164" }]);
+    assert.equal(await views(), 1);
+    assert.ok(!serverLog.includes("5550164") && !serverLog.includes("555-0164"), "not in the server log");
+    // test mode: nothing is asked of the provider, so nothing plays and nothing is marked deleted
+    const audio = await get(`/api/admin/voicemails/${id}/audio?play=check-play-0001`, president);
+    assert.deepEqual([audio.status, audio.headers.get("cache-control")], [503, "private, no-store"]);
+    assert.equal((await send("DELETE", `/api/admin/voicemails/${id}`, president)).status, 503);
+    assert.equal((await send("PATCH", `/api/admin/voicemails/${id}`, president, { handled: true })).status, 200);
+    const found = await send("POST", "/api/admin/voicemails/search", president, { number: "555" });
+    assert.equal(found.status, 400);
+    assert.equal((await prisma.phoneVoicemail.findUniqueOrThrow({ where: { id } })).status, "ready");
+  } finally {
+    await prisma.auditLog.deleteMany({ where: { resourceType: "PhoneVoicemail", OR: [{ resourceId: id }, { patientId: { in: patients } }] } });
+    await prisma.phoneVoicemail.delete({ where: { id } });
+  }
 });
 
 // ── static: a server module may only render a client component, never call or read a client module's other exports ──
