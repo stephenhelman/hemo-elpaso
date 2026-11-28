@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/permissions";
 import { AuditAction } from "@prisma/client";
 import { finalizeFlyers } from "@/lib/flyers/upload";
 import { logFlyerFailure } from "@/lib/flyers/log";
+import { storageUnavailable } from "@/lib/storage-response";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,14 @@ export async function POST(
       return error;
     }
 
-    const result = await finalizeFlyers(params.id, await request.json().catch(() => null));
+    const body = await request.json().catch(() => null);
+    // saving alt text alone needs no storage; putting a file in place does
+    if (body?.flyerEn || body?.flyerEs) {
+      const down = storageUnavailable("flyer save");
+      if (down) return down;
+    }
+
+    const result = await finalizeFlyers(params.id, body);
     if (!result.ok) return NextResponse.json({ error: result.error, step: result.step }, { status: result.status });
 
     const { ok, changed, ...saved } = result;

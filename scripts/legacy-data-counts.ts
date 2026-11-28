@@ -4,8 +4,9 @@
  *
  *   npx tsx scripts/legacy-data-counts.ts            # uses .env.local (dev branch)
  *
- * To run against production, put the production DATABASE_URL and the R2_* values in your shell for ONE command:
- *   DATABASE_URL="…prod…" R2_BUCKET_NAME=… R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… R2_PUBLIC_URL=… \
+ * To run against production, put the production DATABASE_URL and the R2_* values in your shell for ONE command, with
+ * R2_ALLOW_PROD_BUCKET=yes (the production bucket is refused otherwise):
+ *   R2_ALLOW_PROD_BUCKET=yes DATABASE_URL="…prod…" R2_BUCKET_NAME=… R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… R2_PUBLIC_URL=… \
  *     npx tsx scripts/legacy-data-counts.ts
  * (this script does not use the db-guard: it only reads).
  */
@@ -62,7 +63,9 @@ async function main() {
 
   const missing = missingR2Env();
   if (missing.length) { console.log(`\nR2 not configured (missing ${missing.join(", ")}), skipping.`); return; }
-  const { bucket } = r2Config();
+  let bucket: string;
+  try { bucket = r2Config().bucket; }
+  catch (e) { console.log(`\nR2 not used: ${(e as Error).message}`); return; }
   // Count objects by their first path segment (and second, for photos/uploads).
   const counts = new Map<string, number>();
   let token: string | undefined;

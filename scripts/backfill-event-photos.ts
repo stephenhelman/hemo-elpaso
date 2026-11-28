@@ -11,7 +11,8 @@
  *
  * Idempotent: rows that already have a thumbnail are skipped. Note: the old uploader never applied the EXIF rotation
  * (it only discarded it), and the originals are gone, so a photo that was sideways stays sideways.
- * Refuses to run against the production database unless ALLOW_PROD_DB=yes (db-guard).
+ * Refuses to run against the production database unless ALLOW_PROD_DB=yes (db-guard), and against the production
+ * storage bucket unless R2_ALLOW_PROD_BUCKET=yes is put in front of that one command (lib/r2-config.ts).
  */
 import "./_load-env";
 import { PrismaClient } from "@prisma/client";
