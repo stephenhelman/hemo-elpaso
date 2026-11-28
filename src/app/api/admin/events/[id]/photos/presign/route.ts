@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { presignPut } from "@/lib/r2";
+import { storageUnavailable } from "@/lib/storage-response";
 import { ALLOWED_UPLOAD_TYPES, MAX_FILES_PER_BATCH, MAX_UPLOAD_BYTES, newTmpKey } from "@/lib/photos/keys";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,8 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requirePermission("canManageEvents");
   if (error) return error;
+  const down = storageUnavailable("photo upload");
+  if (down) return down;
 
   const body = await req.json().catch(() => null);
   const files: { name?: unknown; size?: unknown; type?: unknown }[] = Array.isArray(body?.files) ? body.files : [];

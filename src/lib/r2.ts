@@ -13,7 +13,7 @@ import sharp from "sharp";
 import { r2Config } from "./r2-config";
 
 // Bucket, endpoint, credentials and public URL come from r2-config.ts and nowhere else. Clients are built on first use,
-// so importing this module (e.g. during `next build`) needs no settings; the server checks them when it starts.
+// so importing this module (e.g. during `next build`) needs no settings; they are checked when first used.
 const connection = () => {
   const { endpoint, accessKeyId, secretAccessKey } = r2Config();
   return { region: "auto", endpoint, credentials: { accessKeyId, secretAccessKey } };
@@ -128,6 +128,11 @@ export async function presignPut(key: string, contentType: string, contentLength
     new PutObjectCommand({ Bucket: bucket(), Key: key, ContentType: contentType, ContentLength: contentLength }),
     { expiresIn: expiresInSeconds, signableHeaders: new Set(["content-type", "content-length"]) },
   );
+}
+
+/** Presigned GET: a short-lived address on the storage API (not the public domain) for one object. */
+export async function presignGet(key: string, expiresInSeconds: number): Promise<string> {
+  return getSignedUrl(presignClient(), new GetObjectCommand({ Bucket: bucket(), Key: key }), { expiresIn: expiresInSeconds });
 }
 
 /** Size in bytes and stored content type, or null if the object does not exist. */

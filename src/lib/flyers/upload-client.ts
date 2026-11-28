@@ -4,6 +4,7 @@
  * request refused before it reached the app) are also reported to it, so they appear in the server log.
  */
 import { flyerFileError, LANG_LABEL, type Lang } from "./index";
+import type { ClientReport } from "./client-report";
 
 export type ClientStep = "presign" | "upload" | "finalize";
 
@@ -27,8 +28,9 @@ export async function saveFlyers(eventId: string, input: FlyerSaveInput, doFetch
   const api = `/api/admin/events/${eventId}/flyers`;
   const json = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-  const report = async (step: ClientStep, detail: { lang?: Lang; httpStatus?: number; message: string }) => {
-    console.error(`[flyers] ${step} failed`, detail);
+  /** Codes go to the server; `local` (an error's own words) stays in this browser's console. */
+  const report = async (step: ClientStep, detail: Omit<ClientReport, "step">, local?: string) => {
+    console.error(`[flyers] ${step} failed`, { ...detail, ...(local ? { message: local } : {}) });
     await doFetch(`${api}/client-error`, json({ step, ...detail })).catch(() => {});
   };
 
@@ -40,12 +42,12 @@ export async function saveFlyers(eventId: string, input: FlyerSaveInput, doFetch
       res = await doFetch(url, json(body));
     } catch (e) {
       const message = `Could not ${what}: the server could not be reached. Check your connection and try again.`;
-      await report(step, { message: `network error: ${(e as Error).message}` });
+      await report(step, { code: "network" }, (e as Error).message);
       throw new FlyerUploadError(step, message);
     }
     const data = (await res.json().catch(() => null)) as (T & { success?: boolean; error?: string }) | null;
     if (res.ok && data?.success === true) return data;
-    if (!data?.error) await report(step, { httpStatus: res.status, message: "unexpected response" });
+    if (!data?.error) await report(step, { code: "unexpected_response", httpStatus: res.status });
     if (res.status === 401) throw new FlyerUploadError(step, "Your sign-in expired. Sign in again, then retry.");
     throw new FlyerUploadError(step, data?.error ? `Could not ${what}: ${data.error}` : `Could not ${what} (HTTP ${res.status}).`);
   };
@@ -69,19 +71,19 @@ export async function saveFlyers(eventId: string, input: FlyerSaveInput, doFetch
       const target = uploads?.find((u) => u.lang === lang);
       const label = LANG_LABEL[lang];
       if (!target) {
-        await report("presign", { lang, message: "no upload URL returned" });
+        await report("presign", { code: "no_upload_url", lang });
         throw new FlyerUploadError("presign", `${label} flyer: could not start the upload.`);
       }
       let put: Response;
       try {
         put = await doFetch(target.url, { method: "PUT", headers: target.headers, body: file });
       } catch (e) {
-        await report("upload", { lang, message: `network or CORS error: ${(e as Error).message}` });
+        await report("upload", { code: "network", lang }, (e as Error).message); // also what a missing CORS rule looks like
         throw new FlyerUploadError("upload", `${label} flyer: the file could not be sent to storage. Check your connection. If it keeps happening, the storage bucket's CORS settings must allow this website.`);
       }
       if (!put.ok) {
         const code = /<Code>([A-Za-z0-9]+)<\/Code>/.exec(await put.text().catch(() => ""))?.[1] ?? "unknown";
-        await report("upload", { lang, httpStatus: put.status, message: `storage refused the file: ${code}` });
+        await report("upload", { code: "storage_refused", lang, httpStatus: put.status, storageCode: code });
         throw new FlyerUploadError("upload", `${label} flyer: storage refused the file (HTTP ${put.status}, ${code}). Nothing was changed.`);
       }
       body[lang === "en" ? "flyerEn" : "flyerEs"] = { key: target.key, name: file.name };

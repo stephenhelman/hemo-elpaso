@@ -17,17 +17,9 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/hooks/useConfirm";
+import type { AdminPhoto } from "@/lib/photos/admin-view";
 
-export interface AdminPhoto {
-  id: string;
-  url: string;
-  thumbUrl: string | null;
-  caption: string | null;
-  captionEs: string | null;
-  approved: boolean;
-  width: number | null;
-  height: number | null;
-}
+export type { AdminPhoto };
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -303,7 +295,7 @@ export default function PhotosManager({ eventId, photos: initial, coverPhotoId: 
               >
                 <div className="relative aspect-square bg-neutral-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.approved ? (p.thumbUrl ?? p.url) : `${api}/${p.id}/image?size=thumb`} alt={p.caption || "Event photo"} loading="lazy" draggable={false} className="w-full h-full object-cover" />
+                  <img src={p.thumbUrl ?? p.url} alt={p.caption || "Event photo"} loading="lazy" draggable={false} className="w-full h-full object-cover" />
                   <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold text-white ${p.approved ? "bg-green-600" : "bg-amber-500"}`}>
                     {p.approved ? "Public" : "Pending"}
                   </span>

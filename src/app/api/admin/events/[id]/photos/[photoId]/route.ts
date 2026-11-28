@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { deletePhotoObjects, moveToVisibility } from "@/lib/photos/service";
+import { adminPhoto } from "@/lib/photos/admin-view";
+import { storageUnavailable } from "@/lib/storage-response";
 import { AuditAction } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +39,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const event = await prisma.event.findUnique({ where: { id: params.id }, select: { coverPhotoId: true } });
     let coverPhotoId = event?.coverPhotoId ?? null;
+
+    // approving or unapproving moves files: refuse before anything is written if storage can't be used
+    if (typeof body.approved === "boolean" && body.approved !== photo.approved) {
+      const down = storageUnavailable("photo approval");
+      if (down) return down;
+    }
 
     // captions
     const caption = cleanCaption(body.caption);
@@ -81,7 +89,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       await prisma.event.update({ where: { id: params.id }, data: { coverPhotoId } });
     }
 
-    return NextResponse.json({ photo, coverPhotoId });
+    return NextResponse.json({ photo: adminPhoto(photo), coverPhotoId });
   } catch (error) {
     console.error("Photo update error:", error);
     return NextResponse.json({ error: "Update failed" }, { status: 500 });
@@ -96,6 +104,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const photo = await prisma.eventPhoto.findFirst({ where: { id: params.photoId, eventId: params.id } });
     if (!photo) return NextResponse.json({ error: "Photo not found" }, { status: 404 });
 
+    const down = storageUnavailable("photo delete");
+    if (down) return down;
     await deletePhotoObjects(photo); // both sizes
     await prisma.eventPhoto.delete({ where: { id: photo.id } });
     await prisma.event.updateMany({ where: { id: params.id, coverPhotoId: photo.id }, data: { coverPhotoId: null } });

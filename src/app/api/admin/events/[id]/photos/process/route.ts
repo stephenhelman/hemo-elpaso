@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { isTmpKeyFor } from "@/lib/photos/keys";
 import { ingestTmpUpload } from "@/lib/photos/ingest";
+import { adminPhoto } from "@/lib/photos/admin-view";
+import { storageUnavailable } from "@/lib/storage-response";
 import { AuditAction } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,8 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { admin, error } = await requirePermission("canManageEvents");
   if (error) return error;
+  const down = storageUnavailable("photo processing");
+  if (down) return down;
 
   const body = await req.json().catch(() => null);
   const tmpKey = typeof body?.key === "string" ? body.key : "";
@@ -34,5 +38,5 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       details: "Uploaded 1 photo (unapproved)",
     },
   });
-  return NextResponse.json({ photo: result.photo });
+  return NextResponse.json({ photo: adminPhoto(result.photo) });
 }

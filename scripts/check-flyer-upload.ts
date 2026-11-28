@@ -3,8 +3,9 @@
  * (db-guard refuses production)
  *  - the event row is written only after the upload is confirmed in storage; the old file goes only after the row
  *  - every failure is logged with its step and reaches the screen as a message
- *  - end to end against the REAL R2 bucket and the dev database with a file larger than Vercel's 4.5 MB request
- *    limit; the throw-away event and its files are deleted afterwards
+ *  - what the browser may report about a failure: codes only, a small body
+ *  - end to end against a DEVELOPMENT R2 bucket (never production; skipped without one) and the dev database, with a
+ *    file larger than Vercel's 4.5 MB request limit; the throw-away event and its files are deleted afterwards
  */
 import "./_load-env";
 import assert from "node:assert/strict";
@@ -16,6 +17,9 @@ import { finalizeFlyers, flyerDeps, flyerKeyFromUrl, isFlyerTmpKeyFor, newFlyerT
 import { FlyerUploadError, saveFlyers } from "../src/lib/flyers/upload-client";
 import { logFlyerFailure } from "../src/lib/flyers/log";
 import { isTmpKeyFor, newTmpKey } from "../src/lib/photos/keys";
+import { CLIENT_REPORT_MAX_BYTES, parseClientReport, readCapped } from "../src/lib/flyers/client-report";
+import { RATE_LIMIT_PREFIX, takeRateLimit } from "../src/lib/rate-limit";
+import { storageSkipReason } from "./_storage";
 
 const logged: string[] = [];
 console.error = (...args: unknown[]) => { logged.push(args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" ")); };
@@ -183,12 +187,12 @@ test("browser: the file goes only to storage, never to our own server", async ()
 test("browser: a refused or unreachable storage upload shows an error, tells the server, and never finalizes", async () => {
   const refused = browser({ put: () => reply("<Error><Code>AccessDenied</Code></Error>", 403) });
   await rejects(refused.run(), "upload", /HTTP 403, AccessDenied/);
-  assert.deepEqual(refused.reports(), [{ step: "upload", lang: "en", httpStatus: 403, message: "storage refused the file: AccessDenied" }]);
+  assert.deepEqual(refused.reports(), [{ step: "upload", code: "storage_refused", lang: "en", httpStatus: 403, storageCode: "AccessDenied" }]);
   assert.ok(!refused.finalized());
 
   const blocked = browser({ put: () => { throw new TypeError("Failed to fetch"); } });
   await rejects(blocked.run(), "upload", /CORS/);
-  assert.match(blocked.reports()[0].message, /Failed to fetch/);
+  assert.deepEqual(blocked.reports(), [{ step: "upload", code: "network", lang: "en" }], "the error's own words stay in the browser");
   assert.ok(!blocked.finalized());
 });
 
@@ -201,7 +205,38 @@ test("browser: server errors, platform error pages and non-JSON replies are all 
   await rejects(browser({ presign: () => reply({ error: "Unauthorized" }, 401) }).run(), "presign", /sign-in expired/);
 });
 
-// ── end to end: real R2 + dev database ───────────────────────────────────────
+// ── what the server accepts from the browser ─────────────────────────────────
+test("a browser report is reduced to known codes: no free text gets through", () => {
+  const secret = "%PDF-1.4 Jane Doe hemophilia";
+  const hostile = parseClientReport({ step: secret, code: secret, lang: secret, httpStatus: secret, storageCode: secret, message: secret, file: secret });
+  assert.deepEqual(hostile, { step: "upload", code: "unknown", lang: undefined, httpStatus: undefined, storageCode: undefined });
+  assert.deepEqual(parseClientReport({ step: "presign", code: "no_upload_url", lang: "es", httpStatus: 503 }), { step: "presign", code: "no_upload_url", lang: "es", httpStatus: 503, storageCode: undefined });
+  for (const storageCode of ["Access Denied", "x".repeat(41), "Code123", 7]) assert.equal(parseClientReport({ storageCode }).storageCode, undefined, String(storageCode));
+  for (const body of [null, "text", 5, []]) assert.equal(parseClientReport(body).code, "unknown");
+});
+
+test("a report body is capped, whatever its headers say", async () => {
+  const post = (body: string, headers: Record<string, string> = {}) => new Request("https://x.example", { method: "POST", body, headers });
+  assert.equal(await readCapped(post("a".repeat(CLIENT_REPORT_MAX_BYTES)), CLIENT_REPORT_MAX_BYTES), "a".repeat(CLIENT_REPORT_MAX_BYTES));
+  assert.equal(await readCapped(post("a".repeat(CLIENT_REPORT_MAX_BYTES + 1)), CLIENT_REPORT_MAX_BYTES), null);
+  assert.equal(await readCapped(post("a".repeat(5000), { "content-length": "5" }), CLIENT_REPORT_MAX_BYTES), null, "a false length");
+  assert.equal(await readCapped(post("ñ".repeat(600)), CLIENT_REPORT_MAX_BYTES), null, "bytes, not characters");
+});
+
+test("the rate limit counts across calls and opens again after the window (dev database)", async () => {
+  const name = `check.${Date.now()}`, limit = { max: 3, windowMs: 60_000 }, now = Date.now();
+  try {
+    const first = await Promise.all(Array.from({ length: 5 }, () => takeRateLimit(name, limit, now)));
+    assert.equal(first.filter(Boolean).length, 3, "parallel requests can't slip past");
+    assert.equal(await takeRateLimit(name, limit, now + 59_000), false);
+    assert.equal(await takeRateLimit(name, limit, now + 61_000), true);
+    assert.equal(await takeRateLimit(`${name}.other`, limit, now), true, "each key on its own");
+  } finally {
+    await prisma.appSetting.deleteMany({ where: { key: { startsWith: `${RATE_LIMIT_PREFIX}${name}` } } });
+  }
+});
+
+// ── end to end: a development bucket + dev database ──────────────────────────
 const events: string[] = [];
 after(async () => {
   for (const id of events) await deleteEventStorage(id);
@@ -209,7 +244,9 @@ after(async () => {
   await prisma.$disconnect();
 });
 
-test("real storage: a 6 MB flyer is saved, is public, and replacing it removes the old file", async () => {
+test("real storage: a 6 MB flyer is saved, is public, and replacing it removes the old file", async (t) => {
+  const skip = storageSkipReason("check:flyer-upload");
+  if (skip) return t.skip(skip);
   const event = await prisma.event.create({
     data: { slug: `zz-flyer-check-${Date.now()}`, titleEn: "zz flyer upload check", titleEs: "zz flyer upload check", eventDate: new Date(), location: "test", createdBy: "check-flyer-upload", status: "draft" },
   });

@@ -13,6 +13,10 @@
  *   - the phone webhook answers a signed request and refuses others (TWILIO_MODE=capture, throw-away credentials)
  *   - Voicemail: the President sees masked numbers and can ask for one in full (audited); nobody else gets the page,
  *     the audio or a number, or can delete
+ *   - pending photos: the admin is given no public address; the image route redirects to a presigned one
+ *   - flyer error reports: signed-in event managers only, small, rate limited, codes only in the log
+ *   - without storage settings only the storage routes fail (503); pages still work
+ *   Storage settings here point nowhere (presigning is offline): this check never reaches a bucket.
  *   - a static scan: no server module calls or reads a value imported from a "use client" module (components as JSX only)
  */
 import "./_load-env";
@@ -27,6 +31,9 @@ import { prisma } from "../src/lib/db";
 import { ROUTING_KEY } from "../src/lib/phone/store";
 import { encryptCaller } from "../src/lib/phone/caller";
 import { restorePhoneSystem, savePhoneSystem, setPhoneSystem } from "./_phone-flag";
+import { CLIENT_REPORT_LIMIT } from "../src/lib/flyers/client-report";
+import { RATE_LIMIT_PREFIX } from "../src/lib/rate-limit";
+import { readR2Config } from "../src/lib/r2-config";
 
 const require_ = createRequire(join(process.cwd(), "package.json"));
 // jose is the Auth0 SDK's own dependency (the session cookie is a JWE made with it)
@@ -75,6 +82,11 @@ const PHONE_ENV = {
   TWILIO_WEBHOOK_BASE_URL: "https://phone.check.example", PHONE_DATA_KEY: "ab".repeat(32),
 };
 let routingBefore: unknown;
+/** Settings that lead nowhere: enough to presign an address, never a real bucket. */
+const STORAGE_ENV = {
+  R2_ACCOUNT_ID: "checksonly", R2_ACCESS_KEY_ID: "check-key", R2_SECRET_ACCESS_KEY: "check-secret",
+  R2_BUCKET_NAME: "checks-no-bucket", R2_PUBLIC_URL: "https://files.check.example",
+};
 
 before(async () => {
   assert.ok(existsSync(".next/BUILD_ID"), "no production build: run `npm run build` (npm run check:admin-pages does it)");
@@ -101,7 +113,7 @@ before(async () => {
   president = await boardPerson("PRESIDENT");
   secretary = await boardPerson("SECRETARY");
 
-  server = spawn("npx", ["next", "start", "-p", String(PORT)], { env: { ...process.env, ...PHONE_ENV, AUTH0_BASE_URL: BASE, PORT: String(PORT) }, stdio: ["ignore", "pipe", "pipe"] });
+  server = spawn("npx", ["next", "start", "-p", String(PORT)], { env: { ...process.env, ...PHONE_ENV, ...STORAGE_ENV, AUTH0_BASE_URL: BASE, PORT: String(PORT) }, stdio: ["ignore", "pipe", "pipe"] });
   server.stdout!.on("data", (d) => (serverLog += d));
   server.stderr!.on("data", (d) => (serverLog += d));
   const until = Date.now() + 60_000;
@@ -301,6 +313,105 @@ test("production build: Voicemail is for the President (and Vice President) only
   } finally {
     await prisma.auditLog.deleteMany({ where: { resourceType: "PhoneVoicemail", OR: [{ resourceId: id }, { patientId: { in: patients } }] } });
     await prisma.phoneVoicemail.delete({ where: { id } });
+  }
+});
+
+// ── storage ──
+async function photoEvent() {
+  const event = await prisma.event.create({ data: { slug: `${tag}-photos-${randomUUID().slice(0, 8)}`, titleEn: `Photos ${tag}`, titleEs: "Fotos", eventDate: new Date(Date.now() - 864e5), location: "x", createdBy: "check", status: "draft" } });
+  const add = (approved: boolean) => {
+    const area = approved ? "photos" : "photos-pending", id = randomUUID();
+    const key = `${area}/${event.id}/${id}.webp`, thumbKey = `${area}/${event.id}/${id}-t.webp`;
+    return prisma.eventPhoto.create({ data: { eventId: event.id, key, thumbKey, url: `${STORAGE_ENV.R2_PUBLIC_URL}/${key}`, thumbUrl: `${STORAGE_ENV.R2_PUBLIC_URL}/${thumbKey}`, approved, uploadedBy: "uploader@check.example" } });
+  };
+  return { event, pending: await add(false), approved: await add(true) };
+}
+const post = (base: string, path: string, cookie: string, body: string, method = "POST") =>
+  fetch(`${base}${path}`, { method, headers: { cookie, "content-type": "application/json" }, body, redirect: "manual" });
+
+test("production build: pending photos reach the admin only through presigned addresses", async () => {
+  const { event, pending, approved } = await photoEvent();
+  try {
+    const page = await get(`/admin/events/${event.id}/photos`, president);
+    const html = await page.text();
+    assert.equal(page.status, 200, `${page.status}\n${serverLog.slice(-1500)}`);
+    notBroken(html, "photos");
+    const api = await (await get(`/api/admin/events/${event.id}/photos`, president)).text();
+    for (const [where, text] of [["page", html], ["api", api]] as const) {
+      assert.ok(!text.includes(pending.key) && !text.includes(pending.thumbKey!), `${where}: no storage address or key for a pending photo`);
+      assert.ok(text.includes(`/photos/${pending.id}/image?size=thumb`), `${where}: our route`);
+      assert.ok(text.includes(approved.thumbUrl!), `${where}: approved photos keep their public address`);
+      assert.ok(!text.includes("uploader@check.example"), where);
+    }
+    const path = `/api/admin/events/${event.id}/photos/${pending.id}/image?size=thumb`;
+    const res = await get(path, president);
+    assert.equal(res.status, 302, serverLog.slice(-1500));
+    assert.equal(res.headers.get("cache-control"), "private, no-store");
+    const to = new URL(res.headers.get("location")!);
+    assert.notEqual(to.host, new URL(STORAGE_ENV.R2_PUBLIC_URL).host, "never the public domain");
+    // the storage API addresses the bucket as a subdomain of the account's endpoint
+    assert.equal(to.host, `${STORAGE_ENV.R2_BUCKET_NAME}.${new URL(readR2Config(STORAGE_ENV).endpoint).host}`, "the storage API");
+    assert.equal(to.pathname, `/${pending.thumbKey}`);
+    assert.ok(to.searchParams.get("X-Amz-Signature") && to.searchParams.get("X-Amz-Expires") === "120");
+    const out = await get(path, "");
+    assert.ok(out.status === 401 && !out.headers.get("location"), "signed out");
+  } finally {
+    await prisma.event.delete({ where: { id: event.id } });
+  }
+});
+
+test("production build: flyer error reports need an event manager, are small and limited, and log codes only", async () => {
+  const path = `/api/admin/events/${randomUUID()}/flyers/client-error`;
+  const secret = "JANEDOE-FILE-CONTENTS";
+  try {
+    const report = (cookie: string, body: object | string) => post(BASE, path, cookie, typeof body === "string" ? body : JSON.stringify(body));
+    assert.equal((await report("", { step: "upload", code: "network" })).status, 401);
+    assert.equal((await report(secretary, { step: "upload", code: "network" })).status, 403);
+    assert.equal((await report(president, { step: "upload", code: "storage_refused", storageCode: "AccessDenied", httpStatus: 403, message: secret, file: secret })).status, 204);
+    assert.equal((await report(president, `%PDF ${secret} not json`)).status, 204);
+    assert.equal((await report(president, JSON.stringify({ step: "upload", pad: secret.repeat(100) }))).status, 413);
+    await new Promise((r) => setTimeout(r, 200));
+    assert.match(serverLog, /\[flyers\] upload failed[\s\S]{0,300}storage_refused \(AccessDenied\)/);
+    assert.ok(!serverLog.includes(secret), "nothing the browser wrote is logged");
+    let last = 0;
+    for (let i = 0; i < CLIENT_REPORT_LIMIT.max; i++) last = (await report(president, { step: "upload", code: "network" })).status;
+    assert.equal(last, 429);
+  } finally {
+    await prisma.appSetting.deleteMany({ where: { key: { startsWith: `${RATE_LIMIT_PREFIX}flyer-client-error.`, }, OR: patients.map((id) => ({ key: { endsWith: id } })) } });
+  }
+});
+
+test("production build: with no storage settings, pages work and only storage actions answer 503", async () => {
+  const port = PORT + 1, base = `http://localhost:${port}`;
+  const none = Object.fromEntries(Object.keys(STORAGE_ENV).map((k) => [k, ""])); // blank, so .env.local can't fill them
+  let log = "";
+  const second = spawn("npx", ["next", "start", "-p", String(port)], { env: { ...process.env, ...PHONE_ENV, ...none, AUTH0_BASE_URL: base, PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"], detached: true });
+  second.stdout!.on("data", (d) => (log += d));
+  second.stderr!.on("data", (d) => (log += d));
+  const { event, pending } = await photoEvent();
+  try {
+    const until = Date.now() + 60_000;
+    for (;;) {
+      try { await fetch(`${base}/`, { redirect: "manual" }); break; } catch { /* not up yet */ }
+      assert.ok(Date.now() < until, `second server did not come up:\n${log}`);
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    for (const path of ["/", "/events", "/gallery", "/privacy"]) assert.equal((await fetch(`${base}${path}`, { redirect: "manual" })).status, 200, `${path}\n${log.slice(-1500)}`);
+    for (const path of [`/admin/events/${event.id}/photos`, `/admin/patients/${houseId}`]) assert.equal((await fetch(`${base}${path}`, { headers: { cookie: president }, redirect: "manual" })).status, 200, `${path}\n${log.slice(-1500)}`);
+    const api = `/api/admin/events/${event.id}`;
+    assert.equal((await fetch(`${base}${api}/photos/${pending.id}/image`, { headers: { cookie: president }, redirect: "manual" })).status, 503);
+    assert.equal((await post(base, `${api}/photos/presign`, president, JSON.stringify({ files: [] }))).status, 503);
+    assert.equal((await post(base, `${api}/photos/${pending.id}`, president, JSON.stringify({ approved: true }), "PATCH")).status, 503);
+    assert.equal((await post(base, `${api}/photos/${pending.id}`, president, JSON.stringify({ caption: "still works" }), "PATCH")).status, 200);
+    assert.equal((await post(base, `${api}/flyers/presign`, president, JSON.stringify({ files: [] }))).status, 503);
+    assert.equal((await post(base, `${api}/flyers`, president, JSON.stringify({ flyerEnAlt: "alt text only" }))).status, 200);
+    assert.equal((await prisma.eventPhoto.findUniqueOrThrow({ where: { id: pending.id } })).approved, false, "nothing was changed");
+    assert.match(log, /\[r2\] file storage is unavailable[\s\S]*R2_BUCKET_NAME/);
+    assert.match(log, /\[r2\] storage unavailable/);
+  } finally {
+    try { process.kill(-second.pid!, "SIGTERM"); } catch { second.kill("SIGTERM"); }
+    await prisma.auditLog.deleteMany({ where: { resourceId: { in: [event.id, pending.id] } } });
+    await prisma.event.delete({ where: { id: event.id } });
   }
 });
 

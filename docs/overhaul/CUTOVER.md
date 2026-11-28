@@ -54,7 +54,8 @@ Then **Redeploy Production with "use existing build cache" unticked** (`NEXT_PUB
 1. Cloudflare → R2 → the bucket → Settings → Custom Domains → add `media.hemoelpaso.org`.
 2. Cloudflare → hemoelpaso.org → Security → WAF → Custom rules → create a **Block** rule, expression:
    `(http.host eq "media.hemoelpaso.org" and (starts_with(http.request.uri.path, "/photos-pending/") or starts_with(http.request.uri.path, "/uploads/")))`
-   (the admin reads pending photos through an authenticated route, so nothing public needs these paths).
+   (the admin reads pending photos with short-lived presigned addresses on the storage API, so nothing public needs
+   these paths; `docs/STORAGE.md`).
 3. Add `https://hemoelpaso.org` to the bucket CORS if not already there (step 3).
 4. Set `R2_PUBLIC_URL` = `https://media.hemoelpaso.org` in Production and redeploy.
 5. **Rewrite the stored URLs.** Existing rows hold full URLs written at upload time, so the env change alone does not move them: `npx tsx scripts/rewrite-media-urls.ts --from <old R2_PUBLIC_URL> --to https://media.hemoelpaso.org` (dry run), then add `--apply`. Run it with the production `DATABASE_URL` in your shell for that one command.
@@ -224,7 +225,7 @@ Seed the email template catalogue (admin → Settings → Email templates) or it
 | `CHECKIN_TOKEN_KEY` | **new, required**: 64 hex chars (`openssl rand -hex 32`). Keep a copy somewhere safe. |
 | `CRON_SECRET` | reminder cron auth |
 | `REGISTRATION_OPEN` | `false` / `true` |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | **required** (flyers/photos): the production build fails and the server will not start without them |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | **required** (flyers/photos): the production build fails without them. Preview gets the **development** bucket (`docs/STORAGE.md`); the production bucket is refused there |
 | `DEEPL_API_KEY` | board-only translate |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | phone line (`TWILIO_SETUP.md`); optional `TWILIO_API_KEY_SID`/`_SECRET`, `TWILIO_FALLBACK_NUMBER`. Production only |
 | `PHONE_DATA_KEY` | **required for voicemail:** 64 hex chars (`openssl rand -hex 32`). Production only; keep a copy somewhere safe |

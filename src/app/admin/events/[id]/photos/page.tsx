@@ -3,6 +3,7 @@ import { getAdminWithPermissions } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { headers } from "next/headers";
 import { noMediaConsentCount } from "@/lib/photos/consent";
+import { adminPhoto } from "@/lib/photos/admin-view";
 import EventPhotosClient from "./EventPhotosClient";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function EventPhotosPage({ params }: Props) {
   return (
     <EventPhotosClient
       event={{ id: event.id, titleEn: event.titleEn, coverPhotoId: event.coverPhotoId }}
-      photos={event.photos}
+      photos={event.photos.map(adminPhoto)}
       noPhotosFamilies={consent.noPhotos}
       totalFamilies={consent.families}
       cameFromEvents={cameFromEvents}
