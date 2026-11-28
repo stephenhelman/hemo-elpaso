@@ -26,6 +26,7 @@ import { join } from "node:path";
 import { prisma } from "../src/lib/db";
 import { ROUTING_KEY } from "../src/lib/phone/store";
 import { encryptCaller } from "../src/lib/phone/caller";
+import { restorePhoneSystem, savePhoneSystem, setPhoneSystem } from "./_phone-flag";
 
 const require_ = createRequire(join(process.cwd(), "package.json"));
 // jose is the Auth0 SDK's own dependency (the session cookie is a JWE made with it)
@@ -232,12 +233,19 @@ test("production build: Settings > Phone is open to admin@ and the President onl
   else await prisma.appSetting.update({ where: { key: ROUTING_KEY }, data: { value: routingBefore as never } });
 });
 
-test("production build: the phone webhook answers a signed request and refuses an unsigned one", async () => {
+test("production build: the phone webhook answers a signed request and refuses an unsigned one", async (t) => {
+  const switchBefore = await savePhoneSystem();
+  t.after(() => restorePhoneSystem(switchBefore));
   const path = "/api/twilio/voice";
   const params = { AccountSid: PHONE_ENV.TWILIO_ACCOUNT_SID, CallSid: "CAcheck" };
   const signature = createHmac("sha1", PHONE_ENV.TWILIO_AUTH_TOKEN)
     .update(`${PHONE_ENV.TWILIO_WEBHOOK_BASE_URL}${path}` + Object.entries(params).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => k + v).join("")).digest("base64");
   const post = (headers: Record<string, string>) => fetch(`${BASE}${path}`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", ...headers }, body: new URLSearchParams(params).toString(), redirect: "manual" });
+  await setPhoneSystem(false);
+  const off = await post({ "x-twilio-signature": signature });
+  assert.equal(off.status, 200, `${off.status}\n${serverLog.slice(-1500)}`);
+  assert.ok(!(await off.text()).includes("<Gather"), "switched off: no menu");
+  await setPhoneSystem(true);
   const res = await post({ "x-twilio-signature": signature });
   assert.equal(res.status, 200, `${res.status}\n${serverLog.slice(-1500)}`);
   assert.match(await res.text(), /<Response><Gather[\s\S]*press 1/);

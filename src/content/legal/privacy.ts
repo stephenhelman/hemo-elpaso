@@ -2,16 +2,16 @@ import { LEGAL_EFFECTIVE_DATE } from "./meta";
 import type { LegalDoc } from "./types";
 
 /**
- * Privacy Policy v2 (board-approved master policy, docs/legal/POLICY_V2_DRAFT.md). English controls. Spanish is a
- * working translation awaiting native-speaker review (docs/overhaul/ES_REVIEW.md, "Legal v2").
- * Version 1 stays in git history (tag full-app-2026-11 and earlier commits). Never edit a published version in place:
- * add privacy v3.
+ * Privacy Policy v3: v2 (board-approved master policy, docs/legal/POLICY_V2_DRAFT.md) plus the phone line
+ * (docs/legal/POLICY_V3_DRAFT.md). English controls. Spanish is a working translation awaiting native-speaker review
+ * (docs/overhaul/ES_REVIEW.md, "Legal v2" and "Privacy Policy v3").
+ * Versions 1 and 2 stay in git history. Never edit a published version in place: add the next version.
  *
  * Sections marked {STATUS:key} follow the feature toggle of that key (Admin > Settings > Feature toggles): they read
  * "Not yet available" until the toggle is on, then "Available since <date>". See types.ts and analyze.ts.
  */
 export const privacy: LegalDoc = {
-  version: "2",
+  version: "3",
   effectiveDate: LEGAL_EFFECTIVE_DATE,
   en: {
     title: "Privacy Policy",
@@ -37,6 +37,18 @@ export const privacy: LegalDoc = {
       {
         t: "p",
         text: "**When you visit the website:** privacy-friendly page-view statistics that use no cookies and don’t identify you, and one cookie that remembers your language. Our hosting provider sees standard technical information, such as your IP address, to deliver the site.",
+      },
+      {
+        t: "p",
+        text: "**Phone calls.** {STATUS:phone_system} When you call us, we and our phone provider receive your number, the time and length of the call and the option you choose. We connect you to the board member assigned to answer. We don’t record live calls. If the phone menu is switched off, your call goes to one board member or you hear an automated notice, and no message is taken.",
+      },
+      {
+        t: "p",
+        text: "**Voicemail.** {STATUS:phone_system} If you leave a message, our phone provider stores the recording. Only the President and Vice President can listen to it. We delete it after {VOICEMAIL_RETENTION} or sooner. We don’t transcribe it or attach it to email. We also keep your number, encrypted, with the time and length of the message, so we can return your call, limit repeated messages and delete yours if you ask. Only the President and Vice President can see your number, and we record each time they view it on our website. Please leave out medical details. In an emergency, call 911.",
+      },
+      {
+        t: "p",
+        text: "**Calls from our board.** {STATUS:phone_dialer} Board members may call you from our website using HOEP’s number. We keep who called, when and the result, such as reached or left a message.",
       },
       { t: "p", text: "**Site announcements.** {STATUS:site_announcements} If you close an announcement, your browser remembers that on your device. It isn’t sent to us." },
       { t: "p", text: "**Photos at events:** we publish photos only of people who consented to photo use." },
@@ -100,6 +112,7 @@ export const privacy: LegalDoc = {
           "To manage RSVPs, send confirmations and reminders, and check people in.",
           "To send the Google Meet and YouTube links for a virtual event, only to households confirmed to attend virtually. {STATUS:recordings}",
           "To answer your messages.",
+          "To answer your phone calls and return your voicemail. {STATUS:phone_system}",
           "To let you see and update your household’s information, and manage your photo, text and newsletter choices, on your family page. {STATUS:family_portal}",
           "To confirm a diagnosis, if you choose to verify it. {STATUS:verification}",
           "To send the texts you opted into. {STATUS:sms}",
@@ -142,7 +155,7 @@ export const privacy: LegalDoc = {
           ["Railway", "Hosts Puente Live. {STATUS:live_captions}"],
           ["Deepgram", "Turns speech into text for live captions; audio is kept only while it’s processed. {STATUS:live_captions}"],
           ["Anthropic", "Translates caption text; deleted within 30 days and never used to train models. {STATUS:live_captions}"],
-          ["Twilio", "Sends text messages. {STATUS:sms}"],
+          ["Twilio", "Answers and connects our calls and stores voicemails. {STATUS:phone_system} Calls from our board through the website. {STATUS:phone_dialer} Sends text messages. {STATUS:sms}"],
           ["Payment processor: {PROCESSOR}", "Processes donations. {STATUS:donations}"],
         ],
       },
@@ -168,6 +181,8 @@ export const privacy: LegalDoc = {
           ["Email delivery records", "1 year"],
           ["Access logs", "3 years"],
           ["Contact-form messages", "In HOEP’s inbox until the matter is resolved"],
+          ["Voicemail recordings {STATUS:phone_system}", "No more than {VOICEMAIL_RETENTION}, then deleted"],
+          ["Phone call records (number, time and length), and the time and length of a deleted voicemail {STATUS:phone_system}", "1 year"],
           ["Published photos", "Until we remove them, including on request"],
           ["Event recordings {STATUS:recordings}", "Until removed, including on request"],
           ["Live caption audio {STATUS:live_captions}", "Not saved by HOEP; held by the speech service only while processing"],
@@ -227,6 +242,18 @@ export const privacy: LegalDoc = {
       {
         t: "p",
         text: "**Cuando visita el sitio web:** estadísticas de visitas que respetan la privacidad, no usan cookies y no lo identifican, y una sola cookie que recuerda su idioma. Nuestro proveedor de alojamiento web ve información técnica estándar, como su dirección IP, para poder mostrarle el sitio.",
+      },
+      {
+        t: "p",
+        text: "**Llamadas telefónicas.** {STATUS:phone_system} Cuando nos llama, nosotros y nuestro proveedor telefónico recibimos su número, la hora y la duración de la llamada y la opción que elige. Lo comunicamos con el miembro de la junta asignado para contestar. No grabamos las llamadas en vivo. Si el menú telefónico está desactivado, su llamada pasa a un miembro de la junta o usted escucha un aviso automático, y no se toman mensajes.",
+      },
+      {
+        t: "p",
+        text: "**Mensajes de voz.** {STATUS:phone_system} Si deja un mensaje, nuestro proveedor telefónico guarda la grabación. Solo la presidencia y la vicepresidencia pueden escucharla. La borramos después de {VOICEMAIL_RETENTION} o antes. No la transcribimos ni la adjuntamos a ningún correo. También guardamos su número, cifrado, con la hora y la duración del mensaje, para devolverle la llamada, limitar los mensajes repetidos y borrar los suyos si lo pide. Solo la presidencia y la vicepresidencia pueden ver su número, y anotamos cada vez que lo consultan en nuestro sitio web. Por favor, no incluya detalles médicos. En una emergencia, llame al 911.",
+      },
+      {
+        t: "p",
+        text: "**Llamadas de nuestra junta.** {STATUS:phone_dialer} Los miembros de la junta pueden llamarle desde nuestro sitio web usando el número de HOEP. Anotamos quién llamó, cuándo y el resultado, por ejemplo si lograron hablar con usted o le dejaron un mensaje.",
       },
       { t: "p", text: "**Anuncios del sitio.** {STATUS:site_announcements} Si cierra un anuncio, su navegador lo recuerda en su dispositivo. Esa información no se nos envía." },
       { t: "p", text: "**Fotos en los eventos:** solo publicamos fotos de las personas que dieron su consentimiento para el uso de fotos." },
@@ -290,6 +317,7 @@ export const privacy: LegalDoc = {
           "Para administrar las confirmaciones de asistencia, enviar confirmaciones y recordatorios, y registrar la entrada de las personas.",
           "Para enviar los enlaces de Google Meet y YouTube de un evento en línea, solo a los hogares confirmados para participar en línea. {STATUS:recordings}",
           "Para responder a sus mensajes.",
+          "Para contestar sus llamadas y responder a sus mensajes de voz. {STATUS:phone_system}",
           "Para que pueda ver y actualizar la información de su hogar, y administrar sus opciones de fotos, mensajes de texto y boletín, en su página familiar. {STATUS:family_portal}",
           "Para confirmar un diagnóstico, si usted decide verificarlo. {STATUS:verification}",
           "Para enviarle los mensajes de texto que aceptó recibir. {STATUS:sms}",
@@ -332,7 +360,7 @@ export const privacy: LegalDoc = {
           ["Railway", "Aloja Puente Live. {STATUS:live_captions}"],
           ["Deepgram", "Convierte la voz en texto para los subtítulos en vivo; el audio se conserva solo mientras se procesa. {STATUS:live_captions}"],
           ["Anthropic", "Traduce el texto de los subtítulos; se borra en un plazo de 30 días y nunca se usa para entrenar modelos. {STATUS:live_captions}"],
-          ["Twilio", "Envía los mensajes de texto. {STATUS:sms}"],
+          ["Twilio", "Contesta y comunica nuestras llamadas y guarda los mensajes de voz. {STATUS:phone_system} Llamadas de nuestra junta desde el sitio web. {STATUS:phone_dialer} Envía los mensajes de texto. {STATUS:sms}"],
           ["Procesador de pagos: {PROCESSOR}", "Procesa las donaciones. {STATUS:donations}"],
         ],
       },
@@ -358,6 +386,8 @@ export const privacy: LegalDoc = {
           ["Registros de entrega de correos", "1 año"],
           ["Registros de acceso", "3 años"],
           ["Mensajes del formulario de contacto", "En el correo de HOEP hasta que el asunto se resuelva"],
+          ["Grabaciones de mensajes de voz {STATUS:phone_system}", "No más de {VOICEMAIL_RETENTION}; después se borran"],
+          ["Registros de llamadas (número, hora y duración), y la hora y duración de un mensaje de voz borrado {STATUS:phone_system}", "1 año"],
           ["Fotos publicadas", "Hasta que las retiremos, incluso si usted lo solicita"],
           ["Grabaciones de eventos {STATUS:recordings}", "Hasta que se retiren, incluso si usted lo solicita"],
           ["Audio de los subtítulos en vivo {STATUS:live_captions}", "HOEP no lo guarda; el servicio de voz lo conserva solo mientras lo procesa"],

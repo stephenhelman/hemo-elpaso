@@ -1,13 +1,18 @@
 /** What the Phone settings page is given. Numbers leave the server MASKED, and codes never. */
 import { maskNumber, resolveTwilioMode, type TwilioMode } from "@/lib/twilio/mode";
-import { hoepNumber, twilioConfig } from "@/lib/twilio/config";
+import { fallbackNumber, hoepNumber, twilioConfig } from "@/lib/twilio/config";
 import { OPTION_KEYS, OPTIONS, destinationFor, type Hours, type OptionKey } from "./definitions";
 import { boardPeople, readRouting } from "./store";
 import { callerDataReady } from "./caller";
+import { phoneSystemOn } from "./system";
 
 export interface PhoneView {
   mode: TwilioMode;
   configured: boolean;
+  /** The phone_system toggle. Off: calls go to the fallback number and nothing is recorded. */
+  systemOn: boolean;
+  /** TWILIO_FALLBACK_NUMBER is set to a usable number. */
+  fallbackSet: boolean;
   /** Callers can leave a message (PHONE_DATA_KEY is set). */
   voicemailReady: boolean;
   numbers: { id: string; owner: string; masked: string; verified: boolean; onBoard: boolean }[];
@@ -24,6 +29,8 @@ export async function phoneView(canManage: boolean, now = new Date()): Promise<P
   return {
     mode: resolveTwilioMode(process.env),
     configured,
+    systemOn: await phoneSystemOn(),
+    fallbackSet: !!fallbackNumber(),
     voicemailReady: callerDataReady(),
     numbers: routing.numbers.map((n) => ({
       id: n.id, owner: people.find((p) => p.id === n.ownerId)?.name ?? "—", masked: maskNumber(n.number), verified: !!n.verifiedAt, onBoard: boardIds.has(n.ownerId),

@@ -1,10 +1,11 @@
-/** Run: npm run check:legal (pure, no DB). Policy v2 content rules: toggle binding, placeholders, consent v3, notices. */
+/** Run: npm run check:legal (pure, no DB). Policy content rules: versions, toggle binding, placeholders, consent v3, notices, phone. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { PLACEHOLDERS, PLACEHOLDER_KEYS, LIVE_POLICY_VERSION } from "../src/content/legal/meta";
 import { placeholdersBlocking, unitsOf, unknownStatusTokens, unresolvedPlaceholders } from "../src/content/legal/analyze";
 import { statusLabel } from "../src/content/legal/status";
+import { CALL_RECORD_DAYS, VOICEMAIL_RECORD_DAYS, VOICEMAIL_RETENTION_DAYS } from "../src/lib/phone/definitions";
 import { privacy } from "../src/content/legal/privacy";
 import { terms } from "../src/content/legal/terms";
 import { children } from "../src/content/legal/children";
@@ -14,12 +15,39 @@ import { toggleFeature } from "../src/lib/features/change";
 const docs = { privacy, terms, children };
 const units = Object.entries(docs).flatMap(([n, d]) => unitsOf(n, d));
 
-test("policy v2: version 2, and the live policy version matches", () => {
-  assert.equal(privacy.version, "2");
+test("privacy policy v3 is live; the terms and children's policy are unchanged at v2", () => {
+  assert.equal(privacy.version, "3");
   assert.equal(terms.version, "2");
   assert.equal(children.version, "2");
-  assert.equal(LIVE_POLICY_VERSION, 2);
-  for (const f of Object.values(FEATURES)) assert.ok(f.coveredByPolicy <= 2);
+  assert.equal(LIVE_POLICY_VERSION, 3);
+  for (const f of Object.values(FEATURES)) assert.ok(f.coveredByPolicy <= 3);
+});
+
+test("phone paragraphs, vendor and retention rows: both languages, bound to their switches, and matching the code", () => {
+  assert.equal(PLACEHOLDERS.VOICEMAIL_RETENTION.value?.en, `${VOICEMAIL_RETENTION_DAYS} days`);
+  assert.equal(PLACEHOLDERS.VOICEMAIL_RETENTION.value?.es, `${VOICEMAIL_RETENTION_DAYS} días`);
+  assert.deepEqual([CALL_RECORD_DAYS, VOICEMAIL_RECORD_DAYS], [365, 365], "the policy says 1 year");
+  assert.deepEqual(placeholdersBlocking(units, "phone_system"), []);
+  const of = (lang: "en" | "es", re: RegExp) => { const u = units.filter((x) => x.doc === "privacy" && x.lang === lang && re.test(x.text)); assert.equal(u.length, 1, `${lang} ${re}`); return u[0]; };
+  const statements: [RegExp, RegExp, FeatureKey, RegExp[], RegExp[]][] = [
+    [/^\*\*Phone calls\.\*\*/, /^\*\*Llamadas telefónicas\.\*\*/, "phone_system", [/receive your number/, /We don’t record live calls/], [/recibimos su número/, /No grabamos las llamadas en vivo/]],
+    [/^\*\*Voicemail\.\*\*/, /^\*\*Mensajes de voz\.\*\*/, "phone_system",
+      [/Only the President and Vice President can listen/, /so we can return your call/, /Only the President and Vice President can see your number, and we record each time/, /\{VOICEMAIL_RETENTION\} or sooner/, /don’t transcribe it or attach it to email/, /leave out medical details\. In an emergency, call 911/],
+      [/Solo la presidencia y la vicepresidencia pueden escucharla/, /para devolverle la llamada/, /Solo la presidencia y la vicepresidencia pueden ver su número, y anotamos cada vez/, /\{VOICEMAIL_RETENTION\} o antes/, /No la transcribimos ni la adjuntamos/, /no incluya detalles médicos\. En una emergencia, llame al 911/]],
+    [/^\*\*Calls from our board\.\*\*/, /^\*\*Llamadas de nuestra junta\.\*\*/, "phone_dialer", [/using HOEP’s number/, /who called, when and the result/], [/usando el número de HOEP/, /quién llamó, cuándo y el resultado/]],
+  ];
+  for (const [en, es, key, wantEn, wantEs] of statements) {
+    for (const [lang, head, want] of [["en", en, wantEn], ["es", es, wantEs]] as const) {
+      const u = of(lang, head);
+      assert.deepEqual(u.features, [key]);
+      for (const re of want) assert.match(u.text, re);
+    }
+  }
+  assert.deepEqual(of("en", /^Twilio \|/).features.sort(), ["phone_dialer", "phone_system", "sms"]);
+  assert.deepEqual(of("es", /^Twilio \|/).features.sort(), ["phone_dialer", "phone_system", "sms"]);
+  for (const re of [/^Voicemail recordings .*\| No more than \{VOICEMAIL_RETENTION\}/, /^Phone call records .*\| 1 year/]) of("en", re);
+  for (const re of [/^Grabaciones de mensajes de voz .*\| No más de \{VOICEMAIL_RETENTION\}/, /^Registros de llamadas .*\| 1 año/]) of("es", re);
+  assert.match(of("en", /^\*\*Text messages\.\*\*/).text, /sign-in codes/, "the texting paragraph waits for the texting phase");
 });
 
 test("every {STATUS:key} names a real feature; every feature has a privacy section; EN and ES bind the same features", () => {
@@ -91,7 +119,7 @@ test("the legal page, print view and RichText all render statuses from the live 
 test("toggleFeature refuses to enable a feature whose legal placeholders are unresolved", async () => {
   const calls: string[] = [];
   const d = {
-    liveVersion: 2, unresolvedPlaceholders: (k: FeatureKey) => (k === "donations" ? ["PROCESSOR"] : []),
+    liveVersion: 3, unresolvedPlaceholders: (k: FeatureKey) => (k === "donations" ? ["PROCESSOR"] : []),
     readEnabled: async () => false, persist: async () => { calls.push("persist"); }, invalidate: () => {}, notifyOfficers: async () => true,
   };
   // donations is also "not built", so the placeholder rule is checked with a registry that has it built:

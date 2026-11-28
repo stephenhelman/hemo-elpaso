@@ -10,7 +10,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { PROMPT_IDS, PROMPT_TEXT, menuLines, prompt, promptText, type PromptId } from "../src/lib/phone/prompts";
 import { RECORDED, recordingPath } from "../src/lib/phone/recordings";
-import { greeting, screen, screenAnswer, unanswered, verifyAnswer, verifyPrompt, voicemailDone, voicemailPrompt } from "../src/lib/phone/ivr";
+import { closed, greeting, screen, screenAnswer, switchedOff, unanswered, verifyAnswer, verifyPrompt, voicemailDone, voicemailPrompt } from "../src/lib/phone/ivr";
 import { OPTION_KEYS } from "../src/lib/phone/definitions";
 import { VoiceTwiml, type VoiceLang } from "../src/lib/twilio/twiml";
 import { reachFrom } from "../src/lib/twilio/mode";
@@ -25,7 +25,7 @@ const live = () => new VoiceTwiml(reachFrom({ TWILIO_MODE: "allowlist" }));
 /** Every TwiML document the line can produce. */
 function everything(): string[] {
   return [
-    greeting(live(), 1), greeting(live(), 2),
+    greeting(live(), 1), greeting(live(), 2), closed(live()), switchedOff(live(), { to: null, callerId: "+19155550100" }),
     ...OPTION_KEYS.flatMap((o) => [screen(live(), o), screenAnswer(live(), "1", o), unanswered(live(), o), voicemailPrompt(live(), o, true), voicemailPrompt(live(), o, false), voicemailDone(live(), o, "12")]),
     verifyPrompt(live(), "n", true), verifyPrompt(live(), "n", false), verifyAnswer(live(), "n", "verified"), verifyAnswer(live(), "n", "wrong"), verifyAnswer(live(), "n", "locked"),
   ].map((t) => t.toString());
@@ -38,7 +38,7 @@ test("the organization is always said in full: no abbreviation in any prompt, in
 });
 
 test("every prompt the flow uses has its text, and the menu keeps its three choices", () => {
-  assert.equal(everything().length, 2 + 6 * 3 + 5);
+  assert.equal(everything().length, 4 + 6 * 3 + 5);
   assert.deepEqual(menuLines().map(([l, t]) => [l, t.match(/\d/)![0]]), [["en", "1"], ["es", "2"], ["en", "3"], ["es", "3"]]);
   assert.throws(() => promptText("menu_events", "es"), /no es text/);
 });
@@ -52,6 +52,11 @@ test("voicemail greeting, by menu choice: recorded, no medical details, 911, say
   assert.ok(spanish.includes(es) && !spanish.includes(en));
   assert.ok(officer.indexOf(en) >= 0 && officer.indexOf(es) > officer.indexOf(en));
   for (const x of [events, spanish, officer]) assert.ok(x.indexOf("9 1 1") < x.indexOf("<Record "), "all of it is heard before the beep");
+});
+
+test("the switched-off notice gives the website and email in both languages", () => {
+  for (const s of ["visit hemoelpaso dot org", "info at hemoelpaso dot org", "9 1 1"]) assert.ok(promptText("closed", "en").includes(s), s);
+  for (const s of ["visite hemoelpaso punto org", "info arroba hemoelpaso punto org", "9 1 1"]) assert.ok(promptText("closed", "es").includes(s), s);
 });
 
 test("text-to-speech unless a recording is listed for that prompt AND language", () => {

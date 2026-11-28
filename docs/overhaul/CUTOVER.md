@@ -76,6 +76,44 @@ Then **Redeploy Production with "use existing build cache" unticked** (`NEXT_PUB
 **(915) 539-7353 is an officer's personal number. It does not move to Twilio. Take it off the site when the new HOEP
 number goes live** (after the phone menu, voicemail and policy v3 are live; see `PHONE_AUDIT.md`).
 
+### Everything below must be true before the new number goes on the website or a flyer
+
+**A. Decisions and wording**
+- [ ] The board has approved policy v3 (`docs/legal/POLICY_V3_DRAFT.md`, including "Statements to confirm").
+- [ ] A Spanish speaker has reviewed the spoken lines and the new policy text (`ES_REVIEW.md`).
+- [ ] The attorney has answered, or the board has accepted as open, `ATTORNEY_QUESTIONS.md` 26, 28, 29 and 30.
+- [ ] `LEGAL_EFFECTIVE_DATE` is set (it dates all three legal pages).
+
+**B. Deployed**
+- [ ] The voicemail and policy branches are merged and deployed together; the build log shows the migration applied.
+- [ ] `/privacy` shows version 3 with the right date, in both languages.
+
+**C. Twilio console** (`TWILIO_SETUP.md`)
+- [ ] vicepresident@ owner and president@ user, both with two-factor authentication; nobody else.
+- [ ] Account upgraded; number bought; geographic permissions US only; spending alerts and low-balance notice set.
+- [ ] **Enforce HTTP Auth on Media URLs is on.** Call recording and transcription are otherwise off.
+- [ ] Fallback TwiML Bin holds the current text; "A call comes in" and "Primary handler fails" are set.
+
+**D. Vercel, Production**
+- [ ] `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_FALLBACK_NUMBER`, `PHONE_DATA_KEY`
+      (a copy of the key kept safely); `TWILIO_MODE` unset; redeployed. Preview has none of them.
+- [ ] `CRON_SECRET` is set and `/api/cron/retention` shows 200 in the logs.
+
+**E. In the site**
+- [ ] Every menu option has a verified duty number, with the right hours.
+- [ ] Settings → Phone shows no warnings.
+- [ ] president@ and vicepresident@ receive mail; the "New voicemail" route's test arrives.
+- [ ] The President and Vice President can open Admin → Voicemail; the Secretary and admin@ cannot.
+- [ ] "Phone line" feature toggle is on.
+
+**F. Tested on the real number**
+- [ ] Every box under "Test calls after setup" in `TWILIO_SETUP.md`.
+- [ ] Whoever answers knows to press 1 to take a call, and the board has agreed who returns messages and from which phone.
+      (Admin → Voicemail → "Show number" gives the President and Vice President the caller's number. The number said in
+      the message is the backup, for hidden numbers.)
+
+### Then publish the number and remove the old one
+
 - [ ] **Code:** change the five fields of `SITE_PHONE` in `src/lib/site.ts`. That one constant feeds the footer, contact
       page, scholarship contacts, every email, the RSVP and registration messages (`{phone}`), the legal pages
       (`{PHONE}`), the schema.org data, the Sanity fallback and `scripts/seed-sanity.ts`.

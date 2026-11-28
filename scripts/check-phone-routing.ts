@@ -8,6 +8,7 @@
  *  - after a dial, only DialBridged says the two talked (never the parent call's status, or DialCallStatus alone)
  *  - every change is audited without numbers and emailed to all four officers
  *  - the webhooks end to end, with signed requests
+ *  - the phone_system switch: off (or unreadable) forwards to the fallback number, records nothing, never goes silent
  */
 import "./_load-env";
 import assert from "node:assert/strict";
@@ -30,7 +31,9 @@ import {
   CODE_ATTEMPTS, CODE_TTL_MS, MAX_NUMBERS, VERIFY_CALL_LIMIT, checkDutyNumber, checkHours, destinationFor, emptyRouting, isOpenAt, optionForDigit, parseRouting, type Routing,
 } from "../src/lib/phone/definitions";
 import { addNumber, answerChallenge, assignDuty, hashCode, removeNumber, setHours, startChallenge, type Change } from "../src/lib/phone/change";
-import { dialConnected, dialResult, greeting, menuChoice, screen, screenAnswer } from "../src/lib/phone/ivr";
+import { dialConnected, dialResult, greeting, menuChoice, screen, screenAnswer, switchedOff } from "../src/lib/phone/ivr";
+import { phoneSystemOn } from "../src/lib/phone/system";
+import { restorePhoneSystem, savePhoneSystem, setPhoneSystem } from "./_phone-flag";
 import { addDutyNumber, changeDuty, changeHours, numberToRing, removeDutyNumber, startVerification } from "../src/lib/phone/service";
 import { ROUTING_KEY, boardPeople, readRouting } from "../src/lib/phone/store";
 import { phoneView } from "../src/lib/phone/view";
@@ -42,6 +45,7 @@ import { POST as acceptRoute } from "../src/app/api/twilio/voice/screen/accept/r
 import { POST as dialResultRoute } from "../src/app/api/twilio/voice/dial-result/route";
 import { POST as verifyRoute } from "../src/app/api/twilio/voice/verify/route";
 import { POST as confirmRoute } from "../src/app/api/twilio/voice/verify/confirm/route";
+import { POST as voicemailRoute } from "../src/app/api/twilio/voice/voicemail/route";
 
 const HOEP = "+19155550100", ONE = "+19155550141", TWO = "+19155550142", FALLBACK = "+19155550149";
 const SID = `AC${"5".repeat(32)}`, TOKEN = "routing-check-token", BASE = "https://hemoelpaso.org";
@@ -53,11 +57,16 @@ const patients: string[] = [];
 let storedBefore: Prisma.JsonValue | undefined;
 const hasNumbers = /555[-\s)]*01\d\d(?!\d)/; // any of this file's numbers written out in full
 
+let switchBefore: Awaited<ReturnType<typeof savePhoneSystem>>;
+
 before(async () => {
+  switchBefore = await savePhoneSystem();
+  await setPhoneSystem(true);
   storedBefore = (await prisma.appSetting.findUnique({ where: { key: ROUTING_KEY } }))?.value;
   await prisma.appSetting.deleteMany({ where: { key: ROUTING_KEY } });
 });
 after(async () => {
+  await restorePhoneSystem(switchBefore);
   await prisma.appSetting.deleteMany({ where: { key: ROUTING_KEY } });
   if (storedBefore !== undefined) await prisma.appSetting.create({ data: { key: ROUTING_KEY, value: storedBefore as Prisma.InputJsonValue } });
   await prisma.auditLog.deleteMany({ where: { OR: [{ patientId: { in: patients } }, { resourceType: "PhoneRouting", createdAt: { gte: startedAt } }, { resourceId: { in: patients } }] } });
@@ -392,6 +401,51 @@ test("leaving the board, a merge, and removal", async () => {
   assert.equal((await removeDutyNumber(admin, n1)).ok, true);
   expectOfficerNotice(/removed the duty number[\s\S]*Now unassigned/);
   assert.equal(await numberToRing("events"), null);
+});
+
+// ───────────────────────── the switch ─────────────────────────
+test("the switch: only an ON row under a policy that covers it counts; unreadable or slow means off", async () => {
+  const row = (enabled: boolean) => async () => [{ key: "phone_system", enabled, enabledAt: new Date() }];
+  assert.equal(await phoneSystemOn(row(true)), true);
+  assert.equal(await phoneSystemOn(row(false)), false);
+  assert.equal(await phoneSystemOn(async () => []), false, "never switched on");
+  assert.equal(await phoneSystemOn(async () => { throw new Error("database down"); }), false);
+  assert.equal(await phoneSystemOn(() => new Promise(() => {}), 20), false, "a stuck read");
+});
+
+test("off: the fallback number rings with screening; with none, or unanswered, the caller hears the notice", () => {
+  const forward = switchedOff(tw({ TWILIO_MODE: "allowlist", TWILIO_DEV_ALLOWLIST: FALLBACK }), { to: FALLBACK, callerId: HOEP }).toString();
+  assert.match(forward, /<Dial [^>]*action="\/api\/twilio\/voice\/dial-result\?o=officer"[^>]*><Number url="\/api\/twilio\/voice\/screen\?o=officer"[^>]*>\+19155550149<\/Number>/);
+  assert.ok(forward.indexOf("9 1 1") < forward.indexOf("<Dial") && !forward.includes("<Gather") && !forward.includes("<Record"));
+  const silent = switchedOff(tw(), { to: null, callerId: HOEP }).toString();
+  for (const s of ["cannot take your call", "no podemos atender", "visit hemoelpaso dot org", "info at hemoelpaso dot org", "<Hangup/>"]) assert.ok(silent.includes(s), s);
+});
+
+test("off, end to end: every route a caller can reach answers without the menu or voicemail", async () => {
+  process.env.TWILIO_FALLBACK_NUMBER = FALLBACK;
+  await setPhoneSystem(false);
+  try {
+    for (const [handler, path, params] of [[voice, "/api/twilio/voice", {}], [menu, "/api/twilio/voice/menu?try=1", { Digits: "1" }]] as const) {
+      clearTwilioOutbox();
+      const xml = await hit(handler, path, params as Record<string, string>);
+      assert.ok(!xml.includes("<Gather") && !xml.includes("<Record") && !xml.includes("voicemail"), xml);
+      assert.deepEqual(twilioOutbox().map((m) => [m.kind, m.to]), [["dial", FALLBACK]], path);
+    }
+    assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=officer", { DialBridged: "false", DialCallStatus: "completed" }), /cannot take your call[\s\S]*no podemos atender[\s\S]*<Hangup\/>/);
+    assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=officer", { DialBridged: "true" }), /<Response><Hangup\/><\/Response>/);
+    const CallSid = `CA${randomUUID().replace(/-/g, "")}`;
+    assert.match(await hit(voicemailRoute, "/api/twilio/voice/voicemail?o=events", { CallSid }), /cannot take your call/);
+    assert.equal(await prisma.phoneVoicemail.findUnique({ where: { callSid: CallSid } }), null, "nothing is recorded or stored");
+
+    delete process.env.TWILIO_FALLBACK_NUMBER;
+    clearTwilioOutbox();
+    assert.match(await hit(voice, "/api/twilio/voice"), /cannot take your call/);
+    assert.equal(twilioOutbox().length, 0);
+  } finally {
+    delete process.env.TWILIO_FALLBACK_NUMBER;
+    await setPhoneSystem(true);
+  }
+  assert.match(await hit(voice, "/api/twilio/voice"), /menu\?try=1/, "and back on");
 });
 
 test("no audit row about the phone holds a number", async () => {

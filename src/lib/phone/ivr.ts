@@ -10,6 +10,9 @@
  *   /voice/voicemail/recording  the provider reports the recording (lib/phone/voicemail.ts)
  *   /voice/verify               the call that confirms a duty number with a code
  *
+ * When the phone_system toggle is off (or can't be read; ./system.ts) the menu and voicemail are replaced by
+ * switchedOff(): the fallback number is rung with screening, or a notice is played. The line is never silent.
+ *
  * Voicemail is reached only by a redirect, so a caller who has already hung up never uses up their daily allowance.
  * Query strings carry codes and ids only. Live calls are never recorded.
  */
@@ -108,6 +111,26 @@ export const dialConnected = (params: Record<string, string>): boolean => params
 export function dialResult(tw: VoiceTwiml, params: Record<string, string>, option: OptionKey): VoiceTwiml {
   return dialConnected(params) ? tw.hangup() : toVoicemail(tw, option);
 }
+
+/** Nobody can be rung while the system is off: say so, with the website and email. */
+export function closed(tw: VoiceTwiml): VoiceTwiml {
+  return tw.say(...prompts("closed", BOTH)).hangup();
+}
+
+/**
+ * The phone system is off: greet, then forward to the ONE fallback number (press 1 to accept, as always), whose
+ * unanswered call ends in closed(). With no fallback number, closed() at once. Nothing is recorded.
+ */
+export function switchedOff(tw: VoiceTwiml, deps: { to: string | null; callerId: string }): VoiceTwiml {
+  tw.say(...prompts("welcome", BOTH), ...prompts("emergency", BOTH));
+  if (!deps.to) return closed(tw);
+  return tw.screenedDial({
+    to: deps.to, callerId: deps.callerId, ringSeconds: RING_SECONDS, maxSeconds: MAX_CALL_SECONDS,
+    screenPath: `${PHONE_PATHS.screen}?o=${FALLBACK_OPTION}`, actionPath: `${PHONE_PATHS.dialResult}?o=${FALLBACK_OPTION}`,
+  });
+}
+/** The fallback is announced to whoever answers, and speaks to the caller, in both languages. */
+const FALLBACK_OPTION: OptionKey = "officer";
 
 export function verifyPrompt(tw: VoiceTwiml, numberId: string, waiting: boolean): VoiceTwiml {
   if (!waiting) return tw.say(...prompts("not_verified", BOTH)).hangup();
