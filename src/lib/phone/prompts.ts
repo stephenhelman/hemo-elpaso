@@ -31,6 +31,11 @@ export const PROMPT_TEXT = {
     en: () => `We could not connect your call. Please call again later, or email ${spokenEmail("en")}. If this is a medical emergency, call 9 1 1. Goodbye.`,
     es: () => `No pudimos comunicar su llamada. Por favor llame más tarde o escriba a ${spokenEmail("es")}. Si es una emergencia médica, llame al 9 1 1. Adiós.`,
   },
+  // the phone system is switched off and nobody can be rung
+  closed: {
+    en: () => `We cannot take your call right now. Please call again later, visit ${spokenDomain("en")}, or email ${spokenEmail("en")}. If this is a medical emergency, call 9 1 1. Goodbye.`,
+    es: () => `En este momento no podemos atender su llamada. Por favor llame más tarde, visite ${spokenDomain("es")} o escriba a ${spokenEmail("es")}. Si es una emergencia médica, llame al 9 1 1. Adiós.`,
+  },
   // voicemail: recorded, no medical details, 911; the caller also says their number, in case it is hidden or wrong
   voicemail_greeting: {
     en: "Nobody can answer right now. You may leave a message. It will be recorded. Please leave out medical details. If this is a medical emergency, hang up and call 9 1 1. After the tone, say your name and phone number, then your message. You have up to 2 minutes. When you are done, press the pound key.",

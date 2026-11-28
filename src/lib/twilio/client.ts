@@ -44,6 +44,23 @@ export interface RecordingStore {
   openToPublic(sid: string): Promise<boolean | null>;
 }
 
+/** May we ask Twilio anything at all? Not in capture mode. */
+function restAccess(): { ok: true; config: TwilioConfig } | RestFailure {
+  if (reachFrom(process.env).mode === "capture") return { ok: false, error: "captured" };
+  try {
+    return { ok: true, config: twilioConfig() };
+  } catch (e) {
+    console.error("[twilio] not configured", { reason: e instanceof Error ? e.message : "unknown" });
+    return { ok: false, error: "not_configured" };
+  }
+}
+/** Codes only: Twilio's messages can repeat numbers. */
+function restFailed(what: string, e: unknown): RestFailure {
+  const { code, status, name } = (e ?? {}) as { code?: number; status?: number; name?: string };
+  console.error(`[twilio] ${what} failed`, { code, status, error: name });
+  return { ok: false, error: "failed" };
+}
+
 export const RECORDING_SID = /^RE[0-9a-fA-F]{32}$/;
 /** The most recordings one listing returns: far above what 30 days of capped voicemail can hold. */
 const LIST_LIMIT = 5000;
@@ -62,24 +79,9 @@ const mediaUrl = (c: TwilioConfig, sid: string) => `https://api.twilio.com/2010-
 export function twilioRecordings(deps: { sdk?: RecordingsSdk; fetch?: typeof fetch } = {}): RecordingStore {
   const sdk = deps.sdk ?? recordingsWithSdk;
   const http: typeof fetch = deps.fetch ?? ((...a) => fetch(...a));
-  const access = (): { ok: true; config: TwilioConfig } | RestFailure => {
-    if (reachFrom(process.env).mode === "capture") return { ok: false, error: "captured" };
-    try {
-      return { ok: true, config: twilioConfig() };
-    } catch (e) {
-      console.error("[twilio] not configured", { reason: e instanceof Error ? e.message : "unknown" });
-      return { ok: false, error: "not_configured" };
-    }
-  };
-  const failed = (what: string, e: unknown): RestFailure => {
-    const { code, status, name } = (e ?? {}) as { code?: number; status?: number; name?: string };
-    console.error(`[twilio] ${what} failed`, { code, status, error: name });
-    return { ok: false, error: "failed" };
-  };
-
   return {
     async list() {
-      const a = access();
+      const a = restAccess();
       if (!a.ok) return a;
       try {
         const items = await sdk(a.config).list();
@@ -88,23 +90,23 @@ export function twilioRecordings(deps: { sdk?: RecordingsSdk; fetch?: typeof fet
           items: items.map((r) => ({ sid: r.sid, callSid: r.callSid, status: r.status, createdAt: r.dateCreated, durationSeconds: r.duration === null || r.duration === "" ? null : Number(r.duration) })),
         };
       } catch (e) {
-        return failed("listing recordings", e);
+        return restFailed("listing recordings", e);
       }
     },
     async remove(sid) {
       if (!RECORDING_SID.test(sid)) return { ok: false, error: "not_found" };
-      const a = access();
+      const a = restAccess();
       if (!a.ok) return a;
       try {
         await sdk(a.config).remove(sid);
         return { ok: true };
       } catch (e) {
-        return (e as { status?: number })?.status === 404 ? { ok: true } : failed("deleting a recording", e);
+        return (e as { status?: number })?.status === 404 ? { ok: true } : restFailed("deleting a recording", e);
       }
     },
     async media(sid) {
       if (!RECORDING_SID.test(sid)) return { ok: false, error: "not_found" };
-      const a = access();
+      const a = restAccess();
       if (!a.ok) return a;
       const user = a.config.apiKey?.sid ?? a.config.accountSid, secret = a.config.apiKey?.secret ?? a.config.authToken;
       try {
@@ -112,14 +114,14 @@ export function twilioRecordings(deps: { sdk?: RecordingsSdk; fetch?: typeof fet
           headers: { Authorization: `Basic ${Buffer.from(`${user}:${secret}`).toString("base64")}` }, cache: "no-store", signal: AbortSignal.timeout(20_000),
         });
         if (res.status === 404) return { ok: false, error: "not_found" };
-        if (!res.ok) return failed("fetching a recording", { status: res.status });
+        if (!res.ok) return restFailed("fetching a recording", { status: res.status });
         return { ok: true, audio: new Uint8Array(await res.arrayBuffer()) };
       } catch (e) {
-        return failed("fetching a recording", e);
+        return restFailed("fetching a recording", e);
       }
     },
     async openToPublic(sid) {
-      const a = access();
+      const a = restAccess();
       if (!a.ok || !RECORDING_SID.test(sid)) return null;
       try {
         const res = await http(mediaUrl(a.config, sid), { headers: { Range: "bytes=0-0" }, cache: "no-store", signal: AbortSignal.timeout(10_000) });
@@ -127,6 +129,54 @@ export function twilioRecordings(deps: { sdk?: RecordingsSdk; fetch?: typeof fet
         return res.ok ? true : res.status === 401 || res.status === 403 ? false : null;
       } catch {
         return null;
+      }
+    },
+  };
+}
+
+// ── call records ──────────────────────────────────────────────────────────────────────────────────────────────
+export interface CallRecordStore {
+  /** Ids of finished calls that ended before `cutoff`, at most one batch (the daily job comes back for the rest). */
+  listEndedBefore(cutoff: Date): Promise<{ ok: true; sids: string[] } | RestFailure>;
+  /** Deleting one that is already gone succeeds. */
+  remove(sid: string): Promise<{ ok: true } | RestFailure>;
+}
+/** Per run: small enough to finish inside one function invocation, far above a day's calls. */
+export const CALL_BATCH = 200;
+export const CALL_SID = /^CA[0-9a-fA-F]{32}$/;
+
+export type CallsSdk = (config: TwilioConfig) => {
+  list(cutoff: Date, limit: number): Promise<{ sid: string; endTime: Date | null }[]>;
+  remove(sid: string): Promise<unknown>;
+};
+const callsWithSdk: CallsSdk = (c) => {
+  const client = c.apiKey ? twilio(c.apiKey.sid, c.apiKey.secret, { accountSid: c.accountSid }) : twilio(c.accountSid, c.authToken);
+  return { list: (cutoff, limit) => client.calls.list({ endTimeBefore: cutoff, limit }), remove: (sid) => client.calls(sid).remove() };
+};
+
+export function twilioCallRecords(deps: { sdk?: CallsSdk } = {}): CallRecordStore {
+  const sdk = deps.sdk ?? callsWithSdk;
+  return {
+    async listEndedBefore(cutoff) {
+      const a = restAccess();
+      if (!a.ok) return a;
+      try {
+        const calls = await sdk(a.config).list(cutoff, CALL_BATCH);
+        // checked again here: nothing newer is ever deleted, whatever the filter returned
+        return { ok: true, sids: calls.filter((c) => c.endTime && c.endTime < cutoff).map((c) => c.sid) };
+      } catch (e) {
+        return restFailed("listing call records", e);
+      }
+    },
+    async remove(sid) {
+      if (!CALL_SID.test(sid)) return { ok: false, error: "not_found" };
+      const a = restAccess();
+      if (!a.ok) return a;
+      try {
+        await sdk(a.config).remove(sid);
+        return { ok: true };
+      } catch (e) {
+        return (e as { status?: number })?.status === 404 ? { ok: true } : restFailed("deleting a call record", e);
       }
     },
   };

@@ -50,7 +50,9 @@ export const VOICEMAIL_TOTAL_DAILY_LIMIT = 60;
 /** Nobody may keep a voicemail longer than this (the Privacy Policy says so). */
 export const VOICEMAIL_RETENTION_DAYS = 30;
 /** What is left after deletion (no audio, no number): the same as other call records. */
-export const VOICEMAIL_RECORD_DAYS = 365;
+export const VOICEMAIL_RECORD_DAYS = 365; // equals CALL_RECORD_DAYS (check:legal)
+/** The provider's records of calls (numbers, time, length) are deleted after this (Privacy Policy). */
+export const CALL_RECORD_DAYS = 365;
 /** How long a recording with no matching row (or a row with no recording) is left before it is cleaned up. */
 export const VOICEMAIL_ORPHAN_HOURS = 24;
 

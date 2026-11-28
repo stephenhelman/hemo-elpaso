@@ -36,6 +36,9 @@ import { findByCaller, playVoicemail, revealCaller, setHandled, voicemailView } 
 import { POST as voicemailRoute } from "../src/app/api/twilio/voice/voicemail/route";
 import { POST as doneRoute } from "../src/app/api/twilio/voice/voicemail/done/route";
 import { POST as recordingRoute } from "../src/app/api/twilio/voice/voicemail/recording/route";
+import { purgeCallRecords } from "../src/lib/phone/call-records";
+import type { CallRecordStore } from "../src/lib/twilio/client";
+import { restorePhoneSystem, savePhoneSystem, setPhoneSystem } from "./_phone-flag";
 
 const HOEP = "+19155550100", CALLER = "+19155550161", OTHER = "+19155550162", ACROSS = "+526565550163";
 const SID = `AC${"7".repeat(32)}`, TOKEN = "voicemail-check-token", BASE = "https://hemoelpaso.org";
@@ -89,13 +92,18 @@ async function boardMember(first: string) {
 }
 let president = "", vice = "";
 
+let switchBefore: Awaited<ReturnType<typeof savePhoneSystem>>;
+
 before(async () => {
+  switchBefore = await savePhoneSystem();
+  await setPhoneSystem(true);
   openBefore = (await prisma.appSetting.findUnique({ where: { key: MEDIA_OPEN_KEY } }))?.value;
   await prisma.appSetting.deleteMany({ where: { key: MEDIA_OPEN_KEY } });
   president = await boardMember("Pres");
   vice = await boardMember("Vice");
 });
 after(async () => {
+  await restorePhoneSystem(switchBefore);
   await prisma.auditLog.deleteMany({ where: { createdAt: { gte: startedAt }, resourceType: "PhoneVoicemail" } });
   await wipe();
   await prisma.appSetting.deleteMany({ where: { key: MEDIA_OPEN_KEY } });
@@ -503,7 +511,22 @@ test("the daily job: a failed listing marks nothing; test mode asks the provider
   assert.equal((await voicemailView(now)).overdue >= 1, true);
 
   const cron = readFileSync("src/app/api/cron/retention/route.ts", "utf8");
-  assert.ok(cron.includes("runVoicemailRetention()") && /voicemail\.failed === 0/.test(cron) && /status: ok \? 200 : 500/.test(cron));
+  assert.ok(cron.includes("runVoicemailRetention()") && cron.includes("purgeCallRecords()") && /voicemail\?\.failed === 0 && calls\?\.failed === 0/.test(cron) && /status: ok \? 200 : 500/.test(cron));
+});
+
+test("the daily job deletes the provider's call records after a year, and reports what it couldn't", async () => {
+  const now = new Date();
+  let cutoff: Date | null = null;
+  const removed: string[] = [];
+  const store: CallRecordStore = {
+    async listEndedBefore(c) { cutoff = c; return { ok: true, sids: ["CAa", "CAb", "CAc"] }; },
+    async remove(sid) { if (sid === "CAb") return { ok: false, error: "failed" }; removed.push(sid); return { ok: true }; },
+  };
+  assert.deepEqual(await purgeCallRecords(now, store), { deleted: 2, failed: 1, skipped: null });
+  assert.equal(now.getTime() - cutoff!.getTime(), 365 * DAY);
+  assert.deepEqual(removed, ["CAa", "CAc"]);
+  assert.deepEqual(await purgeCallRecords(now), { deleted: 0, failed: 0, skipped: "captured" }, "test mode asks nothing");
+  assert.deepEqual(await purgeCallRecords(now, { ...store, async listEndedBefore() { return { ok: false, error: "failed" }; } }), { deleted: 0, failed: 1, skipped: null });
 });
 
 test("audio reachable without signing in raises a warning, which clears once it is protected", async () => {

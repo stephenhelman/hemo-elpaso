@@ -33,3 +33,23 @@ Context: `docs/overhaul/PHASE0_DRAFTS.md` has the draft wording these questions 
 23. **Text-message opt-in.** Do the text-message opt-in wording and the STOP/HELP language meet TCPA and carrier rules for a nonprofit?
 24. **Unnamed quotes.** Are unnamed quotes from transcripts acceptable with the RSVP-page notice alone?
 25. **Assistance and payment records.** What retention period should apply to assistance applications and payment records?
+
+## Added with Privacy Policy v3: the phone line (2026-11-27)
+
+Context: `docs/legal/POLICY_V3_DRAFT.md` and `docs/overhaul/PHONE_AUDIT.md`.
+
+26. **Whether HIPAA applies to HOEP.** Question 2 assumed it doesn't. Please confirm that for the phone line too: callers
+    may say health information in a voicemail even though the greeting asks them not to. Is HOEP a covered entity or a
+    business associate (for example through work with a treatment center)? If HIPAA does apply, what must change (an
+    agreement with Twilio, which Twilio services may be used, notices, breach rules)?
+27. **Texas quiet hours for consented texts.** Do Texas calling-hour and telephone-solicitation rules, including the 2025
+    changes (SB 140), apply to event reminders and announcements that a nonprofit texts to people who agreed to them? Is
+    registration required? We plan to send 9 a.m. to 8 p.m. Monday to Saturday and noon to 8 p.m. Sunday, El Paso time.
+    (Our sources disagree; see the audit.)
+28. **Voicemail retention.** Is deleting voicemail after 30 days acceptable? Is there anything we must keep longer (a
+    report of an incident or a complaint, a legal hold), and what should the board do when that happens? Is 1 year right
+    for call records (number, time, length)?
+29. **Recording notice.** Is the spoken notice before the beep ("It will be recorded") enough for callers, including
+    callers in New Mexico or Mexico? Is leaving a message enough as consent?
+30. **A health detail left anyway.** If a caller leaves medical details despite the request, do any duties follow beyond
+    limiting access to the President and Vice President and deleting it on schedule?

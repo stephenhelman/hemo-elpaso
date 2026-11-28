@@ -6,23 +6,24 @@ import { calendarDateIn } from "../src/content/legal/status";
 import { FEATURES, FEATURE_KEYS, canEnable, lockText, resolveStates, type FeatureDef, type FeatureKey } from "../src/lib/features/registry";
 import { toggleFeature } from "../src/lib/features/change";
 
-const POLICY_KEYS = ["recordings", "live_captions", "family_portal", "verification", "sms", "newsletter", "stories", "assistance", "live_interaction", "community", "donations", "volunteers", "address_autocomplete", "site_announcements"];
+const POLICY_KEYS = ["recordings", "live_captions", "family_portal", "verification", "sms", "newsletter", "stories", "assistance", "live_interaction", "community", "donations", "volunteers", "address_autocomplete", "site_announcements", "phone_system", "phone_dialer"];
 const actor = { id: "a", name: "Admin" };
 const withFeature = (patch: Partial<FeatureDef>): Record<FeatureKey, FeatureDef> => ({ ...FEATURES, sms: { ...FEATURES.sms, ...patch } });
 
 test("registry keys are exactly the policy's Feature status toggle keys", () => {
   assert.deepEqual([...FEATURE_KEYS].sort(), [...POLICY_KEYS].sort());
-  const draft = readFileSync("docs/legal/POLICY_V2_DRAFT.md", "utf8");
+  const draft = ["POLICY_V2_DRAFT", "POLICY_V3_DRAFT"].map((n) => readFileSync(`docs/legal/${n}.md`, "utf8")).join("\n");
   for (const k of FEATURE_KEYS) assert.ok(draft.includes("`" + k + "`"), k);
 });
 
-test("only the family page, address suggestions and site announcements are built so far; everything else is locked until its code ships", () => {
+test("only the family page, address suggestions, site announcements and the phone line are built; everything else is locked until its code ships", () => {
   for (const k of FEATURE_KEYS) {
-    const built = k === "family_portal" || k === "address_autocomplete" || k === "site_announcements";
+    const built = k === "family_portal" || k === "address_autocomplete" || k === "site_announcements" || k === "phone_system";
     assert.equal(FEATURES[k].implemented, built, k);
-    if (built) assert.deepEqual(canEnable(k, 2), { ok: true });
+    if (built) assert.deepEqual(canEnable(k, 3), { ok: true });
     else assert.deepEqual(canEnable(k, 99), { ok: false, reason: "not_built" });
   }
+  assert.deepEqual(canEnable("phone_system", 2), { ok: false, reason: "needs_policy", version: 3 }, "no phone menu or voicemail under policy v2");
   assert.equal(canEnable("family_portal", 1).ok, false, "still needs the policy that covers it");
   assert.ok(!(FEATURE_KEYS as readonly string[]).includes("family_social_signin"), "retired key");
 });

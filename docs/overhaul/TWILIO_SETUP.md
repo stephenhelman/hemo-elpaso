@@ -3,7 +3,8 @@
 Code: `src/lib/twilio/`, `src/lib/phone/`, `/api/twilio/voice/*`. Admin page: Settings → Phone.
 Decisions and plan: `PHONE_AUDIT.md`. Who may sign in to the console: `docs/legal/RUNBOOK.md`.
 
-**Do not give the number to families yet.** Policy v3 is not published. An unanswered call goes to voicemail.
+**Before families get the number:** work through the go-live checklist in `CUTOVER.md`. Until the "Phone line" feature
+toggle is on (it needs the published policy v3), calls skip the menu, ring the fallback number and record nothing.
 
 ## First: a trial account cannot run this
 
@@ -45,7 +46,7 @@ Source: <https://www.twilio.com/docs/usage/trials/try-out-voice> (read 2026-11-2
    | `TWILIO_AUTH_TOKEN` | Account dashboard. Verifies every webhook |
    | `TWILIO_PHONE_NUMBER` | the new number, `+1915…` |
    | `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET` | optional: Account → API keys (both or neither) |
-   | `TWILIO_FALLBACK_NUMBER` | optional: rung (with press 1) only if the site can't read its routing |
+   | `TWILIO_FALLBACK_NUMBER` | **set it:** rung (with press 1) while the phone line is switched off, or if the site can't read its routing or switch. A board member's US number, never HOEP's own |
    | `PHONE_DATA_KEY` | **required for voicemail:** `openssl rand -hex 32`. Encrypts callers' numbers. Keep a copy somewhere safe; a new value makes earlier numbers unreadable |
 
    Leave `TWILIO_MODE` unset in Production (it is `live`). Give Preview no Twilio variables. Redeploy.
@@ -55,6 +56,16 @@ Source: <https://www.twilio.com/docs/usage/trials/try-out-voice> (read 2026-11-2
 11. **In the site** (signed in as admin@): Settings → Phone. Add each duty number, press "Verify by phone", have the
     owner type the code, then choose who answers each option. Then Settings → Email routing → "New voicemail on the
     phone line": President and Vice President (the default); send a test.
+12. **Switch the line on:** once policy v3 is published, admin@ → Settings → Feature toggles → "Phone line". Then do the
+    test calls below.
+
+## The switch ("Phone line" feature toggle)
+
+| State | What a caller gets |
+| --- | --- |
+| On | The menu, forwarding, voicemail |
+| Off, or the switch can't be read | Greeting and 911, then the fallback number rings (press 1 to accept). Unanswered, or no fallback number: "we cannot take your call", the website and email. Nothing recorded |
+| Site down or erroring | The Twilio-hosted TwiML Bin below |
 
 ## Fallback TwiML Bin
 
@@ -93,6 +104,9 @@ check which key was pressed, so it can't do press-1 screening.
 - [ ] Hang up during the greeting, and once right after the beep: no email, nothing listed.
 - [ ] Leave 6 messages from one phone in a day: the 6th hears "could not connect … call again later".
 - [ ] The next morning, Vercel → Logs: `/api/cron/retention` answered 200.
+- [ ] **Switched off:** turn the toggle off. A call hears the greeting and the fallback phone rings; press 1 connects.
+      Don't answer: the caller hears "we cannot take your call" and nothing is recorded. **Turn it back on** and call once
+      more.
 - [ ] Fallback: set "A call comes in" to `https://hemoelpaso.org/api/twilio/missing`, call, hear the fallback, **put the
       real address back**, and call once more.
 

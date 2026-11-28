@@ -1222,6 +1222,7 @@ say the same words.
 | invalid | That is not one of the choices. | Esa no es una de las opciones. |
 | goodbye | We did not get your choice. Please call again. Goodbye. | No recibimos su opción. Por favor llame de nuevo. Adiós. |
 | unanswered | We could not connect your call. Please call again later, or email info at hemoelpaso dot org. If this is a medical emergency, call 9 1 1. Goodbye. | No pudimos comunicar su llamada. Por favor llame más tarde o escriba a info arroba hemoelpaso punto org. Si es una emergencia médica, llame al 9 1 1. Adiós. |
+| closed | We cannot take your call right now. Please call again later, visit hemoelpaso dot org, or email info at hemoelpaso dot org. If this is a medical emergency, call 9 1 1. Goodbye. | En este momento no podemos atender su llamada. Por favor llame más tarde, visite hemoelpaso punto org o escriba a info arroba hemoelpaso punto org. Si es una emergencia médica, llame al 9 1 1. Adiós. |
 | voicemail_greeting | Nobody can answer right now. You may leave a message. It will be recorded. Please leave out medical details. If this is a medical emergency, hang up and call 9 1 1. After the tone, say your name and phone number, then your message. You have up to 2 minutes. When you are done, press the pound key. | En este momento nadie puede contestar. Puede dejar un mensaje, que se grabará. Por favor no incluya detalles médicos. Si es una emergencia médica, cuelgue y llame al 9 1 1. Después del tono, diga su nombre y su número de teléfono, y luego su mensaje. Tiene hasta 2 minutos. Cuando termine, oprima la tecla numeral. |
 | voicemail_thanks | Thank you. Your message was recorded. Goodbye. | Gracias. Su mensaje quedó grabado. Adiós. |
 | voicemail_none | We did not get a message. Please call again. Goodbye. | No recibimos ningún mensaje. Por favor llame de nuevo. Adiós. |
@@ -1365,3 +1366,29 @@ voicemail_none): please review those first.
 | email route | New voicemail on the phone line | Nuevo mensaje de voz en la línea telefónica |
 | email route help | Who is told that a voicemail is waiting. The email contains only a link: no number, name, audio or transcript. Only the President and Vice President can be chosen. | A quién se avisa que hay un mensaje de voz. El correo solo contiene un enlace: sin número, nombre, audio ni transcripción. Solo se puede elegir a la presidencia y la vicepresidencia. |
 | Settings → Phone warning | Callers can’t leave messages: the PHONE_DATA_KEY setting is missing. | No se pueden dejar mensajes: falta la configuración PHONE_DATA_KEY. |
+
+## Privacy Policy v3 and the phone switch (feat/phone-policy)
+
+The policy wording below is what /privacy shows. The new spoken line "closed" is in the table above.
+
+### Policy text (`src/content/legal/privacy.ts`)
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| paragraph 1 | **Phone calls.** {STATUS:phone_system} When you call us, we and our phone provider receive your number, the time and length of the call and the option you choose. We connect you to the board member assigned to answer. We don’t record live calls. If the phone menu is switched off, your call goes to one board member or you hear an automated notice, and no message is taken. | **Llamadas telefónicas.** {STATUS:phone_system} Cuando nos llama, nosotros y nuestro proveedor telefónico recibimos su número, la hora y la duración de la llamada y la opción que elige. Lo comunicamos con el miembro de la junta asignado para contestar. No grabamos las llamadas en vivo. Si el menú telefónico está desactivado, su llamada pasa a un miembro de la junta o usted escucha un aviso automático, y no se toman mensajes. |
+| paragraph 2 | **Voicemail.** {STATUS:phone_system} If you leave a message, our phone provider stores the recording. Only the President and Vice President can listen to it. We delete it after {VOICEMAIL_RETENTION} or sooner. We don’t transcribe it or attach it to email. We also keep your number, encrypted, with the time and length of the message, so we can return your call, limit repeated messages and delete yours if you ask. Only the President and Vice President can see your number, and we record each time they view it on our website. Please leave out medical details. In an emergency, call 911. | **Mensajes de voz.** {STATUS:phone_system} Si deja un mensaje, nuestro proveedor telefónico guarda la grabación. Solo la presidencia y la vicepresidencia pueden escucharla. La borramos después de {VOICEMAIL_RETENTION} o antes. No la transcribimos ni la adjuntamos a ningún correo. También guardamos su número, cifrado, con la hora y la duración del mensaje, para devolverle la llamada, limitar los mensajes repetidos y borrar los suyos si lo pide. Solo la presidencia y la vicepresidencia pueden ver su número, y anotamos cada vez que lo consultan en nuestro sitio web. Por favor, no incluya detalles médicos. En una emergencia, llame al 911. |
+| paragraph 3 | **Calls from our board.** {STATUS:phone_dialer} Board members may call you from our website using HOEP’s number. We keep who called, when and the result, such as reached or left a message. | **Llamadas de nuestra junta.** {STATUS:phone_dialer} Los miembros de la junta pueden llamarle desde nuestro sitio web usando el número de HOEP. Anotamos quién llamó, cuándo y el resultado, por ejemplo si lograron hablar con usted o le dejaron un mensaje. |
+| how we use it | To answer your phone calls and return your voicemail. {STATUS:phone_system} | Para contestar sus llamadas y responder a sus mensajes de voz. {STATUS:phone_system} |
+| table row 1 | Twilio: Answers and connects our calls and stores voicemails. {STATUS:phone_system} Calls from our board through the website. {STATUS:phone_dialer} Sends text messages. {STATUS:sms} | Twilio: Contesta y comunica nuestras llamadas y guarda los mensajes de voz. {STATUS:phone_system} Llamadas de nuestra junta desde el sitio web. {STATUS:phone_dialer} Envía los mensajes de texto. {STATUS:sms} |
+| table row 2 | Voicemail recordings {STATUS:phone_system}: No more than {VOICEMAIL_RETENTION}, then deleted | Grabaciones de mensajes de voz {STATUS:phone_system}: No más de {VOICEMAIL_RETENTION}; después se borran |
+| table row 3 | Phone call records (number, time and length), and the time and length of a deleted voicemail {STATUS:phone_system}: 1 year | Registros de llamadas (número, hora y duración), y la hora y duración de un mensaje de voz borrado {STATUS:phone_system}: 1 año |
+| {VOICEMAIL_RETENTION} | 30 days | 30 días |
+
+### Elsewhere
+
+| Key | English | Spanish |
+| --- | --- | --- |
+| toggle: phone_system | Phone line (menu, call forwarding and voicemail) | Línea telefónica (menú, desvío de llamadas y mensajes de voz) |
+| toggle: phone_dialer | Board calls from the website | Llamadas de la junta desde el sitio web |
+| Settings → Phone: off | The phone line is switched off (Feature toggles). Calls skip the menu and go to the fallback number; nothing is recorded. | La línea telefónica está desactivada (Funciones activables). Las llamadas no pasan por el menú y van al número de respaldo; no se graba nada. |
+| Settings → Phone: no fallback | No fallback number is set: while the line is off, callers only hear a notice. | No hay número de respaldo: mientras la línea esté desactivada, quien llama solo escucha un aviso. |

@@ -17,7 +17,7 @@
 export const FEATURE_KEYS = [
   "recordings", "live_captions", "family_portal", "verification", "sms", "newsletter",
   "stories", "assistance", "live_interaction", "community", "donations", "volunteers", "address_autocomplete",
-  "site_announcements",
+  "site_announcements", "phone_system", "phone_dialer",
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 export const isFeatureKey = (k: unknown): k is FeatureKey => typeof k === "string" && (FEATURE_KEYS as readonly string[]).includes(k);
@@ -43,6 +43,9 @@ export const FEATURES: Record<FeatureKey, FeatureDef> = {
   donations: { key: "donations", implemented: false, coveredByPolicy: 2, label: { en: "Online donations", es: "Donaciones en línea" } },
   address_autocomplete: { key: "address_autocomplete", implemented: true, coveredByPolicy: 2, label: { en: "Address suggestions while you type (Google)", es: "Sugerencias de direcciones mientras escribe (Google)" } },
   site_announcements: { key: "site_announcements", implemented: true, coveredByPolicy: 2, label: { en: "Site announcements", es: "Anuncios del sitio" } },
+  // OFF never means the number stops answering: calls go to the fallback number and nothing is recorded (lib/phone/system.ts)
+  phone_system: { key: "phone_system", implemented: true, coveredByPolicy: 3, label: { en: "Phone line (menu, call forwarding and voicemail)", es: "Línea telefónica (menú, desvío de llamadas y mensajes de voz)" } },
+  phone_dialer: { key: "phone_dialer", implemented: false, coveredByPolicy: 3, label: { en: "Board calls from the website", es: "Llamadas de la junta desde el sitio web" } },
   volunteers: { key: "volunteers", implemented: false, coveredByPolicy: 2, label: { en: "Volunteer sign-up", es: "Registro de voluntarios" } },
 };
 

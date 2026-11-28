@@ -160,7 +160,10 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | Call log | Neon: `invitation_call_logs` (event, household, invitation, purpose, outcome CODE, who called and when, `source` manual/dialer) | Written by the call list's "called" button (and later the dialer). No notes, no phone numbers (the number stays on the contact profile) |
 | "Also send invitations to" | Neon: `patients.alsoSendToMemberIds` (ids of confirmed adults) | Any confirmed adult or the President/VP can change it; each change is audited with ids only. The addresses themselves stay on the member rows |
 | "Can this number get texts?" | Neon: `patients.phoneCanText`, `household_members.phoneCanText` (yes / no / not stated) | Stored only, for the future texting work; reset when the number changes. Audited with the field name only |
-| Phone duty numbers | Neon: `app_settings` row `phone.routing` (board members' phone numbers, who answers each menu option, hours, a hashed verification code) | Entered by the settings account; masked on every screen, email and log; never in the audit log. Removed by the settings account. Callers' numbers are not stored by the site; Twilio keeps its own call records (phone system not yet announced: policy v3 pending) |
+| Phone duty numbers | Neon: `app_settings` row `phone.routing` (board members' phone numbers, who answers each menu option, hours, a hashed verification code) | Entered by the settings account; masked on every screen, email and log; never in the audit log. Removed by the settings account. Twilio keeps its own call records (phone system not yet announced: policy v3 pending) |
+| Voicemail audio | **Twilio only** (never in our database or R2). Fetched with account credentials (HTTP auth on media must be on) | Left by a caller after the greeting (recorded, no medical details, 911), 120 seconds at most, not transcribed. May contain health information. President/VP only |
+| Voicemail records | Neon: `phone_voicemails` (call and recording ids, menu option, language, length, times, who played/handled/deleted as ids, the caller's number **encrypted** with `PHONE_DATA_KEY` and a keyed hash of it) | The number is shown masked. The President or VP can show it in full on Admin → Voicemail (decrypted then; each view audited as `VOICEMAIL_CALLER_VIEWED`, ids only); it never goes into email, logs or audit details. Both are cleared when the message is deleted (a hang-up keeps the hash for a day, for the daily limit) |
+| Call records | **Twilio** (caller's and called number, time, length), including calls with no message and forwarded calls | Visible in the Twilio console (President/VP only: `RUNBOOK.md`). Not copied into our database |
 | Legacy uploads (diagnosis letters, assistance documents, receipts, tax PDFs, minutes) | R2 | Left in place by the cuts |
 | Board and public-site content | **Sanity** (private dataset `production`, project `ed5kyl4v`) | Read by the server with a Viewer token; edited in the embedded Studio at `/admin/studio` |
 | Board and family logins | **Auth0** tenant + `user_identities` | |
@@ -179,6 +182,7 @@ These tables/columns still exist (migrations are additive-only, rule 1) and may 
 | `canViewPHI` | President, VP (+ admin). Narrowed from also Secretary and Treasurer on 2026-11-23 to match the Privacy Policy; `scripts/check-permissions.ts` enforces it | Seeing and editing diagnoses (patient detail, invitation lists). **CSV export includes diagnoses only for role `admin`** (`withDx = admin.isSuperAdmin` in `src/app/api/admin/patients/export/route.ts`) |
 | `canManageEvents` | President, VP | Events, invitations, sending, check-in console, RSVP add, photo approve/delete, patient name/email/phone **search** (`/api/admin/patients/search`), attendee page and sign-in sheet (names, relationships, NO PHOTOS flag) |
 | `canViewEventStats` | President, VP, Secretary, Treasurer, Events Coordinator, Sponsor Liaison | `/admin/attendance` and `/admin/events/[id]/stats`: checked-in attendees with **full email and phone**, plus a client-side CSV export (`src/app/admin/attendance/page.tsx:24`, `src/components/admin/stats/AttendeeListExport.tsx`) |
+| `canListenVoicemail` | President, VP (locked to those two) | Admin → Voicemail: play, show a caller's number, mark handled, find by number, delete. Every play, number view, search and deletion is audited (ids only) |
 | `canViewAuditLogs` | President, VP, Treasurer | `/admin/audit-logs` (actor name/email, action, details) |
 | `canAssignBoardRoles` | President, VP | Invite/assign/remove board members |
 | `canManageEmailTemplates` | President, VP | Email templates, test sends (to any address) |
@@ -204,6 +208,7 @@ Everyone outside the board has **no account and no access**. Patients and househ
 | **Google Places** (Maps JS API) | As someone types their address, the text is sent to Google with their IP and the site's API key. Loaded on the **public** `/register-info` and public RSVP form, and on the admin patient/event forms (`src/components/form/PlacesAutocompleteInput.tsx:99`) | Address autocomplete | Only if `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` is set; without the key the field is a plain input. No consent gate before the script loads |
 | **Google Maps embed** | Visitor IP/browser to Google when `/contact` loads (iframe: `src/components/contact/ContactMap.tsx:26`, `src/components/sanity/ContactParts.tsx:92`) | Map on the contact page | No consent gate. May set Google cookies (verify) |
 | **DeepL** | Text typed into event title/description/recap fields (up to 5,000 characters) when the board clicks Translate (`src/lib/translate.ts`, `src/app/api/translate/route.ts`) | EN↔ES translation | Not patient data unless a board member types it. Plan (Free vs Pro) decides whether DeepL keeps the text: verify |
+| **Twilio** (phone line) | Every call: caller's number, time, length, menu choice. Voicemail recordings. Forwarded calls ring a board member's phone, showing HOEP's number. The webhooks pass through Vercel (the caller's number is in the request body, never in the address or logs) | Answers and connects calls, stores voicemail | Console: President and VP only. Text messages: not built |
 | Facebook | Nothing sent. The site only links to the Facebook group | | No pixel, widget or SDK found |
 
 Cut features whose credentials may still exist: Pusher, CloudConvert, Gmail OAuth (RESTORE.md lists the env vars and says to revoke the Gmail OAuth client). No data is sent to them by the current code.
@@ -227,7 +232,9 @@ Fonts (`next/font/google`) are downloaded at build time and served from HOEP's o
 | Unapproved photo's old public URL | Approve/unapprove moves the file to a new random key and deletes the old one | `src/lib/photos/service.ts` |
 | Duplicate patient on merge | Hard-deleted after RSVPs, check-ins, consents and household move to the kept record | `src/app/api/admin/patients/[id]/merge/route.ts` |
 
-There is no other scheduled deletion. The only other cron is the day-before reminder (`/api/cron/send-reminders`, 14:00 UTC).
+Phone line (daily `/api/cron/retention`, `src/lib/phone/voicemail.ts`, `call-records.ts`): voicemail deleted at Twilio and then marked, so none is older than **30 days** (failures retried daily and the job answers 500); recordings with no matching row deleted after a day; call records at Twilio deleted after **1 year**; what is left of a voicemail row (no number) deleted after 1 year. Manual deletion: Admin → Voicemail.
+
+There is no other scheduled deletion of this data. The only other cron is the day-before reminder (`/api/cron/send-reminders`, 14:00 UTC).
 
 ### 4b. Kept indefinitely
 
@@ -288,6 +295,7 @@ All sent through Resend. Code-built emails go through `sendLoggedEmail` (`src/li
 | RSVP cancellation (`RSVP_CANCELLATION`) | RSVP cancelled by the patient or board | The patient | Event details | No | Kind/status only |
 | Board role assigned (`BOARD_ROLE_ASSIGNED`) | Board role assigned or invitation (`src/lib/board/assign.ts:104`) | The board member | Name, role, org mailbox, dashboard link | No | **Yes, with recipient address and subject** (`email-service.ts`) |
 | Contact-form notification | Contact form submitted | HOEP mailbox for that reason, `replyTo` = sender | Sender's name, email, phone, reason, message. Subject contains the sender's name. Flagged "[Contains links: please verify]" if links found | n/a (internal) | **No** |
+| New voicemail (`VOICEMAIL_NOTICE`) | A voicemail is recorded | Email route `phone.voicemail` (President and VP only) | "New voicemail" and a link to the admin page. No number, name, audio or transcript | n/a (internal) | Kind/status only |
 | Contact-form auto-reply | Same | The sender | "We received your message", name, reason | No | **No** |
 | Template test send | Board clicks "send test" on an email template | Any address typed in | Sample data | No | No, but an audit row stores the test address |
 

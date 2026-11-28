@@ -1,6 +1,6 @@
 /**
  * ONE place to set when the legal pages go live. Format: YYYY-MM-DD.
- * TODO(merge day): set this to the day Privacy Policy v2, the Terms and the Children's policy are published.
+ * TODO(merge day): set this to the day Privacy Policy v3 is published. It is the date shown on all three legal pages.
  */
 export const LEGAL_EFFECTIVE_DATE = "2026-11-01";
 
@@ -9,7 +9,7 @@ export const LEGAL_EFFECTIVE_DATE = "2026-11-01";
  * live policy version covers it (src/lib/features/registry.ts). Bump it in the same change that publishes a new
  * version of the policy text.
  */
-export const LIVE_POLICY_VERSION = 2;
+export const LIVE_POLICY_VERSION = 3;
 
 type Bilingual = { en: string; es: string };
 
@@ -26,6 +26,8 @@ export const PLACEHOLDERS = {
   BACKUP: { value: { en: "up to 14 days", es: "hasta 14 días" } as Bilingual | null, optional: false },
   /** Downloaded Puente Live transcripts (live_captions). Draft default, to confirm. */
   TRANSCRIPT: { value: { en: "90 days", es: "90 días" } as Bilingual | null, optional: false },
+  /** How long a voicemail is kept (phone_system). The code deletes by lib/phone/definitions.ts; check:legal keeps them equal. */
+  VOICEMAIL_RETENTION: { value: { en: "30 days", es: "30 días" } as Bilingual | null, optional: false },
   /** HOEP's mailing address or PO box. Left out of the contact line while null. */
   ADDRESS: { value: null as Bilingual | null, optional: true },
   /** Donation payment processor (donations). Pick before turning donations on. */

@@ -4,7 +4,7 @@
  *  - TWILIO_MODE: live only by default in production; capture everywhere else; live outside production THROWS
  *  - capture places no call and writes no <Dial>; allowlist reaches only listed numbers
  *  - every <Dial> is screened
- *  - recordings: nothing in capture mode; audio is fetched only with HTTP auth
+ *  - recordings: nothing in capture mode; audio is fetched only with HTTP auth. Call records: old finished calls only
  *  - the production account is refused outside production; allowlist needs it to be recorded
  *  - missing credentials break phone code only (nothing reads them at server start)
  *  - one module uses the SDK, one writes TwiML, one reads the settings; every webhook uses the signature wrapper
@@ -16,7 +16,7 @@ import { beforeEach, test } from "node:test";
 import { maskNumber, mayReach, reachFrom, resolveTwilioMode, toUsE164 } from "../src/lib/twilio/mode";
 import { TwilioConfigError, fallbackNumber, readTwilioConfig, sha256Hex } from "../src/lib/twilio/config";
 import { PRODUCTION_ACCOUNT_SID_SHA256 } from "../src/lib/twilio/production-account";
-import { placeCall, twilioRecordings, type CreateCall, type RestFailure } from "../src/lib/twilio/client";
+import { placeCall, twilioCallRecords, twilioRecordings, type CreateCall, type RestFailure } from "../src/lib/twilio/client";
 import { VoiceTwiml } from "../src/lib/twilio/twiml";
 import { clearTwilioOutbox, twilioOutbox } from "../src/lib/twilio/outbox";
 
@@ -184,6 +184,22 @@ test("the provider client: media with HTTP auth only, delete of a missing record
     removeError = { status: 404 }; assert.deepEqual(await api.remove(sid), { ok: true });
     removeError = { status: 500, code: 20500 }; assert.deepEqual(await api.remove(sid), { ok: false, error: "failed" });
   } finally { clear(); }
+});
+
+test("call records: only finished calls older than the cutoff are deleted; nothing in capture mode", async () => {
+  const cutoff = new Date("2026-01-01T00:00:00Z"), removed: string[] = [];
+  const old = `CA${"1".repeat(32)}`, recent = `CA${"2".repeat(32)}`, running = `CA${"3".repeat(32)}`;
+  const api = twilioCallRecords({ sdk: () => ({
+    list: async () => [{ sid: old, endTime: new Date("2025-06-01") }, { sid: recent, endTime: new Date("2026-06-01") }, { sid: running, endTime: null }],
+    remove: async (sid) => { removed.push(sid); },
+  }) });
+  Object.assign(process.env, env());
+  assert.deepEqual([await api.listEndedBefore(cutoff), await api.remove(old)], [{ ok: false, error: "captured" }, { ok: false, error: "captured" }]);
+  process.env.TWILIO_MODE = "allowlist";
+  assert.deepEqual(await api.listEndedBefore(cutoff), { ok: true, sids: [old] }, "whatever the filter returns");
+  assert.deepEqual(await api.remove("../Recordings"), { ok: false, error: "not_found" });
+  assert.deepEqual(await api.remove(old), { ok: true });
+  assert.deepEqual(removed, [old]);
 });
 
 // ── one place for each thing ────────────────────────────────────────────────
