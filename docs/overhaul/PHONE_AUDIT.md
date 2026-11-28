@@ -17,7 +17,7 @@ These override anything in the audit below that says otherwise.
 | Voicemail retention | 30 days. |
 | Duty numbers | admin@ adds, verifies and removes them. |
 | Duty swaps | President and Vice President may change who is on duty, among already-verified board members only. Every swap is audited and emails all four officers. |
-| Numbers on screen | Masked everywhere. |
+| Numbers on screen | Masked everywhere, with one exception (decided 2026-11-27): on Admin → Voicemail the President and Vice President can show a caller's full number. It is decrypted only then, and each view is audited. |
 | `canUseDialer` | Not health data. Default President and Vice President; assignable to Secretary and Treasurer (reviewer tier). |
 | `canListenVoicemail` | Health data (`phi`): President and Vice President only. |
 | Twilio console | vicepresident@ (owner, 2FA) and president@. admin@ has none. Recorded in `docs/legal/RUNBOOK.md`. |

@@ -12,7 +12,7 @@ type Option = PhoneView["options"][number];
 const T = {
   en: {
     title: "Phone", intro: "Who answers each choice on the HOEP phone line. Every change is recorded and emailed to the four officers. Whoever answers must press 1 to take the call.",
-    capture: "Test mode: no phone is rung.", allowlist: "Development mode: only allowed test numbers are rung.", notConfigured: "The phone credentials are not set, so the phone line does not work yet.",
+    capture: "Test mode: no phone is rung.", allowlist: "Development mode: only allowed test numbers are rung.", notConfigured: "The phone credentials are not set, so the phone line does not work yet.", noVoicemail: "Callers can’t leave messages: the PHONE_DATA_KEY setting is missing.",
     duty: "Who answers", nobody: "Nobody", choose: "Choose a number…", save: "Save", saved: "Saved. The officers were emailed.", savedNoNotice: "Saved, but the officer email was not sent.",
     ringsNow: "Rings now", notRinging: "Not ringing now", confirmDuty: "Hand “{option}” to {who}? The four officers will be emailed.", noneVerified: "No verified numbers yet. The admin account adds and verifies them.",
     hours: "Hours (El Paso time)", anyTime: "Any time", days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], from: "From", to: "To", saveHours: "Save hours",
@@ -31,7 +31,7 @@ const T = {
   },
   es: {
     title: "Teléfono", intro: "Quién atiende cada opción de la línea telefónica de HOEP. Cada cambio se registra y se envía por correo a los cuatro directivos. Quien contesta debe oprimir 1 para tomar la llamada.",
-    capture: "Modo de prueba: no suena ningún teléfono.", allowlist: "Modo de desarrollo: solo suenan los números de prueba permitidos.", notConfigured: "Faltan las credenciales del teléfono; la línea todavía no funciona.",
+    capture: "Modo de prueba: no suena ningún teléfono.", allowlist: "Modo de desarrollo: solo suenan los números de prueba permitidos.", notConfigured: "Faltan las credenciales del teléfono; la línea todavía no funciona.", noVoicemail: "No se pueden dejar mensajes: falta la configuración PHONE_DATA_KEY.",
     duty: "Quién atiende", nobody: "Nadie", choose: "Elija un número…", save: "Guardar", saved: "Guardado. Se avisó a los directivos.", savedNoNotice: "Guardado, pero no se envió el correo a los directivos.",
     ringsNow: "Suena ahora", notRinging: "No suena ahora", confirmDuty: "¿Pasar “{option}” a {who}? Se avisará por correo a los cuatro directivos.", noneVerified: "Aún no hay números verificados. La cuenta de administración los agrega y verifica.",
     hours: "Horario (hora de El Paso)", anyTime: "A cualquier hora", days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], from: "Desde", to: "Hasta", saveHours: "Guardar horario",
@@ -89,7 +89,10 @@ export default function PhoneClient({ view, canManage, locale }: { view: PhoneVi
     if (data?.code) setCode({ who: label(n), code: data.code, captured: !!data.captured });
   }
 
-  const warning = !view.configured ? t.notConfigured : view.mode === "capture" ? t.capture : view.mode === "allowlist" ? t.allowlist : null;
+  const warnings = [
+    !view.configured ? t.notConfigured : view.mode === "capture" ? t.capture : view.mode === "allowlist" ? t.allowlist : null,
+    view.voicemailReady ? null : t.noVoicemail,
+  ].filter((w): w is string => !!w);
   const choices = view.numbers.filter((n) => n.verified && n.onBoard);
 
   return (
@@ -97,11 +100,11 @@ export default function PhoneClient({ view, canManage, locale }: { view: PhoneVi
       <div>
         <h2 className="text-xl font-semibold text-neutral-900 mb-2">{t.title}</h2>
         <p className="text-neutral-600 max-w-3xl">{t.intro}</p>
-        {warning && (
-          <p className="mt-3 flex gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-900">
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />{warning}
+        {warnings.map((w) => (
+          <p key={w} className="mt-3 flex gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-900">
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />{w}
           </p>
-        )}
+        ))}
       </div>
 
       <section className="space-y-4">

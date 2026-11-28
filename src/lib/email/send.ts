@@ -41,7 +41,8 @@ export type CodeEmailKind =
   | "RECORDS_MERGED_NOTICE"
   | "EMAIL_CHANGE_CONFIRMATION"
   | "MEMBER_LEFT_NOTICE"
-  | "DELETION_REQUEST_NOTICE";
+  | "DELETION_REQUEST_NOTICE"
+  | "VOICEMAIL_NOTICE";
 
 export type SendResult =
   | { ok: true; id: string; /** EMAIL_MODE kept it from Resend (capture, or an address not on the allowlist) */ captured?: boolean }

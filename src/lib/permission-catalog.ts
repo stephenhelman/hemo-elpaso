@@ -33,6 +33,7 @@ export const PERMISSION_CATALOG = [
   { key: "canManageEmailRouting", category: "settings", phi: false, label: { en: "Manage email routing", es: "Administrar el enrutamiento de correo" } },
   { key: "canAssignBoardRoles", category: "settings", phi: false, label: { en: "Assign board roles", es: "Asignar cargos de la junta" } },
   { key: "canSwapPhoneDuty", category: "data", phi: false, label: { en: "Change who is on phone duty", es: "Cambiar quién atiende el teléfono" } },
+  { key: "canListenVoicemail", category: "data", phi: true, label: { en: "Listen to and delete voicemail, and see callers’ numbers (health information)", es: "Escuchar y borrar mensajes de voz y ver los números de quienes llaman (información de salud)" } },
   { key: "canManagePhoneRouting", category: "settings", phi: false, label: { en: "Manage phone numbers and call routing", es: "Administrar números y desvío de llamadas" } },
   { key: "canEditSiteContent", category: "settings", phi: false, label: { en: "Edit site content (Sanity)", es: "Editar el contenido del sitio (Sanity)" } },
 ] as const;
@@ -80,13 +81,13 @@ export const ROLE_PERMISSIONS: Record<BoardRoleKey, Permission[]> = {
     "canReviewVerification", "canEditSiteContent", "canViewAdminDashboard", "canManageEvents", "canViewEventStats",
     "canSelectForNewsletter", "canApproveNewsletter", "canViewPHI", "canManageUsers", "canViewFinancials",
     "canApproveAssistance", "canSendBulkEmails", "canSendIndividualEmails", "canManageEmailTemplates",
-    "canViewAuditLogs", "canManageVolunteers", "canSwapPhoneDuty",
+    "canViewAuditLogs", "canManageVolunteers", "canSwapPhoneDuty", "canListenVoicemail",
   ],
   VICE_PRESIDENT: [
     "canReviewVerification", "canEditSiteContent", "canViewAdminDashboard", "canManageEvents", "canViewEventStats",
     "canSelectForNewsletter", "canViewPHI", "canManageUsers", "canViewFinancials", "canApproveAssistance",
     "canSendBulkEmails", "canSendIndividualEmails", "canManageEmailTemplates", "canViewAuditLogs", "canManageVolunteers",
-    "canSwapPhoneDuty",
+    "canSwapPhoneDuty", "canListenVoicemail",
   ],
   SECRETARY: [
     "canEditSiteContent", "canViewAdminDashboard", "canViewEventStats", "canManageMinutes", "canMarkMinutesPublic",

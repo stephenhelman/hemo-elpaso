@@ -10,3 +10,4 @@ delete process.env.VERCEL_ENV;
 // Check scripts NEVER ring a phone and never see real Twilio credentials (lib/twilio/mode.ts).
 process.env.TWILIO_MODE = "capture";
 for (const name of Object.keys(process.env)) if (name.startsWith("TWILIO_") && name !== "TWILIO_MODE") delete process.env[name];
+delete process.env.PHONE_DATA_KEY; // checks that need it set their own

@@ -21,6 +21,7 @@ export const ROUTE_KEYS = [
   "privacy",
   "privacy.requests",
   "board.duplicates",
+  "phone.voicemail",
   "reply.info",
   "reply.events",
 ] as const;
@@ -104,6 +105,12 @@ export const ROUTE_DEFS: Record<RouteKey, RouteDef> = {
     key: "board.duplicates", group: "notifications", mode: "list", options: ROLE_LOCALS, allowTyped: false, defaultLocals: ["president", "vicepresident"],
     label: { en: "Sign-in matched more than one household", es: "Un inicio de sesión coincide con más de un hogar" },
     help: { en: "Who is told when someone signs in and their email matches more than one household. The email contains only a link to the board page; no names, emails or family details.", es: "A quién se avisa cuando alguien inicia sesión y su correo coincide con más de un hogar. El correo solo contiene un enlace a la página de la junta; sin nombres, correos ni datos de la familia." },
+  },
+  "phone.voicemail": {
+    // only these two may be told: voicemail can hold health information, which the policy limits to them
+    key: "phone.voicemail", group: "notifications", mode: "list", options: ["president", "vicepresident"], allowTyped: false, defaultLocals: ["president", "vicepresident"],
+    label: { en: "New voicemail on the phone line", es: "Nuevo mensaje de voz en la línea telefónica" },
+    help: { en: "Who is told that a voicemail is waiting. The email contains only a link: no number, name, audio or transcript. Only the President and Vice President can be chosen.", es: "A quién se avisa que hay un mensaje de voz. El correo solo contiene un enlace: sin número, nombre, audio ni transcripción. Solo se puede elegir a la presidencia y la vicepresidencia." },
   },
   "reply.events": {
     key: "reply.events", group: "replies", mode: "single", options: REPLY_OPTIONS, allowTyped: false, defaultLocals: ["events"],

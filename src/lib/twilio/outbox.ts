@@ -1,5 +1,5 @@
 /** What TWILIO_MODE kept from a real phone, oldest first. In memory only; checks read it. */
-export interface TwilioOutboxed { at: string; kind: "call" | "dial"; to: string; reason: "capture" | "not_allowlisted"; path: string }
+export interface TwilioOutboxed { at: string; kind: "call" | "dial" | "record"; /** empty for a recording */ to: string; reason: "capture" | "not_allowlisted"; path: string }
 type G = typeof globalThis & { __hoepTwilioOutbox?: TwilioOutboxed[] };
 const OUTBOX_MAX = 200;
 

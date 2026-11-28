@@ -4,7 +4,8 @@
  * is sent: TWILIO_MODE and EMAIL_MODE are forced to capture.)
  *  - permissions: admin@ manages; President and VP swap; nobody else does either
  *  - duty numbers: US only, verified by a code typed on the called phone, masked everywhere
- *  - the menu: options ring the person on duty, with press-1 screening; otherwise the "call again" message
+ *  - the menu: options ring the person on duty, with press-1 screening; otherwise on to voicemail (check:phone-voicemail)
+ *  - after a dial, only DialBridged says the two talked (never the parent call's status, or DialCallStatus alone)
  *  - every change is audited without numbers and emailed to all four officers
  *  - the webhooks end to end, with signed requests
  */
@@ -29,7 +30,7 @@ import {
   CODE_ATTEMPTS, CODE_TTL_MS, MAX_NUMBERS, VERIFY_CALL_LIMIT, checkDutyNumber, checkHours, destinationFor, emptyRouting, isOpenAt, optionForDigit, parseRouting, type Routing,
 } from "../src/lib/phone/definitions";
 import { addNumber, answerChallenge, assignDuty, hashCode, removeNumber, setHours, startChallenge, type Change } from "../src/lib/phone/change";
-import { dialResult, greeting, menuChoice, screen, screenAnswer } from "../src/lib/phone/ivr";
+import { dialConnected, dialResult, greeting, menuChoice, screen, screenAnswer } from "../src/lib/phone/ivr";
 import { addDutyNumber, changeDuty, changeHours, numberToRing, removeDutyNumber, startVerification } from "../src/lib/phone/service";
 import { ROUTING_KEY, boardPeople, readRouting } from "../src/lib/phone/store";
 import { phoneView } from "../src/lib/phone/view";
@@ -224,10 +225,11 @@ test("a choice rings the person on duty with screening; nobody on duty plays the
   assert.match(rung, /<Dial answerOnBridge="true" callerId="\+19155550100"[^>]*action="\/api\/twilio\/voice\/dial-result\?o=events"/);
   assert.match(rung, /<Number url="\/api\/twilio\/voice\/screen\?o=events" method="POST">\+19155550141<\/Number>/);
   const none = (await menuChoice(tw(), "2", 1, { numberFor: async () => null, callerId: HOEP })).toString();
-  assert.ok(none.includes("No pudimos comunicar") && !none.includes("We could not connect") && !none.includes("<Record"), "Spanish only, nothing recorded");
+  assert.match(none, /<Response><Redirect method="POST">\/api\/twilio\/voice\/voicemail\?o=spanish<\/Redirect><\/Response>/, "nobody on duty: voicemail");
   const bad = (await menuChoice(tw(), "9", 1, { numberFor: async () => { throw new Error("not asked"); }, callerId: HOEP })).toString();
   assert.match(bad, /voice\?try=2/);
   assert.ok((await menuChoice(tw(), undefined, 2, { numberFor: async () => null, callerId: HOEP })).toString().includes("<Hangup/>"));
+  assert.ok(!rung.includes("record"), "live calls are never recorded");
 });
 
 test("press-1 screening: only 1 connects; silence (a voicemail) hangs up that leg", () => {
@@ -236,8 +238,28 @@ test("press-1 screening: only 1 connects; silence (a voicemail) hangs up that le
   assert.match(s, /<\/Gather><Hangup\/><\/Response>$/, "no key: the leg is hung up");
   assert.ok(!screenAnswer(tw(), "1", "events").toString().includes("<Hangup/>"));
   for (const d of ["2", "0", "#", "", undefined]) assert.match(screenAnswer(tw(), d, "events").toString(), /<Response><Hangup\/><\/Response>/, String(d));
-  assert.match(dialResult(tw(), true, "events").toString(), /<Response><Hangup\/><\/Response>/);
-  assert.ok(dialResult(tw(), false, "officer").toString().includes("could not connect"));
+  assert.match(dialResult(tw(), { DialBridged: "true" }, "events").toString(), /<Response><Hangup\/><\/Response>/);
+  assert.match(dialResult(tw(), { DialBridged: "false" }, "officer").toString(), /voicemail\?o=officer/);
+});
+
+// Seen in a live test: a forwarded call answered WITHOUT pressing 1 showed status "completed" on the parent call.
+test("answered but not accepted: 'completed' statuses never count as connected, only DialBridged does", () => {
+  const notConnected: Record<string, string>[] = [
+    { CallStatus: "completed", DialCallStatus: "completed", DialBridged: "false" },
+    { CallStatus: "in-progress", DialCallStatus: "completed", DialBridged: "false" },
+    { CallStatus: "completed", DialCallStatus: "answered", DialBridged: "false" },
+    { CallStatus: "completed", DialCallStatus: "completed" }, // no DialBridged at all
+    { CallStatus: "completed" },
+    { CallStatus: "in-progress", DialCallStatus: "no-answer", DialBridged: "false" },
+    { CallStatus: "in-progress", DialCallStatus: "busy", DialBridged: "false" },
+  ];
+  for (const params of notConnected) {
+    assert.equal(dialConnected(params), false, JSON.stringify(params));
+    assert.match(dialResult(tw(), params, "events").toString(), /<Redirect method="POST">\/api\/twilio\/voice\/voicemail\?o=events<\/Redirect>/, JSON.stringify(params));
+  }
+  for (const CallStatus of ["in-progress", "completed"]) assert.equal(dialConnected({ CallStatus, DialCallStatus: "completed", DialBridged: "true" }), true);
+  const code = readFileSync("src/lib/phone/ivr.ts", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.ok(!/params\.(Dial)?CallStatus/.test(code), "the flow reads no call status");
 });
 
 // ───────────────────────── stored changes, notices, webhooks ─────────────────────────
@@ -337,9 +359,9 @@ test("an incoming call, end to end: capture rings nobody; the allowlist rings on
   assert.deepEqual(twilioOutbox().map((m) => [m.kind, m.to]), [["dial", ONE]], "the right number would have rung");
   assert.match(await hit(screenRoute, "/api/twilio/voice/screen?o=events"), /Press 1 to accept/);
   assert.ok(!(await hit(acceptRoute, "/api/twilio/voice/screen/accept?o=events", { Digits: "1" })).includes("<Hangup/>"));
-  assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=events", { DialCallStatus: "completed", DialBridged: "false" }), /could not connect/, "screened out is not connected");
-  assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=events", { DialCallStatus: "completed", DialBridged: "true" }), /<Response><Hangup\/><\/Response>/);
-  assert.match(await hit(menu, "/api/twilio/voice/menu?try=1", { Digits: "2" }), /No pudimos comunicar/, "nobody on the Spanish line");
+  assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=events", { CallStatus: "completed", DialCallStatus: "completed", DialBridged: "false" }), /voicemail\?o=events/, "screened out is not connected");
+  assert.match(await hit(dialResultRoute, "/api/twilio/voice/dial-result?o=events", { CallStatus: "in-progress", DialCallStatus: "completed", DialBridged: "true" }), /<Response><Hangup\/><\/Response>/);
+  assert.match(await hit(menu, "/api/twilio/voice/menu?try=1", { Digits: "2" }), /voicemail\?o=spanish/, "nobody on the Spanish line");
 });
 
 test("if the routing can't be read, only the fallback number rings", async () => {

@@ -53,6 +53,8 @@
     "check:twilio-guard": "tsx --test scripts/check-twilio-guard.ts",
     "check:twilio-webhook": "tsx --test scripts/check-twilio-webhook.ts",
     "check:phone-routing": "tsx scripts/db-guard.ts && tsx --test scripts/check-phone-routing.ts",
+    "check:phone-prompts": "tsx --test scripts/check-phone-prompts.ts",
+    "check:phone-voicemail": "tsx scripts/db-guard.ts && tsx --test scripts/check-phone-voicemail.ts",
     "check:flyer-upload": "tsx scripts/db-guard.ts && tsx --test scripts/check-flyer-upload.ts",
     "check:photo-pipeline": "tsx scripts/db-guard.ts && tsx scripts/check-photo-pipeline.ts",
     "photos:backfill": "tsx scripts/db-guard.ts && tsx scripts/backfill-event-photos.ts",

@@ -70,7 +70,7 @@ test("defaults are role addresses on the mail domain", () => {
   const want: Record<string, string | string[]> = {
     "contact.general": "info", "contact.family": "secretary", "contact.volunteer": "secretary", "contact.sponsor": "treasurer",
     "contact.media": "president", "contact.other": "info", privacy: "privacy", "privacy.requests": "privacy", "reply.info": "info", "reply.events": "events",
-    "board.duplicates": ["president", "vicepresident"],
+    "board.duplicates": ["president", "vicepresident"], "phone.voicemail": ["president", "vicepresident"],
   };
   for (const k of ROUTE_KEYS) assert.deepEqual(defaultRecipients(k, D), [want[k]].flat().map((l) => `${l}@${D}`), k);
   assert.deepEqual(defaultRecipients("contact.media", "example.org"), ["president@example.org"]);

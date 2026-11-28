@@ -37,6 +37,23 @@ export const VERIFY_CALL_LIMIT = { max: 5, windowMs: 60 * 60_000 };
 export const RING_SECONDS = 20;
 export const MAX_CALL_SECONDS = 60 * 60;
 
+// voicemail
+export const VOICEMAIL_MAX_SECONDS = 120;
+/** Shorter than this is a hang-up, not a message: it is deleted at once. */
+export const VOICEMAIL_MIN_SECONDS = 2;
+/** Times one caller (by keyed hash of the number) may be offered voicemail in 24 hours. */
+export const VOICEMAIL_DAILY_LIMIT = 5;
+/** All callers who hide their number share one allowance. */
+export const VOICEMAIL_UNKNOWN_DAILY_LIMIT = 10;
+/** Everybody together in 24 hours: the stop for a flood from many (or made-up) numbers. */
+export const VOICEMAIL_TOTAL_DAILY_LIMIT = 60;
+/** Nobody may keep a voicemail longer than this (the Privacy Policy says so). */
+export const VOICEMAIL_RETENTION_DAYS = 30;
+/** What is left after deletion (no audio, no number): the same as other call records. */
+export const VOICEMAIL_RECORD_DAYS = 365;
+/** How long a recording with no matching row (or a row with no recording) is left before it is cleaned up. */
+export const VOICEMAIL_ORPHAN_HOURS = 24;
+
 /** null = any time. Otherwise these weekdays (0 = Sunday) from start up to end, El Paso time. */
 export type Hours = null | { days: number[]; start: string; end: string };
 

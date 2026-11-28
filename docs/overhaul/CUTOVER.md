@@ -188,4 +188,6 @@ Seed the email template catalogue (admin → Settings → Email templates) or it
 | `REGISTRATION_OPEN` | `false` / `true` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | **required** (flyers/photos): the production build fails and the server will not start without them |
 | `DEEPL_API_KEY` | board-only translate |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | phone line (`TWILIO_SETUP.md`); optional `TWILIO_API_KEY_SID`/`_SECRET`, `TWILIO_FALLBACK_NUMBER`. Production only |
+| `PHONE_DATA_KEY` | **required for voicemail:** 64 hex chars (`openssl rand -hex 32`). Production only; keep a copy somewhere safe |
 | `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | address autocomplete |

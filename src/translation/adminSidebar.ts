@@ -17,6 +17,7 @@ import {
   Building2,
   Shield,
   PenSquare,
+  Voicemail,
 } from "lucide-react";
 
 export const adminSidebarTranslation = {
@@ -88,6 +89,12 @@ export const adminNavItemsTranslation = [
     icon: Hourglass,
   },
   {
+    href: "/admin/voicemails",
+    en: "Voicemail",
+    es: "Mensajes de voz",
+    icon: Voicemail,
+  },
+  {
     href: "/admin/audit-logs",
     en: "Audit Log",
     es: "Registro de Auditoría",
@@ -119,6 +126,7 @@ export const ADMIN_NAV_PERMISSIONS: Record<string, string | string[]> = {
   "/admin/identities": "canManageUsers",
   "/admin/duplicates": "canManageUsers",
   "/admin/inactive-households": "canManageUsers",
+  "/admin/voicemails": "canListenVoicemail",
   "/admin/audit-logs": "canViewAuditLogs",
   "/admin/studio": "canEditSiteContent",
 };
